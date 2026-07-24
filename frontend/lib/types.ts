@@ -164,7 +164,7 @@ export interface EventRecord {
     items: SourceItem[];
     engineStatus: Array<{ engine: Engine; ok: boolean; lastGood?: string }>;
   };
-  verdictNote?: string;
+  verdictNote?: { text: string; lastEditedAt: string } | string;
 }
 
 export interface EtfDistribution {

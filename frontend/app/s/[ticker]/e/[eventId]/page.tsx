@@ -94,7 +94,13 @@ export default async function EventDetailPage({ params }: Props) {
       </header>
 
       <div className="mb-6">
-        <VerdictNote initial={event.verdictNote} />
+        <VerdictNote
+          initial={
+            typeof event.verdictNote === "string"
+              ? event.verdictNote
+              : event.verdictNote?.text
+          }
+        />
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1.4fr_1fr]">

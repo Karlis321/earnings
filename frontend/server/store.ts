@@ -13,6 +13,7 @@ import type {
   EngineStatus,
 } from "@/lib/types";
 import { inMemoryStore } from "./stores/inMemory";
+import { tryGitSnapshot } from "./stores/gitSnapshot";
 
 export interface Store {
   readRegistry(): Promise<Entity[]>;
@@ -42,4 +43,7 @@ export interface Store {
   mode(): "in-memory" | "git-snapshot" | "postgres";
 }
 
-export const store: Store = inMemoryStore;
+// Auto-select store implementation:
+// - If GH_PAT + GH_REPO_OWNER + GH_REPO_NAME are set → gitSnapshot (writes commit to GitHub).
+// - Else → in-memory (reads work; writes throw 503-shape errors).
+export const store: Store = tryGitSnapshot() ?? inMemoryStore;
