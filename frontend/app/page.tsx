@@ -1,13 +1,12 @@
 import { WatchlistTable } from "@/components/overview/WatchlistTable";
+import { MarketPulse } from "@/components/overview/MarketPulse";
 import { data } from "@/lib/data";
 
-// Overview (default landing).
-// Backend integration flag: rows are joined from /api/shared-state
-// (watchlist) + /api/earnings per ticker in live mode.
 export default function OverviewPage() {
   const rows = data.getWatchlist();
   return (
     <div className="mx-auto max-w-[1360px] px-10 py-8">
+      <MarketPulse />
       <div className="mb-6">
         <div className="mono-eyebrow mb-3">§ Overview · Watchlist</div>
         <h1 className="text-[28px] font-semibold leading-tight tracking-[-0.02em]">
