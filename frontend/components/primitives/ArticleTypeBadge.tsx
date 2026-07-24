@@ -11,7 +11,7 @@ import clsx from "clsx";
 export function ArticleTypeBadge({ type }: { type: ArticleType }) {
   const cls =
     type === "opinion"
-      ? "bg-[rgba(251,191,36,0.12)] border-[rgba(251,191,36,0.28)] text-warning"
+      ? "bg-[rgba(181,71,8,0.08)] border-[rgba(181,71,8,0.28)] text-warning"
       : "bg-s3 border-bd2 text-tx2";
   return (
     <Tooltip.Provider delayDuration={120}>

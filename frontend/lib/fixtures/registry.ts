@@ -9,7 +9,7 @@ export const ENTITY_REGISTRY: Entity[] = [
     displayName: "Intel",
     aliases: ["Intel", "Intel Corp"],
     exclusionAliases: [],
-    sectorTags: ["semiconductors", "us-large-cap"],
+    sectorTags: ["semiconductors", "hardware", "us-large-cap"],
     cashtag: "INTC",
     isCore: true,
     securityType: "operating",

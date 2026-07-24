@@ -26,7 +26,7 @@ export function CatalystCard({ catalyst }: { catalyst: CatalystDetail }) {
     <div className="rounded-panel border border-bd bg-s1 p-4">
       <div className="mb-3 flex items-start justify-between gap-3">
         <div className="flex items-center gap-[10px]">
-          <div className="flex h-9 w-9 items-center justify-center rounded-card bg-[rgba(129,140,248,0.14)] text-dev-fg">
+          <div className="flex h-9 w-9 items-center justify-center rounded-card bg-[rgba(105,65,198,0.10)] text-dev-fg">
             {icon}
           </div>
           <div>

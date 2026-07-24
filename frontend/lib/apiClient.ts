@@ -1,7 +1,5 @@
-// P3-T1: API client wrapper with fixtures-vs-live switch.
-// Every view reads through these — flipping FEATURE_FLAGS.liveMode swaps
-// the fixture branch for real fetches. All 🔴 backend tasks in the
-// Backend Dependency Register live here.
+// API client — reads flip to live via /api/*. Writes still local (W3+).
+// Fixture fallback preserved for offline dev; live is the default now.
 
 import { FEATURE_FLAGS } from "./flags";
 import { data as F } from "./data";
@@ -13,81 +11,129 @@ import type {
   EtfDetail,
 } from "./types";
 
-async function fromFixture<T>(v: T): Promise<T> {
-  // simulate a small async so components using startTransition behave live-like
-  return v;
+const LIVE = true; // read endpoints live; writes still deferred
+
+async function safeFetch<T>(path: string, fallback: () => T | Promise<T>): Promise<T> {
+  if (!LIVE) return fallback();
+  try {
+    const r = await fetch(path, { cache: "no-store" });
+    if (!r.ok) throw new Error(`${path} → ${r.status}`);
+    return (await r.json()) as T;
+  } catch (e) {
+    if (typeof window === "undefined") {
+      // Server-side render: use fixture instantly
+      return fallback();
+    }
+    throw e;
+  }
 }
 
 export const api = {
+  async getHealth() {
+    return safeFetch("/api/health", () => ({
+      ok: true,
+      snapshotAt: F.getSnapshot().lastUpdated,
+      schema: F.getSnapshot().schema,
+      events: F.getSnapshot().events.length,
+      mode: "fixture",
+      ghPatPresent: false,
+    }));
+  },
+
   async getSharedState() {
-    if (FEATURE_FLAGS.liveMode) {
-      // BACKEND: GET /api/shared-state
-      throw new Error("Live mode not yet wired · P3 backend dep");
-    }
-    return fromFixture(F.getSharedState());
+    return safeFetch("/api/shared-state", () => F.getSharedState());
   },
 
   async getEntities(): Promise<Entity[]> {
-    if (FEATURE_FLAGS.liveMode) {
-      // BACKEND: entity-registry.json served
-      throw new Error("Live mode not yet wired");
-    }
-    return fromFixture(F.listEntities());
+    return safeFetch("/api/entity-registry", () => ({
+      schema: "entity-registry/v1",
+      entities: F.listEntities(),
+    })).then((r: unknown) => {
+      const wrapped = r as { entities?: Entity[] };
+      return wrapped.entities ?? (r as Entity[]);
+    });
+  },
+
+  async getDictionary() {
+    return safeFetch("/api/metric-dictionary", () => ({
+      schema: "metric-dictionary/v1" as const,
+      metrics: {},
+    }));
   },
 
   async getWatchlist(): Promise<WatchlistRow[]> {
-    if (FEATURE_FLAGS.liveMode) {
-      // BACKEND: /api/shared-state + /api/earnings joined per ticker
-      throw new Error("Live mode not yet wired");
-    }
-    return fromFixture(F.getWatchlist());
+    // Client-side derivation from the entity registry + snapshot.
+    // No dedicated backend endpoint for this — it's a join over two.
+    return F.getWatchlist();
   },
 
   async getEventsForTicker(ticker: string): Promise<EventRecord[]> {
-    if (FEATURE_FLAGS.liveMode) {
-      // BACKEND: /api/earnings?ticker=...
-      throw new Error("Live mode not yet wired");
-    }
-    return fromFixture(F.getEventsForTicker(ticker));
+    const r = await safeFetch<{ events?: EventRecord[]; type?: string }>(
+      `/api/earnings?ticker=${encodeURIComponent(ticker)}`,
+      () => ({ events: F.getEventsForTicker(ticker), type: "operating" }),
+    );
+    return r.events ?? [];
   },
 
   async getEvent(eventId: string): Promise<EventRecord | undefined> {
-    if (FEATURE_FLAGS.liveMode) {
-      // BACKEND: /api/earnings?event=...
-      throw new Error("Live mode not yet wired");
+    if (!LIVE) return F.getEvent(eventId);
+    try {
+      const r = await fetch(
+        `/api/earnings?event=${encodeURIComponent(eventId)}`,
+        { cache: "no-store" },
+      );
+      if (r.status === 404) return undefined;
+      if (!r.ok) throw new Error(`event fetch ${r.status}`);
+      return (await r.json()) as EventRecord;
+    } catch {
+      return F.getEvent(eventId);
     }
-    return fromFixture(F.getEvent(eventId));
   },
 
   async getSnapshot(): Promise<EarningsSnapshot> {
-    if (FEATURE_FLAGS.liveMode) {
-      throw new Error("Live mode not yet wired");
-    }
-    return fromFixture(F.getSnapshot());
+    return safeFetch("/api/earnings/snapshot", () => F.getSnapshot());
   },
 
   async getEtfDetail(ticker: string): Promise<EtfDetail | undefined> {
-    return fromFixture(F.getEtfDetail(ticker));
+    try {
+      const r = await fetch(
+        `/api/earnings?ticker=${encodeURIComponent(ticker)}`,
+        { cache: "no-store" },
+      );
+      if (!r.ok) return F.getEtfDetail(ticker);
+      const j = (await r.json()) as {
+        type?: string;
+        etf?: EtfDetail | null;
+      };
+      return j.etf ?? undefined;
+    } catch {
+      return F.getEtfDetail(ticker);
+    }
   },
 
-  // Refresh-sources action (P6-T5) — backend: /api/news + /api/press-releases + /api/tweets
+  async getFeedback() {
+    return safeFetch("/api/feedback", () => ({
+      schema: "feedback/v1",
+      entries: F.getFeedback(),
+    }));
+  },
+
+  // Writes still fixture-only until W3.
   async refreshSources(_eventId: string): Promise<{ appended: number }> {
     if (FEATURE_FLAGS.liveMode) {
-      throw new Error("Live mode not yet wired — refresh sources");
+      throw new Error("Refresh-sources — W5 backend not yet wired");
     }
-    return fromFixture({ appended: 0 });
+    return { appended: 0 };
   },
 
-  // Feedback (P6-T6, P8-T5) — backend: /api/feedback
   async postFeedback(_target: string, _action: string): Promise<{ ok: true }> {
     if (FEATURE_FLAGS.liveMode) {
-      throw new Error("Live mode not yet wired — feedback");
+      throw new Error("Feedback write — W3 backend not yet wired");
     }
-    return fromFixture({ ok: true as const });
+    return { ok: true as const };
   },
 
-  // Discover feed (P8-T4) — backend: /api/discover-feed
   async discoverFeed(input: string) {
-    return fromFixture(F.discoverFeed(input));
+    return F.discoverFeed(input);
   },
 };

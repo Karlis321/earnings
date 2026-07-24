@@ -1,0 +1,203 @@
+function fetchMarketData() {
+  const data = {};
+
+  // -- US & ECB rates via FRED --
+  if (CONFIG.FRED_API_KEY) {
+    safe(() => data.fedFunds      = fredLatest("DFF",      "Fed Funds (Effective)",  "%"));
+    safe(() => data.fedTarget     = fredLatest("DFEDTARU", "Fed Funds Target Upper", "%"));
+    safe(() => data.us2y          = fredLatest("DGS2",     "US 2Y Yield",            "%"));
+    safe(() => data.us10y         = fredLatest("DGS10",    "US 10Y Yield",           "%"));
+    safe(() => data.us30y         = fredLatest("DGS30",    "US 30Y Yield",           "%"));
+    safe(() => data.realYield10y  = fredLatest("DFII10",   "US 10Y Real Yield",      "%"));
+    safe(() => data.ecbMRO        = fredLatest("ECBMRRFR", "ECB Main Refi Rate",     "%"));
+    safe(() => data.ecbDFR        = fredLatest("ECBDFR",   "ECB Deposit Facility",   "%"));
+    safe(() => data.bund10y       = fredLatest("IRLTLT01DEM156N", "German 10Y Bund (monthly)", "%"));
+  } else {
+    Logger.log("No FRED key — US and ECB rates will be missing from snapshot.");
+  }
+
+  // -- FX & commodities --
+  safe(() => data.dxy      = yahooQuote("DX-Y.NYB", "US Dollar Index", ""));
+  safe(() => data.eurusd   = yahooQuote("EURUSD=X", "EUR/USD", ""));
+  safe(() => data.brent    = yahooQuote("BZ=F",     "Brent Crude (USD/bbl)", ""));
+  safe(() => data.wti      = yahooQuote("CL=F",     "WTI Crude (USD/bbl)", ""));
+  safe(() => data.gold     = yahooQuote("GC=F",     "Gold (USD/oz)", ""));
+  safe(() => data.silver   = yahooQuote("SI=F",     "Silver (USD/oz)", ""));
+  safe(() => data.copper   = yahooQuote("HG=F",     "Copper (USD/lb)", ""));
+  safe(() => data.uranium  = yahooQuote("URA",      "Uranium ETF (URA)", ""));
+  safe(() => data.natgas   = yahooQuote("NG=F",     "Henry Hub NatGas", ""));
+  safe(() => data.ironore  = yahooQuote("TIO=F",    "Iron Ore 62% (USD/t)", ""));   // v3 — relevant for BHP
+
+  // -- Equity indices --
+  safe(() => data.spx      = yahooQuote("^GSPC",    "S&P 500", ""));
+  safe(() => data.ndx      = yahooQuote("^NDX",     "Nasdaq 100", ""));
+  safe(() => data.stoxx    = yahooQuote("^STOXX50E","Euro Stoxx 50", ""));
+  safe(() => data.nikkei   = yahooQuote("^N225",    "Nikkei 225", ""));
+  safe(() => data.hsi      = yahooQuote("^HSI",     "Hang Seng", ""));
+  safe(() => data.vix      = yahooQuote("^VIX",     "VIX", ""));
+
+  // -- Sector ETFs for sector-performance roll-up --
+  safe(() => data.xle      = yahooQuote("XLE",      "Energy sector (XLE)", ""));
+  safe(() => data.xlu      = yahooQuote("XLU",      "Utilities sector (XLU)", ""));
+  safe(() => data.xlk      = yahooQuote("XLK",      "Tech sector (XLK)", ""));
+  safe(() => data.xlb      = yahooQuote("XLB",      "Materials sector (XLB)", ""));
+  safe(() => data.gdx      = yahooQuote("GDX",      "Gold miners (GDX)", ""));
+  safe(() => data.copx     = yahooQuote("COPX",     "Copper miners (COPX)", ""));
+  safe(() => data.tan      = yahooQuote("TAN",      "Solar ETF (TAN)", ""));
+  safe(() => data.xlp      = yahooQuote("XLP",      "Cons. staples (XLP)", ""));
+  safe(() => data.xly      = yahooQuote("XLY",      "Cons. discretionary (XLY)", ""));
+
+  return data;
+}
+
+function safe(fn) { try { fn(); } catch (e) { Logger.log(`Data fetch warning: ${e.message}`); } }
+
+/** FRED — returns latest observation. Free API key required. */
+function fredLatest(seriesId, label, unit) {
+  const url = `https://api.stlouisfed.org/fred/series/observations`
+    + `?series_id=${seriesId}&api_key=${CONFIG.FRED_API_KEY}`
+    + `&file_type=json&sort_order=desc&limit=2`;
+  const resp = UrlFetchApp.fetch(url, { muteHttpExceptions: true });
+  if (resp.getResponseCode() !== 200) throw new Error(`FRED ${seriesId} HTTP ${resp.getResponseCode()}`);
+  const j = JSON.parse(resp.getContentText());
+  const obs = (j.observations || []).filter(o => o.value !== ".");
+  if (obs.length === 0) throw new Error(`FRED ${seriesId} no data`);
+  const latest = parseFloat(obs[0].value);
+  const prev   = obs[1] ? parseFloat(obs[1].value) : latest;
+  return { label, value: latest, prev: prev, change: latest - prev, unit, date: obs[0].date };
+}
+
+/** Yahoo Finance public quote endpoint — no key needed. */
+function yahooQuote(symbol, label, unit) {
+  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=1d&range=5d`;
+  const resp = UrlFetchApp.fetch(url, {
+    muteHttpExceptions: true,
+    headers: { "User-Agent": "Mozilla/5.0 GlobalBriefingBot/3.0" }
+  });
+  if (resp.getResponseCode() !== 200) throw new Error(`Yahoo ${symbol} HTTP ${resp.getResponseCode()}`);
+  const j = JSON.parse(resp.getContentText());
+  const result = j.chart && j.chart.result && j.chart.result[0];
+  if (!result) throw new Error(`Yahoo ${symbol} no result`);
+  const closes = result.indicators.quote[0].close.filter(v => v !== null);
+  if (closes.length < 1) throw new Error(`Yahoo ${symbol} no closes`);
+  const latest = closes[closes.length - 1];
+  const prev   = closes.length >= 2 ? closes[closes.length - 2] : latest;
+  return {
+    label, value: latest, prev, change: latest - prev,
+    pctChange: prev ? ((latest - prev) / prev) * 100 : 0,
+    unit, date: new Date(result.meta.regularMarketTime * 1000).toISOString().slice(0, 10),
+    symbol
+  };
+}
+
+function formatMarketData(d) {
+  const lines = ["[LIVE MARKET DATA — all values as of latest market close/intraday]"];
+  const fmt = (v) => {
+    if (!v) return null;
+    const val = typeof v.value === "number" ? v.value.toFixed(2) : v.value;
+    const chg = v.pctChange !== undefined
+      ? `${v.pctChange >= 0 ? "+" : ""}${v.pctChange.toFixed(2)}%`
+      : `${v.change >= 0 ? "+" : ""}${v.change.toFixed(2)}`;
+    const datePart = v.date ? ` [${v.date}]` : "";
+    return `  ${v.label}: ${val}${v.unit} (${chg})${datePart}`;
+  };
+  Object.values(d).forEach(v => {
+    const line = fmt(v);
+    if (line) lines.push(line);
+  });
+  return lines.join("\n");
+}
+
+// ------------------------------------------------------------
+// PORTFOLIO DATA FETCHING
+// ------------------------------------------------------------
+
+function fetchPortfolioData() {
+  const data = {};
+  for (const pos of CONFIG.PORTFOLIO) {
+    data[pos.label] = { label: pos.label, thesis: pos.thesis, quotes: [] };
+    for (const sym of pos.tickers) {
+      try {
+        const q = yahooQuote(sym, sym, "");
+        data[pos.label].quotes.push(q);
+      } catch (e) {
+        Logger.log(`Portfolio fetch warning [${sym}]: ${e.message}`);
+        data[pos.label].quotes.push({ symbol: sym, label: sym, error: e.message });
+      }
+    }
+  }
+  return data;
+}
+
+function formatPortfolioData(p) {
+  const lines = ["[YOUR PORTFOLIO — LIVE QUOTES + THESIS]"];
+  for (const key in p) {
+    const pos = p[key];
+    lines.push(`\n• ${pos.label}`);
+    lines.push(`  Thesis: ${pos.thesis}`);
+    const quoteStrs = pos.quotes.map(q => {
+      if (q.error) return `${q.symbol}=ERR`;
+      const val = typeof q.value === "number" ? q.value.toFixed(2) : q.value;
+      const chg = q.pctChange !== undefined ? `${q.pctChange >= 0 ? "+" : ""}${q.pctChange.toFixed(2)}%` : "";
+      const datePart = q.date ? ` as of ${q.date}` : "";
+      return `${q.symbol}=${val} (${chg})${datePart}`;
+    });
+    lines.push(`  Live: ${quoteStrs.join(" | ")}`);
+  }
+  return lines.join("\n");
+}
+
+// ------------------------------------------------------------
+// NEWS FETCHING — with 7-day recency filter (Change #2)
+// ------------------------------------------------------------
+
+function fetchGlobalNews() {
+  const sources = [
+    // --- Tier 1 wires & global macro ---
+    { name: "Reuters Business (GN)",  url: "https://news.google.com/rss/search?q=site:reuters.com+when:1d&hl=en-US&gl=US&ceid=US:en" },
+    { name: "AP Business (GN)",       url: "https://news.google.com/rss/search?q=site:apnews.com+business+when:1d&hl=en-US&gl=US&ceid=US:en" },
+    { name: "FT Markets",             url: "https://www.ft.com/markets?format=rss" },
+    { name: "FT Companies",           url: "https://www.ft.com/companies?format=rss" },
+    { name: "FT World",               url: "https://www.ft.com/world?format=rss" },
+    { name: "Bloomberg Markets",      url: "https://feeds.bloomberg.com/markets/news.rss" },
+    { name: "Bloomberg Politics",     url: "https://feeds.bloomberg.com/politics/news.rss" },
+    { name: "WSJ Markets",            url: "https://feeds.a.dj.com/rss/RSSMarketsMain.xml" },
+    { name: "WSJ World",              url: "https://feeds.a.dj.com/rss/RSSWorldNews.xml" },
+    { name: "MarketWatch Top",        url: "https://feeds.content.dowjones.io/public/rss/mw_topstories" },
+    { name: "Semafor (GN)",           url: "https://news.google.com/rss/search?q=site:semafor.com+when:1d&hl=en-US&gl=US&ceid=US:en" },
+
+    // --- The Economist (multiple sections) ---
+    { name: "Economist Finance",      url: "https://www.economist.com/finance-and-economics/rss.xml" },
+    { name: "Economist Business",     url: "https://www.economist.com/business/rss.xml" },
+    { name: "Economist Leaders",      url: "https://www.economist.com/leaders/rss.xml" },
+    { name: "Economist International",url: "https://www.economist.com/international/rss.xml" },
+
+    // --- Mining / critical minerals (relevant for ERO, BHP, FCX, Newmont, AEM) ---
+    { name: "Northern Miner",         url: "https://www.northernminer.com/feed/" },
+    { name: "Canadian Mining Journal",url: "https://www.canadianminingjournal.com/feed/" },
+    { name: "Mining.com (GN)",        url: "https://news.google.com/rss/search?q=site:mining.com+when:1d&hl=en-US&gl=US&ceid=US:en" },
+    { name: "Kitco (GN)",             url: "https://news.google.com/rss/search?q=site:kitco.com+when:1d&hl=en-US&gl=US&ceid=US:en" },
+
+    // --- Defense ---
+    { name: "Defense News",           url: "https://www.defensenews.com/arc/outboundfeeds/rss/?outputType=xml" },
+    { name: "Breaking Defense",       url: "https://breakingdefense.com/feed/" },
+    { name: "Defense One",            url: "https://www.defenseone.com/rss/all/" },
+
+    // --- Energy / nuclear / renewables (relevant for NEE, Ørsted, FSLR, DUK, BEPC, ICLN) ---
+    { name: "World Nuclear News",     url: "https://www.world-nuclear-news.org/rss" },
+    { name: "OilPrice.com",           url: "https://oilprice.com/rss/main" },
+    { name: "Reuters Energy (GN)",    url: "https://news.google.com/rss/search?q=site:reuters.com+energy+OR+oil+OR+gas+when:1d&hl=en-US&gl=US&ceid=US:en" },
+    { name: "Renewables (GN)",        url: "https://news.google.com/rss/search?q=offshore+wind+OR+solar+OR+renewables+when:2d&hl=en-US&gl=US&ceid=US:en" },  // v3 — NEE/Ørsted coverage
+
+    // --- Asia / EM ---
+    { name: "Nikkei Asia (GN)",       url: "https://news.google.com/rss/search?q=site:asia.nikkei.com+when:1d&hl=en-US&gl=US&ceid=US:en" },
+    { name: "South China Morning Post", url: "https://www.scmp.com/rss/91/feed" },
+
+    // --- Europe / EU policy ---
+    { name: "Politico EU",            url: "https://www.politico.eu/feed/" },
+
+    // --- Central banks ---
+    { name: "Federal Reserve press",  url: "https://www.federalreserve.gov/feeds/press_all.xml" },
+    { name: "ECB press releases",     url: "https://www.ecb.europa.eu/rss/press.html" },
+    { name: "BoE news",               url: "https://www.bankofengland.co.uk/rss/news" }
+  ];

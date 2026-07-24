@@ -5,15 +5,15 @@ import type { Freshness } from "@/lib/types";
 import { freshnessLabel } from "@/lib/freshness";
 
 const colorMap: Record<Freshness, string> = {
-  fresh: "#34d399",
-  overdue: "#fbbf24",
-  stale: "#f87171",
-  never: "#4b5563",
+  fresh: "#12b76a",
+  overdue: "#b54708",
+  stale: "#b42318",
+  never: "#8899a6",
 };
 const ringMap: Record<Freshness, string> = {
-  fresh: "rgba(52,211,153,0.15)",
-  overdue: "rgba(251,191,36,0.15)",
-  stale: "rgba(248,113,113,0.15)",
+  fresh: "rgba(18,183,106,0.15)",
+  overdue: "rgba(181,71,8,0.15)",
+  stale: "rgba(180,35,24,0.15)",
   never: "transparent",
 };
 

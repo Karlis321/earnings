@@ -4,20 +4,20 @@ import clsx from "clsx";
 const STYLE: Record<Provenance, { label: string; cls: string }> = {
   regulatory: {
     label: "Regulatory",
-    cls: "bg-[rgba(129,140,248,0.14)] border-[rgba(129,140,248,0.3)] text-dev-fg",
+    cls: "bg-[rgba(105,65,198,0.08)] border-[rgba(105,65,198,0.28)] text-dev-fg",
   },
   "ir-page": {
     label: "IR page",
-    cls: "bg-[rgba(47,127,255,0.14)] border-[rgba(47,127,255,0.3)] text-brand-fg",
+    cls: "bg-[rgba(47,127,255,0.08)] border-[rgba(47,127,255,0.28)] text-brand-fg",
   },
   wire: {
     label: "Wire",
-    cls: "bg-[rgba(45,212,191,0.14)] border-[rgba(45,212,191,0.3)] text-etf-fg",
+    cls: "bg-[rgba(6,118,71,0.08)] border-[rgba(6,118,71,0.26)] text-etf-fg",
   },
   news: { label: "News", cls: "bg-s3 border-bd2 text-tx2" },
   social: {
     label: "Social",
-    cls: "bg-[rgba(96,165,250,0.10)] border-[rgba(96,165,250,0.24)] text-social-fg",
+    cls: "bg-[rgba(23,92,211,0.08)] border-[rgba(23,92,211,0.28)] text-social-fg",
   },
   independent: {
     label: "Independent",
@@ -30,7 +30,7 @@ export function ProvenanceChip({ provenance }: { provenance: Provenance }) {
   return (
     <span
       className={clsx(
-        "inline-flex h-[22px] items-center rounded-[5px] border px-[9px] text-[10.5px]",
+        "inline-flex h-[22px] items-center rounded-[5px] border px-[9px] text-[10.5px] font-medium",
         s.cls,
       )}
       aria-label={`Source provenance: ${s.label}`}

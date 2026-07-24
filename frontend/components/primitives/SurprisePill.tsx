@@ -8,18 +8,15 @@ export function SurprisePill({
   compact?: boolean;
 }) {
   if (surprisePct === null) {
-    return (
-      <span className="text-[12px] text-tx3">n/a — no estimate</span>
-    );
+    return <span className="text-[12px] text-tx3">n/a — no estimate</span>;
   }
   const isBeat = surprisePct > 0.5;
   const isMiss = surprisePct < -0.5;
-  const isInline = !isBeat && !isMiss;
   const cls = isBeat
-    ? "text-[#4ade80] bg-[rgba(52,211,153,0.12)]"
+    ? "text-success-fg bg-[rgba(18,183,106,0.10)] border-[rgba(18,183,106,0.28)]"
     : isMiss
-    ? "text-danger bg-[rgba(248,113,113,0.12)]"
-    : "text-tx2 bg-s3";
+    ? "text-danger bg-[rgba(180,35,24,0.08)] border-[rgba(180,35,24,0.28)]"
+    : "text-tx2 bg-s3 border-bd2";
 
   const label = compact
     ? `${surprisePct > 0 ? "+" : ""}${surprisePct.toFixed(1)}%`
@@ -32,7 +29,7 @@ export function SurprisePill({
   return (
     <span
       className={clsx(
-        "inline-flex items-center rounded-[6px] px-[7px] py-[3px] font-mono text-[12px]",
+        "inline-flex items-center rounded-[6px] border px-[7px] py-[3px] font-mono text-[12px] font-medium",
         cls,
       )}
       aria-label={

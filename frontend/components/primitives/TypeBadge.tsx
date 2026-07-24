@@ -3,11 +3,11 @@ import clsx from "clsx";
 
 const styles: Record<SecurityType, string> = {
   operating:
-    "bg-[rgba(47,127,255,0.14)] border-[rgba(47,127,255,0.35)] text-brand-fg",
+    "bg-[rgba(47,127,255,0.08)] border-[rgba(47,127,255,0.30)] text-brand-fg",
   developer:
-    "bg-[rgba(129,140,248,0.14)] border-[rgba(129,140,248,0.35)] text-dev-fg",
+    "bg-[rgba(105,65,198,0.08)] border-[rgba(105,65,198,0.28)] text-dev-fg",
   etf:
-    "bg-[rgba(45,212,191,0.14)] border-[rgba(45,212,191,0.35)] text-etf-fg",
+    "bg-[rgba(6,118,71,0.08)] border-[rgba(6,118,71,0.28)] text-etf-fg",
 };
 
 const labels: Record<SecurityType, string> = {

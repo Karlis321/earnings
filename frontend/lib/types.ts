@@ -212,6 +212,49 @@ export interface EarningsSnapshot {
   schema: "earnings/v1";
   lastUpdated: string;
   events: EventRecord[];
+  etfDetails?: Record<string, EtfDetail>;
+}
+
+export interface SharedState {
+  schema: "shared-state/v1";
+  watchlist: string[];
+  customSources: Array<{
+    id: string;
+    kind: "rss" | "site-filter" | "twitter" | "substack";
+    url: string;
+    title: string;
+    scope: { tickers: string[]; themes: string[] };
+    addedAt: string;
+    active: boolean;
+    lastFetch: {
+      at: string;
+      ok: boolean;
+      itemsFound: number;
+      error: string | null;
+    } | null;
+  }>;
+  themes: Array<{ id: string; label: string; active: boolean }>;
+  lastCommit: string;
+}
+
+export interface MetricDictionary {
+  schema: "metric-dictionary/v1";
+  metrics: Record<
+    string,
+    {
+      label: string;
+      unit: string;
+      requiresIsAdjusted: boolean;
+      description: string | null;
+    }
+  >;
+}
+
+export interface EngineStatus {
+  engine: Engine;
+  ok: boolean;
+  lastGood?: string;
+  itemsFound?: number;
 }
 
 export interface DiscoverFeedResult {

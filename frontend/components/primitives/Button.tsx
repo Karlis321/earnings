@@ -7,15 +7,15 @@ export type ButtonSize = "lg" | "md" | "sm";
 
 const V: Record<ButtonVariant, string> = {
   primary:
-    "bg-brand text-white shadow-[0_1px_0_rgba(255,255,255,0.15)_inset,0_2px_8px_rgba(47,127,255,0.35)] hover:bg-brand-hi hover:shadow-[0_2px_12px_rgba(77,148,255,0.5)]",
+    "bg-brand text-white shadow-[0_1px_2px_rgba(10,37,64,0.08),0_2px_6px_rgba(47,127,255,0.24)] hover:bg-brand-hi hover:shadow-[0_2px_8px_rgba(47,127,255,0.32)]",
   secondary:
-    "bg-s2 text-tx border border-bd2 hover:bg-s3 hover:border-[rgba(255,255,255,0.22)]",
+    "bg-s1 text-tx border border-bd2 hover:bg-s2 hover:border-[rgba(10,37,64,0.22)]",
   ghost:
     "bg-transparent text-tx2 hover:bg-s2 hover:text-tx",
   danger:
-    "bg-[rgba(248,113,113,0.08)] text-danger border border-[rgba(248,113,113,0.3)] hover:bg-[rgba(248,113,113,0.16)]",
+    "bg-[rgba(180,35,24,0.06)] text-danger border border-[rgba(180,35,24,0.28)] hover:bg-[rgba(180,35,24,0.10)]",
   icon:
-    "bg-s2 text-tx2 border border-bd2 hover:bg-s3 hover:text-tx",
+    "bg-s1 text-tx2 border border-bd2 hover:bg-s2 hover:text-tx",
 };
 
 const S: Record<ButtonSize, string> = {

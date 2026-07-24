@@ -8,31 +8,31 @@ const STYLE: Record<
   raised: {
     icon: "↑",
     label: "Raised",
-    cls: "text-[#4ade80] bg-[rgba(52,211,153,0.12)]",
+    cls: "text-success-fg bg-[rgba(18,183,106,0.10)] border-[rgba(18,183,106,0.28)]",
     aria: "Guidance raised",
   },
   held: {
     icon: "→",
     label: "Held",
-    cls: "text-tx2 bg-s3",
+    cls: "text-tx2 bg-s3 border-bd2",
     aria: "Guidance held",
   },
   cut: {
     icon: "↓",
     label: "Cut",
-    cls: "text-danger bg-[rgba(248,113,113,0.12)]",
+    cls: "text-danger bg-[rgba(180,35,24,0.08)] border-[rgba(180,35,24,0.28)]",
     aria: "Guidance cut",
   },
   initiated: {
     icon: "✦",
     label: "Initiated",
-    cls: "text-brand-fg bg-[rgba(47,127,255,0.12)]",
+    cls: "text-brand-fg bg-[rgba(47,127,255,0.08)] border-[rgba(47,127,255,0.28)]",
     aria: "Guidance initiated",
   },
   withdrawn: {
     icon: "⊘",
     label: "Withdrawn",
-    cls: "text-tx-mid bg-s3",
+    cls: "text-tx-mid bg-s3 border-bd2",
     aria: "Guidance withdrawn",
   },
 };
@@ -45,7 +45,7 @@ export function GuidanceMoveBadge({ move }: { move: GuidanceMove }) {
   return (
     <span
       className={clsx(
-        "inline-flex h-6 items-center gap-[5px] rounded-[6px] px-[10px] text-[11.5px]",
+        "inline-flex h-6 items-center gap-[5px] rounded-[6px] border px-[10px] text-[11.5px] font-medium",
         s.cls,
       )}
       aria-label={s.aria}

@@ -2,48 +2,57 @@
 @import "./responsive.css";
 
 /* ================================================================
-   Signal design tokens (v1.0)
-   Source: Design_system/Signal Design System.dc.html (support.js applyTheme)
+   Design tokens · Navy-on-white, single-font light theme.
+   Palette: white base, near-navy ink, bright blue accent,
+   muted semantic red/green kept only for beat/miss + status.
+   Font: IBM Plex Sans throughout. `font-mono` class redirected
+   to the same sans font with tabular-nums for column alignment.
    ================================================================ */
 
-:root,
-[data-theme="dark"] {
-  --bg: #0a0e14;
-  --bg-blur: rgba(10, 14, 20, 0.82);
-  --sidebar: #080b11;
-  --panel: #0d121a;
-  --panel2: #0f141d;
-  --s1: #10151e;
-  --s2: #161d29;
-  --s3: #1e2735;
-  --hover: #151c27;
-  --hover2: #131a24;
-  --disabled: #1a2130;
-  --tx: #eef2f7;
-  --tx-strong: #c7cfda;
-  --tx2: #9aa5b5;
-  --tx-mid: #8891a0;
-  --tx3: #626d7e;
-  --tx-faint: #4d5666;
-  --bd: rgba(255, 255, 255, 0.07);
-  --bd2: rgba(255, 255, 255, 0.12);
+:root {
+  /* surfaces (all white / near-white) */
+  --bg: #ffffff;
+  --bg-blur: rgba(255, 255, 255, 0.85);
+  --sidebar: #ffffff;
+  --panel: #ffffff;
+  --panel2: #f7f9fc;
+  --s1: #ffffff;
+  --s2: #f5f7fa;
+  --s3: #eef2f8;
+  --hover: #f5f7fa;
+  --hover2: #eef2f8;
+  --disabled: #eef2f8;
 
-  /* semantics */
+  /* text — navy ink primary */
+  --tx: #0a2540;
+  --tx-strong: #0a2540;
+  --tx2: #425466;
+  --tx-mid: #556577;
+  --tx3: #8899a6;
+  --tx-faint: #b3bfcc;
+
+  /* borders */
+  --bd: rgba(10, 37, 64, 0.08);
+  --bd2: rgba(10, 37, 64, 0.15);
+
+  /* brand · blue */
   --brand: #2f7fff;
-  --brand-hi: #4d94ff;
-  --brand-lo: #1f5fd0;
-  --brand-fg: #7db0ff;
+  --brand-hi: #1f5fd0;
+  --brand-lo: #0a2540;
+  --brand-fg: #1f5fd0;
 
-  --success: #34d399;
-  --success-fg: #4ade80;
-  --warning: #fbbf24;
-  --danger: #f87171;
+  /* semantic — muted but readable on white */
+  --success: #12b76a;
+  --success-fg: #039855;
+  --warning: #b54708;
+  --danger: #b42318;
 
-  --dev-fg: #a5b4fc; /* developer / regulatory */
-  --etf-fg: #5eead4;
-  --social-fg: #93c5fd;
+  /* type-specific accents */
+  --dev-fg: #6941c6;
+  --etf-fg: #067647;
+  --social-fg: #175cd3;
 
-  /* spacing scale — base 4 */
+  /* spacing */
   --sp-2: 2px;
   --sp-4: 4px;
   --sp-8: 8px;
@@ -60,56 +69,10 @@
   --r-card: 10px;
   --r-panel: 12px;
 
-  /* shadows */
-  --sh-raised: 0 6px 20px rgba(0, 0, 0, 0.35);
-  --sh-popover: 0 16px 40px rgba(0, 0, 0, 0.5);
+  /* shadows — softer on white */
+  --sh-raised: 0 1px 2px rgba(10, 37, 64, 0.05), 0 4px 12px rgba(10, 37, 64, 0.06);
+  --sh-popover: 0 4px 8px rgba(10, 37, 64, 0.06), 0 16px 32px rgba(10, 37, 64, 0.10);
 
-  color-scheme: dark;
-}
-
-[data-theme="dim"] {
-  --bg: #141a24;
-  --bg-blur: rgba(20, 26, 36, 0.82);
-  --sidebar: #101620;
-  --panel: #1a212d;
-  --panel2: #1c2431;
-  --s1: #1e2735;
-  --s2: #252f3f;
-  --s3: #2d3849;
-  --hover: #28303f;
-  --hover2: #242c3a;
-  --disabled: #2a3342;
-  --tx: #eef2f7;
-  --tx-strong: #c7cfda;
-  --tx2: #9aa5b5;
-  --tx-mid: #8891a0;
-  --tx3: #7c8698;
-  --tx-faint: #5b6576;
-  --bd: rgba(255, 255, 255, 0.09);
-  --bd2: rgba(255, 255, 255, 0.14);
-  color-scheme: dark;
-}
-
-[data-theme="light"] {
-  --bg: #eef1f7;
-  --bg-blur: rgba(238, 241, 247, 0.85);
-  --sidebar: #e7ebf3;
-  --panel: #ffffff;
-  --panel2: #f7f9fc;
-  --s1: #ffffff;
-  --s2: #f3f6fb;
-  --s3: #e9edf5;
-  --hover: #eef2f8;
-  --hover2: #f3f6fb;
-  --disabled: #e2e7ef;
-  --tx: #141a24;
-  --tx-strong: #2a3542;
-  --tx2: #55606f;
-  --tx-mid: #697384;
-  --tx3: #8b95a4;
-  --tx-faint: #aab2bf;
-  --bd: rgba(20, 26, 36, 0.1);
-  --bd2: rgba(20, 26, 36, 0.16);
   color-scheme: light;
 }
 
@@ -149,9 +112,11 @@
   --radius-card: var(--r-card);
   --radius-panel: var(--r-panel);
 
+  /* One main font — IBM Plex Sans everywhere. */
   --font-sans:
-    var(--font-ibm-sans), system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-  --font-mono: var(--font-ibm-mono), ui-monospace, SFMono-Regular, monospace;
+    var(--font-ibm-sans), system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono:
+    var(--font-ibm-sans), system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 
 /* -------- base -------- */
@@ -178,65 +143,71 @@ body {
 }
 
 a {
-  color: var(--brand-hi);
+  color: var(--brand);
   text-decoration: none;
 }
 a:hover {
-  color: var(--brand-fg);
+  color: var(--brand-hi);
 }
 
 ::-webkit-scrollbar {
-  width: 11px;
-  height: 11px;
+  width: 10px;
+  height: 10px;
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--s3);
-  border-radius: 7px;
-  border: 3px solid var(--bg);
+  background: #cbd5e0;
+  border-radius: 6px;
+  border: 2px solid var(--bg);
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #2e3a4d;
+  background: #a0aec0;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 
-/* mono figures get tabular-nums everywhere */
+/* Single-font world: `font-mono` visually matches sans, only aligns figures. */
 .font-mono {
+  font-family: var(--font-ibm-sans), system-ui, -apple-system, sans-serif !important;
   font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+  letter-spacing: 0.005em;
 }
 
-/* semantic utility helpers */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
 .mono-eyebrow {
-  font-family: var(--font-ibm-mono), ui-monospace, monospace;
+  font-family: var(--font-ibm-sans), system-ui, sans-serif;
   font-size: 10px;
+  font-weight: 600;
   letter-spacing: 0.12em;
-  color: var(--brand-hi);
+  color: var(--brand-fg);
   text-transform: uppercase;
 }
 
 .mono-caption {
-  font-family: var(--font-ibm-mono), ui-monospace, monospace;
+  font-family: var(--font-ibm-sans), system-ui, sans-serif;
   font-size: 11px;
+  font-weight: 500;
   letter-spacing: 0.1em;
   color: var(--tx3);
   text-transform: uppercase;
 }
 
-/* focus ring for keyboard */
 :where(button, a, input, select, textarea, [tabindex]):focus-visible {
-  outline: 2px solid rgba(77, 148, 255, 0.55);
+  outline: 2px solid var(--brand);
   outline-offset: 2px;
   border-radius: 4px;
 }
 
-/* text-selection */
 ::selection {
-  background: rgba(47, 127, 255, 0.35);
+  background: rgba(47, 127, 255, 0.18);
   color: var(--tx);
 }
 
-/* reduced motion */
 @media (prefers-reduced-motion: reduce) {
   * {
     animation-duration: 0.001ms !important;

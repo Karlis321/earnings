@@ -5,22 +5,22 @@ import { HelpCircle } from "lucide-react";
 
 const ITEMS: Array<{ color: string; label: string; hint: string }> = [
   {
-    color: "#34d399",
+    color: "#12b76a",
     label: "Fresh",
     hint: "Within the expected refresh window",
   },
   {
-    color: "#fbbf24",
+    color: "#b54708",
     label: "Overdue",
     hint: "Past the expected refresh window",
   },
   {
-    color: "#f87171",
+    color: "#b42318",
     label: "Stale / failed",
     hint: "Fetch failing or data critically old",
   },
   {
-    color: "#4b5563",
+    color: "#8899a6",
     label: "Never fetched",
     hint: "No source ever obtained · shown as “—”",
   },

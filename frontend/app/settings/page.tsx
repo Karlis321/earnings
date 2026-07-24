@@ -1,16 +1,29 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Panel, StalenessLegend } from "@/components/primitives";
-import { useTheme } from "@/providers/ThemeProvider";
 import { FEATURE_FLAGS } from "@/lib/flags";
-import { data } from "@/lib/data";
+import { api } from "@/lib/apiClient";
 
-// Settings + Data Status. Data Status per-engine reachability is a P12-T2
-// backend dependency; we render the last-known fixture snapshot until then.
+interface Health {
+  ok: boolean;
+  snapshotAt: string;
+  ghPatPresent: boolean;
+  mode: string;
+  events: number;
+  schema: string;
+}
 
 export default function SettingsPage() {
-  const { theme, setTheme } = useTheme();
-  const snap = data.getSnapshot();
+  const [health, setHealth] = useState<Health | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+
+  useEffect(() => {
+    api
+      .getHealth()
+      .then((h) => setHealth(h as Health))
+      .catch((e) => setErr(String(e)));
+  }, []);
 
   return (
     <div className="mx-auto max-w-[1000px] px-10 py-8">
@@ -20,27 +33,9 @@ export default function SettingsPage() {
 
       <div className="flex flex-col gap-4">
         <Panel eyebrow="Appearance">
-          <div className="grid grid-cols-3 gap-2">
-            {(["dark", "dim", "light"] as const).map((t) => (
-              <button
-                key={t}
-                onClick={() => setTheme(t)}
-                className={`rounded-panel border p-4 text-left transition-colors ${
-                  theme === t
-                    ? "border-brand bg-brand/10"
-                    : "border-bd bg-s1 hover:border-bd2"
-                }`}
-              >
-                <div className="text-[14px] font-medium capitalize">{t}</div>
-                <div className="mt-1 text-[11.5px] text-tx-mid">
-                  {t === "dark"
-                    ? "Default · deepest contrast"
-                    : t === "dim"
-                    ? "Softer nights"
-                    : "Daylight review"}
-                </div>
-              </button>
-            ))}
+          <div className="text-[13.5px] text-tx2">
+            Light theme only — navy on white, one font family. Toggle removed
+            for consistency.
           </div>
         </Panel>
 
@@ -55,7 +50,7 @@ export default function SettingsPage() {
                 <span
                   className={`rounded-[4px] px-2 py-[1px] font-mono text-[11px] ${
                     v
-                      ? "bg-[rgba(52,211,153,0.12)] text-success-fg"
+                      ? "bg-[rgba(18,183,106,0.10)] text-success-fg"
                       : "bg-s3 text-tx-mid"
                   }`}
                 >
@@ -71,20 +66,43 @@ export default function SettingsPage() {
         </Panel>
 
         <Panel eyebrow="Data status">
-          <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-[12.5px]">
-            <span className="text-tx-mid">Last snapshot</span>
-            <span className="font-mono text-tx">{snap.lastUpdated}</span>
-            <span className="text-tx-mid">Snapshot schema</span>
-            <span className="font-mono text-tx">{snap.schema}</span>
-            <span className="text-tx-mid">Events</span>
-            <span className="font-mono text-tx">{snap.events.length}</span>
-            <span className="text-tx-mid">Freshness legend</span>
-            <StalenessLegend />
-          </div>
+          {err ? (
+            <div className="rounded-panel border border-[rgba(180,35,24,0.24)] bg-[rgba(180,35,24,0.05)] p-3 text-[12.5px] text-danger">
+              Failed to load /api/health: {err}
+            </div>
+          ) : health ? (
+            <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-[12.5px]">
+              <span className="text-tx-mid">Health</span>
+              <span className="flex items-center gap-2">
+                <span
+                  className="inline-block h-2 w-2 rounded-full"
+                  style={{
+                    background: health.ok ? "var(--success)" : "var(--danger)",
+                  }}
+                />
+                <span className="text-tx">{health.ok ? "ok" : "down"}</span>
+              </span>
+              <span className="text-tx-mid">Snapshot at</span>
+              <span className="font-mono text-tx">{health.snapshotAt}</span>
+              <span className="text-tx-mid">Schema</span>
+              <span className="font-mono text-tx">{health.schema}</span>
+              <span className="text-tx-mid">Events</span>
+              <span className="font-mono text-tx">{health.events}</span>
+              <span className="text-tx-mid">Store mode</span>
+              <span className="font-mono text-tx">{health.mode}</span>
+              <span className="text-tx-mid">GH_PAT present</span>
+              <span className="font-mono text-tx">
+                {health.ghPatPresent ? "yes" : "no · reads only"}
+              </span>
+              <span className="text-tx-mid">Freshness legend</span>
+              <StalenessLegend />
+            </div>
+          ) : (
+            <div className="text-[12.5px] text-tx-mid">Loading…</div>
+          )}
           <p className="mt-4 rounded-panel border border-dashed border-bd bg-panel2 p-3 text-[12px] text-tx-mid">
-            Per-engine reachability and per-ticker freshness detail land when
-            <span className="font-mono"> /api/cron/daily </span>metadata is exposed
-            (P12-T2 backend dep).
+            Per-engine reachability + per-ticker freshness land in W6 (cron
+            metadata).
           </p>
         </Panel>
       </div>

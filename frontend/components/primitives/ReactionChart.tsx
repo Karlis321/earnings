@@ -44,8 +44,8 @@ function Sparkline({ points }: { points: ReactionPoint[] }) {
   const color = anyPending
     ? "var(--tx-mid)"
     : finalVal >= 0
-    ? "#4ade80"
-    : "#f87171";
+    ? "#039855"
+    : "#b42318";
   return (
     <svg
       width={w}
@@ -127,7 +127,7 @@ function HorizonCell({ point }: { point: ReactionPoint }) {
           <div
             className={clsx(
               "font-mono text-[16px] font-semibold",
-              isPos && "text-[#4ade80]",
+              isPos && "text-success-fg",
               isNeg && "text-danger",
             )}
           >

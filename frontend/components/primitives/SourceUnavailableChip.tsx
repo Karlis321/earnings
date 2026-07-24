@@ -13,7 +13,7 @@ export function SourceUnavailableChip({
   return (
     <span
       role="status"
-      className="inline-flex h-6 items-center gap-[6px] rounded-[6px] border border-[rgba(248,113,113,0.3)] bg-[rgba(248,113,113,0.12)] px-[10px] text-[11.5px] text-danger"
+      className="inline-flex h-6 items-center gap-[6px] rounded-[6px] border border-[rgba(180,35,24,0.28)] bg-[rgba(180,35,24,0.06)] px-[10px] text-[11.5px] font-medium text-danger"
     >
       <X size={11} aria-hidden="true" />
       {engine.toString().toUpperCase()} unavailable

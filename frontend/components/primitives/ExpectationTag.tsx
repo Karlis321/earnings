@@ -7,7 +7,7 @@ const STYLE: Record<
 > = {
   below: {
     label: "Below expectation",
-    cls: "bg-[rgba(248,113,113,0.10)] border-[rgba(248,113,113,0.24)] text-danger",
+    cls: "bg-[rgba(180,35,24,0.08)] border-[rgba(180,35,24,0.24)] text-danger",
     aria: "Below expectation",
   },
   inline: {
@@ -17,7 +17,7 @@ const STYLE: Record<
   },
   above: {
     label: "Above expectation",
-    cls: "bg-[rgba(52,211,153,0.10)] border-[rgba(52,211,153,0.24)] text-[#4ade80]",
+    cls: "bg-[rgba(18,183,106,0.10)] border-[rgba(18,183,106,0.24)] text-success-fg",
     aria: "Above expectation",
   },
   unset: {

@@ -2,12 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useTheme } from "@/providers/ThemeProvider";
 import { usePersistence } from "@/providers/PersistenceProvider";
 import { StalenessLegend } from "@/components/primitives/StalenessLegend";
 import { GlobalSearch } from "./GlobalSearch";
 import { DataStatusPill } from "./DataStatusPill";
-import { Moon, Sun, ContrastIcon } from "lucide-react";
 import clsx from "clsx";
 import { FEATURE_FLAGS } from "@/lib/flags";
 
@@ -19,7 +17,6 @@ const TABS = [
 
 export function Header() {
   const path = usePathname();
-  const { theme, cycle } = useTheme();
   const { status } = usePersistence();
   return (
     <header
@@ -32,13 +29,13 @@ export function Header() {
             className="h-[22px] w-[22px] rounded-[6px]"
             style={{
               background:
-                "linear-gradient(150deg, var(--brand-hi), var(--brand-lo))",
+                "linear-gradient(150deg, var(--brand), var(--brand-hi))",
             }}
             aria-hidden="true"
           />
-          <span className="text-[14px] font-semibold">Signal</span>
-          <span className="ml-3 font-mono text-[10.5px] uppercase tracking-[0.14em] text-tx3">
-            Earnings & Catalyst Dashboard
+          <span className="text-[15px] font-semibold text-tx">Signal</span>
+          <span className="ml-3 text-[10.5px] font-medium uppercase tracking-[0.14em] text-tx3">
+            Earnings & Catalyst
           </span>
         </Link>
 
@@ -52,10 +49,10 @@ export function Header() {
                 key={t.href}
                 href={t.href}
                 className={clsx(
-                  "rounded-button px-3 py-[6px] text-[13px]",
+                  "rounded-button px-3 py-[6px] text-[13px] transition-colors",
                   active
                     ? "bg-s3 font-medium text-tx"
-                    : "text-tx2 hover:text-tx",
+                    : "text-tx2 hover:bg-hover hover:text-tx",
                 )}
               >
                 {t.label}
@@ -69,21 +66,8 @@ export function Header() {
         <GlobalSearch />
         <StalenessLegend compact />
         <DataStatusPill />
-        <button
-          onClick={cycle}
-          className="rounded-button border border-bd bg-panel p-2 text-tx-mid hover:text-tx"
-          aria-label={`Theme: ${theme}. Click to cycle.`}
-        >
-          {theme === "light" ? (
-            <Sun size={14} />
-          ) : theme === "dim" ? (
-            <ContrastIcon size={14} />
-          ) : (
-            <Moon size={14} />
-          )}
-        </button>
         <span
-          className="flex items-center gap-[7px] rounded-button border border-bd bg-panel px-3 py-[6px] text-[12px] text-tx2"
+          className="flex items-center gap-[7px] rounded-button border border-bd bg-s1 px-3 py-[6px] text-[12px] text-tx2"
           aria-live="polite"
         >
           <span
@@ -91,10 +75,10 @@ export function Header() {
             style={{
               background:
                 status === "synced"
-                  ? "#34d399"
+                  ? "var(--success)"
                   : status === "syncing"
-                  ? "#fbbf24"
-                  : "#f87171",
+                  ? "var(--warning)"
+                  : "var(--danger)",
             }}
           />
           {status === "synced"
