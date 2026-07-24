@@ -241,6 +241,22 @@ export function PriceChart({
           strokeLinecap="round"
         />
 
+        {/* Per-day markers. Radius scales down as points get closer together
+            so a 5y chart doesn't turn into a smear of overlapping dots. */}
+        {step >= 4
+          ? points.map((p, i) => (
+              <circle
+                key={i}
+                cx={p.x}
+                cy={p.y}
+                r={step >= 16 ? 3 : step >= 8 ? 2.2 : 1.6}
+                fill="#fff"
+                stroke={lineColor}
+                strokeWidth={1.4}
+              />
+            ))
+          : null}
+
         {active ? (
           <g>
             <line
@@ -248,17 +264,18 @@ export function PriceChart({
               y1={padT}
               x2={active.x}
               y2={padT + chartH}
-              stroke="rgba(10,15,20,0.22)"
+              stroke="rgba(10,15,20,0.28)"
               strokeWidth={1}
               strokeDasharray="3 3"
             />
+            {/* Larger highlight dot at the hover point */}
             <circle
               cx={active.x}
               cy={active.y}
-              r={4}
+              r={6}
               fill={lineColor}
               stroke="#fff"
-              strokeWidth={2}
+              strokeWidth={2.5}
             />
           </g>
         ) : null}
