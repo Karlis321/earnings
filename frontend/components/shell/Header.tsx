@@ -6,6 +6,7 @@ import { usePersistence } from "@/providers/PersistenceProvider";
 import { StalenessLegend } from "@/components/primitives/StalenessLegend";
 import { GlobalSearch } from "./GlobalSearch";
 import { DataStatusPill } from "./DataStatusPill";
+import { SendEmailButton } from "./SendEmailButton";
 import clsx from "clsx";
 import { FEATURE_FLAGS } from "@/lib/flags";
 
@@ -65,6 +66,7 @@ export function Header() {
 
       <div className="flex items-center gap-3">
         <GlobalSearch />
+        <SendEmailButton />
         <StalenessLegend compact />
         <DataStatusPill />
         <span

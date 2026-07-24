@@ -20,13 +20,30 @@ import { fmtDaysUntil, fmtDateShort } from "@/lib/format";
 import { AlertTriangle } from "lucide-react";
 import clsx from "clsx";
 
-type Filter = "all" | SecurityType;
+// Industry buckets — sectorTag → industry group. Anything not mapped falls
+// through to "other".
+const INDUSTRY_GROUPS: Record<string, string[]> = {
+  portfolio: [], // special: all rows
+  technology: ["semiconductors", "ai", "hardware", "software"],
+  materials: ["copper", "gold", "silver", "aluminum", "iron-ore", "lithium", "mining"],
+  energy: ["uranium", "oil", "gas", "energy", "renewables"],
+  etfs: ["etf"],
+  developer: ["developer"],
+};
+
+type Filter =
+  | "portfolio"
+  | "technology"
+  | "materials"
+  | "energy"
+  | "etfs"
+  | "developer";
 type SortKey = "next" | "surprise" | "reaction" | "freshness" | "name";
 type Group = "flat" | "type" | "sector";
 
 export function WatchlistTable({ rows }: { rows: WatchlistRow[] }) {
   const router = useRouter();
-  const [filter, setFilter] = useState<Filter>("all");
+  const [filter, setFilter] = useState<Filter>("portfolio");
   const [sortKey, setSortKey] = useState<SortKey>("next");
   const [reportingSoon, setReportingSoon] = useState(false);
   const [group, setGroup] = useState<Group>("flat");
@@ -34,7 +51,14 @@ export function WatchlistTable({ rows }: { rows: WatchlistRow[] }) {
 
   const filtered = useMemo(() => {
     let list = rows.slice();
-    if (filter !== "all") list = list.filter((r) => r.entity.securityType === filter);
+    if (filter !== "portfolio") {
+      const needles = INDUSTRY_GROUPS[filter] ?? [];
+      list = list.filter((r) => {
+        if (filter === "developer") return r.entity.securityType === "developer";
+        if (filter === "etfs") return r.entity.securityType === "etf";
+        return r.entity.sectorTags.some((t) => needles.includes(t));
+      });
+    }
     if (reportingSoon) {
       list = list.filter(
         (r) => r.nextEvent.daysUntil !== null && r.nextEvent.daysUntil <= 14,
@@ -307,19 +331,28 @@ function FilterBar({
 }) {
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <div className="flex rounded-button border border-bd bg-s1 p-[3px]">
-        {(["all", "operating", "developer", "etf"] as Filter[]).map((f) => (
+      <div className="flex flex-wrap rounded-button border border-bd bg-s1 p-[3px]">
+        {(
+          [
+            { id: "portfolio", label: "Our portfolio" },
+            { id: "technology", label: "Technology" },
+            { id: "materials", label: "Materials" },
+            { id: "energy", label: "Energy" },
+            { id: "etfs", label: "ETFs" },
+            { id: "developer", label: "Developer" },
+          ] as { id: Filter; label: string }[]
+        ).map((f) => (
           <button
-            key={f}
-            onClick={() => setFilter(f)}
+            key={f.id}
+            onClick={() => setFilter(f.id)}
             className={clsx(
-              "rounded-[6px] px-3 py-[5px] text-[12.5px] capitalize",
-              filter === f
+              "rounded-[6px] px-3 py-[5px] text-[12.5px]",
+              filter === f.id
                 ? "bg-s3 font-medium text-tx"
                 : "text-tx2 hover:text-tx",
             )}
           >
-            {f}
+            {f.label}
           </button>
         ))}
       </div>

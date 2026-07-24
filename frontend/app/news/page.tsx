@@ -9,6 +9,7 @@ import {
   ShareEmailButton,
   shareArticleProps,
 } from "@/components/primitives/ShareEmailButton";
+import { BasketToggle } from "@/components/primitives/BasketToggle";
 import clsx from "clsx";
 
 interface NewsItem {
@@ -193,8 +194,16 @@ export default function NewsPage() {
                 })
               }
             >
-              <div className="mb-2 text-[14px] font-medium leading-[1.4] text-tx">
-                {it.headline}
+              <div className="mb-2 flex items-start justify-between gap-3">
+                <div className="text-[14px] font-medium leading-[1.4] text-tx">
+                  {it.headline}
+                </div>
+                <BasketToggle
+                  id={`news-${it.url}`}
+                  headline={it.headline}
+                  url={it.url}
+                  source={it.source}
+                />
               </div>
               <div className="flex flex-wrap items-center justify-between gap-2 text-[11.5px] text-tx-mid">
                 <div className="flex items-center gap-2">
@@ -207,7 +216,7 @@ export default function NewsPage() {
                 <ShareEmailButton
                   {...shareArticleProps(it.headline, it.url, it.source)}
                   variant="ghost"
-                  label="Share"
+                  label="Share now"
                 />
               </div>
             </article>

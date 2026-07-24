@@ -4,6 +4,7 @@ import "./globals.css";
 import { PersistenceProvider } from "@/providers/PersistenceProvider";
 import { SourceViewerProvider } from "@/providers/SourceViewerProvider";
 import { ToastProvider } from "@/providers/ToastProvider";
+import { EmailBasketProvider } from "@/providers/EmailBasketProvider";
 import { AppShell } from "@/components/shell/AppShell";
 import { SourceViewer } from "@/components/viewer/SourceViewer";
 
@@ -30,10 +31,12 @@ export default function RootLayout({
       <body>
         <PersistenceProvider>
           <SourceViewerProvider>
-            <ToastProvider>
-              <AppShell>{children}</AppShell>
-              <SourceViewer />
-            </ToastProvider>
+            <EmailBasketProvider>
+              <ToastProvider>
+                <AppShell>{children}</AppShell>
+                <SourceViewer />
+              </ToastProvider>
+            </EmailBasketProvider>
           </SourceViewerProvider>
         </PersistenceProvider>
       </body>

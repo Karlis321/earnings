@@ -48,6 +48,36 @@ export function SourceViewer() {
   }, [open, url]);
 
   const isReal = url && url !== "#" && url.startsWith("http");
+  // Allowlisted hosts render through our sanitizing proxy so we bypass
+  // X-Frame-Options / CSP frame-ancestors restrictions on public-info hosts.
+  const PROXIED_HOSTS = new Set([
+    "www.sec.gov",
+    "sec.gov",
+    "www.federalreserve.gov",
+    "federalreserve.gov",
+    "www.ecb.europa.eu",
+    "ecb.europa.eu",
+    "www.bankofengland.co.uk",
+    "capstonecopper.com",
+    "www.capstonecopper.com",
+    "hudbayminerals.com",
+    "www.hudbayminerals.com",
+    "centuryaluminum.com",
+    "www.centuryaluminum.com",
+    "silvercrestmetals.com",
+    "www.silvercrestmetals.com",
+  ]);
+  const shouldProxy = (() => {
+    if (!isReal) return false;
+    try {
+      return PROXIED_HOSTS.has(new URL(url).host.toLowerCase());
+    } catch {
+      return false;
+    }
+  })();
+  const iframeSrc = shouldProxy
+    ? `/api/documents/proxy?url=${encodeURIComponent(url)}`
+    : url;
 
   return (
     <SlideOver
@@ -99,7 +129,7 @@ export function SourceViewer() {
                 <>
                   <iframe
                     key={iframeKey}
-                    src={url}
+                    src={iframeSrc}
                     title={title}
                     className="h-full min-h-[520px] w-full"
                     referrerPolicy="no-referrer"

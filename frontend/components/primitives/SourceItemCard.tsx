@@ -15,6 +15,7 @@ import {
   ShareEmailButton,
   shareArticleProps,
 } from "./ShareEmailButton";
+import { BasketToggle } from "./BasketToggle";
 
 interface Props {
   item: SourceItem;
@@ -26,12 +27,20 @@ export function SourceItemCard({ item, showFeedback = false }: Props) {
   const { push } = useToast();
   return (
     <article className="group rounded-panel border border-bd bg-s1 p-4 transition-colors hover:bg-hover">
-      <button
-        className="mb-[10px] block w-full text-left text-[14px] font-medium leading-[1.4] text-tx hover:text-brand-hi"
-        onClick={() => openSource({ kind: "item", item })}
-      >
-        {item.headline}
-      </button>
+      <div className="mb-[10px] flex items-start justify-between gap-3">
+        <button
+          className="block flex-1 text-left text-[14px] font-medium leading-[1.4] text-tx hover:text-brand-hi"
+          onClick={() => openSource({ kind: "item", item })}
+        >
+          {item.headline}
+        </button>
+        <BasketToggle
+          id={item.id}
+          headline={item.headline}
+          url={item.url}
+          source={item.source}
+        />
+      </div>
 
       {/* $0 mode: summary line intentionally omitted */}
 
