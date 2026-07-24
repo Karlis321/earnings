@@ -1,0 +1,43 @@
+/* Responsive polish for P11. Desktop-first per FE PRD §10. */
+
+/* Tablet: collapse dense table columns behind a horizontal scroll. */
+@media (max-width: 1024px) {
+  main {
+    overflow-x: hidden;
+  }
+  header nav a {
+    padding-inline: 8px;
+  }
+}
+
+/* Mobile: read-only stacked cards; hide admin nav. */
+@media (max-width: 720px) {
+  /* Header row */
+  header {
+    padding-inline: 16px !important;
+  }
+  /* Grids drop to single column */
+  .lg\:grid-cols-\[1\.4fr_1fr\],
+  .lg\:grid-cols-\[1fr_1\.4fr\] {
+    grid-template-columns: 1fr !important;
+  }
+  main [role="grid"] {
+    overflow-x: auto;
+  }
+  main [role="grid"] > div {
+    min-width: 720px;
+  }
+  main {
+    padding-inline: 4px;
+  }
+  main > div {
+    padding-inline: 16px !important;
+  }
+  /* Hide the admin nav on mobile — admin is desktop-only per PRD */
+  aside[aria-label="Admin navigation"] {
+    display: none !important;
+  }
+  main .grid-cols-\[220px_1fr\] {
+    grid-template-columns: 1fr !important;
+  }
+}

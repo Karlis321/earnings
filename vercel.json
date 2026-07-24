@@ -1,0 +1,26 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "crons": [
+    {
+      "path": "/api/cron/daily",
+      "schedule": "0 6 * * 1-5"
+    }
+  ],
+  "functions": {
+    "app/api/cron/daily/route.ts": {
+      "maxDuration": 300
+    },
+    "app/api/news/route.ts": {
+      "maxDuration": 60
+    },
+    "app/api/press-releases/route.ts": {
+      "maxDuration": 60
+    },
+    "app/api/tweets/route.ts": {
+      "maxDuration": 30
+    },
+    "app/api/documents/[id]/route.ts": {
+      "maxDuration": 15
+    }
+  }
+}

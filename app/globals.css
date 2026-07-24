@@ -1,0 +1,245 @@
+@import "tailwindcss";
+@import "./responsive.css";
+
+/* ================================================================
+   Signal design tokens (v1.0)
+   Source: Design_system/Signal Design System.dc.html (support.js applyTheme)
+   ================================================================ */
+
+:root,
+[data-theme="dark"] {
+  --bg: #0a0e14;
+  --bg-blur: rgba(10, 14, 20, 0.82);
+  --sidebar: #080b11;
+  --panel: #0d121a;
+  --panel2: #0f141d;
+  --s1: #10151e;
+  --s2: #161d29;
+  --s3: #1e2735;
+  --hover: #151c27;
+  --hover2: #131a24;
+  --disabled: #1a2130;
+  --tx: #eef2f7;
+  --tx-strong: #c7cfda;
+  --tx2: #9aa5b5;
+  --tx-mid: #8891a0;
+  --tx3: #626d7e;
+  --tx-faint: #4d5666;
+  --bd: rgba(255, 255, 255, 0.07);
+  --bd2: rgba(255, 255, 255, 0.12);
+
+  /* semantics */
+  --brand: #2f7fff;
+  --brand-hi: #4d94ff;
+  --brand-lo: #1f5fd0;
+  --brand-fg: #7db0ff;
+
+  --success: #34d399;
+  --success-fg: #4ade80;
+  --warning: #fbbf24;
+  --danger: #f87171;
+
+  --dev-fg: #a5b4fc; /* developer / regulatory */
+  --etf-fg: #5eead4;
+  --social-fg: #93c5fd;
+
+  /* spacing scale — base 4 */
+  --sp-2: 2px;
+  --sp-4: 4px;
+  --sp-8: 8px;
+  --sp-12: 12px;
+  --sp-16: 16px;
+  --sp-24: 24px;
+  --sp-32: 32px;
+  --sp-48: 48px;
+  --sp-64: 64px;
+
+  /* radius */
+  --r-input: 4px;
+  --r-button: 7px;
+  --r-card: 10px;
+  --r-panel: 12px;
+
+  /* shadows */
+  --sh-raised: 0 6px 20px rgba(0, 0, 0, 0.35);
+  --sh-popover: 0 16px 40px rgba(0, 0, 0, 0.5);
+
+  color-scheme: dark;
+}
+
+[data-theme="dim"] {
+  --bg: #141a24;
+  --bg-blur: rgba(20, 26, 36, 0.82);
+  --sidebar: #101620;
+  --panel: #1a212d;
+  --panel2: #1c2431;
+  --s1: #1e2735;
+  --s2: #252f3f;
+  --s3: #2d3849;
+  --hover: #28303f;
+  --hover2: #242c3a;
+  --disabled: #2a3342;
+  --tx: #eef2f7;
+  --tx-strong: #c7cfda;
+  --tx2: #9aa5b5;
+  --tx-mid: #8891a0;
+  --tx3: #7c8698;
+  --tx-faint: #5b6576;
+  --bd: rgba(255, 255, 255, 0.09);
+  --bd2: rgba(255, 255, 255, 0.14);
+  color-scheme: dark;
+}
+
+[data-theme="light"] {
+  --bg: #eef1f7;
+  --bg-blur: rgba(238, 241, 247, 0.85);
+  --sidebar: #e7ebf3;
+  --panel: #ffffff;
+  --panel2: #f7f9fc;
+  --s1: #ffffff;
+  --s2: #f3f6fb;
+  --s3: #e9edf5;
+  --hover: #eef2f8;
+  --hover2: #f3f6fb;
+  --disabled: #e2e7ef;
+  --tx: #141a24;
+  --tx-strong: #2a3542;
+  --tx2: #55606f;
+  --tx-mid: #697384;
+  --tx3: #8b95a4;
+  --tx-faint: #aab2bf;
+  --bd: rgba(20, 26, 36, 0.1);
+  --bd2: rgba(20, 26, 36, 0.16);
+  color-scheme: light;
+}
+
+/* Tailwind v4 theme extension — expose tokens as utilities */
+@theme inline {
+  --color-bg: var(--bg);
+  --color-sidebar: var(--sidebar);
+  --color-panel: var(--panel);
+  --color-panel2: var(--panel2);
+  --color-s1: var(--s1);
+  --color-s2: var(--s2);
+  --color-s3: var(--s3);
+  --color-hover: var(--hover);
+  --color-hover2: var(--hover2);
+  --color-disabled: var(--disabled);
+  --color-tx: var(--tx);
+  --color-tx-strong: var(--tx-strong);
+  --color-tx2: var(--tx2);
+  --color-tx-mid: var(--tx-mid);
+  --color-tx3: var(--tx3);
+  --color-tx-faint: var(--tx-faint);
+  --color-bd: var(--bd);
+  --color-bd2: var(--bd2);
+  --color-brand: var(--brand);
+  --color-brand-hi: var(--brand-hi);
+  --color-brand-fg: var(--brand-fg);
+  --color-success: var(--success);
+  --color-success-fg: var(--success-fg);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-dev-fg: var(--dev-fg);
+  --color-etf-fg: var(--etf-fg);
+  --color-social-fg: var(--social-fg);
+
+  --radius-input: var(--r-input);
+  --radius-button: var(--r-button);
+  --radius-card: var(--r-card);
+  --radius-panel: var(--r-panel);
+
+  --font-sans:
+    var(--font-ibm-sans), system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  --font-mono: var(--font-ibm-mono), ui-monospace, SFMono-Regular, monospace;
+}
+
+/* -------- base -------- */
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--tx);
+  font-family: var(--font-ibm-sans), system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  min-height: 100vh;
+}
+
+body {
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+a {
+  color: var(--brand-hi);
+  text-decoration: none;
+}
+a:hover {
+  color: var(--brand-fg);
+}
+
+::-webkit-scrollbar {
+  width: 11px;
+  height: 11px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--s3);
+  border-radius: 7px;
+  border: 3px solid var(--bg);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #2e3a4d;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* mono figures get tabular-nums everywhere */
+.font-mono {
+  font-variant-numeric: tabular-nums;
+}
+
+/* semantic utility helpers */
+.mono-eyebrow {
+  font-family: var(--font-ibm-mono), ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: var(--brand-hi);
+  text-transform: uppercase;
+}
+
+.mono-caption {
+  font-family: var(--font-ibm-mono), ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--tx3);
+  text-transform: uppercase;
+}
+
+/* focus ring for keyboard */
+:where(button, a, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid rgba(77, 148, 255, 0.55);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* text-selection */
+::selection {
+  background: rgba(47, 127, 255, 0.35);
+  color: var(--tx);
+}
+
+/* reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}

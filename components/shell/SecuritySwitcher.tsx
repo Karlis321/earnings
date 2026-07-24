@@ -1,0 +1,51 @@
+"use client";
+
+import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
+import { useRouter } from "next/navigation";
+import { useMemo } from "react";
+import { data } from "@/lib/data";
+import { TypeBadge } from "@/components/primitives";
+import { ChevronDown } from "lucide-react";
+
+export function SecuritySwitcher({ currentTicker }: { currentTicker: string }) {
+  const router = useRouter();
+  const list = useMemo(() => data.listEntities(), []);
+  const current = list.find((e) => e.ticker === currentTicker);
+  return (
+    <DropdownMenu.Root>
+      <DropdownMenu.Trigger asChild>
+        <button className="flex h-8 items-center gap-2 rounded-button border border-bd bg-panel px-3 text-[12.5px] text-tx hover:text-tx">
+          <span className="font-mono text-brand-fg">{current?.ticker}</span>
+          <span className="text-tx-mid">·</span>
+          <span>{current?.displayName}</span>
+          <ChevronDown size={12} className="text-tx-mid" />
+        </button>
+      </DropdownMenu.Trigger>
+      <DropdownMenu.Portal>
+        <DropdownMenu.Content
+          align="start"
+          sideOffset={6}
+          className="z-50 max-h-[320px] w-[300px] overflow-y-auto rounded-panel border border-bd2 bg-s2 p-[6px] shadow-[var(--sh-popover)]"
+        >
+          {list.map((e) => (
+            <DropdownMenu.Item
+              key={e.ticker}
+              onSelect={() =>
+                router.push(`/s/${encodeURIComponent(e.ticker)}`)
+              }
+              className="flex cursor-pointer items-center justify-between rounded-button px-2 py-[7px] text-[13px] outline-none focus:bg-hover"
+            >
+              <span className="flex items-center gap-2">
+                <TypeBadge type={e.securityType} size="sm" />
+                <span className="font-mono text-[11px] text-brand-fg">
+                  {e.ticker}
+                </span>
+                <span className="text-tx">{e.displayName}</span>
+              </span>
+            </DropdownMenu.Item>
+          ))}
+        </DropdownMenu.Content>
+      </DropdownMenu.Portal>
+    </DropdownMenu.Root>
+  );
+}
