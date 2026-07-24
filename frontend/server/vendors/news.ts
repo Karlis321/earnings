@@ -1,0 +1,187 @@
+// News fan-out — RSS sources from backend/reference/news.txt.txt.
+// Fetches Reuters/AP/FT/Bloomberg/WSJ/Economist/mining/defense/energy/central banks.
+// Each source fails soft to []; siblings keep running.
+
+const RSS_SOURCES: Array<{ name: string; url: string; category: string }> = [
+  // Tier 1 wires + global macro
+  { name: "Reuters Business", url: "https://news.google.com/rss/search?q=site:reuters.com+when:1d&hl=en-US&gl=US&ceid=US:en", category: "wire" },
+  { name: "AP Business", url: "https://news.google.com/rss/search?q=site:apnews.com+business+when:1d&hl=en-US&gl=US&ceid=US:en", category: "wire" },
+  { name: "FT Markets", url: "https://www.ft.com/markets?format=rss", category: "wire" },
+  { name: "FT Companies", url: "https://www.ft.com/companies?format=rss", category: "wire" },
+  { name: "FT World", url: "https://www.ft.com/world?format=rss", category: "wire" },
+  { name: "Bloomberg Markets", url: "https://feeds.bloomberg.com/markets/news.rss", category: "wire" },
+  { name: "Bloomberg Politics", url: "https://feeds.bloomberg.com/politics/news.rss", category: "wire" },
+  { name: "WSJ Markets", url: "https://feeds.a.dj.com/rss/RSSMarketsMain.xml", category: "wire" },
+  { name: "WSJ World", url: "https://feeds.a.dj.com/rss/RSSWorldNews.xml", category: "wire" },
+  { name: "MarketWatch Top", url: "https://feeds.content.dowjones.io/public/rss/mw_topstories", category: "wire" },
+  { name: "Semafor", url: "https://news.google.com/rss/search?q=site:semafor.com+when:1d&hl=en-US&gl=US&ceid=US:en", category: "wire" },
+
+  // Economist
+  { name: "Economist Finance", url: "https://www.economist.com/finance-and-economics/rss.xml", category: "analysis" },
+  { name: "Economist Business", url: "https://www.economist.com/business/rss.xml", category: "analysis" },
+  { name: "Economist Leaders", url: "https://www.economist.com/leaders/rss.xml", category: "analysis" },
+  { name: "Economist International", url: "https://www.economist.com/international/rss.xml", category: "analysis" },
+
+  // Mining / critical minerals
+  { name: "Northern Miner", url: "https://www.northernminer.com/feed/", category: "mining" },
+  { name: "Canadian Mining Journal", url: "https://www.canadianminingjournal.com/feed/", category: "mining" },
+  { name: "Mining.com", url: "https://news.google.com/rss/search?q=site:mining.com+when:1d&hl=en-US&gl=US&ceid=US:en", category: "mining" },
+  { name: "Kitco", url: "https://news.google.com/rss/search?q=site:kitco.com+when:1d&hl=en-US&gl=US&ceid=US:en", category: "mining" },
+
+  // Defense
+  { name: "Defense News", url: "https://www.defensenews.com/arc/outboundfeeds/rss/?outputType=xml", category: "defense" },
+  { name: "Breaking Defense", url: "https://breakingdefense.com/feed/", category: "defense" },
+  { name: "Defense One", url: "https://www.defenseone.com/rss/all/", category: "defense" },
+
+  // Energy / nuclear / renewables
+  { name: "World Nuclear News", url: "https://www.world-nuclear-news.org/rss", category: "energy" },
+  { name: "OilPrice.com", url: "https://oilprice.com/rss/main", category: "energy" },
+  { name: "Reuters Energy", url: "https://news.google.com/rss/search?q=site:reuters.com+energy+OR+oil+OR+gas+when:1d&hl=en-US&gl=US&ceid=US:en", category: "energy" },
+  { name: "Renewables", url: "https://news.google.com/rss/search?q=offshore+wind+OR+solar+OR+renewables+when:2d&hl=en-US&gl=US&ceid=US:en", category: "energy" },
+
+  // Asia / EM
+  { name: "Nikkei Asia", url: "https://news.google.com/rss/search?q=site:asia.nikkei.com+when:1d&hl=en-US&gl=US&ceid=US:en", category: "asia" },
+  { name: "SCMP", url: "https://www.scmp.com/rss/91/feed", category: "asia" },
+
+  // Europe / EU policy
+  { name: "Politico EU", url: "https://www.politico.eu/feed/", category: "eu" },
+
+  // Central banks
+  { name: "Federal Reserve", url: "https://www.federalreserve.gov/feeds/press_all.xml", category: "central-bank" },
+  { name: "ECB press", url: "https://www.ecb.europa.eu/rss/press.html", category: "central-bank" },
+  { name: "BoE news", url: "https://www.bankofengland.co.uk/rss/news", category: "central-bank" },
+];
+
+export interface NewsItem {
+  headline: string;
+  url: string;
+  source: string;
+  category: string;
+  time: string | null;
+}
+
+const UA = "Mozilla/5.0 EarningsDashboard/1.0 (+contact@example.com)";
+
+async function fetchRss(url: string): Promise<string | null> {
+  try {
+    const r = await fetch(url, {
+      headers: { "User-Agent": UA, Accept: "application/rss+xml, application/xml, text/xml, */*" },
+      redirect: "follow",
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!r.ok) return null;
+    return await r.text();
+  } catch {
+    return null;
+  }
+}
+
+// Compact RSS/Atom item parser — no deps. Handles both <item> (RSS) and <entry> (Atom).
+function parseFeed(xml: string, source: string, category: string): NewsItem[] {
+  const items: NewsItem[] = [];
+  const itemRegex = /<item[\s\S]*?<\/item>|<entry[\s\S]*?<\/entry>/g;
+  const matches = xml.match(itemRegex) ?? [];
+  for (const block of matches.slice(0, 15)) {
+    const titleMatch =
+      block.match(/<title[^>]*>([\s\S]*?)<\/title>/) ?? null;
+    const linkMatch =
+      block.match(/<link[^>]*>([\s\S]*?)<\/link>/) ??
+      block.match(/<link[^>]*href="([^"]+)"/) ??
+      null;
+    const dateMatch =
+      block.match(/<pubDate>([\s\S]*?)<\/pubDate>/) ??
+      block.match(/<published>([\s\S]*?)<\/published>/) ??
+      block.match(/<updated>([\s\S]*?)<\/updated>/) ??
+      null;
+
+    if (!titleMatch || !linkMatch) continue;
+    const headline = decodeEntities(
+      titleMatch[1].replace(/<!\[CDATA\[([\s\S]*?)\]\]>/, "$1").trim(),
+    );
+    const url = decodeEntities(linkMatch[1].trim());
+    if (!headline || !url || url.startsWith("<")) continue;
+
+    let time: string | null = null;
+    if (dateMatch) {
+      try {
+        time = new Date(dateMatch[1].trim()).toISOString();
+      } catch {
+        /* leave null */
+      }
+    }
+    items.push({ headline, url, source, category, time });
+  }
+  return items;
+}
+
+function decodeEntities(s: string): string {
+  return s
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/&#x([0-9a-fA-F]+);/g, (_, h) => String.fromCharCode(parseInt(h, 16)))
+    .replace(/&#(\d+);/g, (_, d) => String.fromCharCode(parseInt(d, 10)));
+}
+
+export interface NewsFanoutResult {
+  fetchedAt: string;
+  items: NewsItem[];
+  engineStatus: Array<{
+    source: string;
+    category: string;
+    ok: boolean;
+    itemsFound: number;
+  }>;
+}
+
+// Filter by an optional query (matches any of headline+source, case-insensitive).
+export async function fanoutNews(query?: string): Promise<NewsFanoutResult> {
+  const results = await Promise.all(
+    RSS_SOURCES.map(async (src) => {
+      const xml = await fetchRss(src.url);
+      if (xml === null) {
+        return { src, ok: false as const, items: [] as NewsItem[] };
+      }
+      const items = parseFeed(xml, src.name, src.category);
+      return { src, ok: true as const, items };
+    }),
+  );
+
+  const q = query?.trim().toLowerCase();
+  const allItems = results.flatMap((r) => r.items);
+  const filtered = q
+    ? allItems.filter(
+        (i) =>
+          i.headline.toLowerCase().includes(q) ||
+          i.source.toLowerCase().includes(q),
+      )
+    : allItems;
+
+  // Dedup by URL, then by normalized headline
+  const seen = new Set<string>();
+  const dedup: NewsItem[] = [];
+  for (const it of filtered) {
+    const key = it.url.split("?")[0].toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    dedup.push(it);
+  }
+  dedup.sort((a, b) => (b.time ?? "").localeCompare(a.time ?? ""));
+
+  return {
+    fetchedAt: new Date().toISOString(),
+    items: dedup.slice(0, 100),
+    engineStatus: results.map((r) => ({
+      source: r.src.name,
+      category: r.src.category,
+      ok: r.ok,
+      itemsFound: r.items.length,
+    })),
+  };
+}
+
+export const NEWS_CATEGORIES = Array.from(
+  new Set(RSS_SOURCES.map((s) => s.category)),
+);
