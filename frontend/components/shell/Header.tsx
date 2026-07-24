@@ -11,6 +11,7 @@ import { FEATURE_FLAGS } from "@/lib/flags";
 
 const TABS = [
   { href: "/", label: "Overview" },
+  { href: "/news", label: "News" },
   { href: "/sectors", label: "Sectors", flagged: "sectors" as const },
   { href: "/admin", label: "Admin" },
 ];
@@ -25,13 +26,13 @@ export function Header() {
     >
       <div className="flex items-center gap-6">
         <Link href="/" className="flex items-center gap-2 text-tx">
-          <span
-            className="h-[22px] w-[22px] rounded-[6px]"
-            style={{
-              background:
-                "linear-gradient(150deg, var(--brand), var(--brand-hi))",
-            }}
-            aria-hidden="true"
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/logo.avif"
+            alt="Signal"
+            width={28}
+            height={28}
+            className="h-[28px] w-[28px] rounded-[6px] object-cover"
           />
           <span className="text-[15px] font-semibold text-tx">Signal</span>
           <span className="ml-3 text-[10.5px] font-medium uppercase tracking-[0.14em] text-tx3">

@@ -9,11 +9,11 @@ import {
   ReactionChart,
   Panel,
   CatalystCard,
-  TypeBadge,
   FreshnessDot,
   SurprisePill,
   GuidanceMoveBadge,
 } from "@/components/primitives";
+import { TickerLogo } from "@/components/primitives/TickerLogo";
 import { SourcesPanel } from "@/components/event/SourcesPanel";
 import { VerdictNote } from "@/components/event/VerdictNote";
 import { computeFreshness } from "@/lib/freshness";
@@ -54,13 +54,16 @@ export default async function EventDetailPage({ params }: Props) {
       </div>
 
       <header className="mb-8 flex items-start justify-between gap-6">
-        <div>
-          <div className="mb-3 flex items-center gap-3">
-            <TypeBadge type={entity.securityType} />
-            <span className="mono-caption normal-case">
+        <div className="flex items-start gap-4">
+          <TickerLogo
+            ticker={entity.ticker}
+            name={entity.displayName}
+            size={48}
+          />
+          <div>
+          <div className="mb-3 mono-caption normal-case">
               {isCatalyst ? "Catalyst" : "Earnings"} ·{" "}
               {event.timing ?? "unscheduled"} · {fmtDate(event.eventDate ?? event.scheduledDate)}
-            </span>
           </div>
           <h1 className="text-[32px] font-semibold leading-tight tracking-[-0.02em]">
             {event.period}
@@ -85,6 +88,7 @@ export default async function EventDetailPage({ params }: Props) {
                 <GuidanceMoveBadge move={event.guidanceMove} />
               </span>
             ) : null}
+          </div>
           </div>
         </div>
       </header>

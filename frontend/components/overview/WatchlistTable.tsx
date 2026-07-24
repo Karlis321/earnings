@@ -15,6 +15,7 @@ import {
   FreshnessDot,
   StalenessLegend,
 } from "@/components/primitives";
+import { TickerLogo } from "@/components/primitives/TickerLogo";
 import { fmtDaysUntil, fmtDateShort } from "@/lib/format";
 import { AlertTriangle } from "lucide-react";
 import clsx from "clsx";
@@ -155,7 +156,7 @@ function HeaderRow() {
       <span>Next event</span>
       <span>Last surprise</span>
       <span>Guidance</span>
-      <span>Reaction d1·d3·w1·m1</span>
+      <span>1-month reaction</span>
       <span className="text-center">Fresh</span>
       <span className="text-right">Src</span>
     </div>
@@ -185,7 +186,11 @@ function Row({
       )}
     >
       <div className="flex items-center gap-[10px]">
-        <TypeBadge type={r.entity.securityType} size="sm" />
+        <TickerLogo
+          ticker={r.ticker}
+          name={r.entity.displayName}
+          size={28}
+        />
         <div className="flex items-baseline gap-2">
           <span className="text-[13.5px] font-medium text-tx">
             {r.entity.displayName}
@@ -195,7 +200,7 @@ function Row({
           </span>
           {r.dataIncomplete && (
             <span
-              className="ml-1 inline-flex items-center gap-[3px] rounded-[4px] bg-[rgba(251,191,36,0.12)] px-[5px] py-[1px] text-[10px] text-warning"
+              className="ml-1 inline-flex items-center gap-[3px] rounded-[4px] bg-[rgba(181,71,8,0.10)] px-[5px] py-[1px] text-[10px] text-warning"
               title="Data incomplete — waiting on next refresh"
             >
               <AlertTriangle size={9} /> incomplete
