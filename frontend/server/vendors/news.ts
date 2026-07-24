@@ -4,8 +4,8 @@
 
 const RSS_SOURCES: Array<{ name: string; url: string; category: string }> = [
   // Tier 1 wires + global macro
-  { name: "Reuters Business", url: "https://news.google.com/rss/search?q=site:reuters.com+when:1d&hl=en-US&gl=US&ceid=US:en", category: "wire" },
-  { name: "AP Business", url: "https://news.google.com/rss/search?q=site:apnews.com+business+when:1d&hl=en-US&gl=US&ceid=US:en", category: "wire" },
+  { name: "Reuters Business", url: "https://news.google.com/rss/search?q=site:reuters.com+when:7d&hl=en-US&gl=US&ceid=US:en", category: "wire" },
+  { name: "AP Business", url: "https://news.google.com/rss/search?q=site:apnews.com+business+when:7d&hl=en-US&gl=US&ceid=US:en", category: "wire" },
   { name: "FT Markets", url: "https://www.ft.com/markets?format=rss", category: "wire" },
   { name: "FT Companies", url: "https://www.ft.com/companies?format=rss", category: "wire" },
   { name: "FT World", url: "https://www.ft.com/world?format=rss", category: "wire" },
@@ -14,7 +14,7 @@ const RSS_SOURCES: Array<{ name: string; url: string; category: string }> = [
   { name: "WSJ Markets", url: "https://feeds.a.dj.com/rss/RSSMarketsMain.xml", category: "wire" },
   { name: "WSJ World", url: "https://feeds.a.dj.com/rss/RSSWorldNews.xml", category: "wire" },
   { name: "MarketWatch Top", url: "https://feeds.content.dowjones.io/public/rss/mw_topstories", category: "wire" },
-  { name: "Semafor", url: "https://news.google.com/rss/search?q=site:semafor.com+when:1d&hl=en-US&gl=US&ceid=US:en", category: "wire" },
+  { name: "Semafor", url: "https://news.google.com/rss/search?q=site:semafor.com+when:7d&hl=en-US&gl=US&ceid=US:en", category: "wire" },
 
   // Economist
   { name: "Economist Finance", url: "https://www.economist.com/finance-and-economics/rss.xml", category: "analysis" },
@@ -25,8 +25,8 @@ const RSS_SOURCES: Array<{ name: string; url: string; category: string }> = [
   // Mining / critical minerals
   { name: "Northern Miner", url: "https://www.northernminer.com/feed/", category: "mining" },
   { name: "Canadian Mining Journal", url: "https://www.canadianminingjournal.com/feed/", category: "mining" },
-  { name: "Mining.com", url: "https://news.google.com/rss/search?q=site:mining.com+when:1d&hl=en-US&gl=US&ceid=US:en", category: "mining" },
-  { name: "Kitco", url: "https://news.google.com/rss/search?q=site:kitco.com+when:1d&hl=en-US&gl=US&ceid=US:en", category: "mining" },
+  { name: "Mining.com", url: "https://news.google.com/rss/search?q=site:mining.com+when:7d&hl=en-US&gl=US&ceid=US:en", category: "mining" },
+  { name: "Kitco", url: "https://news.google.com/rss/search?q=site:kitco.com+when:7d&hl=en-US&gl=US&ceid=US:en", category: "mining" },
 
   // Defense
   { name: "Defense News", url: "https://www.defensenews.com/arc/outboundfeeds/rss/?outputType=xml", category: "defense" },
@@ -36,11 +36,11 @@ const RSS_SOURCES: Array<{ name: string; url: string; category: string }> = [
   // Energy / nuclear / renewables
   { name: "World Nuclear News", url: "https://www.world-nuclear-news.org/rss", category: "energy" },
   { name: "OilPrice.com", url: "https://oilprice.com/rss/main", category: "energy" },
-  { name: "Reuters Energy", url: "https://news.google.com/rss/search?q=site:reuters.com+energy+OR+oil+OR+gas+when:1d&hl=en-US&gl=US&ceid=US:en", category: "energy" },
-  { name: "Renewables", url: "https://news.google.com/rss/search?q=offshore+wind+OR+solar+OR+renewables+when:2d&hl=en-US&gl=US&ceid=US:en", category: "energy" },
+  { name: "Reuters Energy", url: "https://news.google.com/rss/search?q=site:reuters.com+energy+OR+oil+OR+gas+when:7d&hl=en-US&gl=US&ceid=US:en", category: "energy" },
+  { name: "Renewables", url: "https://news.google.com/rss/search?q=offshore+wind+OR+solar+OR+renewables+when:7d&hl=en-US&gl=US&ceid=US:en", category: "energy" },
 
   // Asia / EM
-  { name: "Nikkei Asia", url: "https://news.google.com/rss/search?q=site:asia.nikkei.com+when:1d&hl=en-US&gl=US&ceid=US:en", category: "asia" },
+  { name: "Nikkei Asia", url: "https://news.google.com/rss/search?q=site:asia.nikkei.com+when:7d&hl=en-US&gl=US&ceid=US:en", category: "asia" },
   { name: "SCMP", url: "https://www.scmp.com/rss/91/feed", category: "asia" },
 
   // Europe / EU policy
@@ -136,11 +136,26 @@ export interface NewsFanoutResult {
   }>;
 }
 
-// Filter by an optional query (matches any of headline+source, case-insensitive).
-export async function fanoutNews(query?: string): Promise<NewsFanoutResult> {
+interface FanoutOpts {
+  query?: string;
+  days?: number; // hard time-window cutoff on the client side (default 7)
+}
+
+// Rewrite Google News URLs to use the requested days window (when:Nd).
+// Non-Google-News URLs pass through unchanged.
+function urlForDays(url: string, days: number): string {
+  return url.replace(/when:\d+d/g, `when:${days}d`);
+}
+
+export async function fanoutNews(
+  opts: FanoutOpts = {},
+): Promise<NewsFanoutResult> {
+  const days = Math.max(1, Math.min(365, opts.days ?? 7));
+  const cutoff = Date.now() - days * 86_400_000;
+
   const results = await Promise.all(
     RSS_SOURCES.map(async (src) => {
-      const xml = await fetchRss(src.url);
+      const xml = await fetchRss(urlForDays(src.url, days));
       if (xml === null) {
         return { src, ok: false as const, items: [] as NewsItem[] };
       }
@@ -149,15 +164,21 @@ export async function fanoutNews(query?: string): Promise<NewsFanoutResult> {
     }),
   );
 
-  const q = query?.trim().toLowerCase();
+  const q = opts.query?.trim().toLowerCase();
   const allItems = results.flatMap((r) => r.items);
+  // Hard cutoff by parsed time. Items with no parseable date pass (we can't
+  // discard them safely — some feeds omit pubDate entirely).
+  const timeFiltered = allItems.filter((i) => {
+    if (!i.time) return true;
+    return new Date(i.time).getTime() >= cutoff;
+  });
   const filtered = q
-    ? allItems.filter(
+    ? timeFiltered.filter(
         (i) =>
           i.headline.toLowerCase().includes(q) ||
           i.source.toLowerCase().includes(q),
       )
-    : allItems;
+    : timeFiltered;
 
   // Dedup by URL, then by normalized headline
   const seen = new Set<string>();

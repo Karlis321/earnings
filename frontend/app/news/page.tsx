@@ -38,20 +38,30 @@ const CATEGORY_LABELS: Record<string, string> = {
   "central-bank": "Central banks",
 };
 
+const DAY_WINDOWS: Array<{ id: number; label: string }> = [
+  { id: 1, label: "1d" },
+  { id: 7, label: "7d" },
+  { id: 30, label: "30d" },
+  { id: 90, label: "90d" },
+];
+
 export default function NewsPage() {
   const [data, setData] = useState<NewsPayload | null>(null);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [active, setActive] = useState<string>("all");
+  const [days, setDays] = useState<number>(7);
   const { openSource } = useSourceViewer();
 
-  const load = async (q?: string) => {
+  const load = async (q?: string, d = days) => {
     setLoading(true);
     setErr(null);
     try {
-      const path = q ? `/api/news?q=${encodeURIComponent(q)}` : "/api/news";
-      const r = await fetch(path, { cache: "no-store" });
+      const params = new URLSearchParams();
+      if (q) params.set("q", q);
+      params.set("days", String(d));
+      const r = await fetch(`/api/news?${params}`, { cache: "no-store" });
       if (!r.ok) throw new Error(`${r.status}`);
       setData((await r.json()) as NewsPayload);
     } catch (e) {
@@ -62,8 +72,8 @@ export default function NewsPage() {
   };
 
   useEffect(() => {
-    load();
-  }, []);
+    load(query || undefined, days);
+  }, [days]);
 
   const filtered = useMemo(() => {
     if (!data) return [];
@@ -80,27 +90,44 @@ export default function NewsPage() {
             News across 30+ sources
           </h1>
         </div>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            load(query || undefined);
-          }}
-          className="flex items-center gap-2"
-        >
-          <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Filter by keyword…"
-            className="h-9 w-[260px] rounded-button border border-bd2 bg-s1 px-3 text-[13.5px] text-tx outline-none focus:border-brand focus:shadow-[0_0_0_3px_rgba(47,127,255,0.18)]"
-          />
-          <button
-            type="submit"
-            className="inline-flex h-9 items-center gap-2 rounded-button bg-brand px-3 text-[13px] font-medium text-white shadow-[0_1px_2px_rgba(10,37,64,0.08),0_2px_6px_rgba(47,127,255,0.24)] hover:bg-brand-hi"
+        <div className="flex items-center gap-2">
+          <div className="flex gap-1 rounded-button border border-bd bg-s2 p-[3px]">
+            {DAY_WINDOWS.map((w) => (
+              <button
+                key={w.id}
+                onClick={() => setDays(w.id)}
+                className={
+                  days === w.id
+                    ? "rounded-[6px] bg-brand px-3 py-[5px] text-[12px] font-medium text-white"
+                    : "rounded-[6px] px-3 py-[5px] text-[12px] text-tx2 hover:text-tx"
+                }
+              >
+                {w.label}
+              </button>
+            ))}
+          </div>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              load(query || undefined, days);
+            }}
+            className="flex items-center gap-2"
           >
-            <RefreshCw size={12} />
-            Refresh
-          </button>
-        </form>
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Filter by keyword…"
+              className="h-9 w-[240px] rounded-button border border-bd2 bg-s1 px-3 text-[13.5px] text-tx outline-none focus:border-brand focus:shadow-[0_0_0_3px_rgba(47,127,255,0.18)]"
+            />
+            <button
+              type="submit"
+              className="inline-flex h-9 items-center gap-2 rounded-button bg-brand px-3 text-[13px] font-medium text-white shadow-[0_1px_2px_rgba(10,37,64,0.08),0_2px_6px_rgba(47,127,255,0.24)] hover:bg-brand-hi"
+            >
+              <RefreshCw size={12} />
+              Refresh
+            </button>
+          </form>
+        </div>
       </div>
 
       {/* Category tabs */}
