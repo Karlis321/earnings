@@ -67,7 +67,7 @@ export default function GalleryPage() {
   const intel = EARNINGS_FIXTURE.events[0];
   const catalyst = EARNINGS_FIXTURE.events.find((e) => e.kind === "catalyst")!;
   return (
-    <div className="mx-auto max-w-[1200px] px-10 py-8">
+    <div className="mx-auto max-w-[1800px] px-10 py-8">
       <div className="mb-10">
         <div className="mono-eyebrow mb-3">§ Gallery · every state on one page</div>
         <h1 className="text-[28px] font-semibold tracking-[-0.02em]">

@@ -10,6 +10,7 @@ import {
   ExpectationTag,
 } from "@/components/primitives";
 import { SecurityPriceChart } from "./SecurityPriceChart";
+import { CompanyNewsPanel } from "./CompanyNewsPanel";
 import { fmtDate } from "@/lib/format";
 
 // Developer variant: never show earnings/estimate/miss-beat.
@@ -74,7 +75,11 @@ export function DeveloperDetail({ entity, events }: Props) {
         </Panel>
       </div>
 
-      <div>
+      <div className="flex flex-col gap-4">
+        <CompanyNewsPanel
+          displayName={entity.displayName}
+          aliases={entity.aliases}
+        />
         <Panel eyebrow="Latest sources" padded={false}>
           <div className="flex flex-col gap-3 p-4">
             {events[0]?.sources.items.length ? (

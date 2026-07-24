@@ -24,7 +24,7 @@ export default async function SectorDetailPage({ params }: Props) {
   const watchlist = data.getWatchlist().filter((r) => members.some((m) => m.ticker === r.ticker));
 
   return (
-    <div className="mx-auto max-w-[1200px] px-10 py-8">
+    <div className="mx-auto max-w-[1800px] px-10 py-8">
       <div className="mb-5">
         <Breadcrumb
           crumbs={[

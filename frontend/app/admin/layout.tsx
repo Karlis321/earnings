@@ -13,7 +13,7 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="mx-auto grid max-w-[1360px] grid-cols-[220px_1fr] gap-8 px-10 py-8">
+    <div className="mx-auto grid max-w-[1800px] grid-cols-[220px_1fr] gap-8 px-10 py-8">
       <nav className="flex flex-col gap-1" aria-label="Admin navigation">
         <div className="mono-eyebrow mb-2">Admin</div>
         {NAV.map((n) => (

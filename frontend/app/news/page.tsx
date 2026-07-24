@@ -72,7 +72,7 @@ export default function NewsPage() {
   }, [data, active]);
 
   return (
-    <div className="mx-auto max-w-[1360px] px-10 py-8">
+    <div className="mx-auto max-w-[1800px] px-10 py-8">
       <div className="mb-6 flex items-end justify-between gap-4">
         <div>
           <div className="mono-eyebrow mb-3">§ News · live fan-out</div>

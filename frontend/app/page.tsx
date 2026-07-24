@@ -5,7 +5,7 @@ import { data } from "@/lib/data";
 export default function OverviewPage() {
   const rows = data.getWatchlist();
   return (
-    <div className="mx-auto max-w-[1360px] px-10 py-8">
+    <div className="mx-auto max-w-[1800px] px-10 py-8">
       <MarketPulse />
       <div className="mb-6">
         <div className="mono-eyebrow mb-3">§ Overview · Watchlist</div>

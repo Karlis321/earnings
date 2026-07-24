@@ -12,6 +12,7 @@ import {
   SourceItemCard,
 } from "@/components/primitives";
 import { SecurityPriceChart } from "./SecurityPriceChart";
+import { CompanyNewsPanel } from "./CompanyNewsPanel";
 import { ChevronRight } from "lucide-react";
 
 interface Props {
@@ -90,6 +91,10 @@ export function OperatingDetail({ entity, events }: Props) {
       </div>
 
       <div className="flex flex-col gap-4">
+        <CompanyNewsPanel
+          displayName={entity.displayName}
+          aliases={entity.aliases}
+        />
         <Panel
           eyebrow="Latest sources"
           padded={false}

@@ -31,7 +31,7 @@ export default async function SecurityDetailPage({ params }: Props) {
   );
 
   return (
-    <div className="mx-auto max-w-[1360px] px-10 py-8">
+    <div className="mx-auto max-w-[1800px] px-10 py-8">
       <SecurityHeader
         entity={entity}
         latest={latest}

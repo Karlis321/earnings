@@ -8,6 +8,7 @@ import {
   FactPopover,
 } from "@/components/primitives";
 import { SecurityPriceChart } from "./SecurityPriceChart";
+import { CompanyNewsPanel } from "./CompanyNewsPanel";
 import { data } from "@/lib/data";
 import Link from "next/link";
 
@@ -77,9 +78,14 @@ export function EtfDetail({ entity }: { entity: Entity }) {
           <DistributionsTable distributions={detail.distributions} />
         </Panel>
 
-        <Panel eyebrow="Top holdings" padded={false}>
+        <Panel eyebrow="Top holdings · click to open" padded={false}>
           <HoldingsTable holdings={detail.holdings} />
         </Panel>
+
+        <CompanyNewsPanel
+          displayName={entity.displayName}
+          aliases={entity.aliases}
+        />
       </div>
       </div>
     </div>

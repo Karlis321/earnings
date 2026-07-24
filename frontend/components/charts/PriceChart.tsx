@@ -25,9 +25,11 @@ export function PriceChart({
   showStats = true,
   currency,
 }: Props) {
-  const [hoverIdx, setHoverIdx] = useState<number | null>(null);
+  // hover state = fractional index (e.g. 12.37 = between day 12 and 13).
+  // null = no hover. rAF-throttled + quantized to 0.01 to avoid spamming state.
+  const [hoverF, setHoverF] = useState<number | null>(null);
   const rafRef = useRef<number | null>(null);
-  const lastIdxRef = useRef<number | null>(null);
+  const lastFRef = useRef<number | null>(null);
 
   const stats = useMemo(() => {
     if (series.length < 2) return null;
@@ -99,7 +101,28 @@ export function PriceChart({
     Math.round(((series.length - 1) * i) / 4),
   );
 
-  const active = hoverIdx !== null ? points[hoverIdx] : null;
+  // Cursor-tracking: interpolate between adjacent daily closes so the dot
+  // follows the cursor exactly instead of snapping.
+  const active = (() => {
+    if (hoverF === null) return null;
+    const f = Math.max(0, Math.min(series.length - 1, hoverF));
+    const iL = Math.floor(f);
+    const iR = Math.min(iL + 1, series.length - 1);
+    const t = f - iL;
+    const close = points[iL].close * (1 - t) + points[iR].close * t;
+    const x = padL + f * step;
+    const y = padT + (1 - (close - yMin) / yRange) * chartH;
+    const nearestIdx = t < 0.5 ? iL : iR;
+    return {
+      x,
+      y,
+      close,
+      date: points[nearestIdx].date,
+      leftDate: points[iL].date,
+      rightDate: points[iR].date,
+      isExact: t < 0.02 || t > 0.98,
+    };
+  })();
 
   const fmt = (v: number) =>
     v.toLocaleString(undefined, {
@@ -145,12 +168,11 @@ export function PriceChart({
         onMouseLeave={() => {
           if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
           rafRef.current = null;
-          lastIdxRef.current = null;
-          setHoverIdx(null);
+          lastFRef.current = null;
+          setHoverF(null);
         }}
         onMouseMove={(e) => {
-          // Cache the clientX; do the heavy work inside rAF so we only
-          // hit at most one update per frame — kills the cursor lag.
+          // Cache clientX; heavy work runs inside rAF (max ~60 updates/sec).
           const clientX = e.clientX;
           const target = e.currentTarget;
           if (rafRef.current !== null) return;
@@ -160,20 +182,20 @@ export function PriceChart({
             const scale = W / rect.width;
             const x = (clientX - rect.left) * scale;
             if (x < padL || x > W - padR) {
-              if (lastIdxRef.current !== null) {
-                lastIdxRef.current = null;
-                setHoverIdx(null);
+              if (lastFRef.current !== null) {
+                lastFRef.current = null;
+                setHoverF(null);
               }
               return;
             }
-            const idx = Math.min(
-              series.length - 1,
-              Math.max(0, Math.round((x - padL) / step)),
-            );
-            // Guard: only re-render when the index actually changes.
-            if (idx !== lastIdxRef.current) {
-              lastIdxRef.current = idx;
-              setHoverIdx(idx);
+            // Fractional index — dot follows cursor exactly.
+            const fRaw = (x - padL) / step;
+            const f = Math.max(0, Math.min(series.length - 1, fRaw));
+            // Quantize to 0.01 to skip effectively-identical positions.
+            const fQ = Math.round(f * 100) / 100;
+            if (fQ !== lastFRef.current) {
+              lastFRef.current = fQ;
+              setHoverF(fQ);
             }
           });
         }}
@@ -283,7 +305,12 @@ export function PriceChart({
 
       {active ? (
         <div className="mt-2 flex items-center gap-3 font-mono text-[12px] text-tx-mid">
-          <span className="text-tx">{active.date}</span>
+          <span className="text-tx">
+            {active.date}
+            {!active.isExact ? (
+              <span className="ml-1 text-tx3">(interp.)</span>
+            ) : null}
+          </span>
           <span className="font-semibold text-tx-strong">{fmt(active.close)}</span>
           <span
             style={{
@@ -300,7 +327,7 @@ export function PriceChart({
         </div>
       ) : (
         <div className="mt-2 text-[11.5px] text-tx3">
-          Hover the chart for the price on a specific day.
+          Hover the chart — the dot tracks the cursor exactly.
         </div>
       )}
     </div>

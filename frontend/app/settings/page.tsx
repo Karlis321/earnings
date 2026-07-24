@@ -26,7 +26,7 @@ export default function SettingsPage() {
   }, []);
 
   return (
-    <div className="mx-auto max-w-[1000px] px-10 py-8">
+    <div className="mx-auto max-w-[1400px] px-10 py-8">
       <h1 className="mb-6 text-[28px] font-semibold tracking-[-0.02em]">
         Settings
       </h1>

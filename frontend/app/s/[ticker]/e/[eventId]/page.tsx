@@ -39,7 +39,7 @@ export default async function EventDetailPage({ params }: Props) {
   const headline = event.metrics.find((m) => m.isHeadline);
 
   return (
-    <div className="mx-auto max-w-[1360px] px-10 py-8">
+    <div className="mx-auto max-w-[1800px] px-10 py-8">
       <div className="mb-5">
         <Breadcrumb
           crumbs={[

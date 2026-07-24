@@ -5,7 +5,7 @@ import { Panel } from "@/components/primitives";
 export default function SectorsPage() {
   const sectors = data.getSectors();
   return (
-    <div className="mx-auto max-w-[1200px] px-10 py-8">
+    <div className="mx-auto max-w-[1800px] px-10 py-8">
       <div className="mb-6">
         <div className="mono-eyebrow mb-3">§ Sectors · Phase 3</div>
         <h1 className="text-[28px] font-semibold tracking-[-0.02em]">
