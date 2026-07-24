@@ -149,6 +149,14 @@ a {
 a:hover {
   color: var(--brand-hi);
 }
+/* Anchors nested inside buttons/pill wrappers should inherit the button's
+   own text color instead of the global brand-blue. Otherwise a Link inside
+   a bg-brand button renders blue-on-blue and disappears. */
+button a,
+a a,
+.btn a {
+  color: inherit;
+}
 
 ::-webkit-scrollbar {
   width: 10px;

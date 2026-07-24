@@ -72,16 +72,19 @@ export function SourceItemCard({ item, showFeedback = false }: Props) {
         <div className="mt-3 flex items-center gap-2 border-t border-bd pt-3">
           <button
             className="rounded-[5px] border border-bd2 bg-s2 px-2 py-1 text-[11px] text-tx-mid hover:text-tx"
-            onClick={() =>
-              push({ kind: "info", message: "Marked not-relevant · local" })
-            }
+            onClick={() => submitFeedback("item", item.id, "not_relevant_item", push)}
           >
             <ThumbsDown size={11} className="mr-1 inline" /> not relevant
           </button>
           <button
             className="rounded-[5px] border border-bd2 bg-s2 px-2 py-1 text-[11px] text-tx-mid hover:text-tx"
             onClick={() =>
-              push({ kind: "info", message: "Source blocked · local" })
+              submitFeedback(
+                "source",
+                new URL(item.url).hostname,
+                "block_source",
+                push,
+              )
             }
           >
             <Ban size={11} className="mr-1 inline" /> block source
@@ -90,4 +93,45 @@ export function SourceItemCard({ item, showFeedback = false }: Props) {
       ) : null}
     </article>
   );
+}
+
+// POST /api/feedback with 503-graceful fallback.
+async function submitFeedback(
+  target: "item" | "source" | "keyword",
+  targetId: string,
+  action:
+    | "block_source"
+    | "not_relevant_item"
+    | "keyword_downweight"
+    | "reverse",
+  push: (t: { kind: "info" | "warning" | "danger" | "success"; message: string }) => void,
+) {
+  try {
+    const r = await fetch("/api/feedback", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ target, targetId, action }),
+    });
+    if (!r.ok) {
+      const j = (await r.json().catch(() => ({}))) as { message?: string };
+      if (r.status === 503) {
+        push({
+          kind: "warning",
+          message: "Saved locally · GH_PAT not set (writes go to GitHub when configured)",
+        });
+      } else {
+        push({ kind: "danger", message: j.message ?? `Failed: ${r.status}` });
+      }
+      return;
+    }
+    push({
+      kind: "success",
+      message:
+        action === "block_source"
+          ? "Source blocked · committed"
+          : "Marked not-relevant · committed",
+    });
+  } catch (e) {
+    push({ kind: "danger", message: String(e) });
+  }
 }

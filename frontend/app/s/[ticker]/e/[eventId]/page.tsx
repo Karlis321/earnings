@@ -95,6 +95,7 @@ export default async function EventDetailPage({ params }: Props) {
 
       <div className="mb-6">
         <VerdictNote
+          eventId={event.id}
           initial={
             typeof event.verdictNote === "string"
               ? event.verdictNote
