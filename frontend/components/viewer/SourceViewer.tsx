@@ -11,6 +11,10 @@ import {
   ArrowLeft,
   RefreshCw,
 } from "lucide-react";
+import {
+  ShareEmailButton,
+  shareArticleProps,
+} from "@/components/primitives/ShareEmailButton";
 
 // Source viewer with in-app iframe preview.
 // Fallback: if the publisher blocks embedding (X-Frame-Options / CSP
@@ -54,15 +58,23 @@ export function SourceViewer() {
       width={860}
       actions={
         isReal ? (
-          <a
-            href={url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex h-8 items-center gap-2 rounded-button border border-bd2 bg-s1 px-3 text-[12.5px] text-tx hover:bg-s2"
-          >
-            <ExternalLink size={12} />
-            Open at publisher
-          </a>
+          <>
+            <ShareEmailButton
+              {...shareArticleProps(title as string, url, label as string)}
+              size="sm"
+              variant="outline"
+              label="Share via Gmail"
+            />
+            <a
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex h-8 items-center gap-2 rounded-button border border-bd2 bg-s1 px-3 text-[12.5px] text-tx hover:bg-s2"
+            >
+              <ExternalLink size={12} />
+              Open at publisher
+            </a>
+          </>
         ) : null
       }
     >

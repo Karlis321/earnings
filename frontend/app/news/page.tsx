@@ -5,6 +5,10 @@ import { Panel } from "@/components/primitives";
 import { useSourceViewer } from "@/providers/SourceViewerProvider";
 import { fmtRelative } from "@/lib/format";
 import { Loader2, RefreshCw } from "lucide-react";
+import {
+  ShareEmailButton,
+  shareArticleProps,
+} from "@/components/primitives/ShareEmailButton";
 import clsx from "clsx";
 
 interface NewsItem {
@@ -192,12 +196,19 @@ export default function NewsPage() {
               <div className="mb-2 text-[14px] font-medium leading-[1.4] text-tx">
                 {it.headline}
               </div>
-              <div className="flex flex-wrap items-center gap-2 text-[11.5px] text-tx-mid">
-                <span className="font-medium text-brand-fg">{it.source}</span>
-                <span>·</span>
-                <span>{CATEGORY_LABELS[it.category] ?? it.category}</span>
-                <span>·</span>
-                <span>{fmtRelative(it.time)}</span>
+              <div className="flex flex-wrap items-center justify-between gap-2 text-[11.5px] text-tx-mid">
+                <div className="flex items-center gap-2">
+                  <span className="font-medium text-brand-fg">{it.source}</span>
+                  <span>·</span>
+                  <span>{CATEGORY_LABELS[it.category] ?? it.category}</span>
+                  <span>·</span>
+                  <span>{fmtRelative(it.time)}</span>
+                </div>
+                <ShareEmailButton
+                  {...shareArticleProps(it.headline, it.url, it.source)}
+                  variant="ghost"
+                  label="Share"
+                />
               </div>
             </article>
           ))}

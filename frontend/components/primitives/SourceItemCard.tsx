@@ -11,6 +11,10 @@ import { useSourceViewer } from "@/providers/SourceViewerProvider";
 import { fmtRelative } from "@/lib/format";
 import { Heart, Repeat2, MessageCircle, ThumbsDown, Ban } from "lucide-react";
 import { useToast } from "@/providers/ToastProvider";
+import {
+  ShareEmailButton,
+  shareArticleProps,
+} from "./ShareEmailButton";
 
 interface Props {
   item: SourceItem;
@@ -70,6 +74,10 @@ export function SourceItemCard({ item, showFeedback = false }: Props) {
 
       {showFeedback ? (
         <div className="mt-3 flex items-center gap-2 border-t border-bd pt-3">
+          <ShareEmailButton
+            {...shareArticleProps(item.headline, item.url, item.source)}
+            label="Share"
+          />
           <button
             className="rounded-[5px] border border-bd2 bg-s2 px-2 py-1 text-[11px] text-tx-mid hover:text-tx"
             onClick={() => submitFeedback("item", item.id, "not_relevant_item", push)}
