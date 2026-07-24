@@ -4,21 +4,54 @@
 // Filter/sort bar per FE PRD §7.2 (P4-T2).
 // Row states: recent-event highlight, data-incomplete, unscheduled (P4-T3).
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { WatchlistRow, SecurityType } from "@/lib/types";
 import {
-  TypeBadge,
   SurprisePill,
   GuidanceMoveBadge,
-  ReactionChart,
   FreshnessDot,
   StalenessLegend,
 } from "@/components/primitives";
 import { TickerLogo } from "@/components/primitives/TickerLogo";
+import {
+  RealPriceSparkline,
+  PriceDeltaLabel,
+} from "./RealPriceSparkline";
 import { fmtDaysUntil, fmtDateShort } from "@/lib/format";
 import { AlertTriangle } from "lucide-react";
 import clsx from "clsx";
+
+// Server response shape from /api/prices/bulk
+interface BulkPriceEntry {
+  ok: boolean;
+  series: { date: string; close: number }[];
+  pctChange?: number;
+  err?: string;
+}
+interface BulkPricesResponse {
+  range: string;
+  fetchedAt: string;
+  tickers: Record<string, BulkPriceEntry>;
+}
+
+interface BulkEarningsEntry {
+  ok: boolean;
+  data?: {
+    nextEarningsDate: string | null;
+    lastQuarter: {
+      period: string;
+      actual: number | null;
+      estimate: number | null;
+      surprisePct: number | null;
+    } | null;
+  };
+  err?: string;
+}
+interface BulkEarningsResponse {
+  fetchedAt: string;
+  tickers: Record<string, BulkEarningsEntry>;
+}
 
 // Industry buckets — sectorTag → industry group. Anything not mapped falls
 // through to "other".
@@ -48,6 +81,28 @@ export function WatchlistTable({ rows }: { rows: WatchlistRow[] }) {
   const [reportingSoon, setReportingSoon] = useState(false);
   const [group, setGroup] = useState<Group>("flat");
   const [selectedIdx, setSelectedIdx] = useState<number>(0);
+
+  // Real 1-month prices + Yahoo earnings, fetched in parallel on mount.
+  const [prices, setPrices] = useState<BulkPricesResponse | null>(null);
+  const [pricesLoading, setPricesLoading] = useState(true);
+  const [earnings, setEarnings] = useState<BulkEarningsResponse | null>(null);
+
+  useEffect(() => {
+    const tickers = rows.map((r) => r.ticker).join(",");
+    const encoded = encodeURIComponent(tickers);
+    fetch(`/api/prices/bulk?tickers=${encoded}&range=1mo`, { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j: BulkPricesResponse | null) => setPrices(j))
+      .catch(() => setPrices(null))
+      .finally(() => setPricesLoading(false));
+
+    fetch(`/api/earnings/yahoo/bulk?tickers=${encoded}`, { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j: BulkEarningsResponse | null) => setEarnings(j))
+      .catch(() => setEarnings(null));
+    // Fetch once on mount — ticker list is stable.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const filtered = useMemo(() => {
     let list = rows.slice();
@@ -148,6 +203,9 @@ export function WatchlistTable({ rows }: { rows: WatchlistRow[] }) {
               <Row
                 key={r.ticker}
                 r={r}
+                priceEntry={prices?.tickers[r.ticker]}
+                earningsEntry={earnings?.tickers[r.ticker]}
+                pricesLoading={pricesLoading}
                 selected={filtered.indexOf(r) === selectedIdx}
                 onClick={() =>
                   router.push(`/s/${encodeURIComponent(r.ticker)}`)
@@ -191,13 +249,29 @@ function Row({
   r,
   onClick,
   selected,
+  priceEntry,
+  earningsEntry,
+  pricesLoading,
 }: {
   r: WatchlistRow;
   onClick: () => void;
   selected: boolean;
+  priceEntry?: BulkPriceEntry;
+  earningsEntry?: BulkEarningsEntry;
+  pricesLoading?: boolean;
 }) {
   const isDev = r.entity.securityType === "developer";
   const isEtf = r.entity.securityType === "etf";
+  const yahoo = earningsEntry?.ok ? earningsEntry.data : null;
+  // Fixture value wins; fall back to Yahoo when fixture is empty.
+  const surprise = r.lastSurprisePct ?? yahoo?.lastQuarter?.surprisePct ?? null;
+  const nextIso = r.nextEvent.date ?? yahoo?.nextEarningsDate ?? null;
+  const daysUntil = nextIso
+    ? Math.round(
+        (new Date(nextIso).getTime() - new Date("2026-07-24").getTime()) /
+          86400000,
+      )
+    : null;
   return (
     <div
       role="row"
@@ -236,18 +310,18 @@ function Row({
       <span
         className={clsx(
           "font-mono text-[12.5px]",
-          r.nextEvent.daysUntil !== null && r.nextEvent.daysUntil <= 3
+          daysUntil !== null && daysUntil <= 3
             ? "text-warning"
-            : r.nextEvent.date
+            : nextIso
             ? "text-tx-strong"
             : "text-tx3",
         )}
       >
-        {r.nextEvent.date ? (
+        {nextIso ? (
           <>
-            {fmtDateShort(r.nextEvent.date)}{" "}
+            {fmtDateShort(nextIso)}{" "}
             <span className="text-tx-mid">
-              · {fmtDaysUntil(r.nextEvent.daysUntil)}
+              · {fmtDaysUntil(daysUntil)}
             </span>
           </>
         ) : isEtf ? (
@@ -260,10 +334,10 @@ function Row({
       <span>
         {isDev || isEtf ? (
           <span className="text-[12.5px] text-tx3">—</span>
-        ) : r.lastSurprisePct === null ? (
+        ) : surprise === null ? (
           <span className="text-[12px] text-tx3">n/a</span>
         ) : (
-          <SurprisePill surprisePct={r.lastSurprisePct} compact />
+          <SurprisePill surprisePct={surprise} compact />
         )}
       </span>
 
@@ -275,23 +349,17 @@ function Row({
         )}
       </span>
 
-      <span>
-        {isEtf ? (
-          <span className="text-[12.5px] text-tx3">—</span>
-        ) : r.reactionSpark.length ? (
-          <ReactionChart
-            variant="spark"
-            points={r.reactionSpark.map((v, i) => ({
-              horizon: (["d1", "d3", "w1", "m1"][i] as any),
-              absReturn: r.reactionPending && i > 0 ? null : v,
-              excessReturn: null,
-              benchmark: r.entity.benchmark,
-              computedAt: null,
-            }))}
-          />
-        ) : (
-          <span className="text-[12.5px] text-tx3">—</span>
-        )}
+      <span className="flex items-center gap-2">
+        <RealPriceSparkline
+          series={priceEntry?.series ?? []}
+          loading={pricesLoading}
+          err={priceEntry && !priceEntry.ok ? priceEntry.err ?? "err" : null}
+        />
+        <PriceDeltaLabel
+          pctChange={priceEntry?.ok && typeof priceEntry.pctChange === "number"
+            ? priceEntry.pctChange
+            : null}
+        />
       </span>
 
       <span className="text-center">

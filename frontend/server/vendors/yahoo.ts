@@ -215,6 +215,104 @@ export async function yahooQuote(
   }
 }
 
+/* -------- earnings & calendar (quoteSummary) -------- */
+
+export interface YahooEarnings {
+  yahooSymbol: string;
+  nextEarningsDate: string | null; // ISO date if known
+  lastQuarter: {
+    period: string;
+    actual: number | null;
+    estimate: number | null;
+    surprisePct: number | null;
+  } | null;
+  currentQuarterEstimate: number | null;
+}
+
+interface YahooRaw {
+  raw?: number;
+  fmt?: string;
+}
+
+interface QuoteSummaryResponse {
+  quoteSummary?: {
+    result?: Array<{
+      calendarEvents?: {
+        earnings?: {
+          earningsDate?: YahooRaw[];
+        };
+      };
+      earnings?: {
+        earningsChart?: {
+          quarterly?: Array<{
+            date?: string;
+            actual?: YahooRaw;
+            estimate?: YahooRaw;
+          }>;
+          currentQuarterEstimate?: YahooRaw;
+        };
+      };
+    }>;
+  };
+}
+
+export async function yahooEarnings(
+  yahooSymbol: string,
+): Promise<YahooEarnings | null> {
+  // v10 quoteSummary. modules=earnings,calendarEvents gives us next-earnings
+  // date + trailing quarters + current-quarter estimate.
+  const url =
+    `https://query1.finance.yahoo.com/v10/finance/quoteSummary/${encodeURIComponent(yahooSymbol)}` +
+    `?modules=earnings,calendarEvents&formatted=true`;
+  try {
+    const r = await fetch(url, { headers: YAHOO_HEADERS });
+    if (!r.ok) return null;
+    const j = (await r.json()) as QuoteSummaryResponse;
+    const result = j.quoteSummary?.result?.[0];
+    if (!result) return null;
+
+    // Next earnings date — Yahoo returns an array (usually 1 entry, sometimes
+    // a range of two). Take the earliest future one.
+    let nextEarningsDate: string | null = null;
+    const dates = result.calendarEvents?.earnings?.earningsDate ?? [];
+    for (const d of dates) {
+      if (typeof d.raw === "number") {
+        const iso = new Date(d.raw * 1000).toISOString().slice(0, 10);
+        if (!nextEarningsDate || iso < nextEarningsDate) nextEarningsDate = iso;
+      }
+    }
+
+    // Last-quarter actual + estimate (surprise pct if both present).
+    const quarterly = result.earnings?.earningsChart?.quarterly ?? [];
+    const last = quarterly[quarterly.length - 1];
+    let lastQuarter: YahooEarnings["lastQuarter"] = null;
+    if (last) {
+      const actual = last.actual?.raw ?? null;
+      const estimate = last.estimate?.raw ?? null;
+      const surprisePct =
+        actual !== null && estimate !== null && Math.abs(estimate) > 0.0001
+          ? ((actual - estimate) / Math.abs(estimate)) * 100
+          : null;
+      lastQuarter = {
+        period: last.date ?? "",
+        actual,
+        estimate,
+        surprisePct,
+      };
+    }
+
+    return {
+      yahooSymbol,
+      nextEarningsDate,
+      lastQuarter,
+      currentQuarterEstimate:
+        result.earnings?.earningsChart?.currentQuarterEstimate?.raw ?? null,
+    };
+  } catch {
+    return null;
+  }
+}
+
 // Full daily series for chart rendering.
 export async function yahooSeries(
   symbol: string,

@@ -16,11 +16,13 @@ const RSS_SOURCES: Array<{ name: string; url: string; category: string }> = [
   { name: "MarketWatch Top", url: "https://feeds.content.dowjones.io/public/rss/mw_topstories", category: "wire" },
   { name: "Semafor", url: "https://news.google.com/rss/search?q=site:semafor.com+when:7d&hl=en-US&gl=US&ceid=US:en", category: "wire" },
 
-  // Economist
-  { name: "Economist Finance", url: "https://www.economist.com/finance-and-economics/rss.xml", category: "analysis" },
-  { name: "Economist Business", url: "https://www.economist.com/business/rss.xml", category: "analysis" },
-  { name: "Economist Leaders", url: "https://www.economist.com/leaders/rss.xml", category: "analysis" },
-  { name: "Economist International", url: "https://www.economist.com/international/rss.xml", category: "analysis" },
+  // Economist — their direct rss.xml feeds throw 403 for non-browser fetchers
+  // and even 200-empty for many geolocations. Routing via Google News gives
+  // us the same headline stream reliably.
+  { name: "Economist Finance", url: "https://news.google.com/rss/search?q=site:economist.com+finance+when:7d&hl=en-US&gl=US&ceid=US:en", category: "analysis" },
+  { name: "Economist Business", url: "https://news.google.com/rss/search?q=site:economist.com+business+when:7d&hl=en-US&gl=US&ceid=US:en", category: "analysis" },
+  { name: "Economist Leaders", url: "https://news.google.com/rss/search?q=site:economist.com+leaders+when:7d&hl=en-US&gl=US&ceid=US:en", category: "analysis" },
+  { name: "Economist International", url: "https://news.google.com/rss/search?q=site:economist.com+international+when:7d&hl=en-US&gl=US&ceid=US:en", category: "analysis" },
 
   // Mining / critical minerals
   { name: "Northern Miner", url: "https://www.northernminer.com/feed/", category: "mining" },
