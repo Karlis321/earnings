@@ -9,6 +9,7 @@ import {
   CatalystCard,
   ExpectationTag,
 } from "@/components/primitives";
+import { SecurityPriceChart } from "./SecurityPriceChart";
 import { fmtDate } from "@/lib/format";
 
 // Developer variant: never show earnings/estimate/miss-beat.
@@ -22,7 +23,13 @@ interface Props {
 export function DeveloperDetail({ entity, events }: Props) {
   const upcoming = events.find((e) => !e.eventDate);
   return (
-    <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1.4fr_1fr]">
+    <div className="flex flex-col gap-4">
+      <SecurityPriceChart
+        ticker={entity.ticker}
+        displayName={entity.displayName}
+        currency={entity.currency}
+      />
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1.4fr_1fr]">
       <div className="flex flex-col gap-4">
         {upcoming ? (
           <Panel eyebrow="Next expected catalyst">
@@ -81,6 +88,7 @@ export function DeveloperDetail({ entity, events }: Props) {
             )}
           </div>
         </Panel>
+      </div>
       </div>
     </div>
   );

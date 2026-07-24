@@ -7,9 +7,9 @@ import {
   HoldingsTable,
   FactPopover,
 } from "@/components/primitives";
+import { SecurityPriceChart } from "./SecurityPriceChart";
 import { data } from "@/lib/data";
 import Link from "next/link";
-import { fmtMoney } from "@/lib/format";
 
 // ETF variant: price, distributions, holdings, "used as benchmark for".
 // No events. Friendly no-events state. (FE PRD §7.5)
@@ -26,7 +26,13 @@ export function EtfDetail({ entity }: { entity: Entity }) {
     );
   }
   return (
-    <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_1.4fr]">
+    <div className="flex flex-col gap-4">
+      <SecurityPriceChart
+        ticker={entity.ticker}
+        displayName={entity.displayName}
+        currency={entity.currency}
+      />
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_1.4fr]">
       <div className="flex flex-col gap-4">
         <Panel eyebrow="Price · last close">
           <FactPopover fact={detail.price}>
@@ -74,6 +80,7 @@ export function EtfDetail({ entity }: { entity: Entity }) {
         <Panel eyebrow="Top holdings" padded={false}>
           <HoldingsTable holdings={detail.holdings} />
         </Panel>
+      </div>
       </div>
     </div>
   );

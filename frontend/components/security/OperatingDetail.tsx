@@ -10,8 +10,8 @@ import {
   ReactionChart,
   Panel,
   SourceItemCard,
-  Button,
 } from "@/components/primitives";
+import { SecurityPriceChart } from "./SecurityPriceChart";
 import { ChevronRight } from "lucide-react";
 
 interface Props {
@@ -23,13 +23,27 @@ export function OperatingDetail({ entity, events }: Props) {
   const latest = events[0];
   if (!latest) {
     return (
-      <div className="rounded-panel border border-dashed border-bd bg-panel p-12 text-center text-tx-mid">
-        No prints on file yet — the next daily refresh will populate this view.
+      <div>
+        <SecurityPriceChart
+          ticker={entity.ticker}
+          displayName={entity.displayName}
+          currency={entity.currency}
+        />
+        <div className="mt-4 rounded-panel border border-dashed border-bd bg-panel p-12 text-center text-tx-mid">
+          No prints on file yet — the next daily refresh will populate this view.
+        </div>
       </div>
     );
   }
   return (
-    <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1.4fr_1fr]">
+    <div className="flex flex-col gap-4">
+      <SecurityPriceChart
+        ticker={entity.ticker}
+        displayName={entity.displayName}
+        currency={entity.currency}
+      />
+
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1.4fr_1fr]">
       <div className="flex flex-col gap-4">
         <Card
           eyebrow={`Latest print · ${latest.period}`}
@@ -102,6 +116,7 @@ export function OperatingDetail({ entity, events }: Props) {
             )}
           </div>
         </Panel>
+      </div>
       </div>
     </div>
   );
