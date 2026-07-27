@@ -13,7 +13,18 @@
 
 ---
 
-## ✅ Done this cycle (local runners for cron work)
+## ✅ Done this cycle (three local runners closed out the cron backlog)
+
+- [x] **Universe market-cap refresh with live FX** via
+      `scripts/refresh-market-caps.mjs`. Crumb-authed Yahoo v7 quote
+      for every 282 symbols, live `<CCY>USD=X` for 37 currencies,
+      convert + re-tier. Updated 82, unchanged 184, failed 16
+      (missing/withdrawn symbols). Three tier moves — all `unknown →
+      known` because the previous fallback FX was close to live. Also
+      surfaced that `AAPL AF` (=AAPL.BA) is an Argentine CEDEAR whose
+      Yahoo-reported market cap (2.34e15 ARS × 0.000668 = ~$1.56T) is
+      genuinely disconnected from Apple's real $4.89T cap on Nasdaq.
+      Flagged below as a future scope.
 
 - [x] **EDGAR CIK backfill locally** via `scripts/backfill-edgar-cik.mjs`.
       Loads SEC's public ticker→CIK JSON, matches every registry entity
@@ -345,10 +356,14 @@ the server-side implementations match.
       Accesswire) + Yahoo Finance. Expect `data/documents/<id>.json`
       files to appear after the next cron pass.
 
-- [ ] **Universe market-cap refresh.** `expand-sectors.mjs` seeded
-      caps with the fallback FX table; cron step 6b will re-tier every
-      entity with live `<CCY>USD=X` rates. Watch for ARS/KRW tickers
-      dropping from the mega tier to their true tier.
+- [ ] **Document ingest.** Allowlist widened last cycle to include wire
+      services (GlobeNewswire, PR Newswire, Newswire.ca, BusinessWire,
+      Accesswire) + Yahoo Finance. Expect `data/documents/<id>.json`
+      files to appear after the next cron pass. Not run locally
+      because the sanitize + paragraph-anchor + transcript-segment
+      pipeline is ~300 lines of TS with Next.js path aliases —
+      reimplementing in .mjs is not a good trade when cron fires
+      tomorrow.
 
 ---
 
@@ -366,6 +381,24 @@ the server-side implementations match.
       source URL loaded via iframe (Yahoo URLs = iframe mode) or
       hosted-mode after document ingest has processed one press
       release. Requires a browser — can't be curl'd.
+
+---
+
+## Future scope
+
+- [ ] **Filter CEDEAR / cross-listing duplicates in sector expansion.**
+      Yahoo screener with `region=any` returns Argentine CEDEARs like
+      AAPL.BA (Bloomberg `AAPL AF`) instead of the primary AAPL US
+      listing. The CEDEAR is a fractional-share depositary receipt
+      whose Yahoo `marketCap` is disconnected from the underlying
+      issuer's real cap ($1.56T reported vs $4.89T actual for AAPL).
+      Tickers affected: many `AF` (Buenos Aires) entries returned from
+      Technology / Energy screens. Fix option: prefer primary listing
+      when multiple listings of the same issuer are present, or drop
+      `BUE: "AF"` from the exchange map so Argentine CEDEARs are
+      skipped as "unmapped". Trade-off: legitimate Argentine issuers
+      would also drop out, but there are almost none in the current
+      universe.
 
 ---
 
