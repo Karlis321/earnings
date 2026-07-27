@@ -149,9 +149,73 @@ async function yahooResolve(bbTicker) {
   return { yahooSymbol: match.symbol, name: match.longname ?? match.shortname };
 }
 
+// ---------- Yahoo crumb + cookie handshake ----------
+// v10 quoteSummary rejects unauthed reads with "Invalid Crumb" since 2024.
+// Handshake:
+//   1. GET https://finance.yahoo.com/  → A1/A3/B cookies
+//   2. GET https://query2.finance.yahoo.com/v1/test/getcrumb  → crumb string
+// One-shot for the whole backfill; the process is short-lived enough that
+// TTL caching isn't necessary.
+let CRUMB = null;
+let COOKIE_HEADER = "";
+
+async function primeCrumb() {
+  if (CRUMB) return CRUMB;
+  // fc.yahoo.com seeds A3 without going through the GDPR consent redirect
+  // that finance.yahoo.com forces. 404 body, but Set-Cookie is what we want.
+  const r1 = await fetch("https://fc.yahoo.com/", {
+    headers: {
+      "User-Agent": UA,
+      Accept: "text/html,application/xhtml+xml,*/*;q=0.8",
+      "Accept-Language": "en-US,en;q=0.9",
+    },
+    redirect: "manual",
+  });
+  const setCookies =
+    typeof r1.headers.getSetCookie === "function"
+      ? r1.headers.getSetCookie()
+      : [r1.headers.get("set-cookie")].filter(Boolean);
+  const pairs = new Map();
+  for (const raw of setCookies) {
+    const firstPart = raw.split(";", 1)[0]?.trim();
+    if (!firstPart) continue;
+    const eq = firstPart.indexOf("=");
+    if (eq < 0) continue;
+    const name = firstPart.slice(0, eq).trim();
+    const value = firstPart.slice(eq + 1).trim();
+    if (name && value) pairs.set(name, value);
+  }
+  COOKIE_HEADER = Array.from(pairs, ([n, v]) => `${n}=${v}`).join("; ");
+  if (!COOKIE_HEADER) return null;
+
+  const r2 = await fetch(
+    "https://query2.finance.yahoo.com/v1/test/getcrumb",
+    {
+      headers: {
+        "User-Agent": UA,
+        Accept: "text/plain",
+        Cookie: COOKIE_HEADER,
+      },
+    },
+  );
+  if (!r2.ok) return null;
+  const txt = (await r2.text()).trim();
+  if (!txt || /Unauthorized|<html/i.test(txt)) return null;
+  CRUMB = txt;
+  return CRUMB;
+}
+
 async function yahooEarningsQ(yahooSymbol) {
-  const url = `https://query1.finance.yahoo.com/v10/finance/quoteSummary/${encodeURIComponent(yahooSymbol)}?modules=earnings,calendarEvents&formatted=true`;
-  const r = await fetch(url, { headers: { "User-Agent": UA, Accept: "application/json" } });
+  const crumb = await primeCrumb();
+  if (!crumb) return null;
+  const url = `https://query1.finance.yahoo.com/v10/finance/quoteSummary/${encodeURIComponent(yahooSymbol)}?modules=earnings,calendarEvents&formatted=true&crumb=${encodeURIComponent(crumb)}`;
+  const r = await fetch(url, {
+    headers: {
+      "User-Agent": UA,
+      Accept: "application/json",
+      Cookie: COOKIE_HEADER,
+    },
+  });
   if (!r.ok) return null;
   const j = await r.json();
   const result = j.quoteSummary?.result?.[0];

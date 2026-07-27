@@ -11,6 +11,100 @@ const YAHOO_HEADERS = {
   "Accept-Language": "en-US,en;q=0.9",
 };
 
+// ---------- Crumb + cookie handshake ----------
+//
+// As of 2024–2025 Yahoo requires a `crumb` query parameter + matching
+// A1/A3/B session cookies on quoteSummary and a few other endpoints.
+// Handshake:
+//   1. GET https://finance.yahoo.com/  → picks up A1/A3/B in Set-Cookie
+//   2. GET https://query2.finance.yahoo.com/v1/test/getcrumb
+//      (send the cookies from step 1) → response body is the crumb string
+// We cache the pair in-process for 55 minutes; on any 401 we clear the
+// cache and re-handshake once.
+
+interface CrumbState {
+  crumb: string;
+  cookieHeader: string;
+  expiresAt: number;
+}
+let crumbState: CrumbState | null = null;
+const CRUMB_TTL_MS = 55 * 60 * 1000;
+
+function parseCookieNamesFromSetCookie(setCookies: string[]): string {
+  const pairs = new Map<string, string>();
+  for (const raw of setCookies) {
+    // Only take the first "name=value" segment; drop attributes (Path, Expires, …).
+    const firstPart = raw.split(";", 1)[0]?.trim();
+    if (!firstPart) continue;
+    const eq = firstPart.indexOf("=");
+    if (eq < 0) continue;
+    const name = firstPart.slice(0, eq).trim();
+    const value = firstPart.slice(eq + 1).trim();
+    if (!name || !value) continue;
+    pairs.set(name, value);
+  }
+  return Array.from(pairs, ([n, v]) => `${n}=${v}`).join("; ");
+}
+
+async function fetchCrumb(): Promise<CrumbState | null> {
+  try {
+    // Step 1 — prime the A3 session cookie. fc.yahoo.com is the canonical
+    // seeding endpoint (returns a 404 body but sets A3 in Set-Cookie).
+    // finance.yahoo.com itself redirects into the GDPR consent flow when
+    // we let fetch follow redirects, and never seeds A3 directly.
+    const r1 = await fetch("https://fc.yahoo.com/", {
+      headers: {
+        "User-Agent": UA,
+        Accept: "text/html,application/xhtml+xml,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.9",
+      },
+      redirect: "manual",
+    });
+    // Node 20+ standardizes getSetCookie(); fall back to raw()/get() if not.
+    let setCookies: string[] = [];
+    const hdrs = r1.headers as Headers & { getSetCookie?: () => string[] };
+    if (typeof hdrs.getSetCookie === "function") {
+      setCookies = hdrs.getSetCookie();
+    } else {
+      const raw = r1.headers.get("set-cookie");
+      if (raw) setCookies = [raw];
+    }
+    const cookieHeader = parseCookieNamesFromSetCookie(setCookies);
+    if (!cookieHeader) return null;
+
+    // Step 2 — fetch the crumb using those cookies.
+    const r2 = await fetch(
+      "https://query2.finance.yahoo.com/v1/test/getcrumb",
+      {
+        headers: {
+          "User-Agent": UA,
+          Accept: "text/plain",
+          Cookie: cookieHeader,
+        },
+      },
+    );
+    if (!r2.ok) return null;
+    const crumb = (await r2.text()).trim();
+    if (!crumb || /Unauthorized|<html/i.test(crumb)) return null;
+
+    return {
+      crumb,
+      cookieHeader,
+      expiresAt: Date.now() + CRUMB_TTL_MS,
+    };
+  } catch {
+    return null;
+  }
+}
+
+async function getCrumb(force = false): Promise<CrumbState | null> {
+  if (!force && crumbState && crumbState.expiresAt > Date.now()) {
+    return crumbState;
+  }
+  crumbState = await fetchCrumb();
+  return crumbState;
+}
+
 /* -------- symbol resolution (query2 search) -------- */
 
 // Bloomberg exchange suffix → set of acceptable Yahoo `exchange` codes.
@@ -256,18 +350,49 @@ interface QuoteSummaryResponse {
   };
 }
 
+async function fetchQuoteSummary(
+  yahooSymbol: string,
+): Promise<QuoteSummaryResponse | null> {
+  // v10 quoteSummary requires the crumb + cookie handshake since 2024.
+  // We handshake once, cache for ~55 min, and retry once on 401.
+  const baseUrl =
+    `https://query1.finance.yahoo.com/v10/finance/quoteSummary/${encodeURIComponent(yahooSymbol)}` +
+    `?modules=earnings,calendarEvents&formatted=true`;
+
+  const attempt = async (state: CrumbState): Promise<Response> => {
+    const url = `${baseUrl}&crumb=${encodeURIComponent(state.crumb)}`;
+    return fetch(url, {
+      headers: {
+        ...YAHOO_HEADERS,
+        Cookie: state.cookieHeader,
+      },
+    });
+  };
+
+  let state = await getCrumb();
+  if (!state) return null;
+  let r = await attempt(state);
+  if (r.status === 401) {
+    state = await getCrumb(true);
+    if (!state) return null;
+    r = await attempt(state);
+  }
+  if (!r.ok) return null;
+  try {
+    return (await r.json()) as QuoteSummaryResponse;
+  } catch {
+    return null;
+  }
+}
+
 export async function yahooEarnings(
   yahooSymbol: string,
 ): Promise<YahooEarnings | null> {
   // v10 quoteSummary. modules=earnings,calendarEvents gives us next-earnings
   // date + trailing quarters + current-quarter estimate.
-  const url =
-    `https://query1.finance.yahoo.com/v10/finance/quoteSummary/${encodeURIComponent(yahooSymbol)}` +
-    `?modules=earnings,calendarEvents&formatted=true`;
   try {
-    const r = await fetch(url, { headers: YAHOO_HEADERS });
-    if (!r.ok) return null;
-    const j = (await r.json()) as QuoteSummaryResponse;
+    const j = await fetchQuoteSummary(yahooSymbol);
+    if (!j) return null;
     const result = j.quoteSummary?.result?.[0];
     if (!result) return null;
 
