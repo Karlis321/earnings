@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSourceViewer } from "@/providers/SourceViewerProvider";
 import { SlideOver } from "@/components/primitives/SlideOver";
 import { ProvenanceChip } from "@/components/primitives/ProvenanceChip";
@@ -10,46 +10,108 @@ import {
   AlertTriangle,
   ArrowLeft,
   RefreshCw,
+  Info,
 } from "lucide-react";
 import {
   ShareEmailButton,
   shareArticleProps,
 } from "@/components/primitives/ShareEmailButton";
+import { api } from "@/lib/apiClient";
+import { urlHash } from "@/lib/itemDedupe";
+import type { Document } from "@/lib/types";
 
-// Source viewer with in-app iframe preview.
-// Fallback: if the publisher blocks embedding (X-Frame-Options / CSP
-// frame-ancestors), we show a "Open at publisher" button.
+// Source viewer with three tiers:
+//   1. Hosted mode — ingested Document → render sanitized HTML inline,
+//      auto-scroll to Fact.source.locator (#para-N or #seg-N)
+//   2. Iframe proxy — allowlisted public-info hosts render through
+//      /api/documents/proxy inside an iframe
+//   3. Link-out — publisher blocks embedding → open at publisher
+
+type DocState =
+  | { status: "idle" }
+  | { status: "loading" }
+  | { status: "hit"; doc: Document }
+  | { status: "miss" };
 
 export function SourceViewer() {
   const { open, close } = useSourceViewer();
-  const [iframeStatus, setIframeStatus] = useState<
-    "loading" | "ok" | "blocked"
-  >("loading");
+  const [iframeStatus, setIframeStatus] = useState<"loading" | "ok" | "blocked">(
+    "loading",
+  );
   const [iframeKey, setIframeKey] = useState(0);
+  const [doc, setDoc] = useState<DocState>({ status: "idle" });
+  const [anchorFound, setAnchorFound] = useState<boolean | null>(null);
+  const hostedRef = useRef<HTMLDivElement | null>(null);
 
-  const url =
-    open?.kind === "item" ? open.item.url : open?.source.url ?? "";
-  const label =
-    open?.kind === "item" ? open.item.source : open?.source.label ?? "";
+  const url = open?.kind === "item" ? open.item.url : open?.source.url ?? "";
+  const label = open?.kind === "item" ? open.item.source : open?.source.label ?? "";
   const provenance =
     open?.kind === "item" ? open.item.provenance : open?.source.provenance;
-  const title =
-    open?.kind === "item" ? open.item.headline : "Fact source";
+  const title = open?.kind === "item" ? open.item.headline : "Fact source";
+  const locator = open?.kind === "fact" ? open.source.locator : null;
 
+  const isReal = !!url && url !== "#" && url.startsWith("http");
+
+  // Try hosted mode first on every open.
   useEffect(() => {
-    if (!open) return;
+    if (!open || !isReal) {
+      setDoc({ status: "idle" });
+      return;
+    }
+    setDoc({ status: "loading" });
+    let cancelled = false;
+    (async () => {
+      const id = urlHash(url);
+      const d = await api.getDocument(id);
+      if (cancelled) return;
+      if (d) setDoc({ status: "hit", doc: d });
+      else setDoc({ status: "miss" });
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [open, url, isReal]);
+
+  // Auto-scroll to locator after hosted content mounts.
+  useEffect(() => {
+    if (doc.status !== "hit") {
+      setAnchorFound(null);
+      return;
+    }
+    if (!locator) {
+      setAnchorFound(null);
+      hostedRef.current?.scrollTo({ top: 0 });
+      return;
+    }
+    // Defer to next tick so the innerHTML paint completes.
+    requestAnimationFrame(() => {
+      const container = hostedRef.current;
+      if (!container) return;
+      const target = container.querySelector(`#${CSS.escape(locator)}`);
+      if (target) {
+        (target as HTMLElement).scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+        target.classList.add("hosted-anchor-highlight");
+        setAnchorFound(true);
+      } else {
+        setAnchorFound(false);
+      }
+    });
+  }, [doc, locator]);
+
+  // Iframe reset when the URL changes and hosted mode misses.
+  useEffect(() => {
+    if (!open || doc.status !== "miss") return;
     setIframeStatus("loading");
     setIframeKey((k) => k + 1);
-    // Heuristic: if the iframe hasn't fired `load` in 4s, treat as blocked.
     const t = setTimeout(() => {
       setIframeStatus((s) => (s === "loading" ? "blocked" : s));
     }, 4000);
     return () => clearTimeout(t);
-  }, [open, url]);
+  }, [open, url, doc.status]);
 
-  const isReal = url && url !== "#" && url.startsWith("http");
-  // Allowlisted hosts render through our sanitizing proxy so we bypass
-  // X-Frame-Options / CSP frame-ancestors restrictions on public-info hosts.
   const PROXIED_HOSTS = new Set([
     "www.sec.gov",
     "sec.gov",
@@ -83,7 +145,11 @@ export function SourceViewer() {
     <SlideOver
       open={!!open}
       onOpenChange={(v) => !v && close()}
-      eyebrow="Source preview"
+      eyebrow={
+        doc.status === "hit"
+          ? `Hosted · ingestVersion ${doc.doc.meta.ingestVersion}`
+          : "Source preview"
+      }
       title={title}
       width={860}
       actions={
@@ -121,9 +187,29 @@ export function SourceViewer() {
             </Button>
             {provenance ? <ProvenanceChip provenance={provenance} /> : null}
             <span className="text-[11.5px] text-tx-mid">{label}</span>
+            {doc.status === "hit" ? (
+              <span className="ml-2 font-mono text-[11px] text-tx-mid">
+                {doc.doc.meta.kind} · {doc.doc.meta.paragraphCount} ¶
+                {doc.doc.meta.segments.length > 0
+                  ? ` · ${doc.doc.meta.segments.length} seg`
+                  : ""}
+              </span>
+            ) : null}
           </div>
 
-          {isReal ? (
+          {doc.status === "hit" ? (
+            <HostedRender
+              hostedRef={hostedRef}
+              html={doc.doc.html}
+              anchorFound={anchorFound}
+              locator={locator}
+            />
+          ) : doc.status === "loading" ? (
+            <div className="flex flex-1 items-center justify-center rounded-panel border border-bd bg-s1 text-[13px] text-tx-mid">
+              <RefreshCw size={14} className="mr-2 animate-spin" />
+              Checking hosted archive…
+            </div>
+          ) : isReal ? (
             <div className="relative flex-1 overflow-hidden rounded-panel border border-bd bg-s1">
               {iframeStatus !== "blocked" ? (
                 <>
@@ -161,6 +247,35 @@ export function SourceViewer() {
         </div>
       ) : null}
     </SlideOver>
+  );
+}
+
+function HostedRender({
+  hostedRef,
+  html,
+  anchorFound,
+  locator,
+}: {
+  hostedRef: React.MutableRefObject<HTMLDivElement | null>;
+  html: string;
+  anchorFound: boolean | null;
+  locator: string | null;
+}) {
+  return (
+    <div className="flex flex-1 flex-col gap-2 overflow-hidden">
+      {locator && anchorFound === false ? (
+        <div className="flex items-center gap-2 rounded-panel border border-[rgba(251,191,36,0.28)] bg-[rgba(251,191,36,0.08)] px-3 py-2 text-[12.5px] text-warning">
+          <Info size={13} />
+          Locator <code className="font-mono">{locator}</code> not found in
+          this document version — showing top of document.
+        </div>
+      ) : null}
+      <div
+        ref={hostedRef}
+        className="hosted-doc flex-1 overflow-auto rounded-panel border border-bd bg-s1 p-6 text-[14px] leading-[1.55] text-tx"
+        dangerouslySetInnerHTML={{ __html: html }}
+      />
+    </div>
   );
 }
 

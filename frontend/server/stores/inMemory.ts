@@ -1,5 +1,6 @@
 import type {
   CronRunSummary,
+  Document,
   EarningsSnapshot,
   Entity,
   EventRecord,
@@ -112,6 +113,13 @@ export const inMemoryStore: Store = {
   },
   async writeCronStatus(): Promise<void> {
     notImplemented("writeCronStatus");
+  },
+
+  async readDocument(_id: string): Promise<Document | null> {
+    return null;
+  },
+  async writeDocument(): Promise<void> {
+    notImplemented("writeDocument");
   },
 
   async snapshotAt(): Promise<string> {

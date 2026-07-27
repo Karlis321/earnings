@@ -3,6 +3,7 @@
 
 import type {
   CronRunSummary,
+  Document,
   EarningsSnapshot,
   Entity,
   EventRecord,
@@ -47,6 +48,9 @@ export interface Store {
 
   readCronStatus(): Promise<CronRunSummary | null>;
   writeCronStatus(status: CronRunSummary): Promise<void>;
+
+  readDocument(id: string): Promise<Document | null>;
+  writeDocument(doc: Document): Promise<void>;
 
   snapshotAt(): Promise<string>;
   ghPatPresent(): boolean;

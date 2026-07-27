@@ -4,6 +4,7 @@
 import { data as F } from "./data";
 import type {
   DiscoverFeedResult,
+  Document,
   EarningsSnapshot,
   EngineStatus,
   EventRecord,
@@ -414,6 +415,39 @@ export const api = {
       "POST",
       entry,
     );
+  },
+
+  // Hosted-mode document fetch. Returns undefined when the URL hasn't been
+  // ingested (404) — SourceViewer falls back to iframe / link-out.
+  async getDocument(id: string): Promise<Document | undefined> {
+    try {
+      const r = await fetch(`/api/documents/${encodeURIComponent(id)}`, {
+        cache: "no-store",
+      });
+      if (r.status === 404) return undefined;
+      if (!r.ok) throw new Error(`document fetch ${r.status}`);
+      return (await r.json()) as Document;
+    } catch {
+      return undefined;
+    }
+  },
+
+  async ingestDocument(payload: {
+    url: string;
+    provenance?: "regulatory" | "ir-page" | "wire" | "news" | "social" | "independent";
+    source?: string;
+    language?: string;
+    publishedAt?: string | null;
+  }) {
+    return writeJson<{
+      ok: true;
+      id: string;
+      changed: boolean;
+      ingestVersion: number;
+      paragraphCount?: number;
+      kind?: string;
+      segments?: number;
+    }>("/api/documents/ingest", "POST", payload);
   },
 
   async discoverFeed(input: string): Promise<DiscoverFeedResult> {

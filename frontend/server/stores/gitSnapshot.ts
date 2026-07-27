@@ -5,6 +5,7 @@
 
 import type {
   CronRunSummary,
+  Document,
   EarningsSnapshot,
   Entity,
   EventRecord,
@@ -130,6 +131,7 @@ const P = {
   feedback: "data/feedback-log.json",
   dictionary: "data/metric-dictionary.json",
   cronStatus: "data/cron-status.json",
+  document: (id: string) => `data/documents/${id}.json`,
 };
 
 // Fallback to in-memory for reads that haven't been seeded to the repo yet.
@@ -325,6 +327,23 @@ export function gitSnapshotStore(cfg: GhConfig): Store {
     },
     async writeCronStatus(status: CronRunSummary) {
       await commit(cfg, P.cronStatus, () => status, `cron: run @ ${status.finishedAt}`);
+    },
+
+    async readDocument(id: string): Promise<Document | null> {
+      try {
+        const r = await readFile<Document>(cfg, P.document(id));
+        return r?.content ?? null;
+      } catch {
+        return null;
+      }
+    },
+    async writeDocument(doc: Document) {
+      await commit(
+        cfg,
+        P.document(doc.meta.id),
+        () => doc,
+        `docs: ${doc.meta.id} v${doc.meta.ingestVersion} · ${doc.meta.title.slice(0, 60)}`,
+      );
     },
 
     async snapshotAt(): Promise<string> {

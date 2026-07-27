@@ -305,3 +305,38 @@ export interface FeedbackEntry {
   createdBy: string;
   createdAt: string;
 }
+
+export type DocumentKind =
+  | "article"
+  | "transcript"
+  | "filing"
+  | "press-release";
+
+export interface TranscriptSegment {
+  id: string; // "seg-1", "seg-2", ...
+  speaker: string | null;
+  role: "prepared" | "qa" | "unknown";
+  paragraphIds: string[]; // ["para-4", "para-5", ...]
+}
+
+export interface DocumentMeta {
+  id: string;
+  url: string;
+  title: string;
+  publishedAt: string | null;
+  source: string;
+  provenance: Provenance;
+  language: string;
+  fetchedAt: string;
+  ingestVersion: number;
+  sourceContentHash: string;
+  kind: DocumentKind;
+  paragraphCount: number;
+  segments: TranscriptSegment[];
+}
+
+export interface Document {
+  schema: "document/v1";
+  meta: DocumentMeta;
+  html: string;
+}

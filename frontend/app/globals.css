@@ -222,3 +222,82 @@ a a,
     transition-duration: 0.001ms !important;
   }
 }
+
+/* Hosted-mode document (W7). Sanitized HTML is rendered inline; these
+   styles are the reading-typography for ingested articles / transcripts. */
+.hosted-doc h1,
+.hosted-doc h2,
+.hosted-doc h3,
+.hosted-doc h4,
+.hosted-doc h5,
+.hosted-doc h6 {
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--tx);
+  margin: 1.5em 0 0.5em;
+  line-height: 1.25;
+}
+.hosted-doc h1 { font-size: 22px; }
+.hosted-doc h2 { font-size: 18px; }
+.hosted-doc h3 { font-size: 16px; }
+.hosted-doc h4,
+.hosted-doc h5,
+.hosted-doc h6 { font-size: 14px; }
+.hosted-doc p {
+  margin: 0.75em 0;
+  color: var(--tx);
+}
+.hosted-doc a {
+  color: var(--brand-fg);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.hosted-doc ul,
+.hosted-doc ol {
+  margin: 0.75em 0 0.75em 1.25em;
+}
+.hosted-doc li {
+  margin: 0.25em 0;
+}
+.hosted-doc blockquote {
+  margin: 1em 0;
+  padding-left: 1em;
+  border-left: 3px solid var(--bd2);
+  color: var(--tx-mid);
+}
+.hosted-doc code,
+.hosted-doc pre {
+  font-family: var(--font-ibm-mono), ui-monospace, monospace;
+  font-size: 12.5px;
+  background: var(--s2);
+  border: 1px solid var(--bd2);
+  border-radius: 4px;
+  padding: 1px 4px;
+}
+.hosted-doc pre {
+  padding: 10px 12px;
+  overflow-x: auto;
+}
+.hosted-doc table {
+  border-collapse: collapse;
+  margin: 1em 0;
+  font-size: 13px;
+}
+.hosted-doc th,
+.hosted-doc td {
+  border: 1px solid var(--bd2);
+  padding: 6px 10px;
+  text-align: left;
+}
+.hosted-doc section[id^="para-"] {
+  scroll-margin-top: 12px;
+  transition: background-color 300ms ease;
+}
+.hosted-doc section.hosted-anchor-highlight {
+  animation: hosted-anchor-flash 2.5s ease-out;
+}
+@keyframes hosted-anchor-flash {
+  0% { background-color: rgba(47, 127, 255, 0.24); }
+  60% { background-color: rgba(47, 127, 255, 0.12); }
+  100% { background-color: rgba(47, 127, 255, 0.00); }
+}
