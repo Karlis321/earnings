@@ -16,7 +16,56 @@
 
 ---
 
-## 🔴 CRITICAL — Vercel env pointing at wrong GitHub repo
+## ✅ Done this cycle (past-event enrichment + labels + sources)
+
+- [x] **Revenue backfilled into past events.** `yahooEarnings` now
+      parses `financialsChart.quarterly.{revenue,earnings}` alongside
+      the EPS chart. `buildPastEvent` scales absolute $ to millions,
+      writes `revenue_usd_m` actuals with a `finance.yahoo.com/…/financials`
+      source URL. One-shot `scripts/backfill-revenue.mjs` filled 152
+      revenue actuals across existing operating past events.
+
+- [x] **Readable metric labels.** `METRIC_LABEL_BY_KEY` maps every
+      headline key ("revenue_usd_m") to a display label ("Revenue (M)").
+      `buildPastEvent` uses the mapped label; a Python relabel pass
+      rewrote 519 metric entries in existing events so the change
+      applies to current data. UI's `metric.displayLabel` was always
+      the render path — only the payload needed the update.
+
+- [x] **Real source URLs on every actual.** EPS actual →
+      `/quote/<sym>/earnings`, revenue actual → `/quote/<sym>/financials`,
+      estimate → `/quote/<sym>/analysis`. FactPopover already had the
+      wiring; the Facts now have real hrefs to hand off.
+
+- [x] **Typecheck fix — WatchlistTable BulkPriceEntry.** Vercel build
+      failed on `Property 'latest' does not exist`. Added latest/first/
+      change as optional to the local interface (they were on the wire
+      response the whole time). Local tsc blocked by group policy, so
+      this only surfaced on Vercel build. Fix pushed as `dce261e`.
+
+---
+
+## 🔴 STILL OPEN — Vercel dashboard Redeploy needed
+
+Vercel Git integration on this project isn't triggering builds on push
+(the last three git pushes did not build). CLI is at 100/day rate
+limit until Vercel's next reset (~24h). Only path forward for prod
+verification: dashboard Redeploy.
+
+**Steps:**
+1. https://vercel.com/eidakarlis-6162s-projects/earnings/deployments
+2. Latest deployment → three-dot menu → Redeploy
+3. **Uncheck "Use existing build cache"** so the fresh main HEAD gets
+   cloned (currently at `d6450da`).
+4. Verify:
+   ```
+   ! curl https://earnings-neon.vercel.app/api/entity-registry | python -c "import sys,json; print(len(json.load(sys.stdin)['entities']))"
+   ```
+   Expect: 1593.
+
+---
+
+## ✅ Resolved — Vercel env pointing at wrong GitHub repo
 
 Audit against prod (`earnings-neon.vercel.app`) found that
 `/api/entity-registry` returns 17 entities while local + git origin
