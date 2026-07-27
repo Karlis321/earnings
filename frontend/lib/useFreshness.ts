@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { computeFreshness, TODAY_ISO } from "./freshness";
+import { computeFreshness, todayIso } from "./freshness";
 
 // Recompute freshness on focus per FE PRD §9 — never store it.
 // P3-T2.
@@ -16,5 +16,5 @@ export function useLiveFreshness(asOf: string | null | undefined) {
       window.clearInterval(iv);
     };
   }, []);
-  return computeFreshness(asOf ?? null, TODAY_ISO);
+  return computeFreshness(asOf ?? null, todayIso());
 }

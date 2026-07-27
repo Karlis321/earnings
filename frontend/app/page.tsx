@@ -2,7 +2,7 @@ import { WatchlistTable } from "@/components/overview/WatchlistTable";
 import { MarketPulse } from "@/components/overview/MarketPulse";
 import { store } from "@/server/store";
 import { buildWatchlistRows } from "@/lib/watchlist";
-import { TODAY_ISO } from "@/lib/freshness";
+import { todayIso } from "@/lib/freshness";
 
 // W8 cutover: home page reads from the store, not fixtures. The 60s
 // git-snapshot read cache keeps this cheap when the same request renders
@@ -14,7 +14,7 @@ export default async function OverviewPage() {
     store.readRegistry(),
     store.readEarnings(),
   ]);
-  const rows = buildWatchlistRows(entities, snapshot, TODAY_ISO);
+  const rows = buildWatchlistRows(entities, snapshot, todayIso());
   const coreCount = rows.filter((r) => r.entity.isCore).length;
   const universeCount = rows.length - coreCount;
   return (

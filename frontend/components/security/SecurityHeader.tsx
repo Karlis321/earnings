@@ -81,8 +81,8 @@ export function SecurityHeader({ entity, latest, nextEvent, freshness }: Props) 
                     {fmtDaysUntil(
                       Math.round(
                         (new Date(nextEvent.scheduledDate).getTime() -
-                          new Date("2026-07-24").getTime()) /
-                          86400000,
+                          Date.now()) /
+                          86_400_000,
                       ),
                     )}
                   </span>

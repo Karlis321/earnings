@@ -324,8 +324,7 @@ function Row({
   const nextIso = r.nextEvent.date ?? yahoo?.nextEarningsDate ?? null;
   const daysUntil = nextIso
     ? Math.round(
-        (new Date(nextIso).getTime() - new Date("2026-07-24").getTime()) /
-          86400000,
+        (new Date(nextIso).getTime() - Date.now()) / 86_400_000,
       )
     : null;
   return (

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { store } from "@/server/store";
 import { entitiesInSector } from "@/server/lib/registryHelpers";
 import { buildWatchlistRows } from "@/lib/watchlist";
-import { TODAY_ISO } from "@/lib/freshness";
+import { todayIso } from "@/lib/freshness";
 import { notFound } from "next/navigation";
 import {
   Panel,
@@ -63,7 +63,7 @@ export default async function SectorDetailPage({ params }: Props) {
   const members = entitiesInSector(entities, sectorId);
   if (members.length === 0) notFound();
 
-  const allRows = buildWatchlistRows(entities, snapshot, TODAY_ISO);
+  const allRows = buildWatchlistRows(entities, snapshot, todayIso());
   const inSector = allRows.filter((r) =>
     members.some((m) => m.ticker === r.ticker),
   );

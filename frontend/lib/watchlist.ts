@@ -8,7 +8,7 @@ import type {
 } from "@/lib/types";
 import { ENTITY_REGISTRY } from "./fixtures/registry";
 import { EARNINGS_FIXTURE, getLatestEvent } from "./fixtures/earnings";
-import { computeFreshness, TODAY_ISO } from "./freshness";
+import { computeFreshness, todayIso } from "./freshness";
 
 // Build the overview rows from any registry + earnings snapshot pair.
 // The pure builder is what RSC pages call after fetching from the store;
@@ -111,5 +111,5 @@ export function buildWatchlistRows(
 export function buildWatchlist(): WatchlistRow[] {
   // Reuse getLatestEvent from the fixture module to keep the wrapper thin.
   void getLatestEvent;
-  return buildWatchlistRows(ENTITY_REGISTRY, EARNINGS_FIXTURE, TODAY_ISO);
+  return buildWatchlistRows(ENTITY_REGISTRY, EARNINGS_FIXTURE, todayIso());
 }

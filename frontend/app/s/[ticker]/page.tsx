@@ -6,7 +6,7 @@ import { OperatingDetail } from "@/components/security/OperatingDetail";
 import { DeveloperDetail } from "@/components/security/DeveloperDetail";
 import { EtfDetail } from "@/components/security/EtfDetail";
 import { EmptyState } from "@/components/primitives";
-import { computeFreshness, TODAY_ISO } from "@/lib/freshness";
+import { computeFreshness, todayIso } from "@/lib/freshness";
 
 // Security Detail — three variants per FE PRD §7.3–7.5.
 
@@ -32,7 +32,7 @@ export default async function SecurityDetailPage({ params }: Props) {
   // "Last: <period>" line show a future quarter with no data behind it.
   const latestPast = events.find((e) => e.eventDate);
   const latest = latestPast ?? events[0];
-  const nextEvent = events.find((e) => e.scheduledDate >= TODAY_ISO);
+  const nextEvent = events.find((e) => e.scheduledDate >= todayIso());
   const freshness = computeFreshness(
     latest?.sources.capturedAt ?? latest?.eventDate ?? latest?.scheduledDate ?? null,
   );
