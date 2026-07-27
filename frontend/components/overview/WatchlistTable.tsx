@@ -108,7 +108,12 @@ export function WatchlistTable({ rows }: { rows: WatchlistRow[] }) {
 
   const filtered = useMemo(() => {
     let list = rows.slice();
-    if (filter !== "portfolio") {
+    if (filter === "portfolio") {
+      // Portfolio = core watchlist (17 tickers from prompt1.txt).
+      // Sector-universe entities (isCore:false) live under the tab
+      // labels below and on /admin.
+      list = list.filter((r) => r.entity.isCore);
+    } else {
       const needles = INDUSTRY_GROUPS[filter] ?? [];
       list = list.filter((r) => {
         if (filter === "developer") return r.entity.securityType === "developer";

@@ -15,14 +15,23 @@ export default async function OverviewPage() {
     store.readEarnings(),
   ]);
   const rows = buildWatchlistRows(entities, snapshot, TODAY_ISO);
+  const coreCount = rows.filter((r) => r.entity.isCore).length;
+  const universeCount = rows.length - coreCount;
   return (
     <div className="mx-auto max-w-[1800px] px-10 py-8">
       <MarketPulse />
       <div className="mb-6">
         <div className="mono-eyebrow mb-3">§ Overview · Watchlist</div>
         <h1 className="text-[28px] font-semibold leading-tight tracking-[-0.02em]">
-          {rows.length} covered names · reporting picture as of today
+          {coreCount} portfolio names · reporting picture as of today
         </h1>
+        {universeCount > 0 ? (
+          <p className="mt-1 text-[13px] text-tx-mid">
+            + {universeCount} sector-universe names — switch tabs below to
+            browse, or open <a href="/admin" className="text-brand-fg hover:underline">/admin</a> to
+            manage.
+          </p>
+        ) : null}
       </div>
       <WatchlistTable rows={rows} />
     </div>

@@ -25,7 +25,18 @@ export function SecuritySwitcher({ currentTicker }: { currentTicker: string }) {
       cancelled = true;
     };
   }, []);
+  // Header switcher shows the portfolio (isCore) only. Full universe
+  // browsing lives on /admin and /admin/expand. If the current page is
+  // on a non-core ticker (e.g. reached from a link), pin it into the
+  // dropdown so switching back is one click.
   const current = list.find((e) => e.ticker === currentTicker);
+  const dropdownList = (() => {
+    const core = list.filter((e) => e.isCore);
+    if (current && !current.isCore) {
+      return [current, ...core];
+    }
+    return core;
+  })();
   return (
     <DropdownMenu.Root>
       <DropdownMenu.Trigger asChild>
@@ -42,7 +53,7 @@ export function SecuritySwitcher({ currentTicker }: { currentTicker: string }) {
           sideOffset={6}
           className="z-50 max-h-[320px] w-[300px] overflow-y-auto rounded-panel border border-bd2 bg-s2 p-[6px] shadow-[var(--sh-popover)]"
         >
-          {list.map((e) => (
+          {dropdownList.map((e) => (
             <DropdownMenu.Item
               key={e.ticker}
               onSelect={() =>
