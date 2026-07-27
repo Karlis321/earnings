@@ -70,8 +70,12 @@ async function loadFixture(relPath) {
 function parseEntities(src) {
   const start = src.indexOf("ENTITY_REGISTRY: Entity[]");
   if (start < 0) throw new Error("ENTITY_REGISTRY not found in fixture");
-  // Locate the outermost array bracket
-  const openIdx = src.indexOf("[", start);
+  // The declaration is `ENTITY_REGISTRY: Entity[] = [ ... ]`. The first
+  // `[` after `start` is the `Entity[]` type annotation, not the value —
+  // skip past the `=` first so we land on the value's opening bracket.
+  const eqIdx = src.indexOf("=", start);
+  if (eqIdx < 0) throw new Error("ENTITY_REGISTRY assignment not found");
+  const openIdx = src.indexOf("[", eqIdx);
   let depth = 0;
   let endIdx = -1;
   for (let i = openIdx; i < src.length; i++) {
@@ -97,7 +101,12 @@ function parseEntities(src) {
 function parseMetricLabels(src) {
   const start = src.indexOf("METRIC_LABELS");
   if (start < 0) throw new Error("METRIC_LABELS not found");
-  const openIdx = src.indexOf("{", start);
+  // Skip past the "=" so we don't parse the TS type annotation that
+  // precedes it: `METRIC_LABELS: Record<string, { label: string; unit:
+  // string }> = { ... }`.
+  const eqIdx = src.indexOf("=", start);
+  if (eqIdx < 0) throw new Error("METRIC_LABELS assignment not found");
+  const openIdx = src.indexOf("{", eqIdx);
   let depth = 0;
   let endIdx = -1;
   for (let i = openIdx; i < src.length; i++) {
@@ -115,9 +124,6 @@ function parseMetricLabels(src) {
     .replace(/,(\s*[}\]])/g, "$1")
     .replace(/([{,]\s*)([a-zA-Z_][a-zA-Z0-9_]*)\s*:/g, '$1"$2":')
     .replace(/'([^']*)'/g, (_, s) => `"${s.replace(/"/g, '\\"')}"`);
-  // METRIC_LABELS values are objects with unquoted keys — the regex above
-  // catches them. Any keys with special chars (unlikely here) would slip
-  // through; add manual escaping if needed.
   return JSON.parse(jsonish);
 }
 
@@ -276,7 +282,6 @@ function buildEventShell(entity, scheduledDate, period, epsActual) {
 async function main() {
   console.log(`W8 backfill · dry=${DRY} · yahoo=${!SKIP_YAHOO}`);
   const registrySrc = await loadFixture("registry.ts");
-  const sharedSrc = await loadFixture("sharedState.ts");
   const entities = parseEntities(registrySrc);
   const metricLabels = parseMetricLabels(registrySrc);
   const filtered = ONLY ? entities.filter((e) => e.ticker === ONLY) : entities;
@@ -303,46 +308,23 @@ async function main() {
     ),
   };
 
-  // ---- shared-state.json (from fixture) ----
-  // Best-effort parse; fall back to a minimal shape if regex trips.
-  let sharedState;
-  try {
-    const start = sharedSrc.indexOf("SHARED_STATE = ");
-    const openIdx = sharedSrc.indexOf("{", start);
-    let depth = 0;
-    let endIdx = -1;
-    for (let i = openIdx; i < sharedSrc.length; i++) {
-      if (sharedSrc[i] === "{") depth++;
-      else if (sharedSrc[i] === "}") {
-        depth--;
-        if (depth === 0) {
-          endIdx = i;
-          break;
-        }
-      }
-    }
-    const obj = sharedSrc.slice(openIdx, endIdx + 1);
-    // Strip TypeScript-only "as const" annotations before parsing.
-    const cleaned = obj.replace(/\s+as\s+const/g, "");
-    const jsonish = cleaned
-      .replace(/,(\s*[}\]])/g, "$1")
-      .replace(/([{,]\s*)([a-zA-Z_][a-zA-Z0-9_]*)\s*:/g, '$1"$2":')
-      .replace(/'([^']*)'/g, (_, s) => `"${s.replace(/"/g, '\\"')}"`);
-    sharedState = JSON.parse(jsonish);
-    if (!sharedState.schema) sharedState.schema = "shared-state/v1";
-    for (const s of sharedState.customSources ?? []) {
-      if (s.lastFetch === undefined) s.lastFetch = null;
-    }
-  } catch (e) {
-    console.warn(`  shared-state parse failed (${e.message}) — writing minimal shell`);
-    sharedState = {
-      schema: "shared-state/v1",
-      watchlist: entities.filter((e) => e.isCore).map((e) => e.ticker),
-      customSources: [],
-      themes: [],
-      lastCommit: new Date().toISOString(),
-    };
-  }
+  // ---- shared-state.json ----
+  // SHARED_STATE in the TS fixture uses runtime expressions (ENTITY_REGISTRY
+  // .filter().map()) that we can't safely eval. Derive the seed directly:
+  // watchlist = all core entities. customSources starts empty — the analyst
+  // adds them via the admin UI. Themes match the sector tags we ship with.
+  const sharedState = {
+    schema: "shared-state/v1",
+    watchlist: entities.filter((e) => e.isCore).map((e) => e.ticker),
+    customSources: [],
+    themes: [
+      { id: "copper", label: "Copper", active: true },
+      { id: "gold", label: "Gold", active: true },
+      { id: "semiconductors", label: "Semiconductors", active: true },
+      { id: "uranium", label: "Uranium", active: true },
+    ],
+    lastCommit: new Date().toISOString(),
+  };
 
   // ---- earnings.json (event shells + Yahoo enrichment) ----
   const events = [];
