@@ -3,11 +3,17 @@ import { store } from "@/server/store";
 import { sectorCounts } from "@/server/lib/registryHelpers";
 import { Panel } from "@/components/primitives";
 
+// force-dynamic + store's 60s read cache = counts stay live within a
+// minute of any registry write (POST /api/entity-registry, DELETE, or
+// the daily cron's sector-universe refresh).
 export const dynamic = "force-dynamic";
 
 export default async function SectorsPage() {
   const entities = await store.readRegistry();
   const sectors = sectorCounts(entities);
+  const totalCore = entities.filter((e) => e.isCore).length;
+  const totalUniverse = entities.length - totalCore;
+
   return (
     <div className="mx-auto max-w-[1800px] px-10 py-8">
       <div className="mb-6">
@@ -16,13 +22,15 @@ export default async function SectorsPage() {
           Sector view
         </h1>
         <p className="mt-2 max-w-[64ch] text-[13.5px] text-tx2">
-          Thematic grouping across covered names. The LLM sector-read is
-          disabled in $0 mode.
+          Thematic grouping across covered names. {entities.length} total
+          entities · {totalCore} portfolio · {totalUniverse} sector universe
+          across {sectors.length} tags. Auto-refreshes on the daily cron
+          (sector expansion + market-cap pass).
         </p>
       </div>
 
       <Panel eyebrow="Sectors · from registry sectorTags" padded={false}>
-        <div className="grid grid-cols-1 divide-y divide-bd md:grid-cols-2 md:divide-y-0">
+        <div className="grid grid-cols-1 divide-y divide-bd md:grid-cols-2 md:divide-y-0 md:divide-x">
           {sectors.map((s) => (
             <Link
               key={s.id}
@@ -31,8 +39,20 @@ export default async function SectorsPage() {
             >
               <div>
                 <div className="text-[14px] text-tx capitalize">{s.id}</div>
-                <div className="mt-1 font-mono text-[11px] text-tx3">
-                  {s.count} member{s.count === 1 ? "" : "s"}
+                <div className="mt-1 flex items-baseline gap-2 font-mono text-[11px] text-tx3">
+                  <span>
+                    {s.count} name{s.count === 1 ? "" : "s"}
+                  </span>
+                  {s.portfolio > 0 ? (
+                    <span className="text-brand-fg">
+                      · {s.portfolio} portfolio
+                    </span>
+                  ) : null}
+                  {s.universe > 0 ? (
+                    <span className="text-tx-mid">
+                      · {s.universe} universe
+                    </span>
+                  ) : null}
                 </div>
               </div>
               <span className="text-tx3">→</span>

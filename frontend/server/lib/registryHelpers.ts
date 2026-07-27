@@ -19,14 +19,21 @@ export function coreEntities(entities: Entity[]): Entity[] {
 
 export function sectorCounts(
   entities: Entity[],
-): Array<{ id: string; count: number }> {
-  const counts = new Map<string, number>();
+): Array<{ id: string; count: number; portfolio: number; universe: number }> {
+  const total = new Map<string, number>();
+  const core = new Map<string, number>();
   for (const e of entities) {
-    for (const s of e.sectorTags) counts.set(s, (counts.get(s) ?? 0) + 1);
+    for (const s of e.sectorTags) {
+      total.set(s, (total.get(s) ?? 0) + 1);
+      if (e.isCore) core.set(s, (core.get(s) ?? 0) + 1);
+    }
   }
-  return Array.from(counts, ([id, count]) => ({ id, count })).sort(
-    (a, b) => b.count - a.count,
-  );
+  return Array.from(total, ([id, count]) => ({
+    id,
+    count,
+    portfolio: core.get(id) ?? 0,
+    universe: count - (core.get(id) ?? 0),
+  })).sort((a, b) => b.count - a.count);
 }
 
 export function entitiesInSector(
