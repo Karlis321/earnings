@@ -220,9 +220,13 @@ export async function yahooLookup(
     };
   }
 
+  // Accept EQUITY, ETF, and MUTUALFUND — the app's chart + market-cap
+  // paths care about any tradable security, not just common stock.
+  const isTradable = (t: string | undefined) =>
+    t === "EQUITY" || t === "ETF" || t === "MUTUALFUND";
   const onExchange = quotes.find(
     (q) =>
-      q.quoteType === "EQUITY" &&
+      isTradable(q.quoteType) &&
       typeof q.exchange === "string" &&
       acceptable!.includes(q.exchange) &&
       (q.symbol === symbol || q.symbol?.split(".")[0] === symbol),
@@ -231,12 +235,12 @@ export async function yahooLookup(
     onExchange ??
     quotes.find(
       (q) =>
-        q.quoteType === "EQUITY" &&
+        isTradable(q.quoteType) &&
         (q.symbol === symbol || q.symbol?.startsWith(symbol + ".")),
     );
 
   if (!anyEquity)
-    return { error: `No equity ${symbol} on ${exchange}`, status: 404 };
+    return { error: `No tradable ${symbol} on ${exchange}`, status: 404 };
   return {
     symbol,
     exchange,

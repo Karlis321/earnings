@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { yahooLookup, yahooSeries } from "@/server/vendors/yahoo";
+import { store } from "@/server/store";
 
 // GET /api/prices/bulk?tickers=INTC+US,NVDA+US,...&range=1mo
 //
@@ -77,19 +78,42 @@ export async function GET(req: NextRequest) {
     .map((t) => decodeURIComponent(t).trim())
     .filter(Boolean);
 
+  // Prefer entity.yahooSymbol persisted on the registry — it's already
+  // been resolved once and pins the correct listing (avoids "CS CN →
+  // No equity" style failures when Yahoo has multiple candidates).
+  const registry = await store.readRegistry();
+  const symMap = new Map<string, string>();
+  const nameMap = new Map<string, string>();
+  for (const e of registry) {
+    if (e.yahooSymbol) {
+      symMap.set(e.ticker, e.yahooSymbol);
+      nameMap.set(e.ticker, e.displayName);
+    }
+  }
+
   const results = await pool<string, [string, One]>(
     tickers,
     CONCURRENCY,
     async (t): Promise<[string, One]> => {
       try {
-        const parts = t.split(/\s+/);
-        const sym = parts[0];
-        const exch = parts[1] ?? "US";
-        const resolved = await yahooLookup(sym, exch);
-        if ("error" in resolved) {
-          return [t, { ok: false as const, err: resolved.error, series: [] }];
+        const pinned = symMap.get(t);
+        let yahooSymbol: string;
+        let name: string;
+        if (pinned) {
+          yahooSymbol = pinned;
+          name = nameMap.get(t) ?? t;
+        } else {
+          const parts = t.split(/\s+/);
+          const sym = parts[0];
+          const exch = parts[1] ?? "US";
+          const resolved = await yahooLookup(sym, exch);
+          if ("error" in resolved) {
+            return [t, { ok: false as const, err: resolved.error, series: [] }];
+          }
+          yahooSymbol = resolved.yahooSymbol;
+          name = resolved.name;
         }
-        const series = await yahooSeries(resolved.yahooSymbol, range);
+        const series = await yahooSeries(yahooSymbol, range);
         if (series.length < 2) {
           return [
             t,
@@ -102,8 +126,8 @@ export async function GET(req: NextRequest) {
           t,
           {
             ok: true as const,
-            yahooSymbol: resolved.yahooSymbol,
-            name: resolved.name,
+            yahooSymbol,
+            name,
             series,
             first,
             latest,
