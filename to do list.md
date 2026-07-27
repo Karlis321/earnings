@@ -1,19 +1,64 @@
 # To Do — What's Left for a Full Working Dashboard
 
 **Prod URL:** https://earnings-neon.vercel.app
-**Portfolio:** 17 core tickers from `prompt1.txt` + 368 sector-universe (CEDEARs excluded) = **385 entities**
-**Last local audit:** 2026-07-27 — registry 282 entities · 266 events ·
-                     baselines 0/266 seeded (fills on next cron) ·
-                     documents 0 (fills after allowlist widening lands in cron)
+**Portfolio:** 17 core tickers + 368 sector-universe (Argentine CEDEARs excluded) = **385 entities**
+**Last local audit:** 2026-07-27
+  · registry 385 entities · core 17 · universe 368 · 0 orphans
+  · market caps populated: 355/385
+  · EDGAR CIKs resolved: 73 · non-filers 312
+  · events 256 · baselines seeded 143 · horizons matured 569
 **Cron schedule:** Mon–Fri 06:00 UTC per `vercel.json`; next run 2026-07-28.
-**Market-cap coverage:** universe 249/265 USD caps populated via
-                       `expand-sectors.mjs` FX pass; edge cases
-                       (ARS-quoted AAPL AF, KRW Samsung) refine on
-                       next prod cron with live FX.
+**Live upstream check (2026-07-27):**
+  · EDGAR / Yahoo v8 chart / SEC company_tickers.json / Google News RSS
+    all 200
+  · All 5 remaining OFFICIAL_SOURCES IR RSS feeds 200
+  · Two dead feeds removed (SilverCrest gone, Century URL fixed to WP)
 
 ---
 
-## ✅ Done this cycle (CEDEAR filter + universe re-expansion)
+## ✅ Done this cycle (audit + cleanup)
+
+- [x] **Data-consistency audit.** Cross-referenced registry × earnings
+      × fixtures × metric-dictionary × shared-state. Found 10 orphan
+      events (5 AAPL US left over from the J4 smoke test + 5 CEDEAR
+      entries `TGSU2 AF` / `YPFD AF` from the pre-filter era);
+      trimmed. `earnings.json` now 256 events, all cross-referenced
+      cleanly against the 385-entity registry.
+
+- [x] **Live upstream source probe.** Curl'd every OFFICIAL_SOURCES
+      RSS feed + Yahoo chart + SEC ticker JSON + Google News. Caught
+      two dead feeds: `centuryaluminum.com/RSS/PressRelease.aspx`
+      (403 — site migrated to WordPress; swapped in
+      `/feed/`) and `silvercrestmetals.com/feed/` (000 DNS fail —
+      SILV CN not in registry anyway; entry removed).
+
+- [x] **OFFICIAL_SOURCES pruned.** Removed pure-EDGAR entries for
+      tickers whose CIKs are now resolved by the auto-resolver
+      (`INTC US`, `NVDA US`, `BN US`, `CCJ US`, `TGB CN`, `RIO PA`,
+      `NOK FH`, `SHLE US`, `SILV CN`, `ABXX CN` placeholder).
+      OFFICIAL_SOURCES now only holds entries that add VALUE beyond
+      EDGAR — IR-page RSS or Newsfile IDs.
+
+- [x] **`/api/documents/proxy` allowlist consolidated.** The proxy
+      route had its own drifted allowlist that didn't match
+      `INGESTABLE_HOSTS`. Now imports `INGESTABLE_HOSTS` from
+      `documentIngest.ts` so widening one auto-widens the other.
+
+- [x] **`lib/logos.ts` rewritten to match PORTFOLIO.** Was still
+      referencing INTC, NVDA, RIO PA, SHLE US, NOK FH, COPX, URA,
+      CCJ, SILV — none in the current registry. Also had `TGB CN`
+      (renamed to `TGB US`). 17 domain mappings now match the
+      fixture + data exactly (verified by set-diff).
+
+- [x] **npm run typecheck / lint / build — blocked.** All three
+      shell out via `next` / `tsc` which are AppLocker-blocked on
+      this Windows Server 2019 host regardless of shell (Bash and
+      PowerShell both refuse). Documented in the "Blocked" bucket
+      below; nothing further from my seat.
+
+---
+
+## ✅ Done previous cycle (CEDEAR filter + universe re-expansion)
 
 - [x] **Filtered Argentine CEDEARs from sector expansion.** Dropped
       `BUE: "AF"` from `YAHOO_TO_BB` in both `scripts/expand-sectors.mjs`

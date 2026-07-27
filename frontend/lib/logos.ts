@@ -2,24 +2,28 @@
 // Logo served by logo.clearbit.com/<domain> (free, no key).
 // Fallback: first letters of the display name.
 
+// Kept in lockstep with the PORTFOLIO array in scripts/rewrite-registry.mjs
+// (and mirrored fixture at lib/fixtures/registry.ts). Universe entities
+// fall through to `tickerInitials` — Clearbit hits would be too noisy for
+// 300+ tickers.
 export const TICKER_DOMAINS: Record<string, string> = {
-  "INTC US": "intel.com",
-  "NVDA US": "nvidia.com",
+  "ABXX CN": "abaxx.tech",
+  "BN US": "brookfield.com",
+  "BOLSY US": "b3.com.br",
+  "CENX US": "centuryaluminum.com",
   "CS CN": "capstonecopper.com",
   "HBM US": "hudbayminerals.com",
-  "RIO PA": "riotinto.com",
-  "BN US": "brookfield.com",
-  "CENX US": "centuryaluminum.com",
-  "TGB CN": "tasekomines.com",
-  "SCMI CN": "sonorometals.com",
-  "ABXX CN": "abaxx.tech",
-  "SHLE US": "silverhornlithium.com",
-  "NOK FH": "nokia.com",
+  "SHLE CN": "sourceenergy.ca",
+  "TGB US": "tasekomines.com",
+  "TNZ CN": "tenazenergy.com",
+  "TOI CN": "topicus.com",
+  "VLE CN": "valeuraenergy.com",
+  "DBG CN": "doubleview.ca",
+  "SCMI CN": "selkirkmetals.com",
+  "WRN US": "westerncoppergold.com",
+  "XEG CN": "blackrock.com",
+  "RIO FP": "amundi.com",
   "GDXJ US": "vaneck.com",
-  "COPX US": "globalxetfs.com",
-  "URA US": "globalxetfs.com",
-  "CCJ US": "cameco.com",
-  "SILV CN": "silvercrestmetals.com",
 };
 
 export function domainForTicker(ticker: string): string | null {

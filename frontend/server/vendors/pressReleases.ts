@@ -27,57 +27,26 @@ interface OfficialSource {
   label: string;
 }
 
+// Only entities that need MORE than the auto-CIK EDGAR feed need to
+// appear here. Pure-EDGAR filers (INTC, NVDA, BN, CCJ, RIO, NOK, etc.)
+// get their EDGAR source auto-synthesized by fetchPressReleases via
+// `edgarCik` on the entity — no hand-mapping required.
 export const OFFICIAL_SOURCES: Record<string, OfficialSource[]> = {
-  "INTC US": [
-    { kind: "edgar", url: EDGAR("0000050863"), provenance: "regulatory", label: "SEC EDGAR" },
-  ],
-  "NVDA US": [
-    { kind: "edgar", url: EDGAR("0001045810"), provenance: "regulatory", label: "SEC EDGAR" },
-  ],
-  "BN US": [
-    { kind: "edgar", url: EDGAR("0001001085"), provenance: "regulatory", label: "SEC EDGAR" },
-  ],
+  // Core tickers with an IR-page RSS in addition to EDGAR:
   "CENX US": [
-    { kind: "rss", url: "https://centuryaluminum.com/RSS/PressRelease.aspx", provenance: "ir-page", label: "Investor Relations" },
-    { kind: "edgar", url: EDGAR("0000949157"), provenance: "regulatory", label: "SEC EDGAR" },
-  ],
-  "CCJ US": [
-    { kind: "edgar", url: EDGAR("0001064728"), provenance: "regulatory", label: "SEC EDGAR" },
-  ],
-  "ABXX CN": [
-    // Abaxx Technologies is Canadian-listed (NEO/TSX). Publishes via
-    // Newsfile — update once we confirm their exact feed ID.
-    // Placeholder: no auto-fetch until an official-sources entry lands.
-  ],
-  "SHLE US": [
-    // Silver Horn Lithium not on EDGAR/OTC feeds we can reach; leave empty.
+    { kind: "rss", url: "https://centuryaluminum.com/feed/", provenance: "ir-page", label: "Century Aluminum IR" },
   ],
   "HBM US": [
-    { kind: "rss", url: "https://hudbayminerals.com/rss/PressRelease.aspx", provenance: "ir-page", label: "Investor Relations" },
-    { kind: "edgar", url: "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0001322520&type=&dateb=&owner=include&count=40&output=atom", provenance: "regulatory", label: "SEC EDGAR" },
+    { kind: "rss", url: "https://hudbayminerals.com/rss/PressRelease.aspx", provenance: "ir-page", label: "Hudbay IR" },
   ],
   "CS CN": [
-    { kind: "rss", url: "https://capstonecopper.com/feed/", provenance: "ir-page", label: "Investor Relations" },
-  ],
-  "TGB CN": [
-    { kind: "edgar", url: EDGAR("0000878518"), provenance: "regulatory", label: "SEC EDGAR (US filings)" },
+    { kind: "rss", url: "https://capstonecopper.com/feed/", provenance: "ir-page", label: "Capstone Copper IR" },
   ],
   "SCMI CN": [
     { kind: "rss", url: NEWSFILE("11605"), provenance: "wire", label: "Newsfile" },
   ],
-  "SILV CN": [
-    { kind: "rss", url: "https://silvercrestmetals.com/feed/", provenance: "ir-page", label: "Investor Relations" },
-  ],
-  "RIO PA": [
-    // Rio Tinto files 20-F with SEC
-    { kind: "edgar", url: EDGAR("0000863064"), provenance: "regulatory", label: "SEC EDGAR" },
-  ],
-  "NOK FH": [
-    { kind: "edgar", url: EDGAR("0000924613"), provenance: "regulatory", label: "SEC EDGAR (20-F filer)" },
-  ],
-  // Non-SEC filers — verified IR-page RSS feeds. Auto-CIK resolver
-  // returns null for these; hand-added here since IR-page URLs aren't
-  // discoverable programmatically.
+  // Non-SEC filers — verified IR-page RSS. Auto-CIK resolver returns
+  // null for these, so hand-adding here is the only path.
   "TOI CN": [
     { kind: "rss", url: "https://topicus.com/rss", provenance: "ir-page", label: "Topicus IR" },
   ],

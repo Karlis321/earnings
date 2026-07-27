@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { INGESTABLE_HOSTS } from "@/server/lib/documentIngest";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 15;
@@ -9,31 +10,9 @@ export const maxDuration = 15;
 // sanitizes the HTML (strips scripts, iframes, event handlers) and returns
 // it so it can render inside our slide-over.
 //
-// Strictly allowlist-scoped — publishers explicitly hostile to reuse
-// (Bloomberg, FT, WSJ paywalls) are not allowed. Only public-info hosts:
-//   - SEC EDGAR (public government filings)
-//   - Federal Reserve press releases
-//   - Company IR pages that already publish machine-readable feeds
-//
-// If Karlis later legally clears additional hosts, add them here.
-
-const ALLOW_HOSTS = [
-  "www.sec.gov",
-  "sec.gov",
-  "www.federalreserve.gov",
-  "federalreserve.gov",
-  "www.ecb.europa.eu",
-  "ecb.europa.eu",
-  "www.bankofengland.co.uk",
-  "capstonecopper.com",
-  "www.capstonecopper.com",
-  "hudbayminerals.com",
-  "www.hudbayminerals.com",
-  "centuryaluminum.com",
-  "www.centuryaluminum.com",
-  "silvercrestmetals.com",
-  "www.silvercrestmetals.com",
-];
+// Reuses INGESTABLE_HOSTS from documentIngest so this allowlist stays in
+// sync with the set of hosts we auto-ingest — anything we've vetted for
+// stored redistribution is also safe to server-side proxy for embed.
 
 const UA =
   "Mozilla/5.0 EarningsDashboard (contact: your-email@example.com)";
@@ -76,11 +55,11 @@ export async function GET(req: NextRequest) {
       { status: 400 },
     );
   }
-  if (!ALLOW_HOSTS.includes(host)) {
+  if (!INGESTABLE_HOSTS.has(host)) {
     return NextResponse.json(
       {
         error: "host_not_allowed",
-        message: `${host} is not on the proxy allowlist. See app/api/documents/proxy/route.ts to extend it after checking the host's terms of use.`,
+        message: `${host} is not on the ingest allowlist. See INGESTABLE_HOSTS in server/lib/documentIngest.ts.`,
       },
       { status: 403 },
     );
