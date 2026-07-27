@@ -175,6 +175,55 @@ export default function SettingsPage() {
                     </div>
                   </div>
                 ) : null}
+
+                {health.newEvents.length > 0 ? (
+                  <div className="mt-4">
+                    <div className="mb-2 font-mono text-[11px] uppercase tracking-[0.1em] text-tx3">
+                      New events detected · {health.newEvents.length}
+                    </div>
+                    <div className="grid grid-cols-1 gap-[2px] font-mono text-[11.5px]">
+                      {health.newEvents.map((e) => (
+                        <div
+                          key={e.eventId}
+                          className="flex items-center gap-3 border-b border-bd/40 py-1"
+                        >
+                          <span className="text-tx">{e.ticker}</span>
+                          <span className="text-tx-mid">{e.period}</span>
+                          <span className="text-tx-mid">{e.scheduledDate}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+
+                {health.restatements.length > 0 ? (
+                  <div className="mt-4">
+                    <div className="mb-2 font-mono text-[11px] uppercase tracking-[0.1em] text-tx3">
+                      Restatements · {health.restatements.length}
+                    </div>
+                    <div className="grid grid-cols-1 gap-[2px] font-mono text-[11.5px]">
+                      {health.restatements.map((r, i) => (
+                        <div
+                          key={`${r.eventId}-${r.metricKey}-${i}`}
+                          className="flex items-center gap-3 border-b border-bd/40 py-1"
+                        >
+                          <span className="text-tx">{r.ticker}</span>
+                          <span className="text-tx-mid">{r.metricKey}</span>
+                          <span className="text-tx-mid">
+                            {r.priorValue.toFixed(3)} → {r.restatedValue.toFixed(3)}
+                          </span>
+                          <span
+                            className={
+                              r.deltaPct >= 5 ? "text-danger" : "text-warning"
+                            }
+                          >
+                            Δ {r.deltaPct.toFixed(2)}%
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
               </>
             ) : (
               <div className="text-[12.5px] text-tx-mid">

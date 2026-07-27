@@ -27,6 +27,8 @@ export async function GET() {
       totalAppended: cron?.totalAppended ?? 0,
       totalMatured: cron?.totalMatured ?? 0,
       cronEventSummaries: cron?.events ?? [],
+      newEvents: cron?.newEvents ?? [],
+      restatements: cron?.restatements ?? [],
       staleThresholdHours: 26,
     },
     { headers: { "Cache-Control": "no-store" } },

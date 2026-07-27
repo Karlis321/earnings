@@ -24,6 +24,21 @@ export interface HealthSnapshot {
     maturedHorizons: Horizon[];
     errors: string[];
   }>;
+  newEvents: Array<{
+    eventId: string;
+    ticker: string;
+    period: string;
+    scheduledDate: string;
+  }>;
+  restatements: Array<{
+    eventId: string;
+    ticker: string;
+    metricKey: string;
+    priorValue: number;
+    restatedValue: number;
+    deltaPct: number;
+    at: string;
+  }>;
   staleThresholdHours: number;
 }
 

@@ -3,6 +3,13 @@ import { store } from "@/server/store";
 import { fanoutNews } from "@/server/vendors/news";
 import { fetchPressReleases } from "@/server/vendors/pressReleases";
 import { matureEventReaction } from "@/server/lib/reactionMaturation";
+import {
+  alreadyHasEvent,
+  buildEventShell,
+  detectRestatements,
+  periodFromReportingDate,
+} from "@/server/lib/cronDetections";
+import { yahooEarnings, yahooLookup } from "@/server/vendors/yahoo";
 import { urlHash } from "@/lib/itemDedupe";
 import { mentionsHolding, matchesExclusionAlias } from "@/lib/tickerMatch";
 import type {
@@ -92,11 +99,16 @@ export async function POST(req: NextRequest) {
   const startedAt = new Date();
   const engineAgg = new Map<string, EngineStatus>();
   const eventSummaries: CronRunSummary["events"] = [];
+  const newEvents: CronRunSummary["newEvents"] = [];
+  const restatements: CronRunSummary["restatements"] = [];
   let ok = true;
 
   // Snapshot of all in-memory event mutations for this run. We apply them
   // in one commit at the end (single-commit rule).
   const pendingEvents = new Map<string, EventRecord>();
+  // Newly-created event shells (Yahoo next-event detection). Committed
+  // alongside pendingEvents in the same mutateEarnings call.
+  const newlyCreated: EventRecord[] = [];
 
   try {
     const snap = await store.readEarnings();
@@ -244,18 +256,71 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // ---- 3. Single commit for all earnings.json mutations ----
-    if (pendingEvents.size > 0) {
+    // ---- 3. Per-entity Yahoo pass: next-event upsert + restatement detection ----
+    // Runs once per operating entity (ETFs + developers don't have earnings).
+    // Uses the possibly-mutated current event for restatement comparison.
+    for (const entity of registry) {
+      if (entity.securityType !== "operating") continue;
+      let yahooSymbol: string | null = null;
+      try {
+        const [sym, exch = "US"] = entity.ticker.split(/\s+/);
+        const resolved = await yahooLookup(sym, exch);
+        if ("error" in resolved) continue;
+        yahooSymbol = resolved.yahooSymbol;
+      } catch { continue; }
+      const yahoo = await yahooEarnings(yahooSymbol);
+      if (!yahoo) continue;
+
+      // --- 3a. Next-event upsert ---
+      if (yahoo.nextEarningsDate) {
+        const { label } = periodFromReportingDate(yahoo.nextEarningsDate);
+        const combined = [
+          ...snap.events,
+          ...newlyCreated,
+        ];
+        if (!alreadyHasEvent(combined, entity.ticker, yahoo.nextEarningsDate, label)) {
+          const shell = buildEventShell(entity, yahoo.nextEarningsDate, label);
+          newlyCreated.push(shell);
+          newEvents.push({
+            eventId: shell.id,
+            ticker: entity.ticker,
+            period: label,
+            scheduledDate: yahoo.nextEarningsDate,
+          });
+        }
+      }
+
+      // --- 3b. Restatement detection ---
+      // Only compares against events with matching parsed period. Run against
+      // both original + pending versions so a same-cycle append doesn't mask
+      // a genuine restatement.
+      for (const original of snap.events) {
+        if (original.ticker !== entity.ticker) continue;
+        const current = pendingEvents.get(original.id) ?? original;
+        const { updated, hits } = detectRestatements(current, entity, yahoo);
+        if (hits.length > 0) {
+          restatements.push(...hits);
+          pendingEvents.set(original.id, updated);
+        }
+      }
+    }
+
+    // ---- 4. Single commit for all earnings.json mutations ----
+    const totalMutations = pendingEvents.size + newlyCreated.length;
+    if (totalMutations > 0) {
       await store.mutateEarnings(
         (s: EarningsSnapshot) => ({
           ...s,
-          events: s.events.map((e) => pendingEvents.get(e.id) ?? e),
+          events: [
+            ...s.events.map((e) => pendingEvents.get(e.id) ?? e),
+            ...newlyCreated,
+          ],
         }),
-        `cron: ${pendingEvents.size} event(s) updated (${
+        `cron: ${totalMutations} event mutation(s) (${
           eventSummaries.reduce((a, e) => a + e.appended, 0)
         } sources, ${
           eventSummaries.reduce((a, e) => a + e.maturedHorizons.length, 0)
-        } matured)`,
+        } matured, ${newlyCreated.length} new, ${restatements.length} restated)`,
       );
     }
   } catch (e) {
@@ -280,6 +345,8 @@ export async function POST(req: NextRequest) {
     events: eventSummaries,
     totalAppended: eventSummaries.reduce((a, e) => a + e.appended, 0),
     totalMatured: eventSummaries.reduce((a, e) => a + e.maturedHorizons.length, 0),
+    newEvents,
+    restatements,
   };
 
   try {

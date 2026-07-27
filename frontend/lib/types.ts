@@ -273,6 +273,21 @@ export interface CronRunSummary {
   }>;
   totalAppended: number;
   totalMatured: number;
+  newEvents: Array<{
+    eventId: string;
+    ticker: string;
+    period: string;
+    scheduledDate: string;
+  }>;
+  restatements: Array<{
+    eventId: string;
+    ticker: string;
+    metricKey: string;
+    priorValue: number;
+    restatedValue: number;
+    deltaPct: number; // positive percentage
+    at: string;
+  }>;
 }
 
 export interface DiscoverFeedResult {
