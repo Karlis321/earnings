@@ -1,6 +1,9 @@
 import { notFound } from "next/navigation";
-import { data } from "@/lib/data";
+import { store } from "@/server/store";
+import { findEntity } from "@/server/lib/registryHelpers";
 import { AddEditSecurityForm } from "@/components/admin/AddEditSecurityForm";
+
+export const dynamic = "force-dynamic";
 
 export default async function EditSecurityPage({
   params,
@@ -9,7 +12,8 @@ export default async function EditSecurityPage({
 }) {
   const { ticker: raw } = await params;
   const ticker = decodeURIComponent(raw);
-  const entity = data.getEntity(ticker);
+  const entities = await store.readRegistry();
+  const entity = findEntity(entities, ticker);
   if (!entity) notFound();
   return (
     <div>

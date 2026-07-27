@@ -1,15 +1,38 @@
 "use client";
 
 // Feedback tables (sources / keywords / items).
-// Backend integration flag: writes to /api/feedback (P8-T5).
+// Reads from /api/feedback; writes wire the "Adjust weights" button to
+// /api/feedback POST once the FE UX for it lands.
 
-import { data } from "@/lib/data";
+import { useEffect, useState } from "react";
+import { api } from "@/lib/apiClient";
 import { Panel } from "@/components/primitives";
+import type { FeedbackEntry } from "@/lib/types";
 import { useToast } from "@/providers/ToastProvider";
 
 export default function FeedbackPage() {
-  const feedback = data.getFeedback();
+  const [feedback, setFeedback] = useState<FeedbackEntry[]>([]);
+  const [err, setErr] = useState<string | null>(null);
   const { push } = useToast();
+
+  useEffect(() => {
+    let cancelled = false;
+    api
+      .getFeedback()
+      .then((r) => {
+        if (!cancelled) {
+          const wrapped = r as { entries?: FeedbackEntry[] };
+          setFeedback(wrapped.entries ?? []);
+        }
+      })
+      .catch((e) => {
+        if (!cancelled) setErr((e as Error).message);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   return (
     <div className="flex flex-col gap-4">
       <div>
@@ -30,6 +53,11 @@ export default function FeedbackPage() {
           <span>By</span>
           <span className="text-right">When</span>
         </div>
+        {err ? (
+          <div className="p-4 text-[12.5px] text-danger">
+            Failed to load /api/feedback: {err}
+          </div>
+        ) : null}
         {feedback.map((f) => (
           <div
             key={f.id}

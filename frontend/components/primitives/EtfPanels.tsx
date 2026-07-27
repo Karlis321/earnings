@@ -3,11 +3,8 @@
 import Link from "next/link";
 import type { EtfDistribution, EtfHolding } from "@/lib/types";
 import { fmtDate } from "@/lib/format";
-import { ENTITY_REGISTRY } from "@/lib/fixtures/registry";
 import { TickerLogo } from "./TickerLogo";
 import { ExternalLink, ChevronRight } from "lucide-react";
-
-const REGISTRY_TICKERS = new Set(ENTITY_REGISTRY.map((e) => e.ticker));
 
 export function DistributionRow({ dist }: { dist: EtfDistribution }) {
   return (
@@ -49,11 +46,19 @@ export function DistributionsTable({
 
 // Holdings row — click walks to that ticker's security page when it's in
 // coverage; otherwise opens the Yahoo Finance page in a new tab so the
-// analyst always has a next step.
-export function HoldingsTable({ holdings }: { holdings: EtfHolding[] }) {
+// analyst always has a next step. Coverage set comes in via prop from the
+// server RSC that owns the entity registry.
+export function HoldingsTable({
+  holdings,
+  coveredTickers,
+}: {
+  holdings: EtfHolding[];
+  coveredTickers?: Iterable<string>;
+}) {
   if (!holdings.length) {
     return <div className="p-4 text-[13px] text-tx-mid">No holdings on file.</div>;
   }
+  const covered = new Set(coveredTickers ?? []);
   return (
     <div>
       <div className="grid grid-cols-[auto_1fr_1fr_auto] items-center gap-3 border-b border-bd bg-panel2 px-4 py-[10px] font-mono text-[10.5px] uppercase tracking-[0.08em] text-tx3">
@@ -63,7 +68,7 @@ export function HoldingsTable({ holdings }: { holdings: EtfHolding[] }) {
         <span className="w-4" />
       </div>
       {holdings.map((h) => {
-        const inCoverage = REGISTRY_TICKERS.has(h.ticker);
+        const inCoverage = covered.has(h.ticker);
         const yahooSymbol = toYahooSymbol(h.ticker);
         const Row = (
           <>

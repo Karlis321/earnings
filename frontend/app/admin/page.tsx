@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { Panel, Button } from "@/components/primitives";
-import { data } from "@/lib/data";
+import { store } from "@/server/store";
 
-export default function AdminHome() {
-  const entities = data.listEntities();
+export const dynamic = "force-dynamic";
+
+export default async function AdminHome() {
+  const entities = await store.readRegistry();
   return (
     <div className="flex flex-col gap-4">
       <div>
@@ -15,7 +17,7 @@ export default function AdminHome() {
         </p>
       </div>
 
-      <Panel eyebrow="Coverage · 17 names">
+      <Panel eyebrow={`Coverage · ${entities.length} name${entities.length === 1 ? "" : "s"}`}>
         <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
           {entities.map((e) => (
             <Link

@@ -1,11 +1,13 @@
 "use client";
 
-// Global search / ⌘K palette. Typeahead against fixture watchlist first;
-// unknown ticker resolution is a P1-T3 backend dependency on /api/ticker-lookup.
+// Global search / ⌘K palette. Typeahead against the entity registry loaded
+// from /api/entity-registry on mount. Unknown-ticker resolution still needs
+// /api/ticker-lookup wiring — falls through to a "no matches" hint today.
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { data } from "@/lib/data";
+import { api } from "@/lib/apiClient";
+import type { Entity } from "@/lib/types";
 import { Search } from "lucide-react";
 import { TypeBadge } from "@/components/primitives";
 
@@ -13,9 +15,24 @@ export function GlobalSearch() {
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
   const [selected, setSelected] = useState(0);
+  const [entities, setEntities] = useState<Entity[]>([]);
   const router = useRouter();
-  const entities = useMemo(() => data.listEntities(), []);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    api
+      .getEntities()
+      .then((r) => {
+        if (!cancelled) setEntities(r);
+      })
+      .catch(() => {
+        /* Search stays empty on fetch failure. */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -103,9 +120,9 @@ export function GlobalSearch() {
             <div className="max-h-[360px] overflow-y-auto p-[6px]">
               {filtered.length === 0 ? (
                 <div className="px-3 py-6 text-center text-[13px] text-tx-mid">
-                  No matches. Live ticker-lookup unavailable in fixture mode.
+                  No matches in your covered names.
                   <div className="mt-1 font-mono text-[11px] text-tx-faint">
-                    backend: /api/ticker-lookup
+                    unknown-ticker resolution: /api/ticker-lookup (todo)
                   </div>
                 </div>
               ) : (

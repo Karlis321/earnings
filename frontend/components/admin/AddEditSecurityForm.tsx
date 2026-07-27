@@ -5,9 +5,9 @@
 // Wired to POST /api/entity-registry (new) + PUT /api/entity-registry/:ticker (edit).
 // Ticker resolve → /api/ticker-lookup remains stubbed until W4.T1.
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import type { Entity, SecurityType } from "@/lib/types";
+import type { Entity, MetricDictionary, SecurityType } from "@/lib/types";
 import {
   Button,
   Input,
@@ -16,7 +16,6 @@ import {
   FieldHint,
   Panel,
 } from "@/components/primitives";
-import { METRIC_LABELS } from "@/lib/fixtures/registry";
 import { useToast } from "@/providers/ToastProvider";
 import { usePersistence } from "@/providers/PersistenceProvider";
 import { api, ApiError } from "@/lib/apiClient";
@@ -52,6 +51,21 @@ export function AddEditSecurityForm({ initial, mode }: Props) {
   const [cashtag, setCashtag] = useState(initial?.cashtag ?? "");
   const [isCore, setIsCore] = useState(initial?.isCore ?? true);
   const [xHandle, setXHandle] = useState(initial?.xHandle ?? "");
+  const [dictionary, setDictionary] = useState<MetricDictionary["metrics"]>({});
+  useEffect(() => {
+    let cancelled = false;
+    api
+      .getDictionary()
+      .then((d) => {
+        if (!cancelled) setDictionary((d as MetricDictionary).metrics ?? {});
+      })
+      .catch(() => {
+        /* form still renders — headline metric grid just stays empty */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
 
@@ -329,7 +343,7 @@ export function AddEditSecurityForm({ initial, mode }: Props) {
       {type === "operating" ? (
         <Panel eyebrow="Headline metrics · from canonical dictionary">
           <div className="grid grid-cols-3 gap-2">
-            {Object.entries(METRIC_LABELS).map(([key, meta]) => {
+            {Object.entries(dictionary).map(([key, meta]) => {
               const on = headlineMetrics.includes(key);
               return (
                 <button

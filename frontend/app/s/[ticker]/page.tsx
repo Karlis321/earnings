@@ -1,31 +1,34 @@
 import { notFound } from "next/navigation";
-import { data } from "@/lib/data";
+import { store } from "@/server/store";
+import { findEntity, eventsForTicker } from "@/server/lib/registryHelpers";
 import { SecurityHeader } from "@/components/security/SecurityHeader";
 import { OperatingDetail } from "@/components/security/OperatingDetail";
 import { DeveloperDetail } from "@/components/security/DeveloperDetail";
 import { EtfDetail } from "@/components/security/EtfDetail";
 import { EmptyState } from "@/components/primitives";
-import { computeFreshness } from "@/lib/freshness";
+import { computeFreshness, TODAY_ISO } from "@/lib/freshness";
 
 // Security Detail — three variants per FE PRD §7.3–7.5.
-// Backend integration flag (P5-T6): full event data comes from /api/earnings?ticker.
 
 interface Props {
   params: Promise<{ ticker: string }>;
 }
 
+export const dynamic = "force-dynamic";
+
 export default async function SecurityDetailPage({ params }: Props) {
   const { ticker: raw } = await params;
   const ticker = decodeURIComponent(raw);
-  const entity = data.getEntity(ticker);
+  const [entities, snapshot] = await Promise.all([
+    store.readRegistry(),
+    store.readEarnings(),
+  ]);
+  const entity = findEntity(entities, ticker);
   if (!entity) notFound();
 
-  const events = data
-    .getEventsForTicker(ticker)
-    .sort((a, b) => b.scheduledDate.localeCompare(a.scheduledDate));
-
+  const events = eventsForTicker(snapshot, ticker);
   const latest = events[0];
-  const nextEvent = events.find((e) => e.scheduledDate >= "2026-07-24");
+  const nextEvent = events.find((e) => e.scheduledDate >= TODAY_ISO);
   const freshness = computeFreshness(
     latest?.sources.capturedAt ?? latest?.eventDate ?? latest?.scheduledDate ?? null,
   );
@@ -45,7 +48,13 @@ export default async function SecurityDetailPage({ params }: Props) {
       {entity.securityType === "developer" && (
         <DeveloperDetail entity={entity} events={events} />
       )}
-      {entity.securityType === "etf" && <EtfDetail entity={entity} />}
+      {entity.securityType === "etf" && (
+        <EtfDetail
+          entity={entity}
+          detail={snapshot.etfDetails?.[ticker]}
+          coveredTickers={entities.map((e) => e.ticker)}
+        />
+      )}
 
       {entity.securityType === "operating" && events.length === 0 && (
         <EmptyState

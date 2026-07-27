@@ -1,6 +1,6 @@
 "use client";
 
-import type { Entity } from "@/lib/types";
+import type { Entity, EtfDetail as EtfDetailData } from "@/lib/types";
 import {
   Panel,
   DistributionsTable,
@@ -9,19 +9,29 @@ import {
 } from "@/components/primitives";
 import { SecurityPriceChart } from "./SecurityPriceChart";
 import { CompanyNewsPanel } from "./CompanyNewsPanel";
-import { data } from "@/lib/data";
 import Link from "next/link";
 
 // ETF variant: price, distributions, holdings, "used as benchmark for".
 // No events. Friendly no-events state. (FE PRD §7.5)
+// Detail data is fetched server-side from store.readEarnings().etfDetails
+// and passed as a prop — no client-side fixture read.
 
-export function EtfDetail({ entity }: { entity: Entity }) {
-  const detail = data.getEtfDetail(entity.ticker);
+export function EtfDetail({
+  entity,
+  detail,
+  coveredTickers,
+}: {
+  entity: Entity;
+  detail: EtfDetailData | undefined;
+  coveredTickers?: string[];
+}) {
   if (!detail) {
     return (
       <Panel eyebrow="ETF · no data on file">
         <div className="text-tx-mid">
-          No fixture ETF data for {entity.ticker}.
+          No ETF data for {entity.ticker} yet. The daily cron will populate
+          price, distributions, and holdings once the ETF is registered on
+          the covered list.
         </div>
       </Panel>
     );
@@ -79,7 +89,10 @@ export function EtfDetail({ entity }: { entity: Entity }) {
         </Panel>
 
         <Panel eyebrow="Top holdings · click to open" padded={false}>
-          <HoldingsTable holdings={detail.holdings} />
+          <HoldingsTable
+            holdings={detail.holdings}
+            coveredTickers={coveredTickers}
+          />
         </Panel>
 
         <CompanyNewsPanel

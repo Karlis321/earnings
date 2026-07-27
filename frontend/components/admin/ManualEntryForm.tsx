@@ -4,8 +4,8 @@
 // Wired to POST /api/manual-entry (W4). Per-field errors from the server are
 // merged onto the client's form-level `errors` map.
 
-import { useMemo, useState } from "react";
-import type { Entity, EventRecord } from "@/lib/types";
+import { useEffect, useMemo, useState } from "react";
+import type { Entity, EventRecord, MetricDictionary } from "@/lib/types";
 import {
   Button,
   Input,
@@ -14,7 +14,6 @@ import {
   FieldHint,
   Panel,
 } from "@/components/primitives";
-import { METRIC_LABELS } from "@/lib/fixtures/registry";
 import { useToast } from "@/providers/ToastProvider";
 import { usePersistence } from "@/providers/PersistenceProvider";
 import { api, ApiError } from "@/lib/apiClient";
@@ -27,13 +26,31 @@ interface Props {
 export function ManualEntryForm({ entity, events }: Props) {
   const { push } = useToast();
   const { markSyncing, markSynced, markLocal } = usePersistence();
+  const [dictionary, setDictionary] = useState<MetricDictionary["metrics"]>({});
+  useEffect(() => {
+    let cancelled = false;
+    api
+      .getDictionary()
+      .then((d) => {
+        if (cancelled) return;
+        const metrics = (d as MetricDictionary).metrics ?? {};
+        setDictionary(metrics);
+        // Backfill the unit input once the dictionary loads if the user
+        // hasn't touched it yet.
+        setUnit((u) => u || metrics[entity.headlineMetrics[0]]?.unit || "");
+      })
+      .catch(() => {
+        /* form still renders — metric picker just stays empty */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [entity.headlineMetrics]);
   const [eventId, setEventId] = useState(events[0]?.id ?? "");
   const [metric, setMetric] = useState(entity.headlineMetrics[0] ?? "");
   const [slot, setSlot] = useState<"actual" | "estimate" | "prior">("actual");
   const [value, setValue] = useState("");
-  const [unit, setUnit] = useState(
-    METRIC_LABELS[entity.headlineMetrics[0]]?.unit ?? "",
-  );
+  const [unit, setUnit] = useState("");
   const [source, setSource] = useState("");
   const [asOf, setAsOf] = useState("");
   const [method, setMethod] = useState<
@@ -71,13 +88,13 @@ export function ManualEntryForm({ entity, events }: Props) {
         sourceUrl: source.trim(),
         asOf,
         method,
-        displayLabel: METRIC_LABELS[metric]?.label ?? metric,
+        displayLabel: dictionary[metric]?.label ?? metric,
         isHeadline: entity.headlineMetrics.includes(metric),
       });
       markSynced();
       push({
         kind: "success",
-        message: `Saved ${METRIC_LABELS[metric]?.label ?? metric} · ${slot}`,
+        message: `Saved ${dictionary[metric]?.label ?? metric} · ${slot}`,
       });
       setValue("");
       setSource("");
@@ -144,11 +161,11 @@ export function ManualEntryForm({ entity, events }: Props) {
               value={metric}
               onChange={(e) => {
                 setMetric(e.target.value);
-                setUnit(METRIC_LABELS[e.target.value]?.unit ?? "");
+                setUnit(dictionary[e.target.value]?.unit ?? "");
               }}
               className="h-9 w-full rounded-button border border-bd2 bg-s2 px-3 text-[13.5px] text-tx"
             >
-              {Object.entries(METRIC_LABELS).map(([k, meta]) => (
+              {Object.entries(dictionary).map(([k, meta]) => (
                 <option key={k} value={k}>
                   {meta.label} · {k}
                 </option>

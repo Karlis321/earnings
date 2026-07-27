@@ -1,6 +1,12 @@
 import { notFound } from "next/navigation";
-import { data } from "@/lib/data";
+import { store } from "@/server/store";
+import {
+  findEntity,
+  eventsForTicker,
+} from "@/server/lib/registryHelpers";
 import { ManualEntryForm } from "@/components/admin/ManualEntryForm";
+
+export const dynamic = "force-dynamic";
 
 export default async function ManualEntryPage({
   params,
@@ -9,13 +15,14 @@ export default async function ManualEntryPage({
 }) {
   const { ticker: raw } = await params;
   const ticker = decodeURIComponent(raw);
-  const entity = data.getEntity(ticker);
+  const [entities, snapshot] = await Promise.all([
+    store.readRegistry(),
+    store.readEarnings(),
+  ]);
+  const entity = findEntity(entities, ticker);
   if (!entity) notFound();
 
-  const events = data
-    .getEventsForTicker(ticker)
-    .slice()
-    .sort((a, b) => b.scheduledDate.localeCompare(a.scheduledDate));
+  const events = eventsForTicker(snapshot, ticker);
 
   return (
     <div>

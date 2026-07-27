@@ -2,14 +2,29 @@
 
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { useRouter } from "next/navigation";
-import { useMemo } from "react";
-import { data } from "@/lib/data";
+import { useEffect, useState } from "react";
+import { api } from "@/lib/apiClient";
+import type { Entity } from "@/lib/types";
 import { TypeBadge } from "@/components/primitives";
 import { ChevronDown } from "lucide-react";
 
 export function SecuritySwitcher({ currentTicker }: { currentTicker: string }) {
   const router = useRouter();
-  const list = useMemo(() => data.listEntities(), []);
+  const [list, setList] = useState<Entity[]>([]);
+  useEffect(() => {
+    let cancelled = false;
+    api
+      .getEntities()
+      .then((r) => {
+        if (!cancelled) setList(r);
+      })
+      .catch(() => {
+        /* Header switcher stays empty on fetch failure — not fatal. */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
   const current = list.find((e) => e.ticker === currentTicker);
   return (
     <DropdownMenu.Root>

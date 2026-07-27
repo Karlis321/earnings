@@ -1,13 +1,17 @@
 import Link from "next/link";
-import { data } from "@/lib/data";
+import { store } from "@/server/store";
+import { sectorCounts } from "@/server/lib/registryHelpers";
 import { Panel } from "@/components/primitives";
 
-export default function SectorsPage() {
-  const sectors = data.getSectors();
+export const dynamic = "force-dynamic";
+
+export default async function SectorsPage() {
+  const entities = await store.readRegistry();
+  const sectors = sectorCounts(entities);
   return (
     <div className="mx-auto max-w-[1800px] px-10 py-8">
       <div className="mb-6">
-        <div className="mono-eyebrow mb-3">§ Sectors · Phase 3</div>
+        <div className="mono-eyebrow mb-3">§ Sectors</div>
         <h1 className="text-[28px] font-semibold tracking-[-0.02em]">
           Sector view
         </h1>

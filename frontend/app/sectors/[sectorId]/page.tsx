@@ -1,5 +1,8 @@
 import Link from "next/link";
-import { data } from "@/lib/data";
+import { store } from "@/server/store";
+import { entitiesInSector } from "@/server/lib/registryHelpers";
+import { buildWatchlistRows } from "@/lib/watchlist";
+import { TODAY_ISO } from "@/lib/freshness";
 import { notFound } from "next/navigation";
 import {
   Panel,
@@ -15,13 +18,22 @@ interface Props {
   params: Promise<{ sectorId: string }>;
 }
 
+export const dynamic = "force-dynamic";
+
 export default async function SectorDetailPage({ params }: Props) {
   const { sectorId: raw } = await params;
   const sectorId = decodeURIComponent(raw);
-  const members = data.getEntitiesInSector(sectorId);
+  const [entities, snapshot] = await Promise.all([
+    store.readRegistry(),
+    store.readEarnings(),
+  ]);
+  const members = entitiesInSector(entities, sectorId);
   if (members.length === 0) notFound();
 
-  const watchlist = data.getWatchlist().filter((r) => members.some((m) => m.ticker === r.ticker));
+  const allRows = buildWatchlistRows(entities, snapshot, TODAY_ISO);
+  const watchlist = allRows.filter((r) =>
+    members.some((m) => m.ticker === r.ticker),
+  );
 
   return (
     <div className="mx-auto max-w-[1800px] px-10 py-8">

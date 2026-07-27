@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
-import { data } from "@/lib/data";
+import { store } from "@/server/store";
+import { findEntity, findEvent } from "@/server/lib/registryHelpers";
 import { Breadcrumb } from "@/components/shell/Breadcrumb";
 import {
   Card,
@@ -24,14 +25,19 @@ interface Props {
 }
 
 // Event (Print) Detail. FE PRD §7.6.
-// Backend integration flag: full event object comes from /api/earnings (P6-T8).
+
+export const dynamic = "force-dynamic";
 
 export default async function EventDetailPage({ params }: Props) {
   const { ticker: rawTicker, eventId: rawEventId } = await params;
   const ticker = decodeURIComponent(rawTicker);
   const eventId = decodeURIComponent(rawEventId);
-  const entity = data.getEntity(ticker);
-  const event = data.getEvent(eventId);
+  const [entities, snapshot] = await Promise.all([
+    store.readRegistry(),
+    store.readEarnings(),
+  ]);
+  const entity = findEntity(entities, ticker);
+  const event = findEvent(snapshot, eventId);
   if (!entity || !event) notFound();
 
   const freshness = computeFreshness(event.sources.capturedAt ?? event.eventDate);
