@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { store } from "@/server/store";
-import { fanoutNews } from "@/server/vendors/news";
+import { fanoutNews, fetchEntityNews } from "@/server/vendors/news";
 import { fetchPressReleases } from "@/server/vendors/pressReleases";
 import { matureEventReaction } from "@/server/lib/reactionMaturation";
 import {
@@ -11,6 +11,7 @@ import {
   parseStoredPeriod,
   parseYahooPeriod,
   periodFromReportingDate,
+  seedReactionPoints,
 } from "@/server/lib/cronDetections";
 import {
   fetchAndIngest,
@@ -26,7 +27,11 @@ import { refreshSectorUniverse } from "@/server/lib/sectorExpansion";
 import { resolveEdgarCik } from "@/server/lib/edgarCikResolver";
 import { capTierFor } from "@/lib/capTier";
 import { urlHash } from "@/lib/itemDedupe";
-import { mentionsHolding, matchesExclusionAlias } from "@/lib/tickerMatch";
+import {
+  mentionsHolding,
+  matchesExclusionAlias,
+  tickerSearchTokens,
+} from "@/lib/tickerMatch";
 import type {
   CronRunSummary,
   EarningsSnapshot,
@@ -184,6 +189,27 @@ export async function POST(req: NextRequest) {
       return r;
     };
 
+    // Per-entity Google News search — supplements the shared theme pool
+    // with a targeted OR-query per ticker. Cached per unique ticker so
+    // multi-event tickers don't refetch. Fail-soft (null on error).
+    const entityNewsCache = new Map<
+      string,
+      Awaited<ReturnType<typeof fetchEntityNews>> | null
+    >();
+    const getEntityNews = async (entity: (typeof registry)[number]) => {
+      const key = entity.ticker;
+      if (entityNewsCache.has(key)) return entityNewsCache.get(key)!;
+      const tokens = tickerSearchTokens(entity);
+      const r = await fetchEntityNews(entity.ticker, tokens, 14).catch(
+        () => null,
+      );
+      entityNewsCache.set(key, r);
+      if (r) {
+        mergeEngine(engineAgg, "google", r.ok, r.itemsFound);
+      }
+      return r;
+    };
+
     for (const original of snap.events) {
       const entity = registry.find((e) => e.ticker === original.ticker);
       if (!entity) continue;
@@ -197,12 +223,21 @@ export async function POST(req: NextRequest) {
       if (withinWindow(current.scheduledDate, now)) {
         const newsRes = newsRun;
         const pressRes = await getPress(entity.ticker);
+        const entityNewsRes = await getEntityNews(entity);
 
         const seen = new Set(current.sources.items.map((i) => i.id));
         const nowIso = now.toISOString();
         const newItems: SourceItem[] = [];
 
-        for (const n of newsRes?.items ?? []) {
+        // Merge the shared theme pool with the entity-specific Google News
+        // hits. Dedup by URL happens further down when items are hashed
+        // into the SourceItem.id set — same URL from both sources
+        // collapses to one.
+        const combinedNews = [
+          ...(newsRes?.items ?? []),
+          ...(entityNewsRes?.items ?? []),
+        ];
+        for (const n of combinedNews) {
           if (matchesExclusionAlias(n.headline, entity)) continue;
           if (!mentionsHolding(n.headline, entity)) continue;
           const id = urlHash(n.url);
@@ -257,10 +292,12 @@ export async function POST(req: NextRequest) {
           // actually contributed to this event's stream — subset of the
           // run-wide aggregate above).
           const perEventStatus: EngineStatus[] = [];
-          if (newsRes) {
+          if (newsRes || entityNewsRes) {
+            const sharedOk = (newsRes?.engineStatus ?? []).some((s) => s.ok);
+            const entityOk = entityNewsRes?.ok ?? false;
             perEventStatus.push({
               engine: "google",
-              ok: (newsRes.engineStatus ?? []).some((s) => s.ok),
+              ok: sharedOk || entityOk,
               itemsFound: newItems.filter((i) => i.engine === "google").length,
             });
           }
@@ -293,6 +330,10 @@ export async function POST(req: NextRequest) {
       }
 
       // ---- 2. Reaction horizon maturation ----
+      // Idempotent self-heal: past events built under the old code have
+      // reaction.points = []. seedReactionPoints fills them in from
+      // HORIZONS so matureEventReaction can then seed baseline + compute.
+      current = seedReactionPoints(current);
       let matured: Horizon[] = [];
       try {
         const m = await matureEventReaction(current, entity);
@@ -303,7 +344,14 @@ export async function POST(req: NextRequest) {
         errors.push(`reaction: ${(e as Error).message}`);
       }
 
-      if (appended > 0 || matured.length > 0) {
+      // Persist if we picked up sources, matured a horizon, or the
+      // reaction step mutated the event (baseline seeded, points seeded).
+      const reactionChanged =
+        current.reaction !== original.reaction ||
+        current.reaction.baselineDate !== original.reaction.baselineDate ||
+        current.reaction.baselineClose !== original.reaction.baselineClose ||
+        current.reaction.points.length !== original.reaction.points.length;
+      if (appended > 0 || matured.length > 0 || reactionChanged) {
         pendingEvents.set(original.id, current);
       }
 

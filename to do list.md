@@ -7,7 +7,49 @@
 
 ---
 
-## ✅ Done this cycle (perf + correctness)
+## ✅ Done this cycle (coverage + reaction baseline)
+
+- [x] **Per-entity Google News search.**
+      Added `fetchEntityNews(ticker, tokens, days)` in
+      `frontend/server/vendors/news.ts` — builds a single Google News
+      RSS URL from `tickerSearchTokens(entity)` (quoted phrases, OR'd,
+      `+when:14d`), fetches once per unique ticker, applies the same
+      time-cutoff + redirect resolution as the shared pool. Verified
+      live against Hudbay's Google News URL (returns 8 real headlines).
+      Wired into cron as an additional per-ticker news source alongside
+      the shared theme pool; cached per unique ticker like press
+      releases. `perEventStatus.google.ok` now OR's the entity-search
+      result with the shared pool.
+
+- [x] **Reaction baseline seeding — root cause + fix.**
+      `matureEventReaction` returned early on every event because
+      `event.reaction.baselineDate` was `null` — the comment on
+      `buildEventShell` promised "a future cron run seeds them" but
+      nothing did. Folded baseline seeding into `matureEventReaction`:
+      when the event date has passed and no baseline exists, seed it
+      from the security's own bars using the BMO/AMC rule
+      (`pickBaselineIdx`), then continue with horizon maturation in the
+      same call (reuses the same 3mo bar fetch). Also fixed a related
+      bug: 208 past events were persisted with `reaction.points: []`.
+      Added `seedReactionPoints` (called before `matureEventReaction`
+      in cron) to fill in the four HORIZONS for events that lack them,
+      and `buildPastEvent` now seeds them at creation time. The cron's
+      write-back gate now also triggers on reaction-only changes so
+      seeded baselines get persisted even when no horizon matures.
+
+- [x] **Chart hover-dot horizontal offset — root cause + fix.**
+      Symptom "zero at center, grows toward both edges". The
+      `clientX -> viewBox` scale factor was correct (has been since
+      commit `400c5de`). The real cause: SVG had default
+      `preserveAspectRatio="xMidYMid meet"` which letterboxes the
+      900-wide viewBox inside a wider container — `rect.width` includes
+      the dead space so the mapping is off by the letterbox offset.
+      Set `preserveAspectRatio="none"`. Vertical is unaffected because
+      `height` matches viewBox height.
+
+---
+
+## ✅ Done previous cycle (perf + correctness)
 
 - [x] **Cron news fan-out — hoisted out of the per-event loop.**
       Previously `fanoutNews({ query: entity.displayName, days: 14 })` ran
@@ -211,12 +253,21 @@
       marketCap OR netAssets. Low priority (odd share classes rarely
       matter for coverage).
 
-- [ ] **Optional: per-entity Google News search.** With the news
-      fan-out hoisted, we now share one 100-item news pool across all
-      events. That is enough for the core 17 but caps per-entity
-      coverage. If we want deeper per-entity coverage, add a targeted
-      Google News RSS query per entity (e.g. `q=<displayName>+OR+<cashtag>+when:14d`)
-      alongside the shared pool. Keep the shared pool for theme coverage.
+- [ ] **Headline-metric Fact coverage.** Data audit against 266 events:
+      only BOLSY (`eps_usd`, 4/4 actual) and BN (`fee_bearing_capital`
+      estimate, 1/1) have any populated headline Facts. Every other
+      operating ticker has zero. `buildPastEvent` only fills EPS from
+      Yahoo — revenue / production / EBITDA come from filings or manual
+      entry. Options: (a) add `/admin/entry/:ticker` UX to expose the
+      empty-Fact rows for quick data entry; (b) wire an LLM extractor
+      against filed 10-Q text via the document ingest pipe when press
+      releases are on the allowlist.
+
+- [ ] **Document ingest still at 0.** No `data/documents/<id>.json`
+      files exist. Ingest only runs against press-release URLs that
+      match the `isIngestableUrl` allowlist. Widen the allowlist or add
+      seed URLs so the ingest pipe writes at least one document and
+      hosted-mode viewer is exercised end-to-end.
 
 ---
 

@@ -22,6 +22,26 @@ const HORIZON_TRADING_DAYS: Record<Horizon, number> = {
   m1: 21,
 };
 
+// Seed the four reaction horizons for an event that landed with points: []
+// (past events built under the old buildPastEvent code). Idempotent —
+// returns the same reference when points already exist.
+export function seedReactionPoints(event: EventRecord): EventRecord {
+  if (event.reaction.points.length > 0) return event;
+  const anchor = event.eventDate ?? event.scheduledDate;
+  const points: ReactionPoint[] = HORIZONS.map((h) => ({
+    horizon: h,
+    absReturn: null,
+    excessReturn: null,
+    benchmark: event.reaction.benchmark ?? "",
+    computedAt: null,
+    populatesOn: horizonPopulatesOn(anchor, h),
+  }));
+  return {
+    ...event,
+    reaction: { ...event.reaction, points },
+  };
+}
+
 // Yahoo's earningsChart.quarterly.date labels: "1Q2026", "4Q2025", etc.
 export function parseYahooPeriod(
   s: string,
@@ -214,11 +234,20 @@ export function buildPastEvent(
     guidance: [],
     reaction: {
       benchmark: entity.benchmark,
+      // Left null here — matureEventReaction seeds baselineDate +
+      // baselineClose from the security's own bars on the first cron
+      // pass after this event lands, then matures every horizon whose
+      // populatesOn is already past.
       baselineDate: null,
       baselineClose: null,
-      // Past-event horizons are not yet backfilled with real close-vs-baseline
-      // numbers — needs a bar-fetch pass separately. Empty points for now.
-      points: [],
+      points: HORIZONS.map((h) => ({
+        horizon: h,
+        absReturn: null,
+        excessReturn: null,
+        benchmark: entity.benchmark,
+        computedAt: null,
+        populatesOn: horizonPopulatesOn(scheduledDate, h),
+      })),
     },
     sources: {
       windowStart: addDays(scheduledDate, -2),

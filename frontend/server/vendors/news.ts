@@ -274,3 +274,78 @@ export async function fanoutNews(
 export const NEWS_CATEGORIES = Array.from(
   new Set(RSS_SOURCES.map((s) => s.category)),
 );
+
+// Per-entity Google News search. Builds a single RSS URL with an OR'd
+// query of the entity's aliases + cashtag + Yahoo-suffix forms. Fetches,
+// parses, time-filters, and resolves the same Google News redirects as
+// the shared pool. Runs once per unique ticker in the cron; cached at
+// the call site.
+export interface EntityNewsResult {
+  fetchedAt: string;
+  ticker: string;
+  items: NewsItem[];
+  ok: boolean;
+  itemsFound: number;
+  redirectsResolved: number;
+}
+
+// Google News quotes multi-word phrases and joins with OR. Cashtags come
+// in unquoted since they're single tokens. Cap the query to a sensible
+// length (Google truncates around 500 chars anyway).
+function buildGoogleNewsUrl(tokens: string[], days: number): string {
+  const q = tokens
+    .map((t) => (/\s/.test(t) ? `"${t}"` : t))
+    .join(" OR ");
+  const trimmed = q.slice(0, 480);
+  const params = new URLSearchParams({
+    q: `${trimmed} when:${days}d`,
+    hl: "en-US",
+    gl: "US",
+    ceid: "US:en",
+  });
+  return `https://news.google.com/rss/search?${params.toString()}`;
+}
+
+export async function fetchEntityNews(
+  ticker: string,
+  tokens: string[],
+  days = 14,
+): Promise<EntityNewsResult> {
+  const cutoff = Date.now() - days * 86_400_000;
+  if (tokens.length === 0) {
+    return {
+      fetchedAt: new Date().toISOString(),
+      ticker,
+      items: [],
+      ok: false,
+      itemsFound: 0,
+      redirectsResolved: 0,
+    };
+  }
+  const url = buildGoogleNewsUrl(tokens, days);
+  const xml = await fetchRss(url);
+  if (xml === null) {
+    return {
+      fetchedAt: new Date().toISOString(),
+      ticker,
+      items: [],
+      ok: false,
+      itemsFound: 0,
+      redirectsResolved: 0,
+    };
+  }
+  const parsed = parseFeed(xml, `Google News · ${ticker}`, "wire");
+  const timeFiltered = parsed.filter((i) => {
+    if (!i.time) return true;
+    return new Date(i.time).getTime() >= cutoff;
+  });
+  const redirectsResolved = await resolveGoogleNewsUrls(timeFiltered);
+  return {
+    fetchedAt: new Date().toISOString(),
+    ticker,
+    items: timeFiltered,
+    ok: true,
+    itemsFound: timeFiltered.length,
+    redirectsResolved,
+  };
+}

@@ -87,29 +87,42 @@ interface Result {
   errors: string[];
 }
 
+// Given an anchor date and timing rule, find the baseline close bar.
+//   BMO → event day close (first bar on or after anchor)
+//   AMC → next session close (first bar strictly after anchor)
+//   null → default to BMO behavior
+function pickBaselineIdx(
+  bars: Bar[],
+  anchorDate: string,
+  timing: EventRecord["timing"],
+): number {
+  const anchorTs = new Date(anchorDate).getTime();
+  if (timing === "AMC") {
+    return bars.findIndex((b) => new Date(b.date).getTime() > anchorTs);
+  }
+  return bars.findIndex((b) => new Date(b.date).getTime() >= anchorTs);
+}
+
 export async function matureEventReaction(
   event: EventRecord,
   entity: Entity,
 ): Promise<Result> {
   const now = new Date();
+  const anchor = event.eventDate ?? event.scheduledDate;
+  const anchorHasPassed = anchor && new Date(anchor).getTime() <= now.getTime();
+
   const pending = event.reaction.points.filter(
     (p) =>
       p.absReturn === null &&
       p.populatesOn &&
       new Date(p.populatesOn) <= now,
   );
-  if (pending.length === 0) {
-    return { updated: event, matured: [], errors: [] };
-  }
+  const needsBaseline =
+    (!event.reaction.baselineDate || event.reaction.baselineClose === null) &&
+    anchorHasPassed;
 
-  const baselineDate = event.reaction.baselineDate;
-  const baselineClose = event.reaction.baselineClose;
-  if (!baselineDate || baselineClose === null) {
-    return {
-      updated: event,
-      matured: [],
-      errors: ["no baseline — cannot mature"],
-    };
+  if (pending.length === 0 && !needsBaseline) {
+    return { updated: event, matured: [], errors: [] };
   }
 
   const secSymbol = await resolveYahooSymbol(entity.ticker);
@@ -126,6 +139,35 @@ export async function matureEventReaction(
       updated: event,
       matured: [],
       errors: [`no security bars for ${secSymbol}`],
+    };
+  }
+
+  // Seed baseline from bars when the event is past and no baseline yet.
+  let baselineDate = event.reaction.baselineDate;
+  let baselineClose = event.reaction.baselineClose;
+  if (needsBaseline) {
+    const idx = pickBaselineIdx(secBars, anchor, event.timing);
+    if (idx >= 0) {
+      baselineDate = secBars[idx].date;
+      baselineClose = secBars[idx].close;
+    }
+  }
+
+  if (!baselineDate || baselineClose === null) {
+    return {
+      updated:
+        needsBaseline && event.reaction.baselineDate !== baselineDate
+          ? {
+              ...event,
+              reaction: {
+                ...event.reaction,
+                baselineDate,
+                baselineClose,
+              },
+            }
+          : event,
+      matured: [],
+      errors: ["no baseline — cannot mature (bars not yet available)"],
     };
   }
   const secBaseIdx = findBaselineIndex(secBars, baselineDate);
@@ -190,14 +232,23 @@ export async function matureEventReaction(
     };
   });
 
-  if (matured.length === 0) {
+  const baselineChanged =
+    baselineDate !== event.reaction.baselineDate ||
+    baselineClose !== event.reaction.baselineClose;
+
+  if (matured.length === 0 && !baselineChanged) {
     return { updated: event, matured, errors };
   }
 
   return {
     updated: {
       ...event,
-      reaction: { ...event.reaction, points: nextPoints },
+      reaction: {
+        ...event.reaction,
+        baselineDate,
+        baselineClose,
+        points: nextPoints,
+      },
     },
     matured,
     errors,
