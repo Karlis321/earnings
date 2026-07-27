@@ -23,6 +23,7 @@ import {
   yahooQuoteMetaBatch,
 } from "@/server/vendors/yahoo";
 import { refreshSectorUniverse } from "@/server/lib/sectorExpansion";
+import { resolveEdgarCik } from "@/server/lib/edgarCikResolver";
 import { capTierFor } from "@/lib/capTier";
 import { urlHash } from "@/lib/itemDedupe";
 import { mentionsHolding, matchesExclusionAlias } from "@/lib/tickerMatch";
@@ -490,45 +491,80 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // ---- 6c. Backfill missing SEC EDGAR CIKs ----
+    // Entities added before the auto-resolver landed have edgarCik === undefined.
+    // Resolve them here so /api/press-releases hits EDGAR automatically for
+    // any SEC filer (including 20-F/40-F foreign issuers). `null` marks a
+    // ticker as "checked and not on SEC" so we don't re-hit the resolver.
+    const cikResolutions = new Map<string, string | null>();
+    await Promise.all(
+      registry
+        .filter((e) => e.edgarCik === undefined)
+        .map(async (e) => {
+          try {
+            const cik = await resolveEdgarCik({
+              ticker: e.ticker,
+              legalName: e.legalName,
+            });
+            cikResolutions.set(e.ticker, cik);
+          } catch {
+            /* transient — leave as undefined for next cron */
+          }
+        }),
+    );
+
     const updatedEntities = registry.map((entity) => {
       mcAttempted++;
       const entry = resolved.find((r) => r.entity.ticker === entity.ticker);
       const sym = entry?.yahooSymbol;
+      const cikResolved = cikResolutions.has(entity.ticker)
+        ? cikResolutions.get(entity.ticker)!
+        : entity.edgarCik;
+      const cikChanged =
+        cikResolutions.has(entity.ticker) &&
+        cikResolutions.get(entity.ticker) !== entity.edgarCik;
       if (!sym) {
         mcFailed++;
-        return entity;
+        return cikChanged ? { ...entity, edgarCik: cikResolved } : entity;
       }
       const q = bySymbol.get(sym);
       if (!q || q.marketCapUsd == null) {
         mcFailed++;
-        return entity;
+        return cikChanged ? { ...entity, edgarCik: cikResolved } : entity;
       }
       const newTier = capTierFor(q.marketCapUsd);
       const priorTier = entity.capTier ?? "unknown";
       const changed =
         entity.marketCapUsd !== q.marketCapUsd || priorTier !== newTier;
-      if (!changed) {
+      if (!changed && !cikChanged) {
         mcUnchanged++;
         return entity;
       }
-      mcUpdated++;
-      if (priorTier !== newTier) {
-        mcTierChanges.push({
-          ticker: entity.ticker,
-          priorTier,
-          newTier,
-          marketCapUsd: q.marketCapUsd,
-        });
+      if (changed) {
+        mcUpdated++;
+        if (priorTier !== newTier) {
+          mcTierChanges.push({
+            ticker: entity.ticker,
+            priorTier,
+            newTier,
+            marketCapUsd: q.marketCapUsd,
+          });
+        }
       }
       return {
         ...entity,
-        marketCapUsd: q.marketCapUsd,
-        marketCapAsOf: asOfDate,
-        capTier: newTier,
+        ...(changed
+          ? {
+              marketCapUsd: q.marketCapUsd,
+              marketCapAsOf: asOfDate,
+              capTier: newTier,
+            }
+          : {}),
+        ...(cikChanged ? { edgarCik: cikResolved } : {}),
       };
     });
 
-    if (mcUpdated > 0) {
+    if (mcUpdated > 0 || cikResolutions.size > 0) {
       await store.writeRegistry(updatedEntities);
     }
   } catch (e) {

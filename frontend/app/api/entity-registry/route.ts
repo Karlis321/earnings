@@ -13,6 +13,7 @@ import {
   periodFromReportingDate,
 } from "@/server/lib/cronDetections";
 import { capTierFor } from "@/lib/capTier";
+import { resolveEdgarCik } from "@/server/lib/edgarCikResolver";
 import type { EarningsSnapshot, Entity } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -81,6 +82,19 @@ export async function POST(req: NextRequest) {
       } catch { /* ignore */ }
     }
 
+    // Resolve SEC EDGAR CIK once at add time (foreign private issuers file
+    // 20-F/40-F, so this hits non-US tickers too). `null` = confirmed not
+    // an SEC filer; skipped only on transient errors.
+    let edgarCik: string | null | undefined = body.edgarCik;
+    if (edgarCik === undefined) {
+      try {
+        edgarCik = await resolveEdgarCik({
+          ticker: body.ticker,
+          legalName: body.legalName ?? body.displayName,
+        });
+      } catch { /* transient — leave undefined so cron retries */ }
+    }
+
     const entity: Entity = {
       ticker: body.ticker,
       legalName: body.legalName ?? body.displayName,
@@ -103,6 +117,7 @@ export async function POST(req: NextRequest) {
       marketCapAsOf: marketCapAsOf ?? null,
       capTier: capTierFor(marketCapUsd ?? null),
       yahooSymbol,
+      edgarCik,
     };
     await store.writeRegistry([...existing, entity]);
 
@@ -166,6 +181,7 @@ export async function POST(req: NextRequest) {
       yahooSymbol: yahooSymbol ?? null,
       marketCapUsd: entity.marketCapUsd,
       capTier: entity.capTier,
+      edgarCik: entity.edgarCik ?? null,
       pastAdded,
       upcomingAdded,
     });

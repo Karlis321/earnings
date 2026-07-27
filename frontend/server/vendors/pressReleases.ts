@@ -2,8 +2,18 @@
 // Ported from backend/reference/_officialSources.js (subset — edgar + rss only;
 // mziq / html-abxx / html-shle skipped for now).
 //
-// Per-ticker source registry. Each entry can pull from either SEC EDGAR
-// (Atom feed keyed by CIK) or an RSS feed (Newsfile or IR-page RSS).
+// Sources come from two places:
+//   1. `OFFICIAL_SOURCES[ticker]` below — hand-curated IR-page RSS feeds
+//      (impossible to auto-derive since IR-page RSS URLs aren't discoverable
+//      programmatically).
+//   2. The entity's stored `edgarCik` — resolved automatically at add-ticker
+//      time via SEC's public ticker→CIK JSON. This is the auto-populated
+//      path for new tickers; no hand-editing needed for any SEC filer
+//      (US-listed or 20-F/40-F foreign filer).
+
+import { store } from "@/server/store";
+import { resolveEdgarCik } from "@/server/lib/edgarCikResolver";
+import type { Entity } from "@/lib/types";
 
 const EDGAR = (cik: string) =>
   `https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=${cik}&type=&dateb=&owner=include&count=40&output=atom`;
@@ -206,10 +216,56 @@ export interface PressReleasesResult {
   }>;
 }
 
+// Merge the hand-curated OFFICIAL_SOURCES with a dynamic EDGAR entry
+// synthesized from the registry entity's `edgarCik`. If the entity has no
+// stored CIK but the ticker looks like an SEC filer, resolve on-the-fly
+// against SEC's public JSON so newly added tickers work without a cron
+// pass first. Registry write for missing CIKs happens in cron so we don't
+// race two `fetchPressReleases` calls into concurrent commits here.
+async function resolveSourcesForTicker(
+  ticker: string,
+): Promise<OfficialSource[]> {
+  const curated = OFFICIAL_SOURCES[ticker] ?? [];
+  const hasCuratedEdgar = curated.some((s) => s.kind === "edgar");
+  if (hasCuratedEdgar) return curated;
+
+  let entity: Entity | undefined;
+  try {
+    const registry = await store.readRegistry();
+    entity = registry.find((e) => e.ticker === ticker);
+  } catch {
+    return curated;
+  }
+  if (!entity) return curated;
+
+  let cik = entity.edgarCik;
+  if (cik === undefined) {
+    try {
+      cik = await resolveEdgarCik({
+        ticker: entity.ticker,
+        legalName: entity.legalName,
+      });
+    } catch {
+      cik = null;
+    }
+  }
+  if (!cik) return curated;
+
+  return [
+    ...curated,
+    {
+      kind: "edgar",
+      url: EDGAR(cik),
+      provenance: "regulatory",
+      label: "SEC EDGAR",
+    },
+  ];
+}
+
 export async function fetchPressReleases(
   ticker: string,
 ): Promise<PressReleasesResult> {
-  const sources = OFFICIAL_SOURCES[ticker] ?? [];
+  const sources = await resolveSourcesForTicker(ticker);
   const results = await Promise.all(
     sources.map(async (src) => {
       const xml = await fetchAtomOrRss(src.url, src.kind === "edgar");

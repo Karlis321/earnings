@@ -136,11 +136,69 @@ export interface NewsFanoutResult {
     ok: boolean;
     itemsFound: number;
   }>;
+  redirectsResolved?: number;
+}
+
+// Google News RSS returns opaque redirect URLs like
+// https://news.google.com/rss/articles/<base64>?... — one HTTP hop away
+// from the actual publisher. Resolve them so users click straight through
+// (also improves dedup — different Google News URLs can point at the same
+// article). Fail-soft: on any error the original URL is kept.
+const GNEWS_REDIRECT_RE = /^https?:\/\/news\.google\.com\/(?:rss\/)?articles\//i;
+
+async function resolveGoogleNewsUrl(url: string): Promise<string> {
+  try {
+    // HEAD first — cheaper; not all origins support it, so fall back to GET.
+    const attempts: Array<"HEAD" | "GET"> = ["HEAD", "GET"];
+    for (const method of attempts) {
+      try {
+        const r = await fetch(url, {
+          method,
+          redirect: "follow",
+          headers: { "User-Agent": UA, Accept: "text/html,*/*" },
+          signal: AbortSignal.timeout(6000),
+        });
+        const final = r.url;
+        if (final && !GNEWS_REDIRECT_RE.test(final)) return final;
+        break;
+      } catch {
+        if (method === "GET") return url;
+        continue;
+      }
+    }
+  } catch {
+    /* fall through to original */
+  }
+  return url;
+}
+
+async function resolveGoogleNewsUrls(items: NewsItem[]): Promise<number> {
+  const CONCURRENCY = 8;
+  const targets = items
+    .map((it, idx) => ({ idx, url: it.url }))
+    .filter(({ url }) => GNEWS_REDIRECT_RE.test(url));
+  if (targets.length === 0) return 0;
+  let resolved = 0;
+  let cursor = 0;
+  const worker = async () => {
+    while (cursor < targets.length) {
+      const mine = cursor++;
+      const t = targets[mine];
+      const final = await resolveGoogleNewsUrl(t.url);
+      if (final !== t.url) {
+        items[t.idx].url = final;
+        resolved++;
+      }
+    }
+  };
+  await Promise.all(Array.from({ length: CONCURRENCY }, worker));
+  return resolved;
 }
 
 interface FanoutOpts {
   query?: string;
   days?: number; // hard time-window cutoff on the client side (default 7)
+  resolveRedirects?: boolean; // default true — one HEAD hop per gnews URL
 }
 
 // Rewrite Google News URLs to use the requested days window (when:Nd).
@@ -182,6 +240,13 @@ export async function fanoutNews(
       )
     : timeFiltered;
 
+  // Resolve Google News redirect URLs to publisher URLs before dedup so
+  // two gnews URLs pointing at the same Reuters article collapse to one.
+  let redirectsResolved = 0;
+  if (opts.resolveRedirects !== false) {
+    redirectsResolved = await resolveGoogleNewsUrls(filtered);
+  }
+
   // Dedup by URL, then by normalized headline
   const seen = new Set<string>();
   const dedup: NewsItem[] = [];
@@ -202,6 +267,7 @@ export async function fanoutNews(
       ok: r.ok,
       itemsFound: r.items.length,
     })),
+    redirectsResolved,
   };
 }
 

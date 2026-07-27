@@ -7,7 +7,45 @@
 
 ---
 
-## ✅ Done this cycle (UI/UX pass)
+## ✅ Done this cycle (automation + polish)
+
+- [x] **Press-release feeds — now auto-populated for new tickers.**
+      Added `frontend/server/lib/edgarCikResolver.ts` — module-cached
+      (24h TTL) load of SEC's public `company_tickers.json` mapping every
+      SEC filer's ticker → CIK, including 20-F/40-F foreign filers.
+      Wired into `POST /api/entity-registry` so `edgarCik` is resolved at
+      add-ticker time; `Entity.edgarCik?` added to `frontend/lib/types.ts`
+      (`null` = confirmed not an SEC filer, `undefined` = not yet checked).
+      `fetchPressReleases()` merges a synthesized EDGAR feed from the
+      registry entity's CIK when the hand-curated `OFFICIAL_SOURCES` map
+      has no entry. Cron step 6c backfills missing CIKs for existing
+      entities alongside the market-cap refresh (single commit).
+      Impact: adding e.g. AAPL now auto-hits EDGAR without editing
+      `pressReleases.ts`. Hand-curated IR-page RSS entries remain the way
+      to add non-SEC feeds (Newsfile / IR-page RSS URLs aren't
+      discoverable programmatically).
+
+- [x] **Metric-dictionary gaps closed.**
+      Added `arr_usd_m`, `net_dollar_retention_pct` (TOI/software) and
+      `daily_volumes_usd_b`, `revenue_take_bps` (BOLSY/exchange) to
+      `data/metric-dictionary.json`. Fixture `METRIC_LABELS` also updated.
+
+- [x] **Google News redirect resolution.**
+      `fanoutNews()` now resolves `news.google.com/rss/articles/...`
+      URLs to the publisher URL (HEAD-first, GET fallback, concurrency 8,
+      6s timeout, fail-soft). Runs before dedup so two gnews URLs for the
+      same Reuters article collapse to one. Reports `redirectsResolved`
+      in the result payload.
+
+- [x] **fixtures/registry.ts regenerated from PORTFOLIO.**
+      `frontend/lib/fixtures/registry.ts` now mirrors the PORTFOLIO array
+      in `scripts/rewrite-registry.mjs` (17 tickers, exact aliases + Yahoo
+      symbols). No-GH_PAT dev fallback + gallery now match prod. Fixture
+      `METRIC_LABELS` extended with the new TOI/BOLSY metric keys.
+
+---
+
+## ✅ Done prior cycle (UI/UX pass)
 
 - [x] **/sectors auto-updating counts** — `sectorCounts()` now returns
       `{ id, count, portfolio, universe }` per tag. Page shows total /
@@ -108,38 +146,55 @@
 
 ## Still open · data-population
 
-- [ ] **Press-release feeds unpopulated for new tickers.**
-      `frontend/server/vendors/pressReleases.ts` needs entries for
-      BOLSY, ABXX, TNZ, VLE, TOI, DBG, WRN, XEG, RIO FP. Until then,
-      Refresh Sources falls back to news-only for those names.
+- [ ] **Verify EDGAR CIK backfill after next cron run.**
+      Once cron step 6c runs against prod, every operating/developer
+      ticker that files with SEC (WRN, ABXX-via-ABXXF, CENX, HBM, CS,
+      CCJ, BN, TGB, SILV, RIO, NOK, …) should have `edgarCik` populated.
+      Tickers that don't file with SEC (BOLSY, TOI, TNZ, VLE, DBG, XEG,
+      RIO FP) will have `edgarCik: null` and stay on news-only for
+      press releases unless a hand-curated IR-page RSS is added to
+      `OFFICIAL_SOURCES` in `frontend/server/vendors/pressReleases.ts`.
 
-- [ ] **Metric dictionary gaps.** Some portfolio tickers need
-      sector-appropriate metrics not in the fixture:
-  - TOI (software) → `arr_usd_m`, `net_dollar_retention_pct`
-  - BOLSY (exchange) → `daily_volumes_usd_b`, `revenue_take_bps`
-  - Add via `/admin` → new metric key, or edit
-    `data/metric-dictionary.json` directly.
+- [ ] **Optional: hand-curated IR-page RSS for the non-SEC names.**
+      For BOLSY, TOI, TNZ, VLE, DBG, XEG, RIO FP — IR-page RSS URLs
+      aren't discoverable programmatically. Add real URLs to
+      `OFFICIAL_SOURCES` after visiting each IR site. Low priority
+      (news vendor covers headline flow).
 
 ---
 
 ## Still open · code polish
 
-- [ ] **Google News redirect resolution.** Item 5 on the original W5
-      to-do. News items link to Google News redirect URLs, not directly
-      to the publisher. Works, but one hop longer than ideal. Add an
-      article-verifier pass in `server/vendors/news.ts` (concurrency 8,
-      6s timeout).
+- [ ] **Typecheck locally.** `npm run typecheck` is blocked by group
+      policy on this box; re-run locally to confirm the CIK resolver +
+      redirect resolver changes typecheck clean. Files touched:
+      `frontend/lib/types.ts`, `frontend/server/lib/edgarCikResolver.ts`,
+      `frontend/app/api/entity-registry/route.ts`,
+      `frontend/app/api/cron/daily/route.ts`,
+      `frontend/server/vendors/pressReleases.ts`,
+      `frontend/server/vendors/news.ts`,
+      `frontend/lib/fixtures/registry.ts`,
+      `data/metric-dictionary.json`.
 
 - [ ] **`mentionsHolding` review.** Prod cron shows `totalAppended: 0`
       even when Google returns 800+ news items. Either the alias regex
       is too strict for the portfolio names or news genuinely didn't
       mention them in the 14-day window. Needs a controlled test with a
-      known headline mentioning e.g. Brookfield to distinguish.
+      known headline mentioning e.g. Brookfield to distinguish. (Note:
+      Google News redirect resolution just landed — retest against a
+      post-resolution cron run before diagnosing further.)
 
 - [ ] **BP class-share cosmetic.** `BP-A.L` and `BP-B.L` are the only
       remaining `marketCapUsd: null` — Yahoo doesn't tag them with
       marketCap OR netAssets. Low priority (odd share classes rarely
       matter for coverage).
+
+- [ ] **fixtures/earnings.ts + fixtures/sharedState.ts + fixtures/etf.ts
+      orphans.** These fixture files still reference old tickers (INTC,
+      NVDA, COPX, URA, CCJ, SILV CN, RIO PA) that were removed from the
+      registry. Non-blocking — used only in no-GH_PAT dev; app skips
+      unknown-entity events. Regenerate when someone next touches gallery
+      screens.
 
 ---
 
@@ -211,9 +266,6 @@ one partial (needs a real browser for the click flow).
 
 ## Nice-to-have
 
-- [ ] Regenerate `frontend/lib/fixtures/registry.ts` from the same
-      PORTFOLIO array in `rewrite-registry.mjs` so no-`GH_PAT` dev
-      fallback + gallery stay in sync. Zero impact on prod.
 - [ ] LLM expansion path (`prompt1.txt` template as a Claude+web-search
       prompt). Yahoo screener at `/admin/expand` already covers the same
       use case at `$0`. Wire the LLM path only if you want commentary or

@@ -93,6 +93,11 @@ export interface Entity {
   // resolving to a look-alike penny stock or RIO FP hitting Rio Tinto
   // instead of the Amundi Brazil ETF that shares the ticker.
   yahooSymbol?: string;
+  // SEC EDGAR CIK (10-digit zero-padded) if the issuer files with the SEC.
+  // Resolved automatically at add-entity time via SEC's public
+  // ticker→CIK JSON and refreshed by cron. `null` = confirmed not an SEC
+  // filer (searched and not found); `undefined` = not yet checked.
+  edgarCik?: string | null;
 }
 
 export interface MetricEntry {
