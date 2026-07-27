@@ -7,7 +7,37 @@
 
 ---
 
-## ✅ Done this cycle (automation + polish)
+## ✅ Done this cycle (perf + correctness)
+
+- [x] **Cron news fan-out — hoisted out of the per-event loop.**
+      Previously `fanoutNews({ query: entity.displayName, days: 14 })` ran
+      inside the 260-event loop → ~14k RSS fetches per cron run. Now
+      called once with no query at the top of the run; press releases
+      cached per unique ticker via a `Map<ticker, PressReleasesResult>`.
+      Per-run engine aggregation collapsed to a single pass. Expect the
+      cron runtime to drop from double-digit seconds to a few seconds.
+
+- [x] **`mentionsHolding` zero-append — root cause + fix.**
+      Diagnosed via `scripts/test-mentions-holding.mjs`: the old
+      `.includes(displayName)` pre-filter dropped 4/6 headlines that
+      `mentionsHolding` correctly matches (e.g. "Hudbay reports Q3" was
+      cut because it didn't contain the full "Hudbay Minerals"). The
+      hoisted `fanoutNews` call passes no query, letting `mentionsHolding`
+      apply the only entity filter downstream. Expect `totalAppended` to
+      go from 0 to non-trivial on the next cron.
+
+- [x] **Fixture orphans cleaned.**
+      Dropped `intelQ2` + `nvdaQ1` events from `fixtures/earnings.ts`
+      (their headline metrics like `data_center_rev_usd_m` don't apply
+      to any current registry ticker). `fixtures/etf.ts` replaced
+      `COPX US` + `URA US` with `XEG CN` + `RIO FP` matching the
+      registry. `fixtures/sharedState.ts` custom-sources retargeted from
+      `INTC US`/`NVDA US` to `CS CN`/`HBM US`; themes list refreshed.
+      No-`GH_PAT` dev fallback + gallery now match the current portfolio.
+
+---
+
+## ✅ Done previous cycle (automation + polish)
 
 - [x] **Press-release feeds — now auto-populated for new tickers.**
       Added `frontend/server/lib/edgarCikResolver.ts` — module-cached
@@ -176,25 +206,17 @@
       `frontend/lib/fixtures/registry.ts`,
       `data/metric-dictionary.json`.
 
-- [ ] **`mentionsHolding` review.** Prod cron shows `totalAppended: 0`
-      even when Google returns 800+ news items. Either the alias regex
-      is too strict for the portfolio names or news genuinely didn't
-      mention them in the 14-day window. Needs a controlled test with a
-      known headline mentioning e.g. Brookfield to distinguish. (Note:
-      Google News redirect resolution just landed — retest against a
-      post-resolution cron run before diagnosing further.)
-
 - [ ] **BP class-share cosmetic.** `BP-A.L` and `BP-B.L` are the only
       remaining `marketCapUsd: null` — Yahoo doesn't tag them with
       marketCap OR netAssets. Low priority (odd share classes rarely
       matter for coverage).
 
-- [ ] **fixtures/earnings.ts + fixtures/sharedState.ts + fixtures/etf.ts
-      orphans.** These fixture files still reference old tickers (INTC,
-      NVDA, COPX, URA, CCJ, SILV CN, RIO PA) that were removed from the
-      registry. Non-blocking — used only in no-GH_PAT dev; app skips
-      unknown-entity events. Regenerate when someone next touches gallery
-      screens.
+- [ ] **Optional: per-entity Google News search.** With the news
+      fan-out hoisted, we now share one 100-item news pool across all
+      events. That is enough for the core 17 but caps per-entity
+      coverage. If we want deeper per-entity coverage, add a targeted
+      Google News RSS query per entity (e.g. `q=<displayName>+OR+<cashtag>+when:14d`)
+      alongside the shared pool. Keep the shared pool for theme coverage.
 
 ---
 

@@ -145,6 +145,45 @@ export async function POST(req: NextRequest) {
     const registry = await store.readRegistry();
     const now = new Date();
 
+    // ---- Pre-loop: fetch news + press-releases ONCE per run ----
+    // Previously fanoutNews ran inside the per-event loop with
+    // `query: entity.displayName` — that produced two problems:
+    //   (a) O(events × 55 RSS feeds) HTTP calls per cron; and
+    //   (b) the displayName substring pre-filter dropped headlines that
+    //       mentioned the entity by a shorter alias (e.g. "Hudbay reports
+    //       Q3" was cut because it didn't contain "Hudbay Minerals").
+    // Fix: fetch the entire news pool once with no query, cache press
+    // releases per unique ticker, and let mentionsHolding do the filtering.
+    const newsRun = await fanoutNews({ days: 14 }).catch(() => null);
+    if (newsRun) {
+      let newsCount = 0;
+      for (const es of newsRun.engineStatus ?? []) {
+        if (es.ok) newsCount += es.itemsFound;
+      }
+      mergeEngine(
+        engineAgg,
+        "google",
+        (newsRun.engineStatus ?? []).some((s) => s.ok),
+        newsCount,
+      );
+    }
+    const pressCache = new Map<
+      string,
+      Awaited<ReturnType<typeof fetchPressReleases>> | null
+    >();
+    const getPress = async (ticker: string) => {
+      if (pressCache.has(ticker)) return pressCache.get(ticker)!;
+      const r = await fetchPressReleases(ticker).catch(() => null);
+      pressCache.set(ticker, r);
+      if (r) {
+        for (const es of r.engineStatus ?? []) {
+          const engine = bucketPressEngine(es.label, es.kind);
+          mergeEngine(engineAgg, engine, es.ok, es.itemsFound);
+        }
+      }
+      return r;
+    };
+
     for (const original of snap.events) {
       const entity = registry.find((e) => e.ticker === original.ticker);
       if (!entity) continue;
@@ -156,16 +195,8 @@ export async function POST(req: NextRequest) {
       // ---- 1. Sources fan-out (only inside the active window) ----
       let appended = 0;
       if (withinWindow(current.scheduledDate, now)) {
-        const [newsRes, pressRes] = await Promise.all([
-          fanoutNews({ query: entity.displayName, days: 14 }).catch((e) => {
-            errors.push(`news: ${(e as Error).message}`);
-            return null;
-          }),
-          fetchPressReleases(entity.ticker).catch((e) => {
-            errors.push(`press: ${(e as Error).message}`);
-            return null;
-          }),
-        ]);
+        const newsRes = newsRun;
+        const pressRes = await getPress(entity.ticker);
 
         const seen = new Set(current.sources.items.map((i) => i.id));
         const nowIso = now.toISOString();
@@ -218,16 +249,7 @@ export async function POST(req: NextRequest) {
           }
         }
 
-        // Aggregate per-engine status across the run.
-        let newsCount = 0;
-        for (const es of newsRes?.engineStatus ?? []) {
-          if (es.ok) newsCount += es.itemsFound;
-        }
-        mergeEngine(engineAgg, "google", (newsRes?.engineStatus ?? []).some((s) => s.ok), newsCount);
-        for (const es of pressRes?.engineStatus ?? []) {
-          const engine = bucketPressEngine(es.label, es.kind);
-          mergeEngine(engineAgg, engine, es.ok, es.itemsFound);
-        }
+        // (per-engine aggregation happens once outside the loop now)
 
         appended = newItems.length;
         if (appended > 0) {

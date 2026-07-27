@@ -1,6 +1,6 @@
 import type { EtfDetail } from "@/lib/types";
 
-// ETF fixture data — GDXJ, COPX, URA.
+// ETF fixture data — GDXJ US, XEG CN, RIO FP.
 // PRD §4.L: ETFs show price / distribution / holdings only; no events.
 export const ETF_DETAILS: Record<string, EtfDetail> = {
   "GDXJ US": {
@@ -57,10 +57,10 @@ export const ETF_DETAILS: Record<string, EtfDetail> = {
     ],
     usedAsBenchmarkFor: [],
   },
-  "COPX US": {
+  "XEG CN": {
     price: {
-      value: 39.44,
-      unit: "USD",
+      value: 17.86,
+      unit: "CAD",
       source: {
         url: "#",
         label: "Yahoo close",
@@ -73,41 +73,48 @@ export const ETF_DETAILS: Record<string, EtfDetail> = {
       confidence: 1,
     },
     distributions: [
-      { exDate: "2026-06-24", amount: 0.28, currency: "USD", yieldPct: 0.9 },
-      { exDate: "2025-12-19", amount: 0.31, currency: "USD", yieldPct: 1.1 },
+      { exDate: "2026-06-24", amount: 0.12, currency: "CAD", yieldPct: 2.6 },
+      { exDate: "2026-03-24", amount: 0.11, currency: "CAD", yieldPct: 2.4 },
+      { exDate: "2025-12-19", amount: 0.14, currency: "CAD", yieldPct: 3.0 },
     ],
     holdings: [
       {
-        ticker: "FCX",
-        name: "Freeport-McMoRan",
-        weight: 5.6,
+        ticker: "CNQ CN",
+        name: "Canadian Natural Resources",
+        weight: 24.1,
         asOf: "2026-07-23",
       },
       {
-        ticker: "BHP",
-        name: "BHP Group",
-        weight: 5.3,
+        ticker: "SU CN",
+        name: "Suncor Energy",
+        weight: 21.6,
         asOf: "2026-07-23",
       },
       {
-        ticker: "CS CN",
-        name: "Capstone Copper",
-        weight: 4.7,
+        ticker: "CVE CN",
+        name: "Cenovus Energy",
+        weight: 9.8,
         asOf: "2026-07-23",
       },
       {
-        ticker: "HBM CN",
-        name: "Hudbay Minerals",
-        weight: 4.4,
+        ticker: "IMO CN",
+        name: "Imperial Oil",
+        weight: 6.4,
+        asOf: "2026-07-23",
+      },
+      {
+        ticker: "TOU CN",
+        name: "Tourmaline Oil",
+        weight: 5.2,
         asOf: "2026-07-23",
       },
     ],
     usedAsBenchmarkFor: [],
   },
-  "URA US": {
+  "RIO FP": {
     price: {
-      value: 42.05,
-      unit: "USD",
+      value: 27.42,
+      unit: "EUR",
       source: {
         url: "#",
         label: "Yahoo close",
@@ -120,18 +127,19 @@ export const ETF_DETAILS: Record<string, EtfDetail> = {
       confidence: 1,
     },
     distributions: [
-      { exDate: "2025-12-19", amount: 0.65, currency: "USD", yieldPct: 1.6 },
+      { exDate: "2025-12-19", amount: 0.38, currency: "EUR", yieldPct: 1.4 },
     ],
     holdings: [
-      { ticker: "CCJ US", name: "Cameco", weight: 22.4, asOf: "2026-07-23" },
-      { ticker: "OKLO", name: "Oklo Inc.", weight: 5.9, asOf: "2026-07-23" },
+      { ticker: "VALE3", name: "Vale", weight: 11.3, asOf: "2026-07-23" },
+      { ticker: "PETR4", name: "Petrobras PN", weight: 9.7, asOf: "2026-07-23" },
+      { ticker: "ITUB4", name: "Itaú Unibanco", weight: 7.2, asOf: "2026-07-23" },
       {
-        ticker: "KAP LI",
-        name: "Kazatomprom",
-        weight: 4.8,
+        ticker: "BBAS3",
+        name: "Banco do Brasil",
+        weight: 4.6,
         asOf: "2026-07-23",
       },
     ],
-    usedAsBenchmarkFor: ["CCJ US"],
+    usedAsBenchmarkFor: [],
   },
 };
