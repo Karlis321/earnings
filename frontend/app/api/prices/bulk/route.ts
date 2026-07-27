@@ -114,7 +114,7 @@ export async function GET(req: NextRequest) {
           name = resolved.name;
         }
         const series = await yahooSeries(yahooSymbol, range);
-        if (series.length < 2) {
+        if (series.length < 1) {
           return [
             t,
             { ok: false as const, err: "no series data", series: [] },
@@ -122,6 +122,9 @@ export async function GET(req: NextRequest) {
         }
         const first = series[0].close;
         const latest = series[series.length - 1].close;
+        // Single-bar case (recent listings): return ok with change=0 so
+        // the caller can still show the latest price even when a spark
+        // isn't renderable.
         return [
           t,
           {

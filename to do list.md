@@ -7,7 +7,53 @@
 
 ---
 
-## ✅ Done this cycle
+## ✅ Done this cycle (UI/UX pass)
+
+- [x] **Home page floods** — was showing all 284 entities on the
+      "portfolio" tab. Now filters `isCore` by default (17 rows) with a
+      subline count "+ 267 sector-universe names — switch tabs below".
+
+- [x] **SecuritySwitcher dropdown flood** — 284-entity dropdown was
+      unusable. Capped to isCore (17); if a non-core ticker is the
+      current page, that entry gets pinned at top.
+
+- [x] **Admin coverage split** — "Portfolio · 17 · isCore" always
+      visible with capTier chips; "Sector universe · 267 · not on core"
+      collapsed `<details>` in a 3-col dense grid.
+
+- [x] **Sector detail split** — pages like /sectors/materials had 108
+      rows in a flat list. Now portfolio panel always visible, universe
+      panel collapsed (`<details>`, sorted by market cap desc).
+
+- [x] **OperatingDetail split** — was showing "Latest print · FY2026 Q2"
+      with all-empty metric rows when the primary event was upcoming.
+      Now splits into "Next reporting · <period>" panel + "Latest print
+      · <period>" card. Guidance / Reaction / Sources key off `primary`
+      (past-preferred).
+
+- [x] **ReactionChart empty state** — past events land with `points:[]`
+      (no baseline). Was rendering an empty grid. Now shows a dashed
+      card "Reaction not tracked for this event. Baseline close wasn't
+      captured at report time — future events auto-populate on the
+      daily cron."
+
+- [x] **Past-event EPS matching** — regex was `/^eps/i`, missing keys
+      like `dr_eps_usd`. Now matches `/eps/i` and injects a standalone
+      `eps_usd` metric when no eps-like headline metric exists. Re-ran
+      backfill; portfolio operating tickers now show real EPS + surprise
+      pcts across 4 past quarters.
+
+- [x] **Price bulk failures** — `yahooLookup` filtered to EQUITY only,
+      breaking ETFs (GDXJ, XEG, RIO FP). Widened to EQUITY | ETF |
+      MUTUALFUND. `/api/prices/bulk` now also prefers registry-persisted
+      `yahooSymbol` first — 4/8 → 7/8 tickers resolving cleanly. Last
+      failing ticker (ABXX) is a recent NEO listing with thin history;
+      relaxed the "no series" threshold from 2 → 1 bar so the endpoint
+      returns the single available price.
+
+---
+
+## ✅ Done previous cycle
 
 - [x] **Vercel prod deploy + env vars** — live at
       `earnings-neon.vercel.app`. `GH_PAT`, `GH_REPO_OWNER`, `GH_REPO_NAME`,
