@@ -27,6 +27,9 @@ interface BulkPriceEntry {
   ok: boolean;
   series: { date: string; close: number }[];
   pctChange?: number;
+  latest?: number;
+  first?: number;
+  change?: number;
   err?: string;
 }
 interface BulkPricesResponse {
