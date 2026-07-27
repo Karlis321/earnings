@@ -43,6 +43,9 @@ export default async function AdminHome() {
             <Link href="/admin/securities/new">Add security</Link>
           </Button>
           <Button variant="secondary">
+            <Link href="/admin/expand">Expand watchlist (Yahoo screener)</Link>
+          </Button>
+          <Button variant="secondary">
             <Link href="/admin/sources">Manage custom sources</Link>
           </Button>
           <Button variant="secondary">

@@ -36,6 +36,13 @@ export async function GET() {
         failed: 0,
         recent: [],
       },
+      marketCap: cron?.marketCap ?? {
+        attempted: 0,
+        updated: 0,
+        unchanged: 0,
+        failed: 0,
+        tierChanges: [],
+      },
       staleThresholdHours: 26,
     },
     { headers: { "Cache-Control": "no-store" } },

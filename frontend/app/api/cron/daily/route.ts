@@ -14,7 +14,12 @@ import {
   isIngestableUrl,
   type FetchAndIngestInput,
 } from "@/server/lib/documentIngest";
-import { yahooEarnings, yahooLookup } from "@/server/vendors/yahoo";
+import {
+  yahooEarnings,
+  yahooLookup,
+  yahooQuoteMetaBatch,
+} from "@/server/vendors/yahoo";
+import { capTierFor } from "@/lib/capTier";
 import { urlHash } from "@/lib/itemDedupe";
 import { mentionsHolding, matchesExclusionAlias } from "@/lib/tickerMatch";
 import type {
@@ -123,6 +128,12 @@ export async function POST(req: NextRequest) {
   let docsUnchanged = 0;
   let docsFailed = 0;
   let docsRecent: CronRunSummary["documents"]["recent"] = [];
+  // Market-cap refresh counters, filled by step 6.
+  let mcAttempted = 0;
+  let mcUpdated = 0;
+  let mcUnchanged = 0;
+  let mcFailed = 0;
+  const mcTierChanges: NonNullable<CronRunSummary["marketCap"]>["tierChanges"] = [];
 
   try {
     const snap = await store.readEarnings();
@@ -384,6 +395,83 @@ export async function POST(req: NextRequest) {
         Array.from({ length: Math.min(DOC_CONCURRENCY, candidates.length) }, worker),
       );
     }
+
+    // ---- 6. Market-cap refresh (whole registry) ----
+    // For every covered entity, resolve its Yahoo symbol, batch-fetch
+    // marketCap, and commit an updated registry only if a value changed.
+    // Runs after the events commit so the market-cap commit is a separate
+    // small diff (easier to audit).
+    const asOfDate = new Date().toISOString().slice(0, 10);
+    const resolved: Array<{
+      entity: (typeof registry)[number];
+      yahooSymbol: string | null;
+    }> = [];
+    for (const entity of registry) {
+      const [sym, exch = "US"] = entity.ticker.split(/\s+/);
+      try {
+        const r = await yahooLookup(sym, exch);
+        resolved.push({
+          entity,
+          yahooSymbol: "error" in r ? null : r.yahooSymbol,
+        });
+      } catch {
+        resolved.push({ entity, yahooSymbol: null });
+      }
+    }
+    const symbols = resolved
+      .map((r) => r.yahooSymbol)
+      .filter((s): s is string => !!s);
+    const quoteBatchSize = 100;
+    const bySymbol = new Map<string, { marketCap: number | null }>();
+    for (let i = 0; i < symbols.length; i += quoteBatchSize) {
+      const batch = symbols.slice(i, i + quoteBatchSize);
+      const rows = await yahooQuoteMetaBatch(batch);
+      for (const row of rows) {
+        bySymbol.set(row.yahooSymbol, { marketCap: row.marketCap });
+      }
+    }
+
+    const updatedEntities = registry.map((entity) => {
+      mcAttempted++;
+      const entry = resolved.find((r) => r.entity.ticker === entity.ticker);
+      const sym = entry?.yahooSymbol;
+      if (!sym) {
+        mcFailed++;
+        return entity;
+      }
+      const q = bySymbol.get(sym);
+      if (!q || q.marketCap == null) {
+        mcFailed++;
+        return entity;
+      }
+      const newTier = capTierFor(q.marketCap);
+      const priorTier = entity.capTier ?? "unknown";
+      const changed =
+        entity.marketCapUsd !== q.marketCap || priorTier !== newTier;
+      if (!changed) {
+        mcUnchanged++;
+        return entity;
+      }
+      mcUpdated++;
+      if (priorTier !== newTier) {
+        mcTierChanges.push({
+          ticker: entity.ticker,
+          priorTier,
+          newTier,
+          marketCapUsd: q.marketCap,
+        });
+      }
+      return {
+        ...entity,
+        marketCapUsd: q.marketCap,
+        marketCapAsOf: asOfDate,
+        capTier: newTier,
+      };
+    });
+
+    if (mcUpdated > 0) {
+      await store.writeRegistry(updatedEntities);
+    }
   } catch (e) {
     ok = false;
     eventSummaries.push({
@@ -414,6 +502,13 @@ export async function POST(req: NextRequest) {
       unchanged: docsUnchanged,
       failed: docsFailed,
       recent: docsRecent,
+    },
+    marketCap: {
+      attempted: mcAttempted,
+      updated: mcUpdated,
+      unchanged: mcUnchanged,
+      failed: mcFailed,
+      tierChanges: mcTierChanges,
     },
   };
 

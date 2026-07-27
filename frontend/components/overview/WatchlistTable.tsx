@@ -73,6 +73,7 @@ type Filter =
   | "developer";
 type SortKey = "next" | "surprise" | "reaction" | "freshness" | "name";
 type Group = "flat" | "type" | "sector";
+type TierFilter = "any" | "mega" | "large" | "mid" | "small" | "unknown";
 
 export function WatchlistTable({ rows }: { rows: WatchlistRow[] }) {
   const router = useRouter();
@@ -81,6 +82,7 @@ export function WatchlistTable({ rows }: { rows: WatchlistRow[] }) {
   const [reportingSoon, setReportingSoon] = useState(false);
   const [group, setGroup] = useState<Group>("flat");
   const [selectedIdx, setSelectedIdx] = useState<number>(0);
+  const [tier, setTier] = useState<TierFilter>("any");
 
   // Real 1-month prices + Yahoo earnings, fetched in parallel on mount.
   const [prices, setPrices] = useState<BulkPricesResponse | null>(null);
@@ -119,6 +121,9 @@ export function WatchlistTable({ rows }: { rows: WatchlistRow[] }) {
         (r) => r.nextEvent.daysUntil !== null && r.nextEvent.daysUntil <= 14,
       );
     }
+    if (tier !== "any") {
+      list = list.filter((r) => (r.entity.capTier ?? "unknown") === tier);
+    }
     list.sort((a, b) => {
       switch (sortKey) {
         case "next":
@@ -141,7 +146,7 @@ export function WatchlistTable({ rows }: { rows: WatchlistRow[] }) {
       }
     });
     return list;
-  }, [rows, filter, reportingSoon, sortKey]);
+  }, [rows, filter, reportingSoon, sortKey, tier]);
 
   const grouped = useMemo(() => {
     if (group === "flat") return [{ id: "", label: "", rows: filtered }];
@@ -173,6 +178,34 @@ export function WatchlistTable({ rows }: { rows: WatchlistRow[] }) {
         group={group}
         setGroup={setGroup}
       />
+
+      <div className="mt-2 flex flex-wrap items-center gap-[6px]">
+        <span className="font-mono text-[10.5px] uppercase tracking-[0.1em] text-tx3">
+          Cap tier
+        </span>
+        {(
+          [
+            { id: "any", label: "Any" },
+            { id: "mega", label: "Mega ≥$200B" },
+            { id: "large", label: "Large $10B–$200B" },
+            { id: "mid", label: "Mid $2B–$10B" },
+            { id: "small", label: "Small $250M–$2B" },
+            { id: "unknown", label: "Nano / n/a" },
+          ] as Array<{ id: TierFilter; label: string }>
+        ).map((t) => (
+          <button
+            key={t.id}
+            onClick={() => setTier(t.id)}
+            className={
+              tier === t.id
+                ? "inline-flex h-[22px] items-center rounded-[5px] border border-brand bg-brand/10 px-[9px] text-[11px] text-brand-fg"
+                : "inline-flex h-[22px] items-center rounded-[5px] border border-bd2 bg-s2 px-[9px] text-[11px] text-tx2 hover:text-tx"
+            }
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
 
       <div
         className="mt-3 overflow-hidden rounded-panel border border-bd bg-s1"

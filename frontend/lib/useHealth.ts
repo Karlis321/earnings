@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { api } from "./apiClient";
-import type { DocumentKind, EngineStatus, Horizon } from "./types";
+import type { CapTier, DocumentKind, EngineStatus, Horizon } from "./types";
 
 export interface HealthSnapshot {
   ok: boolean;
@@ -51,6 +51,18 @@ export interface HealthSnapshot {
       changed: boolean;
       kind: DocumentKind | null;
       error?: string;
+    }>;
+  };
+  marketCap: {
+    attempted: number;
+    updated: number;
+    unchanged: number;
+    failed: number;
+    tierChanges: Array<{
+      ticker: string;
+      priorTier: CapTier;
+      newTier: CapTier;
+      marketCapUsd: number | null;
     }>;
   };
   staleThresholdHours: number;

@@ -438,6 +438,208 @@ export async function yahooEarnings(
   }
 }
 
+// ---------- Quote (market cap + basic fields) ----------
+
+export interface YahooQuoteRow {
+  yahooSymbol: string;
+  name: string;
+  exchange: string;
+  currency: string;
+  marketCap: number | null;
+  sector: string | null;
+  industry: string | null;
+  regularMarketPrice: number | null;
+}
+
+interface QuoteResp {
+  quoteResponse?: {
+    result?: Array<{
+      symbol?: string;
+      longName?: string;
+      shortName?: string;
+      exchange?: string;
+      currency?: string;
+      marketCap?: number;
+      sector?: string;
+      industry?: string;
+      regularMarketPrice?: number;
+    }>;
+  };
+}
+
+// Batch quote metadata (up to ~200 symbols per call). Uses the same
+// crumb+cookie handshake as quoteSummary — Yahoo started requiring it on
+// v7 too. Returns market cap + basic identity fields; the existing
+// `yahooQuote()` further down returns a chart-derived latest/prev sample
+// and is unrelated.
+export async function yahooQuoteMetaBatch(
+  symbols: string[],
+): Promise<YahooQuoteRow[]> {
+  if (symbols.length === 0) return [];
+  const state = await getCrumb();
+  if (!state) return [];
+  const url =
+    `https://query1.finance.yahoo.com/v7/finance/quote` +
+    `?symbols=${encodeURIComponent(symbols.join(","))}` +
+    `&crumb=${encodeURIComponent(state.crumb)}`;
+  const attempt = async (s: CrumbState): Promise<Response> =>
+    fetch(url, {
+      headers: { ...YAHOO_HEADERS, Cookie: s.cookieHeader },
+    });
+  let r = await attempt(state);
+  if (r.status === 401) {
+    const fresh = await getCrumb(true);
+    if (!fresh) return [];
+    r = await attempt(fresh);
+  }
+  if (!r.ok) return [];
+  const j = (await r.json()) as QuoteResp;
+  const rows = j.quoteResponse?.result ?? [];
+  return rows.map((row) => ({
+    yahooSymbol: row.symbol ?? "",
+    name: row.longName ?? row.shortName ?? "",
+    exchange: row.exchange ?? "",
+    currency: row.currency ?? "USD",
+    marketCap: row.marketCap ?? null,
+    sector: row.sector ?? null,
+    industry: row.industry ?? null,
+    regularMarketPrice: row.regularMarketPrice ?? null,
+  }));
+}
+
+export async function yahooQuoteMeta(
+  yahooSymbol: string,
+): Promise<YahooQuoteRow | null> {
+  const rows = await yahooQuoteMetaBatch([yahooSymbol]);
+  return rows[0] ?? null;
+}
+
+// ---------- Screener (sector / region / quoteType → top by market cap) ----------
+
+export interface ScreenerParams {
+  // Yahoo sector name (e.g. "Technology", "Basic Materials", "Energy").
+  // Set null when quoteType is "ETF" — Yahoo doesn't accept sector for ETFs.
+  sector: string | null;
+  region: string; // "us", "ca", "gb", "fr", "de", "any"
+  quoteType: "EQUITY" | "ETF";
+  size?: number; // capped at 250 per call
+  offset?: number;
+  // Optional market-cap floor / ceiling (USD).
+  marketCapMin?: number;
+  marketCapMax?: number;
+}
+
+export interface ScreenerHit {
+  symbol: string;
+  name: string;
+  exchange: string;
+  currency: string | null;
+  marketCap: number | null;
+  sector: string | null;
+  industry: string | null;
+  region: string | null;
+  quoteType: string;
+}
+
+interface ScreenerResp {
+  finance?: {
+    result?: Array<{
+      quotes?: Array<{
+        symbol?: string;
+        longName?: string;
+        shortName?: string;
+        exchange?: string;
+        currency?: string;
+        marketCap?: number;
+        sector?: string;
+        industry?: string;
+        region?: string;
+        quoteType?: string;
+      }>;
+      total?: number;
+    }>;
+    error?: { code?: string; description?: string };
+  };
+}
+
+export async function yahooScreener(
+  params: ScreenerParams,
+): Promise<{ hits: ScreenerHit[]; total: number }> {
+  const state = await getCrumb();
+  if (!state) return { hits: [], total: 0 };
+  const size = Math.min(Math.max(params.size ?? 50, 1), 250);
+  const operands: Array<{ operator: string; operands: unknown[] }> = [];
+  if (params.quoteType === "ETF") {
+    // ETF universe — don't apply sector; region still applies.
+  } else if (params.sector) {
+    operands.push({ operator: "EQ", operands: ["sector", params.sector] });
+  }
+  if (params.region && params.region !== "any") {
+    operands.push({ operator: "EQ", operands: ["region", params.region] });
+  }
+  if (params.marketCapMin != null) {
+    operands.push({
+      operator: "GT",
+      operands: ["intradaymarketcap", params.marketCapMin],
+    });
+  }
+  if (params.marketCapMax != null) {
+    operands.push({
+      operator: "LT",
+      operands: ["intradaymarketcap", params.marketCapMax],
+    });
+  }
+  const body = {
+    size,
+    offset: params.offset ?? 0,
+    sortField: "intradaymarketcap",
+    sortType: "desc",
+    quoteType: params.quoteType,
+    topOperator: "AND",
+    query:
+      operands.length === 0
+        ? { operator: "AND", operands: [] }
+        : { operator: "AND", operands },
+    userId: "",
+    userIdType: "guid",
+  };
+  const attempt = async (s: CrumbState): Promise<Response> =>
+    fetch(
+      `https://query2.finance.yahoo.com/v1/finance/screener?crumb=${encodeURIComponent(s.crumb)}`,
+      {
+        method: "POST",
+        headers: {
+          ...YAHOO_HEADERS,
+          "Content-Type": "application/json",
+          Cookie: s.cookieHeader,
+        },
+        body: JSON.stringify(body),
+      },
+    );
+  let r = await attempt(state);
+  if (r.status === 401) {
+    const fresh = await getCrumb(true);
+    if (!fresh) return { hits: [], total: 0 };
+    r = await attempt(fresh);
+  }
+  if (!r.ok) return { hits: [], total: 0 };
+  const j = (await r.json()) as ScreenerResp;
+  const block = j.finance?.result?.[0];
+  if (!block) return { hits: [], total: 0 };
+  const hits = (block.quotes ?? []).map((q) => ({
+    symbol: q.symbol ?? "",
+    name: q.longName ?? q.shortName ?? "",
+    exchange: q.exchange ?? "",
+    currency: q.currency ?? null,
+    marketCap: q.marketCap ?? null,
+    sector: q.sector ?? null,
+    industry: q.industry ?? null,
+    region: q.region ?? null,
+    quoteType: q.quoteType ?? params.quoteType,
+  }));
+  return { hits, total: block.total ?? hits.length };
+}
+
 // Full daily series for chart rendering.
 export async function yahooSeries(
   symbol: string,

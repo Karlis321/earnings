@@ -2,6 +2,7 @@
 // Every sourced number is a Fact; derived numbers store inputs + computedAt.
 
 export type SecurityType = "operating" | "developer" | "etf";
+export type CapTier = "small" | "mid" | "large" | "mega" | "unknown";
 export type Freshness = "fresh" | "overdue" | "stale" | "never";
 export type Coverage = "deep" | "headline";
 export type EventKind = "earnings" | "catalyst";
@@ -84,6 +85,9 @@ export interface Entity {
   catalystTypes: string[];
   xHandle?: string | null;
   officialSources?: OfficialSource[];
+  marketCapUsd?: number | null;
+  marketCapAsOf?: string | null;
+  capTier?: CapTier;
 }
 
 export interface MetricEntry {
@@ -311,6 +315,18 @@ export interface CronRunSummary {
       changed: boolean;
       kind: DocumentKind | null;
       error?: string;
+    }>;
+  };
+  marketCap?: {
+    attempted: number;
+    updated: number;
+    unchanged: number;
+    failed: number;
+    tierChanges: Array<{
+      ticker: string;
+      priorTier: CapTier;
+      newTier: CapTier;
+      marketCapUsd: number | null;
     }>;
   };
 }
