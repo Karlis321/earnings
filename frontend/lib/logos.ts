@@ -12,7 +12,7 @@ export const TICKER_DOMAINS: Record<string, string> = {
   "CENX US": "centuryaluminum.com",
   "TGB CN": "tasekomines.com",
   "SCMI CN": "sonorometals.com",
-  "ABXX US": "abaxx.tech",
+  "ABXX CN": "abaxx.tech",
   "SHLE US": "silverhornlithium.com",
   "NOK FH": "nokia.com",
   "GDXJ US": "vaneck.com",

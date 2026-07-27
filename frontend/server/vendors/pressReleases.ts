@@ -34,8 +34,10 @@ export const OFFICIAL_SOURCES: Record<string, OfficialSource[]> = {
   "CCJ US": [
     { kind: "edgar", url: EDGAR("0001064728"), provenance: "regulatory", label: "SEC EDGAR" },
   ],
-  "ABXX US": [
-    { kind: "edgar", url: EDGAR("0001914619"), provenance: "regulatory", label: "SEC EDGAR" },
+  "ABXX CN": [
+    // Abaxx Technologies is Canadian-listed (NEO/TSX). Publishes via
+    // Newsfile — update once we confirm their exact feed ID.
+    // Placeholder: no auto-fetch until an official-sources entry lands.
   ],
   "SHLE US": [
     // Silver Horn Lithium not on EDGAR/OTC feeds we can reach; leave empty.
