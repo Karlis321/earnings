@@ -9,6 +9,13 @@
 
 ## ✅ Done this cycle (UI/UX pass)
 
+- [x] **/sectors auto-updating counts** — `sectorCounts()` now returns
+      `{ id, count, portfolio, universe }` per tag. Page shows total /
+      portfolio / universe counts in the header and per card. RSC is
+      `force-dynamic` and the store carries a 60s read cache — counts
+      stay live within a minute of any registry write (POST entity,
+      DELETE, cron sector expansion).
+
 - [x] **Home page floods** — was showing all 284 entities on the
       "portfolio" tab. Now filters `isCore` by default (17 rows) with a
       subline count "+ 267 sector-universe names — switch tabs below".
