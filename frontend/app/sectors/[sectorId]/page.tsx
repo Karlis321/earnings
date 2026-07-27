@@ -1,57 +1,18 @@
-import Link from "next/link";
 import { store } from "@/server/store";
 import { entitiesInSector } from "@/server/lib/registryHelpers";
 import { buildWatchlistRows } from "@/lib/watchlist";
 import { todayIso } from "@/lib/freshness";
 import { notFound } from "next/navigation";
-import {
-  Panel,
-  TypeBadge,
-  FreshnessDot,
-  SurprisePill,
-} from "@/components/primitives";
+import { Panel } from "@/components/primitives";
 import { Breadcrumb } from "@/components/shell/Breadcrumb";
-import { fmtDateShort } from "@/lib/format";
+import { SectorMemberRows } from "@/components/sectors/SectorMemberRows";
 import { AlertOctagon } from "lucide-react";
-import type { WatchlistRow } from "@/lib/types";
 
 interface Props {
   params: Promise<{ sectorId: string }>;
 }
 
 export const dynamic = "force-dynamic";
-
-function MemberRow({ r }: { r: WatchlistRow }) {
-  return (
-    <Link
-      key={r.ticker}
-      href={`/s/${encodeURIComponent(r.ticker)}`}
-      className="grid grid-cols-[1.5fr_1fr_1fr_auto] items-center gap-3 border-b border-bd px-4 py-3 last:border-b-0 hover:bg-hover"
-    >
-      <span className="flex items-center gap-2">
-        <TypeBadge type={r.entity.securityType} size="sm" />
-        <span className="text-[13.5px] text-tx">{r.entity.displayName}</span>
-        <span className="font-mono text-[11px] text-tx-mid">{r.ticker}</span>
-        {r.entity.capTier && r.entity.capTier !== "unknown" ? (
-          <span className="font-mono text-[10px] uppercase tracking-[0.08em] text-tx3">
-            {r.entity.capTier}
-          </span>
-        ) : null}
-      </span>
-      <span className="font-mono text-[12.5px] text-tx-mid">
-        {r.nextEvent.date ? fmtDateShort(r.nextEvent.date) : "—"}
-      </span>
-      <span>
-        {r.entity.securityType === "operating" && r.lastSurprisePct !== null ? (
-          <SurprisePill surprisePct={r.lastSurprisePct} compact />
-        ) : (
-          <span className="text-[12.5px] text-tx3">—</span>
-        )}
-      </span>
-      <FreshnessDot state={r.freshness} />
-    </Link>
-  );
-}
 
 export default async function SectorDetailPage({ params }: Props) {
   const { sectorId: raw } = await params;
@@ -99,9 +60,7 @@ export default async function SectorDetailPage({ params }: Props) {
         <div className="flex flex-col gap-4">
           {portfolio.length > 0 ? (
             <Panel eyebrow={`Portfolio · ${portfolio.length}`} padded={false}>
-              {portfolio.map((r) => (
-                <MemberRow key={r.ticker} r={r} />
-              ))}
+              <SectorMemberRows rows={portfolio} />
             </Panel>
           ) : null}
 
@@ -110,16 +69,11 @@ export default async function SectorDetailPage({ params }: Props) {
               eyebrow={`Universe · ${universe.length} · sorted by market cap`}
               padded={false}
             >
-              {/* Default open — universe was hidden behind a click before and
-                  users didn't discover it. Long lists remain scrollable via
-                  the surrounding page scroll. */}
               <details open>
                 <summary className="cursor-pointer border-b border-bd px-4 py-3 text-[12.5px] text-tx-mid hover:bg-hover hover:text-tx">
                   {universe.length} universe entities · click to collapse
                 </summary>
-                {universe.map((r) => (
-                  <MemberRow key={r.ticker} r={r} />
-                ))}
+                <SectorMemberRows rows={universe} />
               </details>
             </Panel>
           ) : null}

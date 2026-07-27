@@ -495,49 +495,79 @@ async function main() {
   const liveCcys = Object.keys(fxRates).filter((c) => c !== "USD" && fxRates[c] !== FX_FALLBACK[c]);
   console.log(`FX: live rates for ${liveCcys.length}/${Object.keys(FX_FALLBACK).length - 1} currencies`);
 
+  // Default banded pass — for each equity sector, screen small / mid /
+  // large separately with 25 per band. ETFs + the developer slice keep
+  // their existing custom market-cap ranges (defined inline on the def).
+  const DEFAULT_BANDS = [
+    { key: "large", min: 10_000_000_000, max: 200_000_000_000, size: 25 },
+    { key: "mid", min: 2_000_000_000, max: 10_000_000_000, size: 25 },
+    { key: "small", min: 250_000_000, max: 2_000_000_000, size: 25 },
+  ];
+
   const per = [];
   const additions = [];
   for (const sectorDef of SECTORS) {
     if (ONLY && sectorDef.key !== ONLY) continue;
-    console.log(`\n[${sectorDef.key}] fetching top ${SIZE} · ${sectorDef.yahooSector ?? sectorDef.quoteType} / ${sectorDef.region}…`);
-    const { hits, total } = await yahooScreener({
-      sector: sectorDef.yahooSector,
-      region: sectorDef.region,
-      quoteType: sectorDef.quoteType,
-      size: SIZE,
-      marketCapMin: sectorDef.marketCapMin,
-      marketCapMax: sectorDef.marketCapMax,
-      predefined: sectorDef.predefined,
-    });
-    let added = 0;
-    let dupes = 0;
-    let skipped = 0;
-    const added_tickers = [];
-    for (const hit of hits) {
-      if (!hit.symbol) continue;
-      const bb = bloombergFromYahoo(hit.symbol, hit.exchange);
-      if (!bb) {
-        skipped++; // exchange not on our Bloomberg map
-        continue;
+    // Sectors with explicit marketCapMin/Max (developer) or ETF
+    // (predefined) run once as-is. Everything else runs three banded
+    // sub-screens per default bands.
+    const runs =
+      sectorDef.marketCapMin != null ||
+      sectorDef.marketCapMax != null ||
+      sectorDef.quoteType === "ETF"
+        ? [
+            {
+              label: sectorDef.key,
+              size: SIZE,
+              min: sectorDef.marketCapMin,
+              max: sectorDef.marketCapMax,
+            },
+          ]
+        : DEFAULT_BANDS.map((b) => ({
+            label: `${sectorDef.key} · ${b.key}`,
+            size: b.size,
+            min: b.min,
+            max: b.max,
+          }));
+
+    for (const run of runs) {
+      console.log(
+        `\n[${run.label}] fetching top ${run.size} · ${sectorDef.yahooSector ?? sectorDef.quoteType} / ${sectorDef.region}` +
+          (run.min || run.max
+            ? ` · cap ${run.min ? `$${(run.min / 1e9).toFixed(1)}B` : "0"}-${run.max ? `$${(run.max / 1e9).toFixed(1)}B` : "∞"}`
+            : "") +
+          "…",
+      );
+      const { hits, total } = await yahooScreener({
+        sector: sectorDef.yahooSector,
+        region: sectorDef.region,
+        quoteType: sectorDef.quoteType,
+        size: run.size,
+        marketCapMin: run.min,
+        marketCapMax: run.max,
+        predefined: sectorDef.predefined,
+      });
+      let added = 0;
+      let dupes = 0;
+      let skipped = 0;
+      const added_tickers = [];
+      for (const hit of hits) {
+        if (!hit.symbol) continue;
+        const bb = bloombergFromYahoo(hit.symbol, hit.exchange);
+        if (!bb) { skipped++; continue; }
+        if (existing.has(bb)) { dupes++; continue; }
+        const entity = buildEntity(hit, sectorDef, asOf, fxRates);
+        if (!entity) { skipped++; continue; }
+        existing.add(bb);
+        additions.push(entity);
+        added++;
+        added_tickers.push(bb);
       }
-      if (existing.has(bb)) {
-        dupes++;
-        continue;
+      per.push({ key: run.label, total, added, dupes, skipped });
+      console.log(`  → +${added} new · ${dupes} already covered · universe ${total}`);
+      if (added_tickers.length) {
+        console.log(`  first: ${added_tickers.slice(0, 5).join(", ")}${added_tickers.length > 5 ? "…" : ""}`);
       }
-      const entity = buildEntity(hit, sectorDef, asOf, fxRates);
-      if (!entity) {
-        skipped++;
-        continue;
-      }
-      existing.add(bb);
-      additions.push(entity);
-      added++;
-      added_tickers.push(bb);
-    }
-    per.push({ key: sectorDef.key, total, added, dupes, skipped });
-    console.log(`  → +${added} new · ${dupes} already covered · universe ${total}`);
-    if (added_tickers.length) {
-      console.log(`  first: ${added_tickers.slice(0, 5).join(", ")}${added_tickers.length > 5 ? "…" : ""}`);
     }
   }
 

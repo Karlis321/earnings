@@ -294,7 +294,7 @@ function HeaderRow() {
       <span>Next event</span>
       <span>Last surprise</span>
       <span>Guidance</span>
-      <span>1-month reaction</span>
+      <span>Price · 1M</span>
       <span className="text-center">Fresh</span>
       <span className="text-right">Src</span>
     </div>
@@ -410,11 +410,22 @@ function Row({
           loading={pricesLoading}
           err={priceEntry && !priceEntry.ok ? priceEntry.err ?? "err" : null}
         />
-        <PriceDeltaLabel
-          pctChange={priceEntry?.ok && typeof priceEntry.pctChange === "number"
-            ? priceEntry.pctChange
-            : null}
-        />
+        <span className="flex flex-col leading-tight">
+          {priceEntry?.ok && typeof priceEntry.latest === "number" ? (
+            <span className="font-mono text-[12px] tabular-nums text-tx-strong">
+              {priceEntry.latest >= 1000
+                ? priceEntry.latest.toFixed(0)
+                : priceEntry.latest.toFixed(2)}
+            </span>
+          ) : (
+            <span className="text-[11px] text-tx3">—</span>
+          )}
+          <PriceDeltaLabel
+            pctChange={priceEntry?.ok && typeof priceEntry.pctChange === "number"
+              ? priceEntry.pctChange
+              : null}
+          />
+        </span>
       </span>
 
       <span className="text-center">
