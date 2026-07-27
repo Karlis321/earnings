@@ -13,7 +13,42 @@
 
 ---
 
-## ✅ Done this cycle (IR-page RSS + list cleanup)
+## ✅ Done this cycle (local runners for cron work)
+
+- [x] **EDGAR CIK backfill locally** via `scripts/backfill-edgar-cik.mjs`.
+      Loads SEC's public ticker→CIK JSON, matches every registry entity
+      (US: direct base-symbol; non-US: legal-name overlap + F-variant),
+      writes `edgarCik` back. Result: 87 CIKs resolved / 195 non-filers
+      correctly marked null across 282 entities. Caught a false-positive
+      bug in the original resolver — `RIO FP` (Amundi Brazil ETF, Paris)
+      was matching Rio Tinto's SEC CIK on base-symbol alone. Fixed both
+      the .mjs and the server-side `edgarCikResolver.ts` to require
+      legal-name overlap for non-US listings.
+
+- [x] **Reaction baseline seeding locally** via
+      `scripts/seed-reaction-baselines.mjs`. Seeds `reaction.points`
+      into the 208 past events with `points: []`, then for each event
+      with a past anchor and no baseline, picks the baseline bar
+      (BMO/AMC rule) from Yahoo's 1yr chart and matures every horizon
+      whose `populatesOn` is past. Result: 204 events seeded with
+      points · 146 baselines seeded · 581 horizons matured (real
+      abs + excess returns computed). Also added a
+      `BASELINE_TOLERANCE_DAYS = 7` guard so events pre-dating the bar
+      window don't grab bar[0] as a false baseline.
+
+- [x] **IR-page RSS for three non-SEC tickers.** Probed IR pages for
+      `<link rel=alternate type=application/rss+xml>` and verified:
+      TOI CN → `https://topicus.com/rss` (WP-style RSS), DBG CN →
+      `https://www.doubleview.ca/feed/` (WP feed), VLE CN →
+      `https://www.valeuraenergy.com/feed/` (WP feed). Added all three
+      to `OFFICIAL_SOURCES` in `pressReleases.ts`. TNZ CN
+      (Squarespace-hosted) exposes no RSS. B3 (BOLSY US) has
+      `ri.b3.com.br/feed/` advertised but body is empty. Skipped ETFs
+      (XEG, RIO FP) — no earnings PRs by design.
+
+---
+
+## ✅ Done previous cycle (IR-page RSS + list cleanup)
 
 - [x] **IR-page RSS for three non-SEC tickers.** Probed IR pages for
       `<link rel=alternate type=application/rss+xml>` and verified:
@@ -289,19 +324,21 @@
 
 ## Waiting on next scheduled cron (2026-07-28 06:00 UTC)
 
-All items in this block flip to done automatically the next time
-Vercel Cron fires. Nothing further to code — just verify after.
+Local runners have already done the CIK backfill + baseline seeding;
+these two items now just need to survive one prod cron run to confirm
+the server-side implementations match.
 
-- [ ] **EDGAR CIK backfill.** Cron step 6c will resolve `edgarCik`
-      for every entity where the field is `undefined`. Expected: SEC
-      filers (US-listed + 20-F/40-F foreign filers) get a padded
-      10-digit CIK; non-filers get `null` so we don't retry.
+- [ ] **Verify server-side EDGAR CIK backfill.** Local runner filled
+      87 CIKs across 282 entities. Prod cron step 6c should produce
+      the same result (same SEC file, same resolver logic post-fix).
 
-- [ ] **Reaction baselines + horizons.** All 266 events currently
-      have `baselineDate: null`. `matureEventReaction` now seeds them
-      from the security's own bars using the BMO/AMC rule and matures
-      any horizon whose `populatesOn` is past. Baseline coverage
-      should jump to ~200+ after one run.
+- [ ] **Verify server-side reaction baseline seeding.** Local runner
+      populated 146 baselines + 581 matured horizons. Prod cron's
+      `matureEventReaction` should produce the same result — note the
+      prod code uses `range=3mo` (narrower than the 1yr window the
+      script used) so it'll only cover events within the last quarter
+      going forward. Events older than 3mo will retain the baselines
+      the local runner just wrote.
 
 - [ ] **Document ingest.** Allowlist widened to include wire services
       (GlobeNewswire, PR Newswire, Newswire.ca, BusinessWire,

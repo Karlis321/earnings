@@ -75,22 +75,34 @@ export async function resolveEdgarCik(
   const c = await loadCache();
   const [rawSym, exch = "US"] = input.ticker.split(/\s+/);
   const sym = rawSym.toUpperCase();
+  const isUs = exch.toUpperCase() === "US";
+  const normalizedInput = input.legalName ? normalizeName(input.legalName) : "";
 
-  const direct = c.byTicker.get(sym);
-  if (direct) return pad10(direct.cik_str);
-
-  // Foreign private issuers often list under a `<symbol>F` variant on OTC.
-  if (exch.toUpperCase() !== "US") {
+  // US-listed: base-symbol match is safe — the ticker uniquely identifies
+  // the issuer on US exchanges.
+  if (isUs) {
+    const direct = c.byTicker.get(sym);
+    if (direct) return pad10(direct.cik_str);
+  } else {
+    // Non-US: base-symbol match is UNSAFE (e.g. "RIO FP" is Amundi MSCI
+    // Brazil ETF on Paris, not Rio Tinto). Require the legal name to
+    // also match before accepting a direct-symbol hit. Fall through to
+    // the F-variant + legal-name paths otherwise.
+    const direct = c.byTicker.get(sym);
+    if (direct && normalizedInput) {
+      const secNorm = normalizeName(direct.title);
+      if (secNorm && (secNorm === normalizedInput || secNorm.includes(normalizedInput) || normalizedInput.includes(secNorm))) {
+        return pad10(direct.cik_str);
+      }
+    }
+    // Foreign private issuers often list under a `<symbol>F` variant on OTC.
     const fVariant = c.byTicker.get(sym + "F");
     if (fVariant) return pad10(fVariant.cik_str);
   }
 
-  if (input.legalName) {
-    const norm = normalizeName(input.legalName);
-    if (norm) {
-      const nameHit = c.byNormalizedTitle.get(norm);
-      if (nameHit) return pad10(nameHit.cik_str);
-    }
+  if (normalizedInput) {
+    const nameHit = c.byNormalizedTitle.get(normalizedInput);
+    if (nameHit) return pad10(nameHit.cik_str);
   }
   return null;
 }
