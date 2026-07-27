@@ -10,6 +10,7 @@ import {
   ReactionChart,
   Panel,
   SourceItemCard,
+  SurprisePill,
 } from "@/components/primitives";
 import { SecurityPriceChart } from "./SecurityPriceChart";
 import { CompanyNewsPanel } from "./CompanyNewsPanel";
@@ -105,6 +106,52 @@ export function OperatingDetail({ entity, events }: Props) {
               </Link>
             ) : null}
           </Card>
+        ) : null}
+
+        {pastEvents.length > 1 ? (
+          <Panel
+            eyebrow={`Past quarters · ${pastEvents.length}`}
+            padded={false}
+          >
+            <div className="grid grid-cols-[1fr_1fr_1fr_1fr_auto] gap-3 border-b border-bd bg-panel2 px-4 py-[10px] font-mono text-[10.5px] uppercase tracking-[0.08em] text-tx3">
+              <span>Period</span>
+              <span>Reported</span>
+              <span className="text-right">EPS actual</span>
+              <span className="text-right">Estimate</span>
+              <span className="text-right">Surprise</span>
+            </div>
+            {pastEvents.map((e) => {
+              const eps = e.metrics.find((m) => /eps/i.test(m.key));
+              const actual = eps?.actual?.value;
+              const est = eps?.estimate?.value;
+              const surp = eps?.surprisePct;
+              return (
+                <Link
+                  key={e.id}
+                  href={`/s/${encodeURIComponent(entity.ticker)}/e/${e.id}`}
+                  className="grid grid-cols-[1fr_1fr_1fr_1fr_auto] items-center gap-3 border-b border-bd px-4 py-3 text-[12.5px] last:border-b-0 hover:bg-hover"
+                >
+                  <span className="text-tx">{e.period}</span>
+                  <span className="font-mono text-[12px] text-tx-mid">
+                    {e.eventDate ?? e.scheduledDate}
+                  </span>
+                  <span className="text-right font-mono tabular-nums text-tx">
+                    {actual != null ? actual.toFixed(3) : "—"}
+                  </span>
+                  <span className="text-right font-mono tabular-nums text-tx-mid">
+                    {est != null ? est.toFixed(3) : "—"}
+                  </span>
+                  <span className="text-right">
+                    {surp != null ? (
+                      <SurprisePill surprisePct={surp} compact />
+                    ) : (
+                      <span className="text-[12px] text-tx3">—</span>
+                    )}
+                  </span>
+                </Link>
+              );
+            })}
+          </Panel>
         ) : null}
 
         <Panel eyebrow="Guidance" padded={false}>
