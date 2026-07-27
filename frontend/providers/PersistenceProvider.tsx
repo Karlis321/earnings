@@ -1,8 +1,8 @@
 "use client";
 
-// Commit-pipe status (Synced / Syncing / Local only) — P3 fills in the real
-// optimistic-write + localStorage merge. Right now this drives the header pill.
-// Backend integration flag: syncing to /api/shared-state via GH_PAT is P3-live.
+// Commit-pipe status (Synced / Syncing / Local only). Writes optimistically
+// mark syncing and settle to synced (git-commit succeeded) or local
+// (persistence-unavailable — GH_PAT missing, viewer stays on device state).
 
 import { createContext, useContext, useMemo, useState } from "react";
 

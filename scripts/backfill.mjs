@@ -1,23 +1,29 @@
 #!/usr/bin/env node
 /**
- * W8 backfill script — seeds data/prices/<yahoo-symbol>.json with historical
- * daily closes for every ticker in the entity registry.
+ * W8 backfill / cutover seed.
  *
- * Run locally (from your machine, not Vercel — Yahoo occasionally rate-limits
- * datacenter IPs on longer-range queries).
+ * Writes the four persistence-store JSON files the git-snapshot layer reads
+ * from:
  *
- *   node scripts/backfill.mjs                # default 3y range
- *   node scripts/backfill.mjs --range=5y     # or 1y / 2y / 5y / 10y / max
+ *   data/entity-registry.json   ← ENTITY_REGISTRY fixture (17 tickers)
+ *   data/metric-dictionary.json ← METRIC_LABELS fixture
+ *   data/shared-state.json      ← watchlist + custom sources + themes
+ *   data/earnings.json          ← event shells per ticker, enriched from Yahoo
+ *                                 (nextEarningsDate + lastQuarter EPS actual)
  *
- * The script:
- *   1. Reads frontend/lib/fixtures/registry.ts to enumerate tickers.
- *   2. Resolves each Bloomberg-style ticker → Yahoo symbol via query2 search.
- *   3. Fetches the price series via query1 chart.
- *   4. Writes one JSON file per ticker into data/prices/.
- *   5. Prints a per-ticker summary at the end.
+ * The intent is a one-shot commit to bring the repo from fixture-only to
+ * store-backed. Run once from your machine, `git add data/`, commit, deploy.
+ * After the cutover the daily cron takes over — appending sources, maturing
+ * reactions, upserting next-events, and detecting restatements.
  *
- * Commit the resulting data/prices/*.json files to git. The daily cron can
- * later refresh individual tickers by re-running with --ticker=<T>.
+ * Usage:
+ *   node scripts/backfill.mjs                # full seed
+ *   node scripts/backfill.mjs --dry          # print but don't write
+ *   node scripts/backfill.mjs --ticker="INTC US"   # single ticker only
+ *   node scripts/backfill.mjs --skip-yahoo   # skip Yahoo enrichment (fixtures only)
+ *
+ * Yahoo occasionally rate-limits datacenter IPs on longer-range queries —
+ * run from your residential connection.
  */
 
 import fs from "node:fs/promises";
@@ -27,7 +33,7 @@ import { fileURLToPath } from "node:url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT = path.resolve(__dirname, "..");
-const OUT_DIR = path.join(ROOT, "data", "prices");
+const OUT_DIR = path.join(ROOT, "data");
 
 const args = new Map(
   process.argv.slice(2).map((a) => {
@@ -35,19 +41,87 @@ const args = new Map(
     return [k, v ?? true];
   }),
 );
-const RANGE = args.get("range") || "3y";
+const DRY = args.get("dry") === true;
 const ONLY = args.get("ticker") || null;
+const SKIP_YAHOO = args.get("skip-yahoo") === true;
 
 const UA =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +
   "(KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36";
 
 const EXCHANGE_MAP = {
-  US: ["NMS", "NYQ", "ASE", "NGM", "NCM", "PCX", "NYS"],
-  CN: ["TOR", "VAN", "CVE", "NEO"],
+  US: ["NMS", "NYQ", "ASE", "NGM", "NCM", "PCX", "NYS", "OEM", "OQX", "BTS"],
+  CN: ["TOR", "VAN", "CVE", "NEO", "CDNX", "CDX", "CNX"],
   FP: ["PAR"],
   FH: ["HEL"],
+  PA: ["PAR"],
 };
+
+// ---------- Registry + dictionary loading ----------
+
+async function loadFixture(relPath) {
+  const p = path.join(ROOT, "frontend", "lib", "fixtures", relPath);
+  return fs.readFile(p, "utf8");
+}
+
+// Extract the ENTITY_REGISTRY constant. Regex-only; runs on the TS source so
+// we can seed without transpiling. The keys we care about are all string /
+// boolean / array-of-string literals so this is safe.
+function parseEntities(src) {
+  const start = src.indexOf("ENTITY_REGISTRY: Entity[]");
+  if (start < 0) throw new Error("ENTITY_REGISTRY not found in fixture");
+  // Locate the outermost array bracket
+  const openIdx = src.indexOf("[", start);
+  let depth = 0;
+  let endIdx = -1;
+  for (let i = openIdx; i < src.length; i++) {
+    if (src[i] === "[") depth++;
+    else if (src[i] === "]") {
+      depth--;
+      if (depth === 0) {
+        endIdx = i;
+        break;
+      }
+    }
+  }
+  if (endIdx < 0) throw new Error("ENTITY_REGISTRY array unterminated");
+  const arr = src.slice(openIdx, endIdx + 1);
+  // Convert TS-object literals to JSON: unquoted keys → quoted, single → double.
+  const jsonish = arr
+    .replace(/,(\s*[}\]])/g, "$1") // trailing commas
+    .replace(/([{,]\s*)([a-zA-Z_][a-zA-Z0-9_]*)\s*:/g, '$1"$2":')
+    .replace(/'([^']*)'/g, (_, s) => `"${s.replace(/"/g, '\\"')}"`);
+  return JSON.parse(jsonish);
+}
+
+function parseMetricLabels(src) {
+  const start = src.indexOf("METRIC_LABELS");
+  if (start < 0) throw new Error("METRIC_LABELS not found");
+  const openIdx = src.indexOf("{", start);
+  let depth = 0;
+  let endIdx = -1;
+  for (let i = openIdx; i < src.length; i++) {
+    if (src[i] === "{") depth++;
+    else if (src[i] === "}") {
+      depth--;
+      if (depth === 0) {
+        endIdx = i;
+        break;
+      }
+    }
+  }
+  const obj = src.slice(openIdx, endIdx + 1);
+  const jsonish = obj
+    .replace(/,(\s*[}\]])/g, "$1")
+    .replace(/([{,]\s*)([a-zA-Z_][a-zA-Z0-9_]*)\s*:/g, '$1"$2":')
+    .replace(/'([^']*)'/g, (_, s) => `"${s.replace(/"/g, '\\"')}"`);
+  // METRIC_LABELS values are objects with unquoted keys — the regex above
+  // catches them. Any keys with special chars (unlikely here) would slip
+  // through; add manual escaping if needed.
+  return JSON.parse(jsonish);
+}
+
+// ---------- Yahoo enrichment ----------
 
 async function yahooResolve(bbTicker) {
   const [sym, exch = "US"] = bbTicker.split(/\s+/);
@@ -62,88 +136,287 @@ async function yahooResolve(bbTicker) {
     j.quotes.find(
       (q) =>
         q.quoteType === "EQUITY" &&
-        (acceptable.includes(q.exchange) || acceptable.length === 0) &&
+        (acceptable.length === 0 || acceptable.includes(q.exchange)) &&
         (q.symbol === sym || q.symbol.split(".")[0] === sym),
     ) || j.quotes.find((q) => q.quoteType === "EQUITY");
   if (!match) throw new Error(`No Yahoo equity for ${bbTicker}`);
   return { yahooSymbol: match.symbol, name: match.longname ?? match.shortname };
 }
 
-async function yahooSeries(symbol, range = RANGE) {
-  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=1d&range=${range}`;
-  const r = await fetch(url, { headers: { "User-Agent": UA } });
-  if (!r.ok) throw new Error(`Yahoo chart ${symbol} → ${r.status}`);
+async function yahooEarningsQ(yahooSymbol) {
+  const url = `https://query1.finance.yahoo.com/v10/finance/quoteSummary/${encodeURIComponent(yahooSymbol)}?modules=earnings,calendarEvents&formatted=true`;
+  const r = await fetch(url, { headers: { "User-Agent": UA, Accept: "application/json" } });
+  if (!r.ok) return null;
   const j = await r.json();
-  const result = j.chart?.result?.[0];
-  if (!result) throw new Error(`Yahoo chart ${symbol} empty`);
-  const ts = result.timestamp || [];
-  const closes = result.indicators?.quote?.[0]?.close || [];
-  const series = [];
-  for (let i = 0; i < ts.length; i++) {
-    if (typeof closes[i] === "number") {
-      series.push({
-        date: new Date(ts[i] * 1000).toISOString().slice(0, 10),
-        close: closes[i],
+  const result = j.quoteSummary?.result?.[0];
+  if (!result) return null;
+  const dates = result.calendarEvents?.earnings?.earningsDate ?? [];
+  let nextEarningsDate = null;
+  for (const d of dates) {
+    if (typeof d.raw === "number") {
+      const iso = new Date(d.raw * 1000).toISOString().slice(0, 10);
+      if (!nextEarningsDate || iso < nextEarningsDate) nextEarningsDate = iso;
+    }
+  }
+  const quarterly = result.earnings?.earningsChart?.quarterly ?? [];
+  const last = quarterly[quarterly.length - 1] ?? null;
+  return {
+    nextEarningsDate,
+    lastQuarter: last
+      ? {
+          period: last.date ?? "",
+          actual: last.actual?.raw ?? null,
+          estimate: last.estimate?.raw ?? null,
+        }
+      : null,
+  };
+}
+
+// ---------- Event shell + period helpers ----------
+
+function periodFromReportingDate(iso) {
+  const d = new Date(iso);
+  const m = d.getUTCMonth() + 1;
+  const y = d.getUTCFullYear();
+  if (m <= 3) return `FY${y - 1} Q4`;
+  if (m <= 6) return `FY${y} Q1`;
+  if (m <= 9) return `FY${y} Q2`;
+  return `FY${y} Q3`;
+}
+
+function nextEventId(ticker, scheduledDate) {
+  const key = `${ticker}::${scheduledDate}`;
+  let h = 0x811c9dc5;
+  for (let i = 0; i < key.length; i++) {
+    h ^= key.charCodeAt(i);
+    h = Math.imul(h, 0x01000193);
+  }
+  return "evt-" + (h >>> 0).toString(36).padStart(7, "0").slice(0, 8);
+}
+
+function addDays(iso, days) {
+  const d = new Date(iso);
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+
+function buildEventShell(entity, scheduledDate, period, epsActual) {
+  const id = nextEventId(entity.ticker, scheduledDate);
+  const points = ["d1", "d3", "w1", "m1"].map((h) => ({
+    horizon: h,
+    absReturn: null,
+    excessReturn: null,
+    benchmark: entity.benchmark,
+    computedAt: null,
+    populatesOn: addDays(scheduledDate, ({ d1: 3, d3: 5, w1: 7, m1: 23 })[h]),
+  }));
+  const metrics = [];
+  // Seed one Fact per headline metric so the DeepLinkButton has a target;
+  // value stays null until manual entry or a future ingestion fills it.
+  for (const key of entity.headlineMetrics) {
+    let seed = null;
+    // Only EPS gets a Yahoo-actual seed for now.
+    if (/^eps/i.test(key) && typeof epsActual === "number") {
+      seed = {
+        value: epsActual,
+        unit: "USD",
+        source: {
+          url: `https://finance.yahoo.com/quote/${encodeURIComponent(entity.ticker.split(" ")[0])}/earnings`,
+          label: "Yahoo Finance",
+          provenance: "wire",
+          locator: null,
+        },
+        asOf: new Date().toISOString().slice(0, 10),
+        fetchedAt: new Date().toISOString(),
+        method: "yahoo",
+        confidence: 0.85,
+      };
+    }
+    metrics.push({
+      key,
+      displayLabel: key,
+      isHeadline: true,
+      surprisePct: null,
+      estimate: null,
+      actual: seed,
+      prior: null,
+    });
+  }
+  return {
+    id,
+    ticker: entity.ticker,
+    kind: "earnings",
+    period,
+    scheduledDate,
+    eventDate: null,
+    timing: null,
+    expectation: "unset",
+    guidanceMove: null,
+    freshness: "fresh",
+    metrics,
+    guidance: [],
+    reaction: {
+      benchmark: entity.benchmark,
+      baselineDate: null,
+      baselineClose: null,
+      points,
+    },
+    sources: {
+      windowStart: addDays(scheduledDate, -2),
+      windowEnd: addDays(scheduledDate, 35),
+      capturedAt: null,
+      items: [],
+      engineStatus: [],
+    },
+  };
+}
+
+// ---------- Main ----------
+
+async function main() {
+  console.log(`W8 backfill · dry=${DRY} · yahoo=${!SKIP_YAHOO}`);
+  const registrySrc = await loadFixture("registry.ts");
+  const sharedSrc = await loadFixture("sharedState.ts");
+  const entities = parseEntities(registrySrc);
+  const metricLabels = parseMetricLabels(registrySrc);
+  const filtered = ONLY ? entities.filter((e) => e.ticker === ONLY) : entities;
+
+  // ---- entity-registry.json ----
+  const entityRegistry = {
+    schema: "entity-registry/v1",
+    entities,
+  };
+
+  // ---- metric-dictionary.json ----
+  const dictionary = {
+    schema: "metric-dictionary/v1",
+    metrics: Object.fromEntries(
+      Object.entries(metricLabels).map(([k, v]) => [
+        k,
+        {
+          label: v.label,
+          unit: v.unit,
+          requiresIsAdjusted: /^eps/.test(k),
+          description: null,
+        },
+      ]),
+    ),
+  };
+
+  // ---- shared-state.json (from fixture) ----
+  // Best-effort parse; fall back to a minimal shape if regex trips.
+  let sharedState;
+  try {
+    const start = sharedSrc.indexOf("SHARED_STATE = ");
+    const openIdx = sharedSrc.indexOf("{", start);
+    let depth = 0;
+    let endIdx = -1;
+    for (let i = openIdx; i < sharedSrc.length; i++) {
+      if (sharedSrc[i] === "{") depth++;
+      else if (sharedSrc[i] === "}") {
+        depth--;
+        if (depth === 0) {
+          endIdx = i;
+          break;
+        }
+      }
+    }
+    const obj = sharedSrc.slice(openIdx, endIdx + 1);
+    // Strip TypeScript-only "as const" annotations before parsing.
+    const cleaned = obj.replace(/\s+as\s+const/g, "");
+    const jsonish = cleaned
+      .replace(/,(\s*[}\]])/g, "$1")
+      .replace(/([{,]\s*)([a-zA-Z_][a-zA-Z0-9_]*)\s*:/g, '$1"$2":')
+      .replace(/'([^']*)'/g, (_, s) => `"${s.replace(/"/g, '\\"')}"`);
+    sharedState = JSON.parse(jsonish);
+    if (!sharedState.schema) sharedState.schema = "shared-state/v1";
+    for (const s of sharedState.customSources ?? []) {
+      if (s.lastFetch === undefined) s.lastFetch = null;
+    }
+  } catch (e) {
+    console.warn(`  shared-state parse failed (${e.message}) — writing minimal shell`);
+    sharedState = {
+      schema: "shared-state/v1",
+      watchlist: entities.filter((e) => e.isCore).map((e) => e.ticker),
+      customSources: [],
+      themes: [],
+      lastCommit: new Date().toISOString(),
+    };
+  }
+
+  // ---- earnings.json (event shells + Yahoo enrichment) ----
+  const events = [];
+  const perTickerReport = [];
+  for (const entity of filtered) {
+    if (entity.securityType !== "operating") {
+      perTickerReport.push({ ticker: entity.ticker, skipped: "non-operating" });
+      continue;
+    }
+    let yahoo = null;
+    if (!SKIP_YAHOO) {
+      try {
+        const { yahooSymbol } = await yahooResolve(entity.ticker);
+        yahoo = await yahooEarningsQ(yahooSymbol);
+        await new Promise((r) => setTimeout(r, 300)); // gentle to Yahoo
+      } catch (e) {
+        perTickerReport.push({ ticker: entity.ticker, warn: e.message });
+      }
+    }
+    if (yahoo?.nextEarningsDate) {
+      const period = periodFromReportingDate(yahoo.nextEarningsDate);
+      events.push(
+        buildEventShell(entity, yahoo.nextEarningsDate, period, yahoo.lastQuarter?.actual),
+      );
+      perTickerReport.push({
+        ticker: entity.ticker,
+        nextEarningsDate: yahoo.nextEarningsDate,
+        lastEpsActual: yahoo.lastQuarter?.actual ?? null,
+      });
+    } else {
+      perTickerReport.push({
+        ticker: entity.ticker,
+        warn: "no nextEarningsDate; no event seeded",
       });
     }
   }
-  return series;
-}
 
-// Simple TS parser via regex — we only need the ticker strings from
-// frontend/lib/fixtures/registry.ts. Not a general-purpose TS parser.
-async function loadTickers() {
-  const registryPath = path.join(
-    ROOT,
-    "frontend",
-    "lib",
-    "fixtures",
-    "registry.ts",
-  );
-  const src = await fs.readFile(registryPath, "utf8");
-  const tickers = [];
-  const re = /ticker:\s*"([^"]+)"/g;
-  let m;
-  while ((m = re.exec(src)) !== null) tickers.push(m[1]);
-  return [...new Set(tickers)];
-}
+  const earnings = {
+    schema: "earnings/v1",
+    lastUpdated: new Date().toISOString(),
+    events,
+  };
 
-async function main() {
-  console.log(`Backfill range=${RANGE}${ONLY ? ` ticker=${ONLY}` : ""}`);
-  await fs.mkdir(OUT_DIR, { recursive: true });
-  const tickers = ONLY ? [ONLY] : await loadTickers();
-  const summary = [];
-  for (const t of tickers) {
-    try {
-      const { yahooSymbol, name } = await yahooResolve(t);
-      const series = await yahooSeries(yahooSymbol, RANGE);
-      const file = path.join(
-        OUT_DIR,
-        `${t.replace(/\s+/g, "_")}.json`,
-      );
-      const payload = {
-        bloombergTicker: t,
-        yahooSymbol,
-        name,
-        range: RANGE,
-        fetchedAt: new Date().toISOString(),
-        series,
-      };
-      await fs.writeFile(file, JSON.stringify(payload, null, 2));
-      summary.push({ t, yahooSymbol, days: series.length, ok: true });
-      console.log(`  ✓ ${t} → ${yahooSymbol} · ${series.length} days`);
-      // Be nice to Yahoo — 250ms between calls.
-      await new Promise((r) => setTimeout(r, 250));
-    } catch (e) {
-      summary.push({ t, err: e.message, ok: false });
-      console.error(`  ✗ ${t} — ${e.message}`);
+  // ---- Write ----
+  const files = [
+    ["entity-registry.json", entityRegistry],
+    ["metric-dictionary.json", dictionary],
+    ["shared-state.json", sharedState],
+    ["earnings.json", earnings],
+  ];
+  if (DRY) {
+    console.log("\nDry run — would write:");
+    for (const [name, obj] of files) {
+      const bytes = Buffer.byteLength(JSON.stringify(obj, null, 2), "utf8");
+      console.log(`  data/${name}  (${bytes} bytes)`);
+    }
+  } else {
+    await fs.mkdir(OUT_DIR, { recursive: true });
+    for (const [name, obj] of files) {
+      const p = path.join(OUT_DIR, name);
+      await fs.writeFile(p, JSON.stringify(obj, null, 2));
+      console.log(`  ✓ wrote ${p}`);
     }
   }
-  console.log(`\nDone. ${summary.filter((s) => s.ok).length}/${summary.length} succeeded.`);
-  const failures = summary.filter((s) => !s.ok);
-  if (failures.length) {
-    console.log("Failures:");
-    failures.forEach((f) => console.log(`  ${f.t}: ${f.err}`));
+
+  console.log("\nPer-ticker report:");
+  for (const r of perTickerReport) console.log(" ", JSON.stringify(r));
+  console.log(
+    `\nDone. ${events.length} event shell(s) built from ${filtered.length} ticker(s).`,
+  );
+  if (!DRY) {
+    console.log(
+      "\nNext: git add data/ && git commit -m 'W8 seed' && git push",
+    );
   }
 }
 

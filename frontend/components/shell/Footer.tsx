@@ -5,9 +5,7 @@ export function Footer() {
         <span>
           Decision-support tool. <span className="text-tx3">Not investment advice.</span>
         </span>
-        <span className="font-mono text-tx-faint">
-          v0.1.0 · fixture-mode
-        </span>
+        <span className="font-mono text-tx-faint">v1.0</span>
       </div>
     </footer>
   );

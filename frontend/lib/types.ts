@@ -58,6 +58,14 @@ export interface Fact {
   confidence: number; // 0..1
 }
 
+export interface OfficialSource {
+  kind: "edgar" | "ir-rss" | "ir-page" | "newsfile" | "b3-mziq" | "html";
+  url: string;
+  label: string;
+  cik?: string;
+  provenance: Provenance;
+}
+
 export interface Entity {
   ticker: string;
   legalName: string;
@@ -74,6 +82,8 @@ export interface Entity {
   benchmark: string;
   headlineMetrics: string[];
   catalystTypes: string[];
+  xHandle?: string | null;
+  officialSources?: OfficialSource[];
 }
 
 export interface MetricEntry {

@@ -1,9 +1,20 @@
 import { WatchlistTable } from "@/components/overview/WatchlistTable";
 import { MarketPulse } from "@/components/overview/MarketPulse";
-import { data } from "@/lib/data";
+import { store } from "@/server/store";
+import { buildWatchlistRows } from "@/lib/watchlist";
+import { TODAY_ISO } from "@/lib/freshness";
 
-export default function OverviewPage() {
-  const rows = data.getWatchlist();
+// W8 cutover: home page reads from the store, not fixtures. The 60s
+// git-snapshot read cache keeps this cheap when the same request renders
+// multiple pages / the header pill.
+export const dynamic = "force-dynamic";
+
+export default async function OverviewPage() {
+  const [entities, snapshot] = await Promise.all([
+    store.readRegistry(),
+    store.readEarnings(),
+  ]);
+  const rows = buildWatchlistRows(entities, snapshot, TODAY_ISO);
   return (
     <div className="mx-auto max-w-[1800px] px-10 py-8">
       <MarketPulse />

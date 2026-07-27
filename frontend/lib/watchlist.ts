@@ -1,16 +1,35 @@
-import type { Freshness, GuidanceMove, WatchlistRow } from "@/lib/types";
+import type {
+  EarningsSnapshot,
+  Entity,
+  EventRecord,
+  Freshness,
+  GuidanceMove,
+  WatchlistRow,
+} from "@/lib/types";
 import { ENTITY_REGISTRY } from "./fixtures/registry";
 import { EARNINGS_FIXTURE, getLatestEvent } from "./fixtures/earnings";
 import { computeFreshness, TODAY_ISO } from "./freshness";
 
-// Build the overview rows off the entity registry + earnings snapshot.
-// This is the shape /api/earnings + /api/shared-state will produce live.
-export function buildWatchlist(): WatchlistRow[] {
-  const now = TODAY_ISO;
-  return ENTITY_REGISTRY.map((entity) => {
-    const latest = getLatestEvent(entity.ticker);
-    const nextUpcoming = EARNINGS_FIXTURE.events
-      .filter((e) => e.ticker === entity.ticker && e.scheduledDate >= now)
+// Build the overview rows from any registry + earnings snapshot pair.
+// The pure builder is what RSC pages call after fetching from the store;
+// the legacy `buildWatchlist()` wrapper below keeps the fixture path alive
+// for offline dev and the gallery.
+export function buildWatchlistRows(
+  entities: Entity[],
+  snapshot: EarningsSnapshot,
+  now: string,
+): WatchlistRow[] {
+  return entities.map((entity) => {
+    const forTicker = snapshot.events.filter((e) => e.ticker === entity.ticker);
+    const latest: EventRecord | undefined = forTicker
+      .slice()
+      .sort((a, b) =>
+        (b.eventDate ?? b.scheduledDate).localeCompare(
+          a.eventDate ?? a.scheduledDate,
+        ),
+      )[0];
+    const nextUpcoming = forTicker
+      .filter((e) => e.scheduledDate >= now)
       .sort((a, b) => a.scheduledDate.localeCompare(b.scheduledDate))[0];
 
     const daysUntil = nextUpcoming
@@ -85,4 +104,12 @@ export function buildWatchlist(): WatchlistRow[] {
       recentEvent,
     };
   });
+}
+
+// Legacy fixture wrapper. New code paths should call buildWatchlistRows
+// with data pulled from the store.
+export function buildWatchlist(): WatchlistRow[] {
+  // Reuse getLatestEvent from the fixture module to keep the wrapper thin.
+  void getLatestEvent;
+  return buildWatchlistRows(ENTITY_REGISTRY, EARNINGS_FIXTURE, TODAY_ISO);
 }

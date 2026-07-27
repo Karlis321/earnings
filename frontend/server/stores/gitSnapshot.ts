@@ -100,6 +100,50 @@ async function writeFile<T>(
   return { ok: true, sha: j.content.sha };
 }
 
+// In-process read cache. GitHub's Contents API is the hot read path for
+// RSC pages — a 60s TTL keeps per-request latency low without holding
+// stale data long. Writes invalidate the entry immediately so the next
+// read sees the new content, and RSC pages that render across a write
+// boundary get the latest.
+const READ_CACHE_MS = 60_000;
+interface CacheEntry<T> {
+  content: T;
+  sha: string;
+  expiresAt: number;
+}
+const readCache = new Map<string, CacheEntry<unknown>>();
+
+function cacheKey(cfg: GhConfig, path: string): string {
+  return `${cfg.owner}/${cfg.repo}@${cfg.branch}:${path}`;
+}
+
+async function readCached<T>(
+  cfg: GhConfig,
+  path: string,
+): Promise<FileState<T> | null> {
+  const key = cacheKey(cfg, path);
+  const now = Date.now();
+  const hit = readCache.get(key) as CacheEntry<T> | undefined;
+  if (hit && hit.expiresAt > now) {
+    return { sha: hit.sha, content: hit.content };
+  }
+  const fresh = await readFile<T>(cfg, path);
+  if (fresh) {
+    readCache.set(key, {
+      content: fresh.content,
+      sha: fresh.sha,
+      expiresAt: now + READ_CACHE_MS,
+    });
+  } else {
+    readCache.delete(key);
+  }
+  return fresh;
+}
+
+function invalidateCache(cfg: GhConfig, path: string) {
+  readCache.delete(cacheKey(cfg, path));
+}
+
 // Commit-pipe write with 3-retry loop on 409.
 async function commit<T>(
   cfg: GhConfig,
@@ -117,8 +161,18 @@ async function commit<T>(
       message,
       existing?.sha ?? null,
     );
-    if (result.ok) return next;
-    // 409 → retry: someone else committed between our GET and PUT.
+    if (result.ok) {
+      // Prime the cache so the next read sees the just-written value
+      // without another GitHub round-trip.
+      readCache.set(cacheKey(cfg, path), {
+        content: next,
+        sha: result.sha,
+        expiresAt: Date.now() + READ_CACHE_MS,
+      });
+      return next;
+    }
+    // 409 → refetch (bust cache) and retry with the new SHA.
+    invalidateCache(cfg, path);
   }
   throw new Error(`GH commit ${path} failed after 3 attempts (409)`);
 }
@@ -141,7 +195,7 @@ async function readOrFallback<T>(
   fallback: () => Promise<T> | T,
 ): Promise<T> {
   try {
-    const r = await readFile<T>(cfg, path);
+    const r = await readCached<T>(cfg, path);
     if (r) return r.content;
   } catch {
     /* fall through */
@@ -319,7 +373,7 @@ export function gitSnapshotStore(cfg: GhConfig): Store {
 
     async readCronStatus(): Promise<CronRunSummary | null> {
       try {
-        const r = await readFile<CronRunSummary>(cfg, P.cronStatus);
+        const r = await readCached<CronRunSummary>(cfg, P.cronStatus);
         return r?.content ?? null;
       } catch {
         return null;
@@ -331,7 +385,7 @@ export function gitSnapshotStore(cfg: GhConfig): Store {
 
     async readDocument(id: string): Promise<Document | null> {
       try {
-        const r = await readFile<Document>(cfg, P.document(id));
+        const r = await readCached<Document>(cfg, P.document(id));
         return r?.content ?? null;
       } catch {
         return null;

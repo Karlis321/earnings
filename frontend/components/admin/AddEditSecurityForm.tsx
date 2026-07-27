@@ -48,13 +48,17 @@ export function AddEditSecurityForm({ initial, mode }: Props) {
   const [headlineMetrics, setHeadlineMetrics] = useState<string[]>(
     initial?.headlineMetrics ?? [],
   );
+  const [legalName, setLegalName] = useState(initial?.legalName ?? "");
+  const [cashtag, setCashtag] = useState(initial?.cashtag ?? "");
+  const [isCore, setIsCore] = useState(initial?.isCore ?? true);
+  const [xHandle, setXHandle] = useState(initial?.xHandle ?? "");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
 
   const buildPayload = (): Partial<Entity> => ({
     ticker: ticker.trim(),
     displayName: displayName.trim(),
-    legalName: initial?.legalName ?? displayName.trim(),
+    legalName: legalName.trim() || displayName.trim(),
     securityType: type,
     listing: listing.trim(),
     currency: currency.trim() || "USD",
@@ -63,10 +67,12 @@ export function AddEditSecurityForm({ initial, mode }: Props) {
     exclusionAliases: excl,
     sectorTags,
     headlineMetrics,
-    cashtag: initial?.cashtag ?? null,
-    isCore: initial?.isCore ?? true,
+    cashtag: cashtag.trim() ? cashtag.trim().toUpperCase() : null,
+    isCore,
     coverage: initial?.coverage ?? "deep",
     catalystTypes: initial?.catalystTypes ?? [],
+    xHandle: xHandle.trim() ? xHandle.trim().replace(/^@/, "") : null,
+    officialSources: initial?.officialSources ?? [],
   });
 
   const submit = async (e: React.FormEvent) => {
@@ -162,6 +168,54 @@ export function AddEditSecurityForm({ initial, mode }: Props) {
             {errors.displayName ? (
               <FieldError>{errors.displayName}</FieldError>
             ) : null}
+          </div>
+
+          <div className="mb-4">
+            <Label>Legal name</Label>
+            <Input
+              value={legalName}
+              onChange={(e) => setLegalName(e.target.value)}
+              placeholder="Defaults to display name"
+            />
+          </div>
+
+          <div className="mb-4 grid grid-cols-2 gap-3">
+            <div>
+              <Label>Cashtag</Label>
+              <Input
+                value={cashtag}
+                onChange={(e) => setCashtag(e.target.value.toUpperCase())}
+                mono
+                placeholder="INTC"
+              />
+              <FieldHint>
+                Bare symbol without $. Used for $X mention matching.
+              </FieldHint>
+            </div>
+            <div>
+              <Label>X handle</Label>
+              <Input
+                value={xHandle}
+                onChange={(e) => setXHandle(e.target.value.replace(/^@/, ""))}
+                mono
+                placeholder="intel"
+              />
+              <FieldHint>Without the @.</FieldHint>
+            </div>
+          </div>
+
+          <div className="mb-4">
+            <label className="flex items-center gap-2 text-[13px] text-tx">
+              <input
+                type="checkbox"
+                checked={isCore}
+                onChange={(e) => setIsCore(e.target.checked)}
+              />
+              <span>Core watchlist</span>
+              <span className="ml-1 font-mono text-[11px] text-tx-mid">
+                (uncheck for peer / benchmark holdings)
+              </span>
+            </label>
           </div>
 
           <div className="grid grid-cols-3 gap-3">
