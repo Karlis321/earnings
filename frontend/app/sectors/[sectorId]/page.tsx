@@ -110,9 +110,12 @@ export default async function SectorDetailPage({ params }: Props) {
               eyebrow={`Universe · ${universe.length} · sorted by market cap`}
               padded={false}
             >
-              <details>
+              {/* Default open — universe was hidden behind a click before and
+                  users didn't discover it. Long lists remain scrollable via
+                  the surrounding page scroll. */}
+              <details open>
                 <summary className="cursor-pointer border-b border-bd px-4 py-3 text-[12.5px] text-tx-mid hover:bg-hover hover:text-tx">
-                  Show {universe.length} universe entities
+                  {universe.length} universe entities · click to collapse
                 </summary>
                 {universe.map((r) => (
                   <MemberRow key={r.ticker} r={r} />

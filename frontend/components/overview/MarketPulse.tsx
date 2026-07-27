@@ -48,7 +48,11 @@ export function MarketPulse() {
         <div>
           <div className="mono-eyebrow mb-1">Market pulse · 1 month</div>
           <div className="text-[13px] text-tx-mid">
-            Live closes via Yahoo · updated at load
+            Daily closes via Yahoo · last bar ={" "}
+            {data && data.series.length > 0
+              ? data.series[data.series.length - 1].date
+              : "loading…"}{" "}
+            (rolls after US market close, 21:00 UTC)
           </div>
         </div>
         <div className="flex gap-1 rounded-button border border-bd bg-s2 p-[3px]">
