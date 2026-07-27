@@ -75,6 +75,18 @@ export const OFFICIAL_SOURCES: Record<string, OfficialSource[]> = {
   "NOK FH": [
     { kind: "edgar", url: EDGAR("0000924613"), provenance: "regulatory", label: "SEC EDGAR (20-F filer)" },
   ],
+  // Non-SEC filers — verified IR-page RSS feeds. Auto-CIK resolver
+  // returns null for these; hand-added here since IR-page URLs aren't
+  // discoverable programmatically.
+  "TOI CN": [
+    { kind: "rss", url: "https://topicus.com/rss", provenance: "ir-page", label: "Topicus IR" },
+  ],
+  "DBG CN": [
+    { kind: "rss", url: "https://www.doubleview.ca/feed/", provenance: "ir-page", label: "Doubleview Gold IR" },
+  ],
+  "VLE CN": [
+    { kind: "rss", url: "https://www.valeuraenergy.com/feed/", provenance: "ir-page", label: "Valeura Energy IR" },
+  ],
 };
 
 const UA_EDGAR = "Earnings Tracker (contact@example.com)";

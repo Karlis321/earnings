@@ -1,13 +1,34 @@
 # To Do — What's Left for a Full Working Dashboard
 
 **Prod URL:** https://earnings-neon.vercel.app
-**Portfolio:** 17 core tickers from `prompt1.txt` + 267 sector-universe = **284 entities**
-**Last cron:** 2026-07-27T08:56Z (ok, 14.2s) → 260 events in `earnings.json`
-**Market-cap coverage:** 282/284 have live USD caps · 2 remaining nulls are BP class-share oddities
+**Portfolio:** 17 core tickers from `prompt1.txt` + 265 sector-universe (re-expanded) = **282 entities**
+**Last local audit:** 2026-07-27 — registry 282 entities · 266 events ·
+                     baselines 0/266 seeded (fills on next cron) ·
+                     documents 0 (fills after allowlist widening lands in cron)
+**Cron schedule:** Mon–Fri 06:00 UTC per `vercel.json`; next run 2026-07-28.
+**Market-cap coverage:** universe 249/265 USD caps populated via
+                       `expand-sectors.mjs` FX pass; edge cases
+                       (ARS-quoted AAPL AF, KRW Samsung) refine on
+                       next prod cron with live FX.
 
 ---
 
-## ✅ Done this cycle (admin coverage click-to-prefill)
+## ✅ Done this cycle (IR-page RSS + list cleanup)
+
+- [x] **IR-page RSS for three non-SEC tickers.** Probed IR pages for
+      `<link rel=alternate type=application/rss+xml>` and verified:
+      TOI CN → `https://topicus.com/rss` (WP-style RSS), DBG CN →
+      `https://www.doubleview.ca/feed/` (WP feed), VLE CN →
+      `https://www.valeuraenergy.com/feed/` (WP feed). Added all three
+      to `OFFICIAL_SOURCES` in `pressReleases.ts`. TNZ CN
+      (Squarespace-hosted) exposes no RSS — verified via robots.txt +
+      `/press-releases?format=rss` returning empty. B3 (BOLSY US) has
+      `ri.b3.com.br/feed/` advertised but body is empty. Skipped ETFs
+      (XEG, RIO FP) — no earnings PRs by design.
+
+---
+
+## ✅ Done previous cycle (admin coverage click-to-prefill)
 
 - [x] **Click-to-prefill from coverage grid.** New client wrapper
       `AdminEntryPanel` lifts `(eventId, metric, slot)` selection state.
@@ -266,54 +287,67 @@
 
 ---
 
-## Still open · data-population
+## Waiting on next scheduled cron (2026-07-28 06:00 UTC)
 
-- [ ] **Verify EDGAR CIK backfill after next cron run.**
-      Once cron step 6c runs against prod, every operating/developer
-      ticker that files with SEC (WRN, ABXX-via-ABXXF, CENX, HBM, CS,
-      CCJ, BN, TGB, SILV, RIO, NOK, …) should have `edgarCik` populated.
-      Tickers that don't file with SEC (BOLSY, TOI, TNZ, VLE, DBG, XEG,
-      RIO FP) will have `edgarCik: null` and stay on news-only for
-      press releases unless a hand-curated IR-page RSS is added to
-      `OFFICIAL_SOURCES` in `frontend/server/vendors/pressReleases.ts`.
+All items in this block flip to done automatically the next time
+Vercel Cron fires. Nothing further to code — just verify after.
 
-- [ ] **Optional: hand-curated IR-page RSS for the non-SEC names.**
-      For BOLSY, TOI, TNZ, VLE, DBG, XEG, RIO FP — IR-page RSS URLs
-      aren't discoverable programmatically. Add real URLs to
-      `OFFICIAL_SOURCES` after visiting each IR site. Low priority
-      (news vendor covers headline flow).
+- [ ] **EDGAR CIK backfill.** Cron step 6c will resolve `edgarCik`
+      for every entity where the field is `undefined`. Expected: SEC
+      filers (US-listed + 20-F/40-F foreign filers) get a padded
+      10-digit CIK; non-filers get `null` so we don't retry.
+
+- [ ] **Reaction baselines + horizons.** All 266 events currently
+      have `baselineDate: null`. `matureEventReaction` now seeds them
+      from the security's own bars using the BMO/AMC rule and matures
+      any horizon whose `populatesOn` is past. Baseline coverage
+      should jump to ~200+ after one run.
+
+- [ ] **Document ingest.** Allowlist widened to include wire services
+      (GlobeNewswire, PR Newswire, Newswire.ca, BusinessWire,
+      Accesswire) + Yahoo Finance. Expect `data/documents/<id>.json`
+      files to appear after the next cron pass.
+
+- [ ] **Universe market-cap refresh.** `expand-sectors.mjs` seeded
+      caps with the fallback FX table; cron step 6b will re-tier every
+      entity with live `<CCY>USD=X` rates. Watch for ARS/KRW tickers
+      dropping from the mega tier to their true tier.
 
 ---
 
-## Still open · code polish
+## Blocked · needs a real host or browser
 
-- [ ] **Typecheck locally.** `npm run typecheck` is blocked by group
-      policy on this box; re-run locally to confirm the CIK resolver +
-      redirect resolver changes typecheck clean. Files touched:
-      `frontend/lib/types.ts`, `frontend/server/lib/edgarCikResolver.ts`,
-      `frontend/app/api/entity-registry/route.ts`,
-      `frontend/app/api/cron/daily/route.ts`,
-      `frontend/server/vendors/pressReleases.ts`,
-      `frontend/server/vendors/news.ts`,
-      `frontend/lib/fixtures/registry.ts`,
-      `data/metric-dictionary.json`.
+- [ ] **Typecheck.** `npm run typecheck` is blocked by group policy
+      on this box (Windows Server 2019 lockdown). Re-run on a
+      developer machine to confirm all changes since `edgarCikResolver`
+      landed still typecheck clean. Nothing to fix in code — this is a
+      host-permission issue.
 
-- [ ] **BP class-share cosmetic.** `BP-A.L` and `BP-B.L` are the only
-      remaining `marketCapUsd: null` — Yahoo doesn't tag them with
-      marketCap OR netAssets. Low priority (odd share classes rarely
-      matter for coverage).
+- [ ] **J2 smoke test — FactPopover → View source → hosted mode.**
+      Open `/s/HBM%20US/e/<past-event-id>` in a browser, click a
+      metric cell → "View source"; confirm slide-over opens with the
+      source URL loaded via iframe (Yahoo URLs = iframe mode) or
+      hosted-mode after document ingest has processed one press
+      release. Requires a browser — can't be curl'd.
 
-- [ ] **Headline-metric Fact coverage (data-population).** Coverage
-      grid + click-to-prefill on `/admin/entry/:ticker` make the entry
-      flow fast, but each Fact is still a manual keystroke. Remaining
-      option: LLM extractor against ingested 10-Q / press-release text
-      once documents start landing in `data/documents/`. Deferred until
-      $0 no-LLM mode gates open.
+---
 
-- [ ] **Verify document ingest is actually writing.** Allowlist was
-      widened to include wire services + Yahoo Finance last cycle. Next
-      cron pass should ingest at least one URL — verify `data/documents/`
-      contains files after the run.
+## Won't fix (or explicitly deferred)
+
+- [ ] **BP class-share cosmetic.** `BP-A LN` / `BP-B LN` came into the
+      universe via sector expansion. Yahoo returns no `marketCap` or
+      `netAssets` for these class shares, so `marketCapUsd` stays
+      `null`. Won't fix — class-share odd-lots aren't worth a special
+      code path.
+
+- [ ] **LLM extractor for headline-metric Facts.** Coverage grid +
+      click-to-prefill make manual entry fast. Automating extraction
+      would require pulling ingested document text through an LLM;
+      deferred behind the $0 no-LLM mode gate.
+
+- [ ] **LLM expansion path** (`prompt1.txt` template as a
+      Claude+web-search prompt). Yahoo screener at `/admin/expand`
+      already covers the same use case at $0.
 
 ---
 
@@ -369,26 +403,13 @@ one partial (needs a real browser for the click flow).
 
 ---
 
-## Post-launch verification · after Vercel's first scheduled cron
+## Ongoing verification · post-launch
 
-- [ ] `/api/health` green two consecutive weekdays (auto-cron fires
-      Mon–Fri 06:00 UTC per `vercel.json`)
+- [ ] `/api/health` green two consecutive weekdays
 - [ ] No 500s in Vercel logs over 48h
 - [ ] Every operating ticker has a Fact on each headline metric with a
-      working DeepLinkButton
-- [ ] Reaction horizons matured for at least one past event (needs an
-      event whose `populatesOn` ≤ today)
-- [ ] Document ingest wrote at least one `data/documents/<id>.json`
-      (needs a press-release URL on the allowlist)
-
----
-
-## Nice-to-have
-
-- [ ] LLM expansion path (`prompt1.txt` template as a Claude+web-search
-      prompt). Yahoo screener at `/admin/expand` already covers the same
-      use case at `$0`. Wire the LLM path only if you want commentary or
-      non-Yahoo-covered names.
+      working DeepLinkButton (currently gated on manual entry — the
+      coverage grid at `/admin/entry/:ticker` makes it fast)
 
 ---
 
