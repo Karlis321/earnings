@@ -321,27 +321,27 @@ function Row({
         r.recentEvent && "bg-[rgba(47,127,255,0.05)]",
       )}
     >
-      <div className="flex items-center gap-[10px]">
+      <div className="flex min-w-0 items-center gap-[10px]">
         <TickerLogo
           ticker={r.ticker}
           name={r.entity.displayName}
           size={28}
         />
-        <div className="flex items-baseline gap-2">
-          <span className="text-[13.5px] font-medium text-tx">
+        <div className="flex min-w-0 flex-col leading-tight">
+          <span className="truncate text-[13.5px] font-medium text-tx">
             {r.entity.displayName}
           </span>
-          <span className="font-mono text-[11.5px] text-tx-mid">
+          <span className="flex items-center gap-2 truncate font-mono text-[11px] text-tx-mid">
             {r.ticker}
+            {r.dataIncomplete ? (
+              <span
+                className="inline-flex items-center gap-[3px] rounded-[4px] bg-[rgba(181,71,8,0.10)] px-[5px] py-[1px] text-[10px] text-warning"
+                title="Data incomplete — waiting on next refresh"
+              >
+                <AlertTriangle size={9} /> incomplete
+              </span>
+            ) : null}
           </span>
-          {r.dataIncomplete && (
-            <span
-              className="ml-1 inline-flex items-center gap-[3px] rounded-[4px] bg-[rgba(181,71,8,0.10)] px-[5px] py-[1px] text-[10px] text-warning"
-              title="Data incomplete — waiting on next refresh"
-            >
-              <AlertTriangle size={9} /> incomplete
-            </span>
-          )}
         </div>
       </div>
 

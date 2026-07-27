@@ -27,7 +27,11 @@ export default async function SecurityDetailPage({ params }: Props) {
   if (!entity) notFound();
 
   const events = eventsForTicker(snapshot, ticker);
-  const latest = events[0];
+  // Prefer most recent PAST event for the header stamp — an upcoming
+  // event has no eventDate + empty metrics, which makes the header
+  // "Last: <period>" line show a future quarter with no data behind it.
+  const latestPast = events.find((e) => e.eventDate);
+  const latest = latestPast ?? events[0];
   const nextEvent = events.find((e) => e.scheduledDate >= TODAY_ISO);
   const freshness = computeFreshness(
     latest?.sources.capturedAt ?? latest?.eventDate ?? latest?.scheduledDate ?? null,
