@@ -43,6 +43,14 @@ export async function GET(req: NextRequest) {
   }
   return NextResponse.json(
     { symbol, range, interval, series, fetchedAt: new Date().toISOString() },
-    { headers: { "Cache-Control": "s-maxage=3600, stale-while-revalidate=86400" } },
+    {
+      // 5-min edge cache so users always see prices within the last
+      // trading interval — bumps intraday freshness while still shielding
+      // Yahoo from thundering-herd traffic. stale-while-revalidate keeps
+      // response times fast during the refresh window.
+      headers: {
+        "Cache-Control": "s-maxage=300, stale-while-revalidate=900",
+      },
+    },
   );
 }

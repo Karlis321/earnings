@@ -79,7 +79,9 @@ export async function GET(req: NextRequest) {
     { fetchedAt: new Date().toISOString(), tickers: map },
     {
       headers: {
-        "Cache-Control": "s-maxage=1800, stale-while-revalidate=3600",
+        // 5-min edge cache so watchlist rows reflect today's Yahoo
+        // calendar + last-quarter EPS actual (updates as companies report).
+        "Cache-Control": "s-maxage=300, stale-while-revalidate=900",
       },
     },
   );
