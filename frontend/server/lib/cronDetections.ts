@@ -133,13 +133,50 @@ function reportingDateForPeriod(period: string): string | null {
   return `${yr}-${String(mo).padStart(2, "0")}-15`;
 }
 
+// Readable display labels for headline metric keys. Kept in sync with
+// data/metric-dictionary.json so the UI never shows raw snake_case.
+const METRIC_LABEL_BY_KEY: Record<string, { label: string; unit: string }> = {
+  revenue_usd_m: { label: "Revenue (M)", unit: "USD" },
+  revenue_eur_m: { label: "Revenue (M)", unit: "EUR" },
+  ebitda_usd_m: { label: "EBITDA (M)", unit: "USD" },
+  adj_ebitda_usd_m: { label: "Adj. EBITDA (M)", unit: "USD" },
+  eps_usd: { label: "EPS", unit: "USD" },
+  eps_eur: { label: "EPS", unit: "EUR" },
+  eps_cad: { label: "EPS", unit: "CAD" },
+  dr_eps_usd: { label: "DR EPS", unit: "USD" },
+  fee_bearing_capital_usd_b: { label: "Fee-bearing capital (B)", unit: "USD" },
+  data_center_rev_usd_m: { label: "Data-center revenue (M)", unit: "USD" },
+  production_cu_kt: { label: "Copper production (kt)", unit: "kt" },
+  c1_usd_lb: { label: "C1 cash cost", unit: "USD/lb" },
+  shipments_kt: { label: "Shipments (kt)", unit: "kt" },
+  iron_ore_kt: { label: "Iron ore (kt)", unit: "kt" },
+  adj_op_margin_pct: { label: "Adj. op margin", unit: "%" },
+  u3o8_production_mlb: { label: "U₃O₈ (Mlb)", unit: "Mlb" },
+  avg_realized_usd_lb: { label: "Realized price", unit: "USD/lb" },
+  silver_production_koz: { label: "Silver (koz)", unit: "koz" },
+  aisc_usd_oz: { label: "AISC", unit: "USD/oz" },
+  arr_usd_m: { label: "ARR (M)", unit: "USD" },
+  net_dollar_retention_pct: { label: "Net dollar retention", unit: "%" },
+  daily_volumes_usd_b: { label: "Avg daily volume (B)", unit: "USD" },
+  revenue_take_bps: { label: "Take rate", unit: "bps" },
+};
+function labelFor(key: string): { label: string; unit: string } {
+  return METRIC_LABEL_BY_KEY[key] ?? { label: key, unit: "USD" };
+}
+
 // Build a past-quarter event record with the reported actual baked in.
 // Used by the backfill and by POST /api/entity-registry auto-backfill so
 // a newly-added ticker lands with its past 4Q of history already visible
 // on the security detail page.
 export function buildPastEvent(
   entity: Entity,
-  quarter: { period: string; actual: number | null; estimate: number | null },
+  quarter: {
+    period: string;
+    actual: number | null;
+    estimate: number | null;
+    revenue?: number | null;
+    netIncome?: number | null;
+  },
   yahooSymbol: string,
 ): EventRecord | null {
   const parsed = parseYahooPeriod(quarter.period);
@@ -151,44 +188,66 @@ export function buildPastEvent(
   const now = new Date().toISOString();
   const asOf = now.slice(0, 10);
 
+  const yahooEarningsUrl = `https://finance.yahoo.com/quote/${encodeURIComponent(yahooSymbol)}/earnings`;
+  const yahooFinancialsUrl = `https://finance.yahoo.com/quote/${encodeURIComponent(yahooSymbol)}/financials`;
+  const yahooAnalysisUrl = `https://finance.yahoo.com/quote/${encodeURIComponent(yahooSymbol)}/analysis`;
+
   const metrics: MetricEntry[] = [];
-  // Yahoo's earningsChart returns EPS actual + estimate. Match either
-  // classic keys (eps_usd) or headline-metric names that embed "eps"
-  // (dr_eps_usd, eps_adj_usd). Non-EPS headline metrics get null Facts
-  // as placeholders — filled by manual entry or later ingestion.
   const epsKeys = new Set(
     entity.headlineMetrics.filter((k) => /eps/i.test(k)),
   );
-  // If no EPS metric is on the headline list at all, add a standalone
-  // eps_usd entry so Yahoo's actual doesn't get discarded.
   const includeStandaloneEps =
     epsKeys.size === 0 && quarter.actual !== null;
   const keysToWrite = includeStandaloneEps
     ? [...entity.headlineMetrics, "eps_usd"]
     : entity.headlineMetrics;
+
+  // Revenue from earnings.financialsChart.quarterly.revenue (absolute $).
+  // We scale to millions for revenue_*_m keys so the UI matches its label.
+  const revenueRaw = quarter.revenue ?? null;
+  const revenueM = revenueRaw !== null ? revenueRaw / 1_000_000 : null;
+
   for (const key of keysToWrite) {
+    const meta = labelFor(key);
     const isEps = /eps/i.test(key);
-    const estimateVal = isEps ? quarter.estimate : null;
-    const actualVal = isEps ? quarter.actual : null;
+    const isRevenueM = /^revenue_[a-z]{3}_m$/.test(key);
+
+    let estimateVal: number | null = null;
+    let actualVal: number | null = null;
+    let sourceUrlActual = yahooEarningsUrl;
+    let sourceLabelActual = "Yahoo Finance · earnings";
+
+    if (isEps) {
+      estimateVal = quarter.estimate;
+      actualVal = quarter.actual;
+    } else if (isRevenueM) {
+      actualVal = revenueM;
+      sourceUrlActual = yahooFinancialsUrl;
+      sourceLabelActual = "Yahoo Finance · financials";
+    }
+    // Non-EPS non-revenue metrics stay null (need manual entry or filing
+    // ingest). displayLabel still resolves to the readable form.
+
     const surprisePct =
       estimateVal !== null &&
       actualVal !== null &&
       Math.abs(estimateVal) > 1e-9
         ? ((actualVal - estimateVal) / Math.abs(estimateVal)) * 100
         : null;
+
     metrics.push({
       key,
-      displayLabel: key,
+      displayLabel: meta.label,
       isHeadline: entity.headlineMetrics.includes(key),
       surprisePct,
       estimate:
         estimateVal !== null
           ? {
               value: estimateVal,
-              unit: "USD",
+              unit: meta.unit,
               source: {
-                url: `https://finance.yahoo.com/quote/${encodeURIComponent(yahooSymbol)}/analysis`,
-                label: "Yahoo Finance (consensus)",
+                url: yahooAnalysisUrl,
+                label: "Yahoo Finance · consensus",
                 provenance: "wire",
                 locator: null,
               },
@@ -202,10 +261,10 @@ export function buildPastEvent(
         actualVal !== null
           ? {
               value: actualVal,
-              unit: "USD",
+              unit: meta.unit,
               source: {
-                url: `https://finance.yahoo.com/quote/${encodeURIComponent(yahooSymbol)}/earnings`,
-                label: "Yahoo Finance",
+                url: sourceUrlActual,
+                label: sourceLabelActual,
                 provenance: "wire",
                 locator: null,
               },

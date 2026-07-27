@@ -320,6 +320,10 @@ export interface YahooEarningsQuarter {
   actual: number | null;
   estimate: number | null;
   surprisePct: number | null;
+  // Extra quarterly financials from earnings.financialsChart.quarterly.
+  // Yahoo returns absolute dollars — buildPastEvent scales to _m at write.
+  revenue: number | null;
+  netIncome: number | null;
 }
 
 export interface YahooEarnings {
@@ -353,6 +357,13 @@ interface QuoteSummaryResponse {
             estimate?: YahooRaw;
           }>;
           currentQuarterEstimate?: YahooRaw;
+        };
+        financialsChart?: {
+          quarterly?: Array<{
+            date?: string;
+            revenue?: YahooRaw;
+            earnings?: YahooRaw;
+          }>;
         };
       };
     }>;
@@ -418,6 +429,18 @@ export async function yahooEarnings(
 
     // Full past-quarters array. Yahoo returns oldest-first, typically 4.
     const quarterlyRaw = result.earnings?.earningsChart?.quarterly ?? [];
+    // Sibling financialsChart.quarterly carries revenue + netIncome for
+    // the same 4 quarter labels. Join by period.
+    const financialsRaw =
+      result.earnings?.financialsChart?.quarterly ?? [];
+    const finByPeriod = new Map<string, { revenue: number | null; earnings: number | null }>();
+    for (const f of financialsRaw) {
+      if (!f.date) continue;
+      finByPeriod.set(f.date, {
+        revenue: f.revenue?.raw ?? null,
+        earnings: f.earnings?.raw ?? null,
+      });
+    }
     const pastQuarters: YahooEarningsQuarter[] = quarterlyRaw.map((q) => {
       const actual = q.actual?.raw ?? null;
       const estimate = q.estimate?.raw ?? null;
@@ -425,7 +448,15 @@ export async function yahooEarnings(
         actual !== null && estimate !== null && Math.abs(estimate) > 0.0001
           ? ((actual - estimate) / Math.abs(estimate)) * 100
           : null;
-      return { period: q.date ?? "", actual, estimate, surprisePct };
+      const fin = finByPeriod.get(q.date ?? "");
+      return {
+        period: q.date ?? "",
+        actual,
+        estimate,
+        surprisePct,
+        revenue: fin?.revenue ?? null,
+        netIncome: fin?.earnings ?? null,
+      };
     });
     const lastQuarter = pastQuarters[pastQuarters.length - 1] ?? null;
 
