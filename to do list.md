@@ -1,7 +1,7 @@
 # To Do — What's Left for a Full Working Dashboard
 
 **Prod URL:** https://earnings-neon.vercel.app
-**Portfolio:** 17 core tickers from `prompt1.txt` + 265 sector-universe (re-expanded) = **282 entities**
+**Portfolio:** 17 core tickers from `prompt1.txt` + 368 sector-universe (CEDEARs excluded) = **385 entities**
 **Last local audit:** 2026-07-27 — registry 282 entities · 266 events ·
                      baselines 0/266 seeded (fills on next cron) ·
                      documents 0 (fills after allowlist widening lands in cron)
@@ -13,7 +13,26 @@
 
 ---
 
-## ✅ Done this cycle (three local runners closed out the cron backlog)
+## ✅ Done this cycle (CEDEAR filter + universe re-expansion)
+
+- [x] **Filtered Argentine CEDEARs from sector expansion.** Dropped
+      `BUE: "AF"` from `YAHOO_TO_BB` in both `scripts/expand-sectors.mjs`
+      and `frontend/server/lib/sectorExpansion.ts`. Argentine CEDEARs
+      (AAPL.BA, NVDA.BA, TSM.BA, etc.) report Yahoo marketCaps
+      disconnected from the underlying issuer (Apple showed $1.56T on
+      BA vs $4.89T on Nasdaq). Stripped 57 existing AF entries from
+      the registry and re-ran expansion at `size=100`. Registry landed
+      at 385 entities (17 core + 368 universe) with `AF: 0`. Apple
+      now appears via legitimate primaries — `AAPL MM` (MXN $4.90T),
+      `AAPL34 BZ` (BRL $4.90T), `AAPL CN` ($4.89T) — all matching
+      real cap on Nasdaq.
+
+- [x] **Re-refreshed caps with live FX + re-backfilled CIKs** across
+      the enlarged 385-entity registry. Live rates for 37/37
+      currencies. Caps updated 114 · unchanged 241 · failed 30
+      (withdrawn tickers). CIK backfill picked up 36 additional
+      filers from the new listings (WPM LN, LIN1N MM, SOLBE1 SJ,
+      etc.) for a total of 123 SEC filers across the registry.
 
 - [x] **Universe market-cap refresh with live FX** via
       `scripts/refresh-market-caps.mjs`. Crumb-authed Yahoo v7 quote
@@ -381,24 +400,6 @@ the server-side implementations match.
       source URL loaded via iframe (Yahoo URLs = iframe mode) or
       hosted-mode after document ingest has processed one press
       release. Requires a browser — can't be curl'd.
-
----
-
-## Future scope
-
-- [ ] **Filter CEDEAR / cross-listing duplicates in sector expansion.**
-      Yahoo screener with `region=any` returns Argentine CEDEARs like
-      AAPL.BA (Bloomberg `AAPL AF`) instead of the primary AAPL US
-      listing. The CEDEAR is a fractional-share depositary receipt
-      whose Yahoo `marketCap` is disconnected from the underlying
-      issuer's real cap ($1.56T reported vs $4.89T actual for AAPL).
-      Tickers affected: many `AF` (Buenos Aires) entries returned from
-      Technology / Energy screens. Fix option: prefer primary listing
-      when multiple listings of the same issuer are present, or drop
-      `BUE: "AF"` from the exchange map so Argentine CEDEARs are
-      skipped as "unmapped". Trade-off: legitimate Argentine issuers
-      would also drop out, but there are almost none in the current
-      universe.
 
 ---
 

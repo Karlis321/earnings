@@ -205,8 +205,13 @@ const YAHOO_TO_BB = {
   HEL: "FH", CPH: "DC", ICE: "IR",
   ATH: "GA", WAR: "PW", BUD: "HB", PRA: "CP",
   IST: "TI",
-  // Latin America
-  SAO: "BZ", MEX: "MM", BUE: "AF",
+  // Latin America — BUE (Buenos Aires) intentionally omitted: those
+  // listings are Argentine CEDEARs (depositary receipts on foreign
+  // issuers) whose Yahoo marketCap is disconnected from the underlying
+  // listing (e.g. AAPL.BA reports ~$1.56T vs Apple's ~$4.89T on Nasdaq).
+  // Argentine-domiciled issuers are rare in our sectors, so exclusion
+  // is the pragmatic trade-off.
+  SAO: "BZ", MEX: "MM",
   // Asia-Pacific
   ASX: "AU", HKG: "HK",
   TYO: "JP", JPX: "JP", OSE: "JP",

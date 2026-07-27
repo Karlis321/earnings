@@ -99,7 +99,11 @@ const YAHOO_TO_BB: Record<string, string> = {
   HEL: "FH", CPH: "DC", ICE: "IR",
   ATH: "GA", WAR: "PW", BUD: "HB", PRA: "CP",
   IST: "TI",
-  SAO: "BZ", MEX: "MM", BUE: "AF",
+  // BUE (Buenos Aires) intentionally omitted — Argentine CEDEARs report
+  // marketCaps disconnected from the underlying issuer (AAPL.BA is
+  // ~$1.56T; real AAPL is ~$4.89T). Skip cleanly instead of ingesting
+  // duplicate wrappers.
+  SAO: "BZ", MEX: "MM",
   ASX: "AU", HKG: "HK",
   TYO: "JP", JPX: "JP", OSE: "JP",
   KSC: "KS", KOE: "KS",
