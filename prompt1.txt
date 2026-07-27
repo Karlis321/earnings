@@ -1,12 +1,18 @@
-Step 7 · Wire-Up Plan
-Produces a phased integration plan with testing checkpoints between front-end and back-end.
-Using the Front-End PRD and the
-Backend PRD, build a phased wire-up
-plan for bringing together the front and backend systems.
-The plan should:
-- Identify which front-end components connect to which API endpoints
-- Define the order in which integrations should be done
-- Flag areas likely to require debugging or data transformation
-- Include a testing checkpoint after each phase
-Step 8 · Deploy
-Ship it
+SYMPTOM (from screenshot): the "Hudbay Minerals" row renders ON TOP of the
+column-header row (NAME / NEXT EVENT / LAST SURPRISE / GUIDANCE / 1-MONTH
+REACTION / FRESH / SRC). There are dark/black blocks bleeding over the header
+where the surprise/guidance/reaction cells sit.
+
+EXPECTED: the header row stays fixed and fully opaque at the top; data rows
+scroll UNDER it; no dark artifacts; each cell's content stays within its column.
+
+LIKELY AREAS (check in this order, don't guess-rewrite everything):
+1. Sticky <thead>/header has no solid background → set an opaque background
+   (matches the theme token, not transparent) and a z-index above rows.
+2. z-index / stacking: a row (or its badge/pill) sits above the header.
+3. An absolutely/negatively-positioned element (badge, chart, freshness dot)
+   with no background or wrong offset is painting outside its cell.
+4. Row height/overflow: content taller than the row leaking over the header.
+
+CONSTRAINTS: fix with CSS/layout only; do not change the data or column set.
+Keep it accessible (contrast, no color-only signals). Show me the diff.
