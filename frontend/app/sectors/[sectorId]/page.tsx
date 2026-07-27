@@ -13,12 +13,45 @@ import {
 import { Breadcrumb } from "@/components/shell/Breadcrumb";
 import { fmtDateShort } from "@/lib/format";
 import { AlertOctagon } from "lucide-react";
+import type { WatchlistRow } from "@/lib/types";
 
 interface Props {
   params: Promise<{ sectorId: string }>;
 }
 
 export const dynamic = "force-dynamic";
+
+function MemberRow({ r }: { r: WatchlistRow }) {
+  return (
+    <Link
+      key={r.ticker}
+      href={`/s/${encodeURIComponent(r.ticker)}`}
+      className="grid grid-cols-[1.5fr_1fr_1fr_auto] items-center gap-3 border-b border-bd px-4 py-3 last:border-b-0 hover:bg-hover"
+    >
+      <span className="flex items-center gap-2">
+        <TypeBadge type={r.entity.securityType} size="sm" />
+        <span className="text-[13.5px] text-tx">{r.entity.displayName}</span>
+        <span className="font-mono text-[11px] text-tx-mid">{r.ticker}</span>
+        {r.entity.capTier && r.entity.capTier !== "unknown" ? (
+          <span className="font-mono text-[10px] uppercase tracking-[0.08em] text-tx3">
+            {r.entity.capTier}
+          </span>
+        ) : null}
+      </span>
+      <span className="font-mono text-[12.5px] text-tx-mid">
+        {r.nextEvent.date ? fmtDateShort(r.nextEvent.date) : "—"}
+      </span>
+      <span>
+        {r.entity.securityType === "operating" && r.lastSurprisePct !== null ? (
+          <SurprisePill surprisePct={r.lastSurprisePct} compact />
+        ) : (
+          <span className="text-[12.5px] text-tx3">—</span>
+        )}
+      </span>
+      <FreshnessDot state={r.freshness} />
+    </Link>
+  );
+}
 
 export default async function SectorDetailPage({ params }: Props) {
   const { sectorId: raw } = await params;
@@ -31,9 +64,15 @@ export default async function SectorDetailPage({ params }: Props) {
   if (members.length === 0) notFound();
 
   const allRows = buildWatchlistRows(entities, snapshot, TODAY_ISO);
-  const watchlist = allRows.filter((r) =>
+  const inSector = allRows.filter((r) =>
     members.some((m) => m.ticker === r.ticker),
   );
+  const portfolio = inSector.filter((r) => r.entity.isCore);
+  const universe = inSector
+    .filter((r) => !r.entity.isCore)
+    .sort(
+      (a, b) => (b.entity.marketCapUsd ?? 0) - (a.entity.marketCapUsd ?? 0),
+    );
 
   return (
     <div className="mx-auto max-w-[1800px] px-10 py-8">
@@ -51,41 +90,45 @@ export default async function SectorDetailPage({ params }: Props) {
           {sectorId}
         </h1>
         <p className="mt-1 text-[13.5px] text-tx-mid">
-          {members.length} covered name{members.length === 1 ? "" : "s"}
+          {portfolio.length} portfolio · {universe.length} universe ·{" "}
+          {members.length} total in sector
         </p>
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1.4fr_1fr]">
-        <Panel eyebrow="Members" padded={false}>
-          {watchlist.map((r) => (
-            <Link
-              key={r.ticker}
-              href={`/s/${encodeURIComponent(r.ticker)}`}
-              className="grid grid-cols-[1.5fr_1fr_1fr_auto] items-center gap-3 border-b border-bd px-4 py-3 last:border-b-0 hover:bg-hover"
+        <div className="flex flex-col gap-4">
+          {portfolio.length > 0 ? (
+            <Panel eyebrow={`Portfolio · ${portfolio.length}`} padded={false}>
+              {portfolio.map((r) => (
+                <MemberRow key={r.ticker} r={r} />
+              ))}
+            </Panel>
+          ) : null}
+
+          {universe.length > 0 ? (
+            <Panel
+              eyebrow={`Universe · ${universe.length} · sorted by market cap`}
+              padded={false}
             >
-              <span className="flex items-center gap-2">
-                <TypeBadge type={r.entity.securityType} size="sm" />
-                <span className="text-[13.5px] text-tx">
-                  {r.entity.displayName}
-                </span>
-                <span className="font-mono text-[11px] text-tx-mid">
-                  {r.ticker}
-                </span>
-              </span>
-              <span className="font-mono text-[12.5px] text-tx-mid">
-                {r.nextEvent.date ? fmtDateShort(r.nextEvent.date) : "—"}
-              </span>
-              <span>
-                {r.entity.securityType === "operating" && r.lastSurprisePct !== null ? (
-                  <SurprisePill surprisePct={r.lastSurprisePct} compact />
-                ) : (
-                  <span className="text-[12.5px] text-tx3">—</span>
-                )}
-              </span>
-              <FreshnessDot state={r.freshness} />
-            </Link>
-          ))}
-        </Panel>
+              <details>
+                <summary className="cursor-pointer border-b border-bd px-4 py-3 text-[12.5px] text-tx-mid hover:bg-hover hover:text-tx">
+                  Show {universe.length} universe entities
+                </summary>
+                {universe.map((r) => (
+                  <MemberRow key={r.ticker} r={r} />
+                ))}
+              </details>
+            </Panel>
+          ) : null}
+
+          {portfolio.length === 0 && universe.length === 0 ? (
+            <Panel eyebrow="No members">
+              <div className="text-[13px] text-tx-mid">
+                No covered names tagged with <code>{sectorId}</code>.
+              </div>
+            </Panel>
+          ) : null}
+        </div>
 
         <Panel eyebrow="Sector read · LLM enrichment">
           <div className="flex flex-col items-start gap-3 rounded-panel border border-dashed border-bd bg-panel2 p-5 text-tx-mid">
@@ -96,9 +139,9 @@ export default async function SectorDetailPage({ params }: Props) {
               </span>
             </div>
             <p className="text-[13px] leading-[1.6]">
-              The vibe/forward summary is powered by Claude Haiku. It is switched
-              off in this build to stay at $0 operating cost. Enable it in
-              Settings when a monthly ceiling is agreed.
+              The vibe/forward summary is powered by Claude Haiku. It is
+              switched off in this build to stay at $0 operating cost. Enable
+              it in Settings when a monthly ceiling is agreed.
             </p>
           </div>
         </Panel>
