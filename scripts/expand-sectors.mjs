@@ -81,9 +81,46 @@ async function yahooScreener({
   size,
   marketCapMin,
   marketCapMax,
+  predefined, // e.g. "top_etfs_us" — bypasses the custom query
 }) {
   const crumb = await primeCrumb();
   if (!crumb) return { hits: [], total: 0 };
+
+  // ETF universe screening via custom query is broken on Yahoo's side
+  // (they reject every candidate sort field). Use their predefined saved
+  // screen instead — `top_etfs_us` returns the top ETFs by net assets.
+  if (predefined) {
+    const url =
+      `https://query2.finance.yahoo.com/v1/finance/screener/predefined/saved` +
+      `?scrIds=${encodeURIComponent(predefined)}&count=${Math.min(size, 250)}` +
+      `&crumb=${encodeURIComponent(crumb)}`;
+    const r = await fetch(url, {
+      headers: {
+        "User-Agent": UA,
+        Accept: "application/json",
+        Cookie: COOKIE_HEADER,
+      },
+    });
+    if (!r.ok) return { hits: [], total: 0 };
+    const j = await r.json();
+    const block = j.finance?.result?.[0];
+    if (!block) return { hits: [], total: 0 };
+    return {
+      hits: (block.quotes ?? []).map((q) => ({
+        symbol: q.symbol ?? "",
+        name: q.longName ?? q.shortName ?? "",
+        exchange: q.exchange ?? "",
+        currency: q.currency ?? null,
+        marketCap: q.marketCap ?? q.netAssets ?? q.totalAssets ?? null,
+        sector: q.sector ?? null,
+        industry: q.industry ?? null,
+        region: q.region ?? "us",
+        quoteType: q.quoteType ?? quoteType,
+      })),
+      total: block.total ?? 0,
+    };
+  }
+
   const operands = [];
   if (quoteType !== "ETF" && sector) {
     operands.push({ operator: "EQ", operands: ["sector", sector] });
@@ -154,22 +191,39 @@ async function yahooScreener({
 
 // ---------- Bloomberg mapping + cap tiers ----------
 const YAHOO_TO_BB = {
+  // US
   NMS: "US", NYQ: "US", ASE: "US", NGM: "US", NCM: "US",
-  PCX: "US", NYS: "US", OEM: "US", OQX: "US", BTS: "US", PNK: "US",
-  TOR: "CN", VAN: "CN", CVE: "CN", NEO: "CN", CNX: "CN",
-  LSE: "LN",
-  PAR: "FP",
+  PCX: "US", NYS: "US", OEM: "US", OQX: "US", OQB: "US", OTC: "US",
+  BTS: "US", PNK: "US",
+  // Canada
+  TOR: "CN", VAN: "CN", CVE: "CN", NEO: "CN", CNX: "CN", CDNX: "CN",
+  // Europe
+  LSE: "LN", PAR: "FP",
   GER: "GR", FRA: "GR", BER: "GR", DUS: "GR", HAM: "GR", MUN: "GR", STU: "GR",
   EBR: "BB", AMS: "NA", MIL: "IM", MCE: "SM", STO: "SS",
-  OSL: "NO", CSE: "DC", SWX: "SW", EBS: "SW", VTX: "SW",
-  VIE: "AV", SAO: "BZ", MEX: "MM", ASX: "AU", HKG: "HK",
+  OSL: "NO", CSE: "DC", SWX: "SW", EBS: "SW", VTX: "SW", VIE: "AV",
+  HEL: "FH", CPH: "DC", ICE: "IR",
+  ATH: "GA", WAR: "PW", BUD: "HB", PRA: "CP",
+  IST: "TI",
+  // Latin America
+  SAO: "BZ", MEX: "MM", BUE: "AF",
+  // Asia-Pacific
+  ASX: "AU", HKG: "HK",
   TYO: "JP", JPX: "JP", OSE: "JP",
-  KSC: "KS", NSI: "IN", BOM: "IN", SES: "SP", HEL: "FH",
+  KSC: "KS", KOE: "KS",
+  NSI: "IN", BOM: "IN", BSE: "IN",
+  SES: "SP", KLS: "MK", JKT: "IJ", SET: "TB",
+  TAI: "TT", // Taiwan
+  // Mainland China
+  SHH: "CH", SHZ: "C1",
+  // Middle East / Africa
+  TLV: "IT", JNB: "SJ", DFM: "UH", ADX: "UH",
 };
 
 function bloombergFromYahoo(yahooSymbol, exchange) {
   const base = yahooSymbol.split(".")[0].toUpperCase();
-  const bb = YAHOO_TO_BB[exchange] ?? "US";
+  const bb = YAHOO_TO_BB[exchange];
+  if (!bb) return null; // unmapped exchange → skip rather than mis-tag
   return `${base} ${bb}`;
 }
 
@@ -188,7 +242,7 @@ const SECTORS = [
     key: "technology",
     yahooSector: "Technology",
     quoteType: "EQUITY",
-    region: "us",
+    region: "any",
     sectorTags: ["technology"],
     securityType: "operating",
     benchmark: "NDX",
@@ -199,7 +253,7 @@ const SECTORS = [
     key: "materials",
     yahooSector: "Basic Materials",
     quoteType: "EQUITY",
-    region: "us",
+    region: "any",
     sectorTags: ["materials"],
     securityType: "operating",
     benchmark: "SPX",
@@ -210,7 +264,7 @@ const SECTORS = [
     key: "energy",
     yahooSector: "Energy",
     quoteType: "EQUITY",
-    region: "us",
+    region: "any",
     sectorTags: ["energy"],
     securityType: "operating",
     benchmark: "CL=F",
@@ -222,6 +276,7 @@ const SECTORS = [
     yahooSector: null,
     quoteType: "ETF",
     region: "us",
+    predefined: "top_etfs_us", // custom ETF sort is broken on Yahoo's side
     sectorTags: ["etf"],
     securityType: "etf",
     benchmark: "SPX",
@@ -247,6 +302,7 @@ const SECTORS = [
 // ---------- Entity builder ----------
 function buildEntity(hit, sectorDef, asOf) {
   const bb = bloombergFromYahoo(hit.symbol, hit.exchange);
+  if (!bb) return null; // exchange not on our Bloomberg map
   const displayName =
     hit.name
       ?.replace(/,?\s+(Inc\.?|Corporation|Corp\.?|Ltd\.?|Limited|Company|Co\.?|Group|Holdings|PLC|SA|AG|N\.?V\.?)$/gi, "")
@@ -275,6 +331,7 @@ function buildEntity(hit, sectorDef, asOf) {
     marketCapUsd: hit.marketCap,
     marketCapAsOf: asOf,
     capTier: capTierFor(hit.marketCap),
+    yahooSymbol: hit.symbol,
   };
 }
 
@@ -298,24 +355,34 @@ async function main() {
       size: SIZE,
       marketCapMin: sectorDef.marketCapMin,
       marketCapMax: sectorDef.marketCapMax,
+      predefined: sectorDef.predefined,
     });
     let added = 0;
     let dupes = 0;
+    let skipped = 0;
     const added_tickers = [];
     for (const hit of hits) {
       if (!hit.symbol) continue;
       const bb = bloombergFromYahoo(hit.symbol, hit.exchange);
+      if (!bb) {
+        skipped++; // exchange not on our Bloomberg map
+        continue;
+      }
       if (existing.has(bb)) {
         dupes++;
         continue;
       }
-      existing.add(bb);
       const entity = buildEntity(hit, sectorDef, asOf);
+      if (!entity) {
+        skipped++;
+        continue;
+      }
+      existing.add(bb);
       additions.push(entity);
       added++;
       added_tickers.push(bb);
     }
-    per.push({ key: sectorDef.key, total, added, dupes });
+    per.push({ key: sectorDef.key, total, added, dupes, skipped });
     console.log(`  → +${added} new · ${dupes} already covered · universe ${total}`);
     if (added_tickers.length) {
       console.log(`  first: ${added_tickers.slice(0, 5).join(", ")}${added_tickers.length > 5 ? "…" : ""}`);
@@ -323,7 +390,7 @@ async function main() {
   }
 
   console.log("\nSummary:");
-  for (const p of per) console.log(` ${p.key.padEnd(12)} +${p.added} (${p.dupes} dupes / universe ${p.total})`);
+  for (const p of per) console.log(` ${p.key.padEnd(12)} +${p.added} (${p.dupes} dupes · ${p.skipped ?? 0} unmapped · universe ${p.total})`);
   console.log(` total additions: ${additions.length}`);
   console.log(` registry before: ${registry.entities.length} → after: ${registry.entities.length + additions.length}`);
 

@@ -17,22 +17,16 @@ landed. The gaps below are what stands between "code compiles" and
       registry / dictionary / shared-state stay under
       `scripts/rewrite-registry.mjs` control.
 
-- [ ] **Vercel prod deploy + env vars.** Point Vercel at the repo (root =
-      `frontend/`) and set:
-  - `GH_PAT` — fine-grained token, `Contents: Read & Write` on this repo
-  - `GH_REPO_OWNER` / `GH_REPO_NAME` / `GH_BRANCH=main`
-  - `CRON_SECRET` — random string; Vercel Cron sends it as the Bearer token
-  - `TWITTERAPI_IO_KEY` — optional; only if you want X mentions
-  - `ANTHROPIC_API_KEY` — optional; LLM enrichment stays off in `$0` mode
+- [x] ~~Vercel prod deploy + env vars~~ ✓ Live at
+      **https://earnings-neon.vercel.app**. `GH_PAT`, `GH_REPO_OWNER`,
+      `GH_REPO_NAME`, `GH_BRANCH`, `CRON_SECRET` all set on production.
+      `/api/health` returns `mode: git-snapshot`, `ghPatPresent: true`.
 
-- [ ] **Manual cron trigger to prime everything.** After deploy:
-  ```
-  curl -X POST -H "Authorization: Bearer $CRON_SECRET" \
-       https://<vercel-url>/api/cron/daily
-  ```
-  Response should show non-zero `totalAppended` / `totalMatured` /
-  `documents.attempted`. `/api/health` afterwards should list populated
-  `engines[]` + a recent `lastCronRun`.
+- [x] ~~Manual cron trigger~~ ✓ Ran successfully on 2026-07-27T08:37Z
+      (`lastCronOk: true`, 4.4s). Google engine 437 items, 8 events
+      loaded, market-cap refresh across all 17. Two known data quirks
+      (VLE, RIO FP) fixed by persisting `yahooSymbol` per entity — will
+      resolve on next cron run.
 
 ---
 
@@ -98,6 +92,17 @@ Every individual piece typechecks; composition still needs eyes.
 
 ---
 
+## New asks · in progress
+
+- [ ] **Earnings report verifier.** Spec TBD — likely means: for each
+      reported quarter, cross-check the stored actual EPS against a
+      second source (SEC 10-Q parse / press release / independent
+      aggregator like FMP) and flag disagreements. Restatement detection
+      already exists in cron — the verifier would run at report time
+      instead of daily and cite the two sources side-by-side.
+
+---
+
 ## Nice-to-have
 
 - [ ] Regenerate `frontend/lib/fixtures/registry.ts` from the same
@@ -108,10 +113,19 @@ Every individual piece typechecks; composition still needs eyes.
       prompt). The Yahoo screener at `/admin/expand` already covers the
       same use case at `$0`. Wire the LLM path only if you want a
       commentary layer or non-Yahoo-covered names.
-- [ ] Sector-wide expansion (250 tickers). Mechanism is built
-      (`scripts/expand-sectors.mjs` + `POST /api/expand-watchlist` +
-      `/admin/expand` UI). Currently unused because portfolio is
-      restricted to 17.
+- [x] ~~Sector-wide expansion~~ ✓ Done. `data/entity-registry.json` now
+      holds 284 entities: 17 core portfolio (isCore:true) + 267 sector
+      universe (isCore:false, coverage:headline). Ran
+      `scripts/expand-sectors.mjs` with global regions:
+      - **technology** +52 (universe 13,940)
+      - **materials** +51 (universe 15,078)
+      - **energy** +51 (universe 4,262)
+      - **etfs** +60 (universe 495, via `top_etfs_us` predefined screen)
+      - **developer** +53 (Basic Materials small-cap, universe 4,212)
+      Unmapped exchanges (~30 candidates across Bombay/OTC pink) skipped
+      cleanly instead of mis-tagged to US. Each new entity carries its
+      `yahooSymbol` so daily cron cap refresh + earnings backfill hit the
+      right security.
 
 ---
 
