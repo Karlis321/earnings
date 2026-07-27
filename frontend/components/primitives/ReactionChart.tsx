@@ -93,11 +93,19 @@ function Full({
           </span>
         ) : null}
       </div>
-      <div className="grid grid-cols-4 gap-3">
-        {points.map((p) => (
-          <HorizonCell key={p.horizon} point={p} />
-        ))}
-      </div>
+      {points.length === 0 ? (
+        <div className="rounded-card border border-dashed border-bd bg-s1 p-4 text-[12.5px] text-tx-mid">
+          Reaction not tracked for this event. Baseline close wasn't
+          captured at report time — future events auto-populate on the
+          daily cron.
+        </div>
+      ) : (
+        <div className="grid grid-cols-4 gap-3">
+          {points.map((p) => (
+            <HorizonCell key={p.horizon} point={p} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
