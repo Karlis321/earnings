@@ -163,6 +163,13 @@ export function PriceChart({
         viewBox={`0 0 ${W} ${H}`}
         width="100%"
         height={H}
+        // Stretch viewBox horizontally to fill the container. Default
+        // xMidYMid meet letterboxes the 900-wide viewBox inside wider
+        // containers, so rect.width includes dead space and clientX-to-
+        // viewBox mapping is off by the letterbox offset — exact "zero
+        // at center, grows toward the edges" offset. Vertical is safe
+        // because H matches viewBox height, so `none` doesn't distort.
+        preserveAspectRatio="none"
         role="img"
         aria-label={`${label} price chart`}
         onMouseLeave={() => {
