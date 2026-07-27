@@ -289,8 +289,16 @@ function buildPastEvent(entity, quarter, yahooSymbol) {
   const asOf = now.slice(0, 10);
 
   const metrics = [];
-  for (const key of entity.headlineMetrics ?? []) {
-    const isEps = /^eps/i.test(key);
+  const epsKeys = new Set(
+    (entity.headlineMetrics ?? []).filter((k) => /eps/i.test(k)),
+  );
+  const includeStandaloneEps =
+    epsKeys.size === 0 && quarter.actual !== null;
+  const keysToWrite = includeStandaloneEps
+    ? [...(entity.headlineMetrics ?? []), "eps_usd"]
+    : (entity.headlineMetrics ?? []);
+  for (const key of keysToWrite) {
+    const isEps = /eps/i.test(key);
     const estimateVal = isEps ? quarter.estimate : null;
     const actualVal = isEps ? quarter.actual : null;
     const surprisePct =
@@ -300,7 +308,7 @@ function buildPastEvent(entity, quarter, yahooSymbol) {
     metrics.push({
       key,
       displayLabel: key,
-      isHeadline: true,
+      isHeadline: (entity.headlineMetrics ?? []).includes(key),
       surprisePct,
       estimate:
         estimateVal !== null

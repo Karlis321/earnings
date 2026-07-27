@@ -132,11 +132,22 @@ export function buildPastEvent(
   const asOf = now.slice(0, 10);
 
   const metrics: MetricEntry[] = [];
-  // Seed the primary EPS metric from Yahoo — that's what the earnings
-  // chart returns. Other headline metrics land through manual entry or
-  // future ingestion, so they get null Facts as placeholders.
-  for (const key of entity.headlineMetrics) {
-    const isEps = /^eps/i.test(key);
+  // Yahoo's earningsChart returns EPS actual + estimate. Match either
+  // classic keys (eps_usd) or headline-metric names that embed "eps"
+  // (dr_eps_usd, eps_adj_usd). Non-EPS headline metrics get null Facts
+  // as placeholders — filled by manual entry or later ingestion.
+  const epsKeys = new Set(
+    entity.headlineMetrics.filter((k) => /eps/i.test(k)),
+  );
+  // If no EPS metric is on the headline list at all, add a standalone
+  // eps_usd entry so Yahoo's actual doesn't get discarded.
+  const includeStandaloneEps =
+    epsKeys.size === 0 && quarter.actual !== null;
+  const keysToWrite = includeStandaloneEps
+    ? [...entity.headlineMetrics, "eps_usd"]
+    : entity.headlineMetrics;
+  for (const key of keysToWrite) {
+    const isEps = /eps/i.test(key);
     const estimateVal = isEps ? quarter.estimate : null;
     const actualVal = isEps ? quarter.actual : null;
     const surprisePct =
@@ -148,7 +159,7 @@ export function buildPastEvent(
     metrics.push({
       key,
       displayLabel: key,
-      isHeadline: true,
+      isHeadline: entity.headlineMetrics.includes(key),
       surprisePct,
       estimate:
         estimateVal !== null
