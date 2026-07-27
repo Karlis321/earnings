@@ -4,6 +4,7 @@
 // - Missing GH_PAT: return 503 shape so the API surface can respond cleanly.
 
 import type {
+  CronRunSummary,
   EarningsSnapshot,
   Entity,
   EventRecord,
@@ -128,6 +129,7 @@ const P = {
   sharedState: "data/shared-state.json",
   feedback: "data/feedback-log.json",
   dictionary: "data/metric-dictionary.json",
+  cronStatus: "data/cron-status.json",
 };
 
 // Fallback to in-memory for reads that haven't been seeded to the repo yet.
@@ -236,6 +238,25 @@ export function gitSnapshotStore(cfg: GhConfig): Store {
         `store: reaction ${point.horizon} for ${eventId}`,
       );
     },
+    async mutateEarnings(
+      mutator: (snap: EarningsSnapshot) => EarningsSnapshot,
+      message: string,
+    ) {
+      await commit<EarningsSnapshot>(
+        cfg,
+        P.earnings,
+        (cur) => {
+          const base = cur ?? {
+            schema: "earnings/v1" as const,
+            lastUpdated: new Date().toISOString(),
+            events: [],
+          };
+          const next = mutator(base);
+          return { ...next, lastUpdated: new Date().toISOString() };
+        },
+        message,
+      );
+    },
     async setVerdictNote(eventId: string, text: string) {
       await commit<EarningsSnapshot>(
         cfg,
@@ -292,6 +313,18 @@ export function gitSnapshotStore(cfg: GhConfig): Store {
     },
     async writeDictionary(dict: MetricDictionary) {
       await commit(cfg, P.dictionary, () => dict, `store: metric-dictionary`);
+    },
+
+    async readCronStatus(): Promise<CronRunSummary | null> {
+      try {
+        const r = await readFile<CronRunSummary>(cfg, P.cronStatus);
+        return r?.content ?? null;
+      } catch {
+        return null;
+      }
+    },
+    async writeCronStatus(status: CronRunSummary) {
+      await commit(cfg, P.cronStatus, () => status, `cron: run @ ${status.finishedAt}`);
     },
 
     async snapshotAt(): Promise<string> {

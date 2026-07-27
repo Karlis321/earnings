@@ -257,6 +257,24 @@ export interface EngineStatus {
   itemsFound?: number;
 }
 
+export interface CronRunSummary {
+  schema: "cron-status/v1";
+  startedAt: string;
+  finishedAt: string;
+  ok: boolean;
+  durationMs: number;
+  engines: EngineStatus[];
+  events: Array<{
+    eventId: string;
+    ticker: string;
+    appended: number;
+    maturedHorizons: Horizon[];
+    errors: string[];
+  }>;
+  totalAppended: number;
+  totalMatured: number;
+}
+
 export interface DiscoverFeedResult {
   kind: "rss" | "site-filter" | "twitter" | "substack" | "rejected";
   url: string;

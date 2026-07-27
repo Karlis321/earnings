@@ -2,6 +2,7 @@
 // v1 = in-memory (fixture-backed). W3 will add gitSnapshot for real writes.
 
 import type {
+  CronRunSummary,
   EarningsSnapshot,
   Entity,
   EventRecord,
@@ -28,6 +29,12 @@ export interface Store {
   ): Promise<void>;
   setReactionPoint(eventId: string, point: ReactionPoint): Promise<void>;
   setVerdictNote(eventId: string, text: string): Promise<void>;
+  // Single-commit path used by the cron: all in-memory mutations
+  // collapse into one git commit per run.
+  mutateEarnings(
+    mutator: (snap: EarningsSnapshot) => EarningsSnapshot,
+    message: string,
+  ): Promise<void>;
 
   readSharedState(): Promise<SharedState>;
   writeSharedState(state: SharedState): Promise<void>;
@@ -37,6 +44,9 @@ export interface Store {
 
   readDictionary(): Promise<MetricDictionary>;
   writeDictionary(dict: MetricDictionary): Promise<void>;
+
+  readCronStatus(): Promise<CronRunSummary | null>;
+  writeCronStatus(status: CronRunSummary): Promise<void>;
 
   snapshotAt(): Promise<string>;
   ghPatPresent(): boolean;

@@ -1,29 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Panel, StalenessLegend } from "@/components/primitives";
 import { FEATURE_FLAGS } from "@/lib/flags";
-import { api } from "@/lib/apiClient";
-
-interface Health {
-  ok: boolean;
-  snapshotAt: string;
-  ghPatPresent: boolean;
-  mode: string;
-  events: number;
-  schema: string;
-}
+import { useHealth } from "@/lib/useHealth";
 
 export default function SettingsPage() {
-  const [health, setHealth] = useState<Health | null>(null);
-  const [err, setErr] = useState<string | null>(null);
-
-  useEffect(() => {
-    api
-      .getHealth()
-      .then((h) => setHealth(h as Health))
-      .catch((e) => setErr(String(e)));
-  }, []);
+  const { health, error } = useHealth();
 
   return (
     <div className="mx-auto max-w-[1400px] px-10 py-8">
@@ -66,9 +48,9 @@ export default function SettingsPage() {
         </Panel>
 
         <Panel eyebrow="Data status">
-          {err ? (
+          {error ? (
             <div className="rounded-panel border border-[rgba(180,35,24,0.24)] bg-[rgba(180,35,24,0.05)] p-3 text-[12.5px] text-danger">
-              Failed to load /api/health: {err}
+              Failed to load /api/health: {error}
             </div>
           ) : health ? (
             <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-[12.5px]">
@@ -100,11 +82,107 @@ export default function SettingsPage() {
           ) : (
             <div className="text-[12.5px] text-tx-mid">Loading…</div>
           )}
-          <p className="mt-4 rounded-panel border border-dashed border-bd bg-panel2 p-3 text-[12px] text-tx-mid">
-            Per-engine reachability + per-ticker freshness land in W6 (cron
-            metadata).
-          </p>
         </Panel>
+
+        {health ? (
+          <Panel eyebrow="Last cron run">
+            {health.lastCronRun ? (
+              <>
+                <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-[12.5px]">
+                  <span className="text-tx-mid">Finished at</span>
+                  <span className="font-mono text-tx">
+                    {health.lastCronRun}
+                  </span>
+                  <span className="text-tx-mid">Result</span>
+                  <span className="flex items-center gap-2">
+                    <span
+                      className="inline-block h-2 w-2 rounded-full"
+                      style={{
+                        background: health.lastCronOk
+                          ? "var(--success)"
+                          : "var(--danger)",
+                      }}
+                    />
+                    <span className="text-tx">
+                      {health.lastCronOk ? "ok" : "errors"}
+                    </span>
+                  </span>
+                  <span className="text-tx-mid">Duration</span>
+                  <span className="font-mono text-tx">
+                    {health.cronDurationMs != null
+                      ? `${(health.cronDurationMs / 1000).toFixed(1)}s`
+                      : "—"}
+                  </span>
+                  <span className="text-tx-mid">Sources appended</span>
+                  <span className="font-mono text-tx">{health.totalAppended}</span>
+                  <span className="text-tx-mid">Horizons matured</span>
+                  <span className="font-mono text-tx">{health.totalMatured}</span>
+                </div>
+
+                <div className="mt-4">
+                  <div className="mb-2 font-mono text-[11px] uppercase tracking-[0.1em] text-tx3">
+                    Engines
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {health.engines.length === 0 ? (
+                      <span className="text-[12px] text-tx-mid">
+                        no engine data yet
+                      </span>
+                    ) : (
+                      health.engines.map((es) => (
+                        <span
+                          key={es.engine}
+                          className="inline-flex h-[24px] items-center gap-[6px] rounded-[5px] border border-bd2 bg-s2 px-[9px] font-mono text-[11px]"
+                        >
+                          <span
+                            className={`h-[6px] w-[6px] rounded-full ${
+                              es.ok ? "bg-success" : "bg-danger"
+                            }`}
+                          />
+                          <span className="text-tx">{es.engine}</span>
+                          {es.itemsFound != null ? (
+                            <span className="text-tx-mid">· {es.itemsFound}</span>
+                          ) : null}
+                        </span>
+                      ))
+                    )}
+                  </div>
+                </div>
+
+                {health.cronEventSummaries.length > 0 ? (
+                  <div className="mt-4">
+                    <div className="mb-2 font-mono text-[11px] uppercase tracking-[0.1em] text-tx3">
+                      Per-event
+                    </div>
+                    <div className="grid grid-cols-1 gap-[2px] font-mono text-[11.5px]">
+                      {health.cronEventSummaries.map((e) => (
+                        <div
+                          key={e.eventId}
+                          className="flex items-center gap-3 border-b border-bd/40 py-1"
+                        >
+                          <span className="text-tx">{e.ticker}</span>
+                          <span className="text-tx-mid">+{e.appended}</span>
+                          <span className="text-tx-mid">
+                            m: {e.maturedHorizons.join(",") || "—"}
+                          </span>
+                          {e.errors.length > 0 ? (
+                            <span className="text-danger">
+                              {e.errors.length} err
+                            </span>
+                          ) : null}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+              </>
+            ) : (
+              <div className="text-[12.5px] text-tx-mid">
+                Cron hasn't run yet.
+              </div>
+            )}
+          </Panel>
+        ) : null}
       </div>
     </div>
   );

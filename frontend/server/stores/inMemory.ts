@@ -1,4 +1,5 @@
 import type {
+  CronRunSummary,
   EarningsSnapshot,
   Entity,
   EventRecord,
@@ -81,6 +82,9 @@ export const inMemoryStore: Store = {
   async setVerdictNote(_eventId: string, _text: string): Promise<void> {
     notImplemented("setVerdictNote");
   },
+  async mutateEarnings(): Promise<void> {
+    notImplemented("mutateEarnings");
+  },
 
   async readSharedState(): Promise<SharedState> {
     return sharedState;
@@ -101,6 +105,13 @@ export const inMemoryStore: Store = {
   },
   async writeDictionary(): Promise<void> {
     notImplemented("writeDictionary");
+  },
+
+  async readCronStatus(): Promise<CronRunSummary | null> {
+    return null;
+  },
+  async writeCronStatus(): Promise<void> {
+    notImplemented("writeCronStatus");
   },
 
   async snapshotAt(): Promise<string> {
