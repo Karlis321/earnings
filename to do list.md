@@ -7,7 +7,43 @@
 
 ---
 
-## ✅ Done this cycle (coverage + reaction baseline)
+## ✅ Done this cycle (sector universe + admin coverage)
+
+- [x] **Sector universe repopulated from Yahoo.**
+      Registry went from 17 → 282 (17 core + 265 universe). Top 60 per
+      sector by market cap: technology 52, materials 51, energy 51,
+      ETFs 60, developer 51. Data file committed.
+
+- [x] **`expand-sectors.mjs` FX conversion.** buildEntity was storing raw
+      home-currency market caps in the `marketCapUsd` field, inflating
+      KRW/IDR/ARS/JPY caps and pushing everything into the mega tier.
+      Ported the `FX_FALLBACK` table + `<CCY>USD=X` live-rate fetch from
+      `server/vendors/yahoo.ts`. Cap-tier distribution now reads
+      23 mega / 70 large / 47 mid / 77 small / 48 unknown. Remaining
+      edge cases (ARS-quoted AAPL AF, KRW Samsung) refine on the next
+      cron pass with live FX.
+
+- [x] **Sector view: equity / ETF split.** `sectorCounts()` now returns
+      `{ id, count, portfolio, universe, equities, etfs }`. `/sectors`
+      header stat line and per-card counts render all four splits.
+
+- [x] **Admin entry coverage grid.** `/admin/entry/:ticker` now renders
+      a compact grid above the manual-entry form: rows = events
+      (past-first), columns = entity.headlineMetrics, cells show two
+      slot chips (`actual` / `est`). Green ✓ = filled, dashed ± = empty.
+      Totals in the header — "Actual: X/N · Estimate: Y/N". Makes
+      empty rows discoverable at a glance so the user knows where the
+      manual entry form should point next.
+
+- [x] **Watchlist header overlap already fixed.** Symptom in prompt1.txt
+      was resolved earlier in commit `a3df038` (`isolation:isolate` +
+      z-20 + inline `bg: var(--panel2)` on the sticky header). Any
+      stale screenshot showing the overlap is from a pre-`a3df038`
+      cached build — hard-refresh clears it.
+
+---
+
+## ✅ Done previous cycle (coverage + reaction baseline)
 
 - [x] **Per-entity Google News search.**
       Added `fetchEntityNews(ticker, tokens, days)` in
@@ -253,21 +289,18 @@
       marketCap OR netAssets. Low priority (odd share classes rarely
       matter for coverage).
 
-- [ ] **Headline-metric Fact coverage.** Data audit against 266 events:
-      only BOLSY (`eps_usd`, 4/4 actual) and BN (`fee_bearing_capital`
-      estimate, 1/1) have any populated headline Facts. Every other
-      operating ticker has zero. `buildPastEvent` only fills EPS from
-      Yahoo — revenue / production / EBITDA come from filings or manual
-      entry. Options: (a) add `/admin/entry/:ticker` UX to expose the
-      empty-Fact rows for quick data entry; (b) wire an LLM extractor
-      against filed 10-Q text via the document ingest pipe when press
-      releases are on the allowlist.
+- [ ] **Headline-metric Fact coverage (data-population).** Coverage
+      grid on `/admin/entry/:ticker` now surfaces the empty rows, but
+      the manual-entry form is still one-metric-at-a-time. Two follow
+      ups: (a) wire click-to-prefill from the coverage grid cells into
+      the form (needs a small state lift); (b) LLM extractor against
+      ingested 10-Q/press-release text once documents start landing in
+      `data/documents/`.
 
-- [ ] **Document ingest still at 0.** No `data/documents/<id>.json`
-      files exist. Ingest only runs against press-release URLs that
-      match the `isIngestableUrl` allowlist. Widen the allowlist or add
-      seed URLs so the ingest pipe writes at least one document and
-      hosted-mode viewer is exercised end-to-end.
+- [ ] **Verify document ingest is actually writing.** Allowlist was
+      widened to include wire services + Yahoo Finance last cycle. Next
+      cron pass should ingest at least one URL — verify `data/documents/`
+      contains files after the run.
 
 ---
 
