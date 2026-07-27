@@ -311,15 +311,20 @@ export async function yahooQuote(
 
 /* -------- earnings & calendar (quoteSummary) -------- */
 
+export interface YahooEarningsQuarter {
+  period: string; // Yahoo label like "2Q2026"
+  actual: number | null;
+  estimate: number | null;
+  surprisePct: number | null;
+}
+
 export interface YahooEarnings {
   yahooSymbol: string;
   nextEarningsDate: string | null; // ISO date if known
-  lastQuarter: {
-    period: string;
-    actual: number | null;
-    estimate: number | null;
-    surprisePct: number | null;
-  } | null;
+  lastQuarter: YahooEarningsQuarter | null;
+  // Full past-quarters array as returned by Yahoo (typically 4 entries,
+  // oldest first). Used by the backfill to seed past events with actuals.
+  pastQuarters: YahooEarningsQuarter[];
   currentQuarterEstimate: number | null;
 }
 
@@ -407,29 +412,24 @@ export async function yahooEarnings(
       }
     }
 
-    // Last-quarter actual + estimate (surprise pct if both present).
-    const quarterly = result.earnings?.earningsChart?.quarterly ?? [];
-    const last = quarterly[quarterly.length - 1];
-    let lastQuarter: YahooEarnings["lastQuarter"] = null;
-    if (last) {
-      const actual = last.actual?.raw ?? null;
-      const estimate = last.estimate?.raw ?? null;
+    // Full past-quarters array. Yahoo returns oldest-first, typically 4.
+    const quarterlyRaw = result.earnings?.earningsChart?.quarterly ?? [];
+    const pastQuarters: YahooEarningsQuarter[] = quarterlyRaw.map((q) => {
+      const actual = q.actual?.raw ?? null;
+      const estimate = q.estimate?.raw ?? null;
       const surprisePct =
         actual !== null && estimate !== null && Math.abs(estimate) > 0.0001
           ? ((actual - estimate) / Math.abs(estimate)) * 100
           : null;
-      lastQuarter = {
-        period: last.date ?? "",
-        actual,
-        estimate,
-        surprisePct,
-      };
-    }
+      return { period: q.date ?? "", actual, estimate, surprisePct };
+    });
+    const lastQuarter = pastQuarters[pastQuarters.length - 1] ?? null;
 
     return {
       yahooSymbol,
       nextEarningsDate,
       lastQuarter,
+      pastQuarters,
       currentQuarterEstimate:
         result.earnings?.earningsChart?.currentQuarterEstimate?.raw ?? null,
     };

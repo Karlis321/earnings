@@ -287,6 +287,7 @@ async function main() {
       marketCapUsd,
       marketCapAsOf: marketCapLocal != null ? asOf : null,
       capTier: capTierFor(marketCapUsd),
+      yahooSymbol: p.yahooSymbol,
     };
   });
 

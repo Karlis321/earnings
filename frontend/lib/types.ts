@@ -88,6 +88,11 @@ export interface Entity {
   marketCapUsd?: number | null;
   marketCapAsOf?: string | null;
   capTier?: CapTier;
+  // Yahoo symbol persisted at registry-write time so cron + backfill
+  // skip the ambiguous yahooLookup search. Prevents cases like VLE CN
+  // resolving to a look-alike penny stock or RIO FP hitting Rio Tinto
+  // instead of the Amundi Brazil ETF that shares the ticker.
+  yahooSymbol?: string;
 }
 
 export interface MetricEntry {

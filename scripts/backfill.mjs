@@ -223,16 +223,16 @@ async function yahooEarningsQ(yahooSymbol) {
     }
   }
   const quarterly = result.earnings?.earningsChart?.quarterly ?? [];
-  const last = quarterly[quarterly.length - 1] ?? null;
+  const pastQuarters = quarterly.map((row) => ({
+    period: row.date ?? "",
+    actual: row.actual?.raw ?? null,
+    estimate: row.estimate?.raw ?? null,
+  }));
+  const last = pastQuarters[pastQuarters.length - 1] ?? null;
   return {
     nextEarningsDate,
-    lastQuarter: last
-      ? {
-          period: last.date ?? "",
-          actual: last.actual?.raw ?? null,
-          estimate: last.estimate?.raw ?? null,
-        }
-      : null,
+    lastQuarter: last,
+    pastQuarters,
   };
 }
 
@@ -262,6 +262,111 @@ function addDays(iso, days) {
   const d = new Date(iso);
   d.setUTCDate(d.getUTCDate() + days);
   return d.toISOString().slice(0, 10);
+}
+
+function parseYahooPeriod(s) {
+  const m = (s || "").trim().match(/^(\d)Q(\d{4})$/);
+  return m ? { quarter: Number(m[1]), year: Number(m[2]) } : null;
+}
+
+function reportingDateForPeriod(period) {
+  const parsed = parseYahooPeriod(period);
+  if (!parsed) return null;
+  const monthAfterQEnd = { 1: 4, 2: 7, 3: 10, 4: 1 };
+  const mo = monthAfterQEnd[parsed.quarter];
+  const yr = parsed.quarter === 4 ? parsed.year + 1 : parsed.year;
+  return `${yr}-${String(mo).padStart(2, "0")}-15`;
+}
+
+function buildPastEvent(entity, quarter, yahooSymbol) {
+  const parsed = parseYahooPeriod(quarter.period);
+  if (!parsed) return null;
+  const scheduledDate = reportingDateForPeriod(quarter.period);
+  if (!scheduledDate) return null;
+  const periodLabel = `FY${parsed.year} Q${parsed.quarter}`;
+  const id = nextEventId(entity.ticker, scheduledDate);
+  const now = new Date().toISOString();
+  const asOf = now.slice(0, 10);
+
+  const metrics = [];
+  for (const key of entity.headlineMetrics ?? []) {
+    const isEps = /^eps/i.test(key);
+    const estimateVal = isEps ? quarter.estimate : null;
+    const actualVal = isEps ? quarter.actual : null;
+    const surprisePct =
+      estimateVal !== null && actualVal !== null && Math.abs(estimateVal) > 1e-9
+        ? ((actualVal - estimateVal) / Math.abs(estimateVal)) * 100
+        : null;
+    metrics.push({
+      key,
+      displayLabel: key,
+      isHeadline: true,
+      surprisePct,
+      estimate:
+        estimateVal !== null
+          ? {
+              value: estimateVal,
+              unit: "USD",
+              source: {
+                url: `https://finance.yahoo.com/quote/${encodeURIComponent(yahooSymbol)}/analysis`,
+                label: "Yahoo Finance (consensus)",
+                provenance: "wire",
+                locator: null,
+              },
+              asOf,
+              fetchedAt: now,
+              method: "yahoo",
+              confidence: 0.75,
+            }
+          : null,
+      actual:
+        actualVal !== null
+          ? {
+              value: actualVal,
+              unit: "USD",
+              source: {
+                url: `https://finance.yahoo.com/quote/${encodeURIComponent(yahooSymbol)}/earnings`,
+                label: "Yahoo Finance",
+                provenance: "wire",
+                locator: null,
+              },
+              asOf,
+              fetchedAt: now,
+              method: "yahoo",
+              confidence: 0.85,
+            }
+          : null,
+      prior: null,
+    });
+  }
+
+  return {
+    id,
+    ticker: entity.ticker,
+    kind: "earnings",
+    period: periodLabel,
+    scheduledDate,
+    eventDate: scheduledDate,
+    timing: null,
+    expectation: "unset",
+    guidanceMove: null,
+    freshness: "fresh",
+    metrics,
+    guidance: [],
+    reaction: {
+      benchmark: entity.benchmark,
+      baselineDate: null,
+      baselineClose: null,
+      points: [],
+    },
+    sources: {
+      windowStart: addDays(scheduledDate, -2),
+      windowEnd: addDays(scheduledDate, 35),
+      capturedAt: null,
+      items: [],
+      engineStatus: [],
+    },
+  };
 }
 
 function buildEventShell(entity, scheduledDate, period, epsActual) {
@@ -368,13 +473,27 @@ async function main() {
       continue;
     }
     let yahoo = null;
+    let yahooSymbol = entity.yahooSymbol ?? null;
     if (!SKIP_YAHOO) {
       try {
-        const { yahooSymbol } = await yahooResolve(entity.ticker);
+        if (!yahooSymbol) {
+          const resolved = await yahooResolve(entity.ticker);
+          yahooSymbol = resolved.yahooSymbol;
+        }
         yahoo = await yahooEarningsQ(yahooSymbol);
         await new Promise((r) => setTimeout(r, 300)); // gentle to Yahoo
       } catch (e) {
         perTickerReport.push({ ticker: entity.ticker, warn: e.message });
+      }
+    }
+    let pastAdded = 0;
+    if (yahoo?.pastQuarters?.length) {
+      for (const q of yahoo.pastQuarters) {
+        const past = buildPastEvent(entity, q, yahooSymbol);
+        if (past) {
+          events.push(past);
+          pastAdded++;
+        }
       }
     }
     if (yahoo?.nextEarningsDate) {
@@ -385,7 +504,14 @@ async function main() {
       perTickerReport.push({
         ticker: entity.ticker,
         nextEarningsDate: yahoo.nextEarningsDate,
+        pastQuarters: pastAdded,
         lastEpsActual: yahoo.lastQuarter?.actual ?? null,
+      });
+    } else if (pastAdded > 0) {
+      perTickerReport.push({
+        ticker: entity.ticker,
+        pastQuarters: pastAdded,
+        note: "past events seeded; no next date from Yahoo",
       });
     } else {
       perTickerReport.push({

@@ -99,6 +99,126 @@ function horizonPopulatesOn(scheduledDate: string, horizon: Horizon): string {
   return addDays(scheduledDate, calDays);
 }
 
+// Convert a Yahoo period label ("2Q2026") to an approximate reporting
+// date (mid-quarter after the fiscal quarter ends). Companies report
+// their Q2 results ~mid-July → we use the 15th of the month after
+// quarter-end as a reasonable stand-in when we don't have the actual
+// reported date.
+function reportingDateForPeriod(period: string): string | null {
+  const parsed = parseYahooPeriod(period);
+  if (!parsed) return null;
+  const monthAfterQEnd: Record<number, number> = { 1: 4, 2: 7, 3: 10, 4: 1 };
+  const mo = monthAfterQEnd[parsed.quarter];
+  const yr = parsed.quarter === 4 ? parsed.year + 1 : parsed.year;
+  return `${yr}-${String(mo).padStart(2, "0")}-15`;
+}
+
+// Build a past-quarter event record with the reported actual baked in.
+// Used by the backfill and by POST /api/entity-registry auto-backfill so
+// a newly-added ticker lands with its past 4Q of history already visible
+// on the security detail page.
+export function buildPastEvent(
+  entity: Entity,
+  quarter: { period: string; actual: number | null; estimate: number | null },
+  yahooSymbol: string,
+): EventRecord | null {
+  const parsed = parseYahooPeriod(quarter.period);
+  if (!parsed) return null;
+  const scheduledDate = reportingDateForPeriod(quarter.period);
+  if (!scheduledDate) return null;
+  const periodLabel = `FY${parsed.year} Q${parsed.quarter}`;
+  const id = nextEventId(entity.ticker, scheduledDate);
+  const now = new Date().toISOString();
+  const asOf = now.slice(0, 10);
+
+  const metrics: MetricEntry[] = [];
+  // Seed the primary EPS metric from Yahoo — that's what the earnings
+  // chart returns. Other headline metrics land through manual entry or
+  // future ingestion, so they get null Facts as placeholders.
+  for (const key of entity.headlineMetrics) {
+    const isEps = /^eps/i.test(key);
+    const estimateVal = isEps ? quarter.estimate : null;
+    const actualVal = isEps ? quarter.actual : null;
+    const surprisePct =
+      estimateVal !== null &&
+      actualVal !== null &&
+      Math.abs(estimateVal) > 1e-9
+        ? ((actualVal - estimateVal) / Math.abs(estimateVal)) * 100
+        : null;
+    metrics.push({
+      key,
+      displayLabel: key,
+      isHeadline: true,
+      surprisePct,
+      estimate:
+        estimateVal !== null
+          ? {
+              value: estimateVal,
+              unit: "USD",
+              source: {
+                url: `https://finance.yahoo.com/quote/${encodeURIComponent(yahooSymbol)}/analysis`,
+                label: "Yahoo Finance (consensus)",
+                provenance: "wire",
+                locator: null,
+              },
+              asOf,
+              fetchedAt: now,
+              method: "yahoo",
+              confidence: 0.75,
+            }
+          : null,
+      actual:
+        actualVal !== null
+          ? {
+              value: actualVal,
+              unit: "USD",
+              source: {
+                url: `https://finance.yahoo.com/quote/${encodeURIComponent(yahooSymbol)}/earnings`,
+                label: "Yahoo Finance",
+                provenance: "wire",
+                locator: null,
+              },
+              asOf,
+              fetchedAt: now,
+              method: "yahoo",
+              confidence: 0.85,
+            }
+          : null,
+      prior: null,
+    });
+  }
+
+  return {
+    id,
+    ticker: entity.ticker,
+    kind: "earnings",
+    period: periodLabel,
+    scheduledDate,
+    eventDate: scheduledDate, // past events — reported date == scheduled
+    timing: null,
+    expectation: "unset",
+    guidanceMove: null,
+    freshness: "fresh",
+    metrics,
+    guidance: [],
+    reaction: {
+      benchmark: entity.benchmark,
+      baselineDate: null,
+      baselineClose: null,
+      // Past-event horizons are not yet backfilled with real close-vs-baseline
+      // numbers — needs a bar-fetch pass separately. Empty points for now.
+      points: [],
+    },
+    sources: {
+      windowStart: addDays(scheduledDate, -2),
+      windowEnd: addDays(scheduledDate, 35),
+      capturedAt: null,
+      items: [],
+      engineStatus: [],
+    },
+  };
+}
+
 // Build a minimal EventRecord shell for an announced future earnings date.
 // baselineDate / baselineClose stay null until the event happens; a future
 // cron run seeds them from the security's bars on the event day.

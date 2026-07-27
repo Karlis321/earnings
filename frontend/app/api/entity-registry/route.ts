@@ -1,8 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import { store } from "@/server/store";
-import type { Entity } from "@/lib/types";
+import {
+  yahooEarnings,
+  yahooLookup,
+  yahooQuoteMeta,
+} from "@/server/vendors/yahoo";
+import {
+  buildEventShell,
+  buildPastEvent,
+  parseYahooPeriod,
+  parseStoredPeriod,
+  periodFromReportingDate,
+} from "@/server/lib/cronDetections";
+import { capTierFor } from "@/lib/capTier";
+import type { EarningsSnapshot, Entity } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
+export const maxDuration = 30;
 
 export async function GET() {
   const entities = await store.readRegistry();
@@ -12,7 +26,12 @@ export async function GET() {
   );
 }
 
-// POST /api/entity-registry — create a new entity.
+// POST /api/entity-registry — create a new entity + auto-backfill from Yahoo.
+//
+// After the registry write, we resolve the Yahoo symbol, fetch a market-cap
+// snapshot, and insert past-4Q + upcoming event shells into earnings.json
+// so the new ticker lands with a working history + graph immediately.
+// Best-effort — a Yahoo failure doesn't roll the registry write back.
 export async function POST(req: NextRequest) {
   try {
     const body = (await req.json()) as Partial<Entity>;
@@ -38,7 +57,30 @@ export async function POST(req: NextRequest) {
         { status: 409 },
       );
     }
-    // Fill required fields with sane defaults where missing.
+
+    // --- Resolve Yahoo symbol so future cron runs skip the ambiguous
+    //     search-based lookup. Best-effort — we still create the entity
+    //     even if resolution fails.
+    let yahooSymbol: string | undefined = body.yahooSymbol;
+    let marketCapUsd: number | null | undefined = body.marketCapUsd;
+    let marketCapAsOf: string | null | undefined = body.marketCapAsOf;
+    if (!yahooSymbol) {
+      try {
+        const [sym, exch = "US"] = body.ticker.split(/\s+/);
+        const r = await yahooLookup(sym, exch);
+        if (!("error" in r)) yahooSymbol = r.yahooSymbol;
+      } catch { /* ignore */ }
+    }
+    if (yahooSymbol && marketCapUsd == null) {
+      try {
+        const q = await yahooQuoteMeta(yahooSymbol);
+        if (q?.marketCapUsd != null) {
+          marketCapUsd = q.marketCapUsd;
+          marketCapAsOf = new Date().toISOString().slice(0, 10);
+        }
+      } catch { /* ignore */ }
+    }
+
     const entity: Entity = {
       ticker: body.ticker,
       legalName: body.legalName ?? body.displayName,
@@ -55,9 +97,78 @@ export async function POST(req: NextRequest) {
       benchmark: body.benchmark ?? "",
       headlineMetrics: body.headlineMetrics ?? [],
       catalystTypes: body.catalystTypes ?? [],
+      xHandle: body.xHandle ?? null,
+      officialSources: body.officialSources ?? [],
+      marketCapUsd: marketCapUsd ?? null,
+      marketCapAsOf: marketCapAsOf ?? null,
+      capTier: capTierFor(marketCapUsd ?? null),
+      yahooSymbol,
     };
     await store.writeRegistry([...existing, entity]);
-    return NextResponse.json({ ok: true, ticker: entity.ticker });
+
+    // --- Auto-backfill earnings (past 4Q + upcoming) for operating types.
+    // Skipped for developers (no earnings) and ETFs (Yahoo returns nothing
+    // meaningful here). Best-effort — if Yahoo returns nothing, the entity
+    // still lands cleanly, just without seeded events.
+    let pastAdded = 0;
+    let upcomingAdded = 0;
+    if (entity.securityType === "operating" && yahooSymbol) {
+      try {
+        const yahoo = await yahooEarnings(yahooSymbol);
+        if (yahoo) {
+          await store.mutateEarnings(
+            (s: EarningsSnapshot) => {
+              const events = s.events.slice();
+              // Past quarters.
+              for (const q of yahoo.pastQuarters) {
+                const parsed = parseYahooPeriod(q.period);
+                if (!parsed) continue;
+                const already = events.some((e) => {
+                  if (e.ticker !== entity.ticker) return false;
+                  const p = parseStoredPeriod(e.period);
+                  return (
+                    p && p.year === parsed.year && p.quarter === parsed.quarter
+                  );
+                });
+                if (already) continue;
+                const past = buildPastEvent(entity, q, yahooSymbol);
+                if (past) {
+                  events.push(past);
+                  pastAdded++;
+                }
+              }
+              // Upcoming.
+              if (yahoo.nextEarningsDate) {
+                const { label } = periodFromReportingDate(yahoo.nextEarningsDate);
+                const already = events.some(
+                  (e) =>
+                    e.ticker === entity.ticker &&
+                    e.scheduledDate === yahoo.nextEarningsDate,
+                );
+                if (!already) {
+                  events.push(
+                    buildEventShell(entity, yahoo.nextEarningsDate, label),
+                  );
+                  upcomingAdded++;
+                }
+              }
+              return { ...s, events };
+            },
+            `entity: ${entity.ticker} + ${pastAdded} past ${upcomingAdded} upcoming`,
+          );
+        }
+      } catch { /* best-effort; the entity write already succeeded */ }
+    }
+
+    return NextResponse.json({
+      ok: true,
+      ticker: entity.ticker,
+      yahooSymbol: yahooSymbol ?? null,
+      marketCapUsd: entity.marketCapUsd,
+      capTier: entity.capTier,
+      pastAdded,
+      upcomingAdded,
+    });
   } catch (e) {
     const msg = (e as Error).message;
     if (msg.includes("409")) {

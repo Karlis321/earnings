@@ -6,7 +6,10 @@ import { matureEventReaction } from "@/server/lib/reactionMaturation";
 import {
   alreadyHasEvent,
   buildEventShell,
+  buildPastEvent,
   detectRestatements,
+  parseStoredPeriod,
+  parseYahooPeriod,
   periodFromReportingDate,
 } from "@/server/lib/cronDetections";
 import {
@@ -294,13 +297,15 @@ export async function POST(req: NextRequest) {
     // Uses the possibly-mutated current event for restatement comparison.
     for (const entity of registry) {
       if (entity.securityType !== "operating") continue;
-      let yahooSymbol: string | null = null;
-      try {
-        const [sym, exch = "US"] = entity.ticker.split(/\s+/);
-        const resolved = await yahooLookup(sym, exch);
-        if ("error" in resolved) continue;
-        yahooSymbol = resolved.yahooSymbol;
-      } catch { continue; }
+      let yahooSymbol: string | null = entity.yahooSymbol ?? null;
+      if (!yahooSymbol) {
+        try {
+          const [sym, exch = "US"] = entity.ticker.split(/\s+/);
+          const resolved = await yahooLookup(sym, exch);
+          if ("error" in resolved) continue;
+          yahooSymbol = resolved.yahooSymbol;
+        } catch { continue; }
+      }
       const yahoo = await yahooEarnings(yahooSymbol);
       if (!yahoo) continue;
 
@@ -319,6 +324,32 @@ export async function POST(req: NextRequest) {
             ticker: entity.ticker,
             period: label,
             scheduledDate: yahoo.nextEarningsDate,
+          });
+        }
+      }
+
+      // --- 3a.5. Past-quarter backfill ---
+      // Yahoo returns the last 4 completed quarters in earningsChart.quarterly.
+      // If any of those aren't in our snapshot for this ticker, insert them
+      // with the actual EPS baked in — powers the historical earnings table
+      // on the security detail page.
+      for (const q of yahoo.pastQuarters ?? []) {
+        const parsed = parseYahooPeriod(q.period);
+        if (!parsed) continue;
+        const covered = [...snap.events, ...newlyCreated].some((e) => {
+          if (e.ticker !== entity.ticker) return false;
+          const p = parseStoredPeriod(e.period);
+          return p && p.year === parsed.year && p.quarter === parsed.quarter;
+        });
+        if (covered) continue;
+        const past = buildPastEvent(entity, q, yahooSymbol);
+        if (past) {
+          newlyCreated.push(past);
+          newEvents.push({
+            eventId: past.id,
+            ticker: entity.ticker,
+            period: past.period,
+            scheduledDate: past.scheduledDate,
           });
         }
       }
@@ -407,6 +438,12 @@ export async function POST(req: NextRequest) {
       yahooSymbol: string | null;
     }> = [];
     for (const entity of registry) {
+      // Prefer the persisted yahooSymbol — search-based lookup is ambiguous
+      // for symbols shared across listings (VLE, RIO on Paris, etc.).
+      if (entity.yahooSymbol) {
+        resolved.push({ entity, yahooSymbol: entity.yahooSymbol });
+        continue;
+      }
       const [sym, exch = "US"] = entity.ticker.split(/\s+/);
       try {
         const r = await yahooLookup(sym, exch);
