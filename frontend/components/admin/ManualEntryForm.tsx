@@ -1,10 +1,11 @@
 "use client";
 
 // Manual value entry. MANDATORY source + as-of validation — blocked otherwise.
-// Backend integration flag: save writes to earnings.json via commit-pipe (P8-T3).
+// Wired to POST /api/manual-entry (W4). Per-field errors from the server are
+// merged onto the client's form-level `errors` map.
 
-import { useState } from "react";
-import type { Entity } from "@/lib/types";
+import { useMemo, useState } from "react";
+import type { Entity, EventRecord } from "@/lib/types";
 import {
   Button,
   Input,
@@ -15,11 +16,20 @@ import {
 } from "@/components/primitives";
 import { METRIC_LABELS } from "@/lib/fixtures/registry";
 import { useToast } from "@/providers/ToastProvider";
+import { usePersistence } from "@/providers/PersistenceProvider";
+import { api, ApiError } from "@/lib/apiClient";
 
-export function ManualEntryForm({ entity }: { entity: Entity }) {
+interface Props {
+  entity: Entity;
+  events: EventRecord[];
+}
+
+export function ManualEntryForm({ entity, events }: Props) {
   const { push } = useToast();
-  const [period, setPeriod] = useState("");
+  const { markSyncing, markSynced, markLocal } = usePersistence();
+  const [eventId, setEventId] = useState(events[0]?.id ?? "");
   const [metric, setMetric] = useState(entity.headlineMetrics[0] ?? "");
+  const [slot, setSlot] = useState<"actual" | "estimate" | "prior">("actual");
   const [value, setValue] = useState("");
   const [unit, setUnit] = useState(
     METRIC_LABELS[entity.headlineMetrics[0]]?.unit ?? "",
@@ -30,34 +40,104 @@ export function ManualEntryForm({ entity }: { entity: Entity }) {
     "bloomberg_manual" | "filing_manual" | "llm_extracted"
   >("bloomberg_manual");
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [submitting, setSubmitting] = useState(false);
 
-  const submit = (e: React.FormEvent) => {
+  const selectedEvent = useMemo(
+    () => events.find((e) => e.id === eventId) ?? null,
+    [events, eventId],
+  );
+
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (submitting) return;
     const err: Record<string, string> = {};
-    if (!period) err.period = "Period required (e.g. FY2026 Q2)";
-    if (!metric) err.metric = "Metric required";
+    if (!eventId) err.eventId = "Event required";
+    if (!metric) err.metricKey = "Metric required";
     if (!value) err.value = "Value required";
-    if (!source.trim()) err.source = "Source URL required — no blind entry";
+    if (!source.trim()) err.sourceUrl = "Source URL required — no blind entry";
     if (!asOf) err.asOf = "As-of date required";
     setErrors(err);
     if (Object.keys(err).length) return;
-    push({ kind: "info", message: `Saved locally · commit needs backend earnings store` });
+
+    setSubmitting(true);
+    markSyncing();
+    try {
+      await api.postManualEntry({
+        eventId,
+        metricKey: metric,
+        slot,
+        value: Number(value),
+        unit,
+        sourceUrl: source.trim(),
+        asOf,
+        method,
+        displayLabel: METRIC_LABELS[metric]?.label ?? metric,
+        isHeadline: entity.headlineMetrics.includes(metric),
+      });
+      markSynced();
+      push({
+        kind: "success",
+        message: `Saved ${METRIC_LABELS[metric]?.label ?? metric} · ${slot}`,
+      });
+      setValue("");
+      setSource("");
+      setAsOf("");
+      setErrors({});
+    } catch (e) {
+      if (e instanceof ApiError) {
+        if (e.fields) setErrors(e.fields);
+        if (e.status === 503) {
+          markLocal();
+          push({
+            kind: "warning",
+            message: "Local only — set GH_PAT in Vercel env to enable writes",
+          });
+        } else {
+          markSynced();
+          push({ kind: "danger", message: e.message });
+        }
+      } else {
+        markSynced();
+        push({ kind: "danger", message: (e as Error).message });
+      }
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
     <form onSubmit={submit} className="flex flex-col gap-4">
       <Panel eyebrow={`Manual value · ${entity.displayName}`}>
         <div className="grid grid-cols-2 gap-4">
-          <div>
-            <Label required>Period</Label>
-            <Input
-              value={period}
-              onChange={(e) => setPeriod(e.target.value)}
-              placeholder="FY2026 Q2"
-              invalid={!!errors.period}
-            />
-            {errors.period ? <FieldError>{errors.period}</FieldError> : null}
+          <div className="col-span-2">
+            <Label required>Event</Label>
+            {events.length === 0 ? (
+              <FieldError>
+                No events yet for {entity.ticker} — create one before manual
+                entry.
+              </FieldError>
+            ) : (
+              <select
+                value={eventId}
+                onChange={(e) => setEventId(e.target.value)}
+                className="h-9 w-full rounded-button border border-bd2 bg-s2 px-3 text-[13.5px] text-tx"
+              >
+                {events.map((ev) => (
+                  <option key={ev.id} value={ev.id}>
+                    {ev.period} · {ev.scheduledDate}
+                    {ev.eventDate ? " · reported" : ""}
+                  </option>
+                ))}
+              </select>
+            )}
+            {errors.eventId ? <FieldError>{errors.eventId}</FieldError> : null}
+            {selectedEvent ? (
+              <FieldHint>
+                Event id: <span className="font-mono">{selectedEvent.id}</span>
+              </FieldHint>
+            ) : null}
           </div>
+
           <div>
             <Label required>Metric</Label>
             <select
@@ -74,6 +154,22 @@ export function ManualEntryForm({ entity }: { entity: Entity }) {
                 </option>
               ))}
             </select>
+            {errors.metricKey ? (
+              <FieldError>{errors.metricKey}</FieldError>
+            ) : null}
+          </div>
+          <div>
+            <Label required>Slot</Label>
+            <select
+              value={slot}
+              onChange={(e) => setSlot(e.target.value as typeof slot)}
+              className="h-9 w-full rounded-button border border-bd2 bg-s2 px-3 text-[13.5px] text-tx"
+            >
+              <option value="actual">actual</option>
+              <option value="estimate">estimate</option>
+              <option value="prior">prior</option>
+            </select>
+            {errors.slot ? <FieldError>{errors.slot}</FieldError> : null}
           </div>
 
           <div>
@@ -90,6 +186,7 @@ export function ManualEntryForm({ entity }: { entity: Entity }) {
           <div>
             <Label>Unit</Label>
             <Input value={unit} onChange={(e) => setUnit(e.target.value)} mono />
+            {errors.unit ? <FieldError>{errors.unit}</FieldError> : null}
           </div>
 
           <div className="col-span-2">
@@ -100,10 +197,10 @@ export function ManualEntryForm({ entity }: { entity: Entity }) {
               value={source}
               onChange={(e) => setSource(e.target.value)}
               placeholder="https://…"
-              invalid={!!errors.source}
+              invalid={!!errors.sourceUrl}
             />
-            {errors.source ? (
-              <FieldError>{errors.source}</FieldError>
+            {errors.sourceUrl ? (
+              <FieldError>{errors.sourceUrl}</FieldError>
             ) : (
               <FieldHint>
                 Every manual figure must carry the URL that supports it.
@@ -132,6 +229,7 @@ export function ManualEntryForm({ entity }: { entity: Entity }) {
               <option value="filing_manual">filing_manual</option>
               <option value="llm_extracted">llm_extracted</option>
             </select>
+            {errors.method ? <FieldError>{errors.method}</FieldError> : null}
           </div>
         </div>
       </Panel>
@@ -140,7 +238,9 @@ export function ManualEntryForm({ entity }: { entity: Entity }) {
         <Button variant="ghost" type="button">
           Discard
         </Button>
-        <Button type="submit">Save value</Button>
+        <Button type="submit" disabled={submitting || events.length === 0}>
+          {submitting ? "Saving…" : "Save value"}
+        </Button>
       </div>
     </form>
   );

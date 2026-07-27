@@ -1,11 +1,10 @@
 "use client";
 
 // Custom Sources. Discover input, kind detection UI, scope selector, list/toggle/remove.
-// Backend integration flag (P8-T4): /api/discover-feed + /api/shared-state.
+// Wired to /api/discover-feed (POST) + /api/shared-state (GET/PUT) — W4.
 
-import { useState } from "react";
-import { data } from "@/lib/data";
-import { api } from "@/lib/apiClient";
+import { useEffect, useState } from "react";
+import { api, ApiError } from "@/lib/apiClient";
 import {
   Button,
   Input,
@@ -14,34 +13,134 @@ import {
   Panel,
   ProvenanceChip,
 } from "@/components/primitives";
-import type { DiscoverFeedResult } from "@/lib/types";
+import type { DiscoverFeedResult, SharedState } from "@/lib/types";
 import { Rss, Twitter, Globe, X } from "lucide-react";
 import { useToast } from "@/providers/ToastProvider";
+import { usePersistence } from "@/providers/PersistenceProvider";
+
+type CustomSource = SharedState["customSources"][number];
+
+function parseScope(input: string): { tickers: string[]; themes: string[] } {
+  const parts = input
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const tickers: string[] = [];
+  const themes: string[] = [];
+  for (const p of parts) {
+    // Bloomberg tickers look like "INTC US" / "CS CN" — uppercase, has a space.
+    if (/^[A-Z0-9.]+\s+[A-Z]{2}$/.test(p)) tickers.push(p);
+    else themes.push(p.toLowerCase());
+  }
+  return { tickers, themes };
+}
 
 export default function CustomSourcesPage() {
   const [url, setUrl] = useState("");
   const [result, setResult] = useState<DiscoverFeedResult | null>(null);
   const [scope, setScope] = useState<string[]>([]);
   const [scopeInput, setScopeInput] = useState("");
-  const sources = data.getSharedState().customSources;
+  const [state, setState] = useState<SharedState | null>(null);
+  const [discovering, setDiscovering] = useState(false);
+  const [saving, setSaving] = useState(false);
   const { push } = useToast();
+  const { markSyncing, markSynced, markLocal } = usePersistence();
+
+  useEffect(() => {
+    api
+      .getSharedState()
+      .then((s) => setState(s as SharedState))
+      .catch((e) => push({ kind: "danger", message: (e as Error).message }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const discover = async () => {
-    if (!url.trim()) return;
-    const r = await api.discoverFeed(url.trim());
-    setResult(r);
+    if (!url.trim() || discovering) return;
+    setDiscovering(true);
+    try {
+      const r = await api.discoverFeed(url.trim());
+      setResult(r);
+    } catch (e) {
+      if (e instanceof ApiError) {
+        push({ kind: "danger", message: e.message });
+      } else {
+        push({ kind: "danger", message: (e as Error).message });
+      }
+    } finally {
+      setDiscovering(false);
+    }
   };
 
-  const save = () => {
-    if (!result) return;
-    push({
-      kind: "info",
-      message: "Saved locally · commit needs backend shared-state write",
-    });
-    setUrl("");
-    setResult(null);
-    setScope([]);
+  const save = async () => {
+    if (!result || result.kind === "rejected" || !state || saving) return;
+    setSaving(true);
+    markSyncing();
+    try {
+      const source: CustomSource = {
+        id: `cs-${Date.now().toString(36)}`,
+        kind: result.kind,
+        url: result.url,
+        title: result.title ?? url.trim(),
+        scope: parseScope(scope.join(", ")),
+        addedAt: new Date().toISOString(),
+        active: true,
+        lastFetch: null,
+      };
+      const next: SharedState = {
+        ...state,
+        customSources: [...state.customSources, source],
+      };
+      const ack = await api.putSharedState(next);
+      setState({ ...next, lastCommit: ack.lastCommit });
+      push({ kind: "success", message: `Added source · ${source.title}` });
+      markSynced();
+      setUrl("");
+      setResult(null);
+      setScope([]);
+      setScopeInput("");
+    } catch (e) {
+      if (e instanceof ApiError && e.status === 503) {
+        markLocal();
+        push({
+          kind: "warning",
+          message: "Local only — set GH_PAT in Vercel env to enable writes",
+        });
+      } else {
+        markSynced();
+        push({ kind: "danger", message: (e as Error).message });
+      }
+    } finally {
+      setSaving(false);
+    }
   };
+
+  const remove = async (id: string) => {
+    if (!state) return;
+    markSyncing();
+    try {
+      const next: SharedState = {
+        ...state,
+        customSources: state.customSources.filter((s) => s.id !== id),
+      };
+      const ack = await api.putSharedState(next);
+      setState({ ...next, lastCommit: ack.lastCommit });
+      push({ kind: "success", message: "Source removed" });
+      markSynced();
+    } catch (e) {
+      if (e instanceof ApiError && e.status === 503) {
+        markLocal();
+        push({
+          kind: "warning",
+          message: "Local only — set GH_PAT in Vercel env to enable writes",
+        });
+      } else {
+        markSynced();
+        push({ kind: "danger", message: (e as Error).message });
+      }
+    }
+  };
+
+  const sources = state?.customSources ?? [];
 
   return (
     <div className="flex flex-col gap-4">
@@ -69,8 +168,8 @@ export default function CustomSourcesPage() {
             </FieldHint>
           </div>
           <div className="pt-6">
-            <Button size="md" onClick={discover}>
-              Discover
+            <Button size="md" onClick={discover} disabled={discovering}>
+              {discovering ? "Discovering…" : "Discover"}
             </Button>
           </div>
         </div>
@@ -78,7 +177,7 @@ export default function CustomSourcesPage() {
         {result ? (
           <div className="mt-4 rounded-panel border border-bd2 bg-s2 p-4">
             <div className="mb-2 flex items-center gap-2">
-              {result.kind === "rss" ? (
+              {result.kind === "rss" || result.kind === "substack" ? (
                 <Rss size={14} className="text-warning" />
               ) : result.kind === "twitter" ? (
                 <Twitter size={14} className="text-social-fg" />
@@ -117,8 +216,13 @@ export default function CustomSourcesPage() {
                       }
                     }}
                   />
-                  <Button size="md" variant="secondary" onClick={save}>
-                    Save source
+                  <Button
+                    size="md"
+                    variant="secondary"
+                    onClick={save}
+                    disabled={saving || !state}
+                  >
+                    {saving ? "Saving…" : "Save source"}
                   </Button>
                 </div>
                 {scope.length > 0 && (
@@ -169,12 +273,7 @@ export default function CustomSourcesPage() {
                 ))}
                 <button
                   className="text-[12px] text-tx3 hover:text-danger"
-                  onClick={() =>
-                    push({
-                      kind: "info",
-                      message: "Removed locally · commit needs backend",
-                    })
-                  }
+                  onClick={() => remove(s.id)}
                 >
                   Remove
                 </button>

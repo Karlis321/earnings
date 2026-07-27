@@ -1,17 +1,58 @@
-// API client — reads flip to live via /api/*. Writes still local (W3+).
-// Fixture fallback preserved for offline dev; live is the default now.
+// API client — reads flip to live via /api/*. Writes are live too (W4).
+// Fixture fallback preserved for offline dev.
 
 import { FEATURE_FLAGS } from "./flags";
 import { data as F } from "./data";
 import type {
+  DiscoverFeedResult,
   EarningsSnapshot,
   EventRecord,
   Entity,
+  SharedState,
   WatchlistRow,
   EtfDetail,
 } from "./types";
 
-const LIVE = true; // read endpoints live; writes still deferred
+const LIVE = true; // reads live; writes live (W4)
+
+// Writes that hit persistence throw a typed error carrying the server's
+// `fields` map for form-level validation UX.
+export class ApiError extends Error {
+  status: number;
+  code: string;
+  fields?: Record<string, string>;
+  constructor(status: number, code: string, message: string, fields?: Record<string, string>) {
+    super(message);
+    this.status = status;
+    this.code = code;
+    this.fields = fields;
+  }
+}
+
+async function writeJson<T>(
+  path: string,
+  method: "POST" | "PUT" | "DELETE",
+  body?: unknown,
+): Promise<T> {
+  const r = await fetch(path, {
+    method,
+    headers: body ? { "Content-Type": "application/json" } : undefined,
+    body: body ? JSON.stringify(body) : undefined,
+    cache: "no-store",
+  });
+  let json: unknown = null;
+  try { json = await r.json(); } catch { /* empty body */ }
+  if (!r.ok) {
+    const err = json as { error?: string; message?: string; fields?: Record<string, string> } | null;
+    throw new ApiError(
+      r.status,
+      err?.error ?? "http_error",
+      err?.message ?? `${method} ${path} → ${r.status}`,
+      err?.fields,
+    );
+  }
+  return json as T;
+}
 
 async function safeFetch<T>(path: string, fallback: () => T | Promise<T>): Promise<T> {
   if (!LIVE) return fallback();
@@ -118,7 +159,7 @@ export const api = {
     }));
   },
 
-  // Writes still fixture-only until W3.
+  // Writes still fixture-only until W5.
   async refreshSources(_eventId: string): Promise<{ appended: number }> {
     if (FEATURE_FLAGS.liveMode) {
       throw new Error("Refresh-sources — W5 backend not yet wired");
@@ -126,14 +167,91 @@ export const api = {
     return { appended: 0 };
   },
 
-  async postFeedback(_target: string, _action: string): Promise<{ ok: true }> {
-    if (FEATURE_FLAGS.liveMode) {
-      throw new Error("Feedback write — W3 backend not yet wired");
-    }
-    return { ok: true as const };
+  async postFeedback(target: string, action: string, targetId?: string) {
+    return writeJson<{ ok: true; id: string }>("/api/feedback", "POST", {
+      target,
+      targetId: targetId ?? target,
+      action,
+    });
   },
 
-  async discoverFeed(input: string) {
-    return F.discoverFeed(input);
+  async postEntity(entity: Partial<Entity>) {
+    return writeJson<{ ok: true; ticker: string }>(
+      "/api/entity-registry",
+      "POST",
+      entity,
+    );
+  },
+
+  async putEntity(ticker: string, patch: Partial<Entity>) {
+    return writeJson<{ ok: true; ticker: string }>(
+      `/api/entity-registry/${encodeURIComponent(ticker)}`,
+      "PUT",
+      patch,
+    );
+  },
+
+  async deleteEntity(ticker: string) {
+    return writeJson<{ ok: true; ticker: string }>(
+      `/api/entity-registry/${encodeURIComponent(ticker)}`,
+      "DELETE",
+    );
+  },
+
+  async postManualEntry(payload: {
+    eventId: string;
+    metricKey: string;
+    slot?: "actual" | "estimate" | "prior";
+    value: number;
+    unit: string;
+    sourceUrl: string;
+    asOf: string;
+    method: "bloomberg_manual" | "filing_manual" | "llm_extracted" | "yahoo" | "fmp";
+    provenance?: "regulatory" | "ir-page" | "wire" | "news" | "social" | "independent";
+    label?: string;
+    locator?: string | null;
+    confidence?: number;
+    displayLabel?: string;
+    isHeadline?: boolean;
+  }) {
+    return writeJson<{ ok: true; eventId: string; metricKey: string; slot: string }>(
+      "/api/manual-entry",
+      "POST",
+      payload,
+    );
+  },
+
+  async putSharedState(state: SharedState) {
+    return writeJson<{ ok: true; lastCommit: string }>(
+      "/api/shared-state",
+      "PUT",
+      state,
+    );
+  },
+
+  async postDictionaryKey(entry: {
+    key: string;
+    label: string;
+    unit: string;
+    requiresIsAdjusted?: boolean;
+    description?: string | null;
+  }) {
+    return writeJson<{ ok: true; key: string }>(
+      "/api/metric-dictionary",
+      "POST",
+      entry,
+    );
+  },
+
+  async discoverFeed(input: string): Promise<DiscoverFeedResult> {
+    if (!LIVE) return F.discoverFeed(input);
+    try {
+      return await writeJson<DiscoverFeedResult>("/api/discover-feed", "POST", {
+        url: input,
+      });
+    } catch (e) {
+      if (typeof window === "undefined") return F.discoverFeed(input);
+      throw e;
+    }
   },
 };

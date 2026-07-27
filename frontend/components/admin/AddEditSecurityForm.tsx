@@ -2,11 +2,11 @@
 
 // Add / Edit Security form. Type-dependent fields, chip inputs, headline metric
 // multi-select, benchmark validation, official-sources editor. (FE PRD §7.9)
-// Backend integration flags:
-//   • Ticker resolve → /api/ticker-lookup (P8-T2 live)
-//   • Save → entity-registry.json write via /api/shared-state commit-pipe
+// Wired to POST /api/entity-registry (new) + PUT /api/entity-registry/:ticker (edit).
+// Ticker resolve → /api/ticker-lookup remains stubbed until W4.T1.
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import type { Entity, SecurityType } from "@/lib/types";
 import {
   Button,
@@ -19,6 +19,7 @@ import {
 import { METRIC_LABELS } from "@/lib/fixtures/registry";
 import { useToast } from "@/providers/ToastProvider";
 import { usePersistence } from "@/providers/PersistenceProvider";
+import { api, ApiError } from "@/lib/apiClient";
 import { X, Plus, Search } from "lucide-react";
 
 interface Props {
@@ -27,8 +28,9 @@ interface Props {
 }
 
 export function AddEditSecurityForm({ initial, mode }: Props) {
+  const router = useRouter();
   const { push } = useToast();
-  const { markSyncing, markSynced } = usePersistence();
+  const { markSyncing, markSynced, markLocal } = usePersistence();
   const [ticker, setTicker] = useState(initial?.ticker ?? "");
   const [displayName, setDisplayName] = useState(initial?.displayName ?? "");
   const [type, setType] = useState<SecurityType>(
@@ -47,9 +49,29 @@ export function AddEditSecurityForm({ initial, mode }: Props) {
     initial?.headlineMetrics ?? [],
   );
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [submitting, setSubmitting] = useState(false);
 
-  const submit = (e: React.FormEvent) => {
+  const buildPayload = (): Partial<Entity> => ({
+    ticker: ticker.trim(),
+    displayName: displayName.trim(),
+    legalName: initial?.legalName ?? displayName.trim(),
+    securityType: type,
+    listing: listing.trim(),
+    currency: currency.trim() || "USD",
+    benchmark: benchmark.trim(),
+    aliases,
+    exclusionAliases: excl,
+    sectorTags,
+    headlineMetrics,
+    cashtag: initial?.cashtag ?? null,
+    isCore: initial?.isCore ?? true,
+    coverage: initial?.coverage ?? "deep",
+    catalystTypes: initial?.catalystTypes ?? [],
+  });
+
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (submitting) return;
     const err: Record<string, string> = {};
     if (!ticker.trim()) err.ticker = "Ticker required";
     if (!displayName.trim()) err.displayName = "Display name required";
@@ -60,12 +82,42 @@ export function AddEditSecurityForm({ initial, mode }: Props) {
     setErrors(err);
     if (Object.keys(err).length) return;
 
+    setSubmitting(true);
     markSyncing();
-    push({
-      kind: "info",
-      message: `Saved locally · ${mode === "new" ? "add" : "edit"} · commit needs backend registry write`,
-    });
-    setTimeout(() => markSynced(), 700);
+    try {
+      if (mode === "new") {
+        await api.postEntity(buildPayload());
+        push({ kind: "success", message: `Added ${ticker.trim()}` });
+      } else {
+        await api.putEntity(initial!.ticker!, buildPayload());
+        push({ kind: "success", message: `Updated ${initial!.ticker!}` });
+      }
+      markSynced();
+      router.push("/admin");
+      router.refresh();
+    } catch (e) {
+      if (e instanceof ApiError) {
+        if (e.fields) setErrors(e.fields);
+        if (e.status === 503) {
+          markLocal();
+          push({
+            kind: "warning",
+            message: "Local only — set GH_PAT in Vercel env to enable writes",
+          });
+        } else if (e.status === 409) {
+          markSynced();
+          push({ kind: "danger", message: e.message });
+        } else {
+          markSynced();
+          push({ kind: "danger", message: e.message });
+        }
+      } else {
+        markSynced();
+        push({ kind: "danger", message: (e as Error).message });
+      }
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -263,11 +315,19 @@ export function AddEditSecurityForm({ initial, mode }: Props) {
       ) : null}
 
       <div className="flex justify-end gap-2">
-        <Button variant="ghost" type="button">
+        <Button
+          variant="ghost"
+          type="button"
+          onClick={() => router.push("/admin")}
+        >
           Cancel
         </Button>
-        <Button type="submit">
-          {mode === "new" ? "Save security" : "Save changes"}
+        <Button type="submit" disabled={submitting}>
+          {submitting
+            ? "Saving…"
+            : mode === "new"
+            ? "Save security"
+            : "Save changes"}
         </Button>
       </div>
     </form>

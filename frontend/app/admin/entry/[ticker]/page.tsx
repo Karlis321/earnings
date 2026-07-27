@@ -12,6 +12,11 @@ export default async function ManualEntryPage({
   const entity = data.getEntity(ticker);
   if (!entity) notFound();
 
+  const events = data
+    .getEventsForTicker(ticker)
+    .slice()
+    .sort((a, b) => b.scheduledDate.localeCompare(a.scheduledDate));
+
   return (
     <div>
       <h1 className="mb-1 text-[22px] font-semibold tracking-[-0.02em]">
@@ -21,7 +26,7 @@ export default async function ManualEntryPage({
         For fields FMP/Yahoo can't cover. Source and as-of are mandatory —
         entries that skip them are blocked inline.
       </p>
-      <ManualEntryForm entity={entity} />
+      <ManualEntryForm entity={entity} events={events} />
     </div>
   );
 }
