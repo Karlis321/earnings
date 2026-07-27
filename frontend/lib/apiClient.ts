@@ -1,17 +1,21 @@
 // API client — reads flip to live via /api/*. Writes are live too (W4).
 // Fixture fallback preserved for offline dev.
 
-import { FEATURE_FLAGS } from "./flags";
 import { data as F } from "./data";
 import type {
   DiscoverFeedResult,
   EarningsSnapshot,
+  EngineStatus,
   EventRecord,
   Entity,
+  Provenance,
   SharedState,
+  SourceItem,
   WatchlistRow,
   EtfDetail,
 } from "./types";
+import { mentionsHolding, matchesExclusionAlias } from "./tickerMatch";
+import { dedupeItems, urlHash } from "./itemDedupe";
 
 const LIVE = true; // reads live; writes live (W4)
 
@@ -159,12 +163,181 @@ export const api = {
     }));
   },
 
-  // Writes still fixture-only until W5.
-  async refreshSources(_eventId: string): Promise<{ appended: number }> {
-    if (FEATURE_FLAGS.liveMode) {
-      throw new Error("Refresh-sources — W5 backend not yet wired");
+  // Refresh sources — parallel fan-out over news / press-releases / tweets,
+  // filter to items that reference the entity (mentionsHolding), dedupe,
+  // POST /events/:id/append-sources (idempotent — store also dedupes by id).
+  async refreshSources(
+    eventId: string,
+  ): Promise<{ appended: number; engineStatus: EngineStatus[] }> {
+    const event = await this.getEvent(eventId);
+    if (!event) throw new ApiError(404, "not_found", `no event ${eventId}`);
+    const entities = await this.getEntities();
+    const entity = entities.find((e) => e.ticker === event.ticker);
+    if (!entity) throw new ApiError(404, "not_found", `no entity ${event.ticker}`);
+
+    const now = new Date().toISOString();
+
+    interface PressReleaseResp {
+      items?: Array<{
+        headline: string;
+        url: string;
+        source: string;
+        provenance: Provenance;
+        time: string | null;
+        kind: "edgar" | "rss";
+      }>;
+      engineStatus?: Array<{ label: string; kind: "edgar" | "rss"; ok: boolean; itemsFound: number }>;
     }
-    return { appended: 0 };
+    interface NewsResp {
+      items?: Array<{
+        headline: string;
+        url: string;
+        source: string;
+        category: string;
+        time: string | null;
+      }>;
+    }
+    interface TweetsResp {
+      items?: Array<{
+        id: string;
+        headline: string;
+        url: string;
+        handle: string;
+        time: string | null;
+        engagement: { likes: number; reposts: number; replies: number };
+      }>;
+      engineStatus?: { engine: "twitter"; ok: boolean; itemsFound: number };
+    }
+
+    const [newsSettled, prSettled, twSettled] = await Promise.allSettled([
+      fetch(`/api/news?q=${encodeURIComponent(entity.displayName)}&days=14`, {
+        cache: "no-store",
+      }).then((r) => r.json() as Promise<NewsResp>),
+      fetch(`/api/press-releases?ticker=${encodeURIComponent(event.ticker)}`, {
+        cache: "no-store",
+      }).then((r) => r.json() as Promise<PressReleaseResp>),
+      fetch(`/api/tweets?ticker=${encodeURIComponent(event.ticker)}`, {
+        cache: "no-store",
+      }).then((r) => r.json() as Promise<TweetsResp>),
+    ]);
+
+    const items: SourceItem[] = [];
+    const engineStatus: EngineStatus[] = [];
+
+    // ---- Press-releases (highest provenance — push first for dedup priority) ----
+    if (prSettled.status === "fulfilled") {
+      const pr = prSettled.value;
+      let edgarN = 0, irRssN = 0, newsfileN = 0;
+      for (const it of pr.items ?? []) {
+        const isNewsfile = /Newsfile/i.test(it.source ?? "");
+        const engine =
+          it.kind === "edgar" ? "edgar" : isNewsfile ? "newsfile" : "ir-rss";
+        if (engine === "edgar") edgarN++;
+        else if (engine === "newsfile") newsfileN++;
+        else irRssN++;
+        items.push({
+          id: urlHash(it.url),
+          url: it.url,
+          headline: it.headline,
+          source: it.source,
+          provenance: it.provenance,
+          time: it.time ?? now,
+          articleType: "news",
+          engine,
+          language: "en",
+          hosted: false,
+          summary: null,
+        });
+      }
+      const statuses = pr.engineStatus ?? [];
+      const hasEdgar = statuses.some((s) => s.kind === "edgar");
+      const hasRss = statuses.some((s) => s.kind === "rss");
+      if (hasEdgar) {
+        engineStatus.push({
+          engine: "edgar",
+          ok: statuses.some((s) => s.kind === "edgar" && s.ok),
+          itemsFound: edgarN,
+        });
+      }
+      if (hasRss) {
+        if (newsfileN > 0)
+          engineStatus.push({ engine: "newsfile", ok: true, itemsFound: newsfileN });
+        engineStatus.push({
+          engine: "ir-rss",
+          ok: statuses.some((s) => s.kind === "rss" && s.ok),
+          itemsFound: irRssN,
+        });
+      }
+    } else {
+      engineStatus.push({ engine: "edgar", ok: false });
+    }
+
+    // ---- News (global feed; filter to items that mention the entity) ----
+    if (newsSettled.status === "fulfilled") {
+      const n = newsSettled.value;
+      let newsN = 0;
+      for (const it of n.items ?? []) {
+        if (matchesExclusionAlias(it.headline, entity)) continue;
+        if (!mentionsHolding(it.headline, entity)) continue;
+        const provenance: Provenance =
+          it.category === "wire" ? "wire" : "news";
+        items.push({
+          id: urlHash(it.url),
+          url: it.url,
+          headline: it.headline,
+          source: it.source,
+          provenance,
+          time: it.time ?? now,
+          articleType: "news",
+          engine: "google",
+          language: "en",
+          hosted: false,
+          summary: null,
+        });
+        newsN++;
+      }
+      engineStatus.push({ engine: "google", ok: true, itemsFound: newsN });
+    } else {
+      engineStatus.push({ engine: "google", ok: false });
+    }
+
+    // ---- Tweets ----
+    if (twSettled.status === "fulfilled") {
+      const t = twSettled.value;
+      for (const it of t.items ?? []) {
+        // Server-side vendor already applied mentionsHolding + exclusion.
+        items.push({
+          id: urlHash(it.url),
+          url: it.url,
+          headline: it.headline,
+          source: it.handle ? `@${it.handle}` : "X",
+          provenance: "social",
+          time: it.time ?? now,
+          articleType: "opinion",
+          engine: "twitter",
+          language: "en",
+          hosted: false,
+          summary: null,
+          engagement: it.engagement,
+        });
+      }
+      const es = t.engineStatus;
+      engineStatus.push({
+        engine: "twitter",
+        ok: es?.ok ?? false,
+        itemsFound: es?.itemsFound ?? 0,
+      });
+    } else {
+      engineStatus.push({ engine: "twitter", ok: false });
+    }
+
+    const deduped = dedupeItems(items);
+    const result = await writeJson<{ ok: true; appended: number }>(
+      `/api/events/${encodeURIComponent(eventId)}/append-sources`,
+      "POST",
+      { items: deduped, engineStatus },
+    );
+    return { appended: result.appended, engineStatus };
   },
 
   async postFeedback(target: string, action: string, targetId?: string) {

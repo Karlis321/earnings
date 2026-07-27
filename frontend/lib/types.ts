@@ -162,7 +162,7 @@ export interface EventRecord {
     windowEnd: string;
     capturedAt: string | null;
     items: SourceItem[];
-    engineStatus: Array<{ engine: Engine; ok: boolean; lastGood?: string }>;
+    engineStatus: EngineStatus[];
   };
   verdictNote?: { text: string; lastEditedAt: string } | string;
 }

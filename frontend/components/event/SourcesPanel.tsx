@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import type { EventRecord, Provenance } from "@/lib/types";
 import {
   SourceItemCard,
@@ -9,8 +10,9 @@ import {
   Button,
 } from "@/components/primitives";
 import { RefreshCw } from "lucide-react";
-import { api } from "@/lib/apiClient";
+import { api, ApiError } from "@/lib/apiClient";
 import { useToast } from "@/providers/ToastProvider";
+import { usePersistence } from "@/providers/PersistenceProvider";
 import clsx from "clsx";
 
 type Tab = "all" | "official" | "news" | "opinion" | "social";
@@ -18,9 +20,11 @@ type Tab = "all" | "official" | "news" | "opinion" | "social";
 // P6-T4 sources panel. Group tabs, per-engine status, refresh (backend flag).
 
 export function SourcesPanel({ event }: { event: EventRecord }) {
+  const router = useRouter();
   const [tab, setTab] = useState<Tab>("all");
   const [refreshing, setRefreshing] = useState(false);
   const { push } = useToast();
+  const { markSyncing, markSynced, markLocal } = usePersistence();
 
   const groups = useMemo(() => {
     const items = event.sources.items;
@@ -75,12 +79,37 @@ export function SourcesPanel({ event }: { event: EventRecord }) {
           loading={refreshing}
           onClick={async () => {
             setRefreshing(true);
+            markSyncing();
             try {
-              await api.refreshSources(event.id);
+              const { appended, engineStatus } = await api.refreshSources(
+                event.id,
+              );
+              const engineSummary = engineStatus
+                .map(
+                  (e) =>
+                    `${e.engine}${e.ok ? "" : "·down"}${
+                      e.itemsFound != null ? " " + e.itemsFound : ""
+                    }`,
+                )
+                .join(" · ");
               push({
-                kind: "info",
-                message: "Fixture mode · live refresh needs backend /api/news, /api/press-releases, /api/tweets",
+                kind: "success",
+                message: `Appended ${appended} new · ${engineSummary}`,
               });
+              markSynced();
+              router.refresh();
+            } catch (e) {
+              if (e instanceof ApiError && e.status === 503) {
+                markLocal();
+                push({
+                  kind: "warning",
+                  message:
+                    "Local only — set GH_PAT in Vercel env to enable writes",
+                });
+              } else {
+                markSynced();
+                push({ kind: "danger", message: (e as Error).message });
+              }
             } finally {
               setRefreshing(false);
             }
@@ -98,18 +127,35 @@ export function SourcesPanel({ event }: { event: EventRecord }) {
               key={es.engine}
               className="inline-flex h-[22px] items-center gap-[6px] rounded-[5px] border border-bd2 bg-s3 px-[9px] font-mono text-[10.5px] text-tx-mid"
             >
-              <span className="h-[6px] w-[6px] rounded-full bg-success" />
+              {refreshing ? (
+                <RefreshCw size={9} className="animate-spin text-tx3" />
+              ) : (
+                <span className="h-[6px] w-[6px] rounded-full bg-success" />
+              )}
               {es.engine}
+              {es.itemsFound != null ? (
+                <span className="text-tx3">· {es.itemsFound}</span>
+              ) : null}
             </span>
           ) : (
             <SourceUnavailableChip
               key={es.engine}
               engine={es.engine}
-              reason={es.engine === "twitter" ? "proxy down" : "fetch failed"}
+              reason={
+                es.engine === "twitter"
+                  ? "TWITTERAPI_IO_KEY unset"
+                  : "fetch failed"
+              }
               lastGood={es.lastGood}
             />
           ),
         )}
+        {refreshing ? (
+          <span className="ml-1 flex items-center gap-2 font-mono text-[10.5px] text-tx-mid">
+            <RefreshCw size={11} className="animate-spin" />
+            refreshing engines…
+          </span>
+        ) : null}
       </div>
 
       <div className="grid grid-cols-1 gap-3 p-5 md:grid-cols-2">
