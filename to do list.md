@@ -92,17 +92,6 @@ Every individual piece typechecks; composition still needs eyes.
 
 ---
 
-## New asks · in progress
-
-- [ ] **Earnings report verifier.** Spec TBD — likely means: for each
-      reported quarter, cross-check the stored actual EPS against a
-      second source (SEC 10-Q parse / press release / independent
-      aggregator like FMP) and flag disagreements. Restatement detection
-      already exists in cron — the verifier would run at report time
-      instead of daily and cite the two sources side-by-side.
-
----
-
 ## Nice-to-have
 
 - [ ] Regenerate `frontend/lib/fixtures/registry.ts` from the same
