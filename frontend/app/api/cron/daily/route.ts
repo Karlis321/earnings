@@ -22,6 +22,7 @@ import {
   yahooLookup,
   yahooQuoteMetaBatch,
 } from "@/server/vendors/yahoo";
+import { refreshSectorUniverse } from "@/server/lib/sectorExpansion";
 import { capTierFor } from "@/lib/capTier";
 import { urlHash } from "@/lib/itemDedupe";
 import { mentionsHolding, matchesExclusionAlias } from "@/lib/tickerMatch";
@@ -427,17 +428,36 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // ---- 6. Market-cap refresh (whole registry) ----
+    // ---- 6a. Sector universe refresh ----
+    // Screens Yahoo for the top N per sector and adds any new tickers to
+    // the registry (add-only — an entity dropping out of a sector's
+    // top-N stays put). Runs BEFORE market-cap refresh so newly-added
+    // entities also get their caps refreshed in the same commit.
+    const sectorResult = await refreshSectorUniverse(registry, 60);
+    const registryWithNew = [...registry, ...sectorResult.newEntities];
+    for (const n of sectorResult.newEntities) {
+      newEvents.push({
+        // Not a real event — reuse the newEvents summary for "additions"
+        // reporting since it flows through the same UI panel.
+        eventId: `new-entity-${n.ticker.replace(/\s+/g, "-")}`,
+        ticker: n.ticker,
+        period: n.securityType,
+        scheduledDate:
+          n.marketCapAsOf ?? new Date().toISOString().slice(0, 10),
+      });
+    }
+
+    // ---- 6b. Market-cap refresh (whole registry INCLUDING new additions) ----
     // For every covered entity, resolve its Yahoo symbol, batch-fetch
     // marketCap, and commit an updated registry only if a value changed.
     // Runs after the events commit so the market-cap commit is a separate
     // small diff (easier to audit).
     const asOfDate = new Date().toISOString().slice(0, 10);
     const resolved: Array<{
-      entity: (typeof registry)[number];
+      entity: (typeof registryWithNew)[number];
       yahooSymbol: string | null;
     }> = [];
-    for (const entity of registry) {
+    for (const entity of registryWithNew) {
       // Prefer the persisted yahooSymbol — search-based lookup is ambiguous
       // for symbols shared across listings (VLE, RIO on Paris, etc.).
       if (entity.yahooSymbol) {
