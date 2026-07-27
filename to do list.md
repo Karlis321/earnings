@@ -8,14 +8,14 @@ landed. The gaps below are what stands between "code compiles" and
 
 ## Blockers · do these to have a working dashboard today
 
-- [ ] **Re-run backfill against the new registry.** `data/earnings.json`
-      still has event shells for the removed tickers (INTC/NVDA/CCJ/etc.).
-      The new 17 have no seeded events yet.
-  ```
-  node scripts/backfill.mjs
-  git add data/earnings.json && git commit -m "backfill new portfolio" && git push
-  ```
-  Produces nextEarningsDate + last-quarter EPS actual per operating name.
+- [x] ~~Re-run backfill against the new registry~~ ✓ Done. 8 event shells
+      seeded (BN, CENX, CS, HBM, TGB, TNZ, TOI, VLE). ABXX / BOLSY / SHLE
+      returned no `nextEarningsDate` from Yahoo — expected for small-caps
+      + ADRs; those events populate as they're announced. Backfill script
+      rewritten to read from `data/entity-registry.json` (source of truth)
+      instead of the stale fixture, and to only write `earnings.json` —
+      registry / dictionary / shared-state stay under
+      `scripts/rewrite-registry.mjs` control.
 
 - [ ] **Vercel prod deploy + env vars.** Point Vercel at the repo (root =
       `frontend/`) and set:
@@ -38,11 +38,13 @@ landed. The gaps below are what stands between "code compiles" and
 
 ## Known code gaps · works today but not ideal
 
-- [ ] **Cron marketCap currency bug.** Yahoo returns market cap in the
-      security's home currency; cron step 6 writes it to `marketCapUsd`
-      as-is. ABXX at ~C$860M gets misfiled as `large`. `scripts/rewrite-
-      registry.mjs` already does the FX conversion — port that helper into
-      `server/vendors/yahoo.ts` and call it from the cron.
+- [x] ~~Cron marketCap currency bug~~ ✓ Fixed. `server/vendors/yahoo.ts`
+      now exposes `getFxRates()` + `toUsd()`; FX pairs come from Yahoo
+      itself (`CADUSD=X`, `EURUSD=X`, `BRLUSD=X`, …) with a hardcoded
+      fallback map, cached 15 min per process. `YahooQuoteRow` carries
+      both `marketCap` (home ccy) and `marketCapUsd` (converted). Cron
+      step 6 and `/api/expand-watchlist` both use the USD field so
+      `capTier` boundaries hold across listings.
 
 - [ ] **Press-release feeds unpopulated for new tickers.**
       `frontend/server/vendors/pressReleases.ts` needs entries for: BOLSY,

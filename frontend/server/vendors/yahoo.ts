@@ -445,10 +445,85 @@ export interface YahooQuoteRow {
   name: string;
   exchange: string;
   currency: string;
+  // Yahoo returns market cap in the security's HOME currency, not USD.
+  // Use `marketCapUsd` when comparing across listings (tier boundaries,
+  // portfolio totals, screener sort).
   marketCap: number | null;
+  marketCapUsd: number | null;
   sector: string | null;
   industry: string | null;
   regularMarketPrice: number | null;
+}
+
+// ---------- FX rates ----------
+// Yahoo publishes cross-rates at `<CCY>USD=X` (price in USD per 1 unit of
+// CCY). We fetch the set once per process, cache 15 min, and fall back to
+// a hardcoded table when the fetch fails (offline dev, transient 401).
+
+const FX_TTL_MS = 15 * 60_000;
+const FX_FALLBACK: Record<string, number> = {
+  USD: 1,
+  CAD: 0.735,
+  EUR: 1.07,
+  GBP: 1.27,
+  CHF: 1.12,
+  BRL: 0.185,
+  MXN: 0.055,
+  AUD: 0.66,
+  JPY: 0.0067,
+  HKD: 0.128,
+  SEK: 0.096,
+  NOK: 0.093,
+  DKK: 0.144,
+  INR: 0.012,
+  SGD: 0.75,
+};
+interface FxCache {
+  rates: Record<string, number>;
+  expiresAt: number;
+}
+let fxCache: FxCache | null = null;
+
+async function fetchFxRates(): Promise<Record<string, number>> {
+  const now = Date.now();
+  if (fxCache && fxCache.expiresAt > now) return fxCache.rates;
+  const symbols = Object.keys(FX_FALLBACK)
+    .filter((c) => c !== "USD")
+    .map((c) => `${c}USD=X`);
+  const rates: Record<string, number> = { USD: 1 };
+  try {
+    // Fetch WITHOUT the USD-conversion pass (this call happens inside
+    // that pass — infinite recursion otherwise). Call the raw quote helper.
+    const rows = await yahooQuoteMetaBatchRaw(symbols);
+    for (const row of rows) {
+      const ccy = row.yahooSymbol.replace(/USD=X$/, "");
+      if (typeof row.regularMarketPrice === "number" && row.regularMarketPrice > 0) {
+        rates[ccy] = row.regularMarketPrice;
+      }
+    }
+  } catch {
+    /* fall through — populate everything from FX_FALLBACK below */
+  }
+  for (const [ccy, fb] of Object.entries(FX_FALLBACK)) {
+    if (rates[ccy] == null) rates[ccy] = fb;
+  }
+  fxCache = { rates, expiresAt: now + FX_TTL_MS };
+  return rates;
+}
+
+export function toUsd(
+  amount: number | null,
+  currency: string,
+  rates: Record<string, number>,
+): number | null {
+  if (amount == null) return null;
+  const rate = rates[currency] ?? 1;
+  return Math.round(amount * rate);
+}
+
+// Public helper — caller passes rates to avoid re-fetching per call.
+export async function getFxRates(): Promise<Record<string, number>> {
+  return fetchFxRates();
 }
 
 interface QuoteResp {
@@ -467,14 +542,11 @@ interface QuoteResp {
   };
 }
 
-// Batch quote metadata (up to ~200 symbols per call). Uses the same
-// crumb+cookie handshake as quoteSummary — Yahoo started requiring it on
-// v7 too. Returns market cap + basic identity fields; the existing
-// `yahooQuote()` further down returns a chart-derived latest/prev sample
-// and is unrelated.
-export async function yahooQuoteMetaBatch(
+// Internal raw helper — no USD conversion. Used by fetchFxRates so we
+// don't recurse on itself when priming the FX cache.
+async function yahooQuoteMetaBatchRaw(
   symbols: string[],
-): Promise<YahooQuoteRow[]> {
+): Promise<Array<Omit<YahooQuoteRow, "marketCapUsd">>> {
   if (symbols.length === 0) return [];
   const state = await getCrumb();
   if (!state) return [];
@@ -504,6 +576,23 @@ export async function yahooQuoteMetaBatch(
     sector: row.sector ?? null,
     industry: row.industry ?? null,
     regularMarketPrice: row.regularMarketPrice ?? null,
+  }));
+}
+
+// Batch quote metadata (up to ~200 symbols per call). Uses the same
+// crumb+cookie handshake as quoteSummary — Yahoo started requiring it on
+// v7 too. Returns market cap in both HOME currency and USD; the existing
+// `yahooQuote()` further down returns a chart-derived latest/prev sample
+// and is unrelated.
+export async function yahooQuoteMetaBatch(
+  symbols: string[],
+): Promise<YahooQuoteRow[]> {
+  const raw = await yahooQuoteMetaBatchRaw(symbols);
+  if (raw.length === 0) return [];
+  const rates = await fetchFxRates();
+  return raw.map((row) => ({
+    ...row,
+    marketCapUsd: toUsd(row.marketCap, row.currency, rates),
   }));
 }
 

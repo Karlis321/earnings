@@ -1,29 +1,23 @@
 #!/usr/bin/env node
 /**
- * W8 backfill / cutover seed.
+ * Backfill event shells for the current portfolio.
  *
- * Writes the four persistence-store JSON files the git-snapshot layer reads
- * from:
- *
- *   data/entity-registry.json   ← ENTITY_REGISTRY fixture (17 tickers)
- *   data/metric-dictionary.json ← METRIC_LABELS fixture
- *   data/shared-state.json      ← watchlist + custom sources + themes
- *   data/earnings.json          ← event shells per ticker, enriched from Yahoo
- *                                 (nextEarningsDate + lastQuarter EPS actual)
- *
- * The intent is a one-shot commit to bring the repo from fixture-only to
- * store-backed. Run once from your machine, `git add data/`, commit, deploy.
- * After the cutover the daily cron takes over — appending sources, maturing
- * reactions, upserting next-events, and detecting restatements.
+ * Reads data/entity-registry.json (source of truth after cutover; managed
+ * by scripts/rewrite-registry.mjs), enriches each operating entity via
+ * Yahoo quoteSummary (nextEarningsDate + last-quarter EPS actual), and
+ * writes data/earnings.json with one event shell per operating ticker.
+ * The metric-dictionary + registry + shared-state are NOT touched — those
+ * belong to rewrite-registry.mjs.
  *
  * Usage:
- *   node scripts/backfill.mjs                # full seed
- *   node scripts/backfill.mjs --dry          # print but don't write
- *   node scripts/backfill.mjs --ticker="INTC US"   # single ticker only
- *   node scripts/backfill.mjs --skip-yahoo   # skip Yahoo enrichment (fixtures only)
+ *   node scripts/backfill.mjs                     # full backfill
+ *   node scripts/backfill.mjs --dry               # print but don't write
+ *   node scripts/backfill.mjs --ticker="BN US"    # single ticker only
+ *   node scripts/backfill.mjs --skip-yahoo        # scaffold-only (no Yahoo)
  *
- * Yahoo occasionally rate-limits datacenter IPs on longer-range queries —
- * run from your residential connection.
+ * Yahoo v10 quoteSummary requires the crumb+cookie handshake — this script
+ * does it inline. Datacenter IPs sometimes hit softer rate limits than a
+ * residential connection, but the handshake unblocks the endpoint itself.
  */
 
 import fs from "node:fs/promises";
@@ -343,52 +337,27 @@ function buildEventShell(entity, scheduledDate, period, epsActual) {
 
 // ---------- Main ----------
 
-async function main() {
-  console.log(`W8 backfill · dry=${DRY} · yahoo=${!SKIP_YAHOO}`);
+async function loadEntitiesFromStore() {
+  const registryPath = path.join(ROOT, "data", "entity-registry.json");
+  try {
+    const raw = await fs.readFile(registryPath, "utf8");
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed.entities) && parsed.entities.length > 0) {
+      return { entities: parsed.entities, from: "data/entity-registry.json" };
+    }
+  } catch { /* fall through to fixture */ }
   const registrySrc = await loadFixture("registry.ts");
-  const entities = parseEntities(registrySrc);
-  const metricLabels = parseMetricLabels(registrySrc);
+  return {
+    entities: parseEntities(registrySrc),
+    from: "frontend/lib/fixtures/registry.ts",
+  };
+}
+
+async function main() {
+  console.log(`backfill · dry=${DRY} · yahoo=${!SKIP_YAHOO}`);
+  const { entities, from } = await loadEntitiesFromStore();
+  console.log(`  read ${entities.length} entities from ${from}`);
   const filtered = ONLY ? entities.filter((e) => e.ticker === ONLY) : entities;
-
-  // ---- entity-registry.json ----
-  const entityRegistry = {
-    schema: "entity-registry/v1",
-    entities,
-  };
-
-  // ---- metric-dictionary.json ----
-  const dictionary = {
-    schema: "metric-dictionary/v1",
-    metrics: Object.fromEntries(
-      Object.entries(metricLabels).map(([k, v]) => [
-        k,
-        {
-          label: v.label,
-          unit: v.unit,
-          requiresIsAdjusted: /^eps/.test(k),
-          description: null,
-        },
-      ]),
-    ),
-  };
-
-  // ---- shared-state.json ----
-  // SHARED_STATE in the TS fixture uses runtime expressions (ENTITY_REGISTRY
-  // .filter().map()) that we can't safely eval. Derive the seed directly:
-  // watchlist = all core entities. customSources starts empty — the analyst
-  // adds them via the admin UI. Themes match the sector tags we ship with.
-  const sharedState = {
-    schema: "shared-state/v1",
-    watchlist: entities.filter((e) => e.isCore).map((e) => e.ticker),
-    customSources: [],
-    themes: [
-      { id: "copper", label: "Copper", active: true },
-      { id: "gold", label: "Gold", active: true },
-      { id: "semiconductors", label: "Semiconductors", active: true },
-      { id: "uranium", label: "Uranium", active: true },
-    ],
-    lastCommit: new Date().toISOString(),
-  };
 
   // ---- earnings.json (event shells + Yahoo enrichment) ----
   const events = [];
@@ -433,25 +402,14 @@ async function main() {
   };
 
   // ---- Write ----
-  const files = [
-    ["entity-registry.json", entityRegistry],
-    ["metric-dictionary.json", dictionary],
-    ["shared-state.json", sharedState],
-    ["earnings.json", earnings],
-  ];
+  const earningsPath = path.join(OUT_DIR, "earnings.json");
   if (DRY) {
-    console.log("\nDry run — would write:");
-    for (const [name, obj] of files) {
-      const bytes = Buffer.byteLength(JSON.stringify(obj, null, 2), "utf8");
-      console.log(`  data/${name}  (${bytes} bytes)`);
-    }
+    const bytes = Buffer.byteLength(JSON.stringify(earnings, null, 2), "utf8");
+    console.log(`\nDry run — would write data/earnings.json (${bytes} bytes)`);
   } else {
     await fs.mkdir(OUT_DIR, { recursive: true });
-    for (const [name, obj] of files) {
-      const p = path.join(OUT_DIR, name);
-      await fs.writeFile(p, JSON.stringify(obj, null, 2));
-      console.log(`  ✓ wrote ${p}`);
-    }
+    await fs.writeFile(earningsPath, JSON.stringify(earnings, null, 2));
+    console.log(`  ✓ wrote ${earningsPath}`);
   }
 
   console.log("\nPer-ticker report:");

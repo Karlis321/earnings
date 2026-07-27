@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { store } from "@/server/store";
-import { yahooScreener, type ScreenerHit } from "@/server/vendors/yahoo";
+import {
+  yahooScreener,
+  getFxRates,
+  toUsd,
+  type ScreenerHit,
+} from "@/server/vendors/yahoo";
 import { capTierFor } from "@/lib/capTier";
 import type { CapTier, SecurityType } from "@/lib/types";
 
@@ -161,14 +166,17 @@ export async function POST(req: NextRequest) {
     const existingSet = new Set(existing.map((e) => e.ticker));
 
     // Over-fetch a bit to compensate for existing-ticker filtering.
-    const { hits, total } = await yahooScreener({
-      sector: mapping.yahooSector,
-      region,
-      quoteType: mapping.quoteType,
-      size: Math.min(count * 2, 250),
-      marketCapMin,
-      marketCapMax,
-    });
+    const [{ hits, total }, rates] = await Promise.all([
+      yahooScreener({
+        sector: mapping.yahooSector,
+        region,
+        quoteType: mapping.quoteType,
+        size: Math.min(count * 2, 250),
+        marketCapMin,
+        marketCapMax,
+      }),
+      getFxRates(),
+    ]);
 
     const asOf = new Date().toISOString().slice(0, 10);
     let filteredExisting = 0;
@@ -179,15 +187,18 @@ export async function POST(req: NextRequest) {
         filteredExisting++;
         continue;
       }
+      // Screener returns marketCap in home currency; convert before
+      // storing on the candidate (capTier is USD-anchored).
+      const marketCapUsd = toUsd(hit.marketCap, hit.currency ?? "USD", rates);
       candidates.push({
         yahooSymbol: hit.symbol,
         suggestedTicker: bb,
         name: hit.name,
         exchange: hit.exchange,
         currency: hit.currency,
-        marketCapUsd: hit.marketCap,
+        marketCapUsd,
         marketCapAsOf: asOf,
-        capTier: capTierFor(hit.marketCap),
+        capTier: capTierFor(marketCapUsd),
         sector: hit.sector,
         industry: hit.industry,
         suggestedSectorTags: suggestedSectorTags(hit, sectorKey),

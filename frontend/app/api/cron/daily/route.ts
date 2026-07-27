@@ -422,12 +422,14 @@ export async function POST(req: NextRequest) {
       .map((r) => r.yahooSymbol)
       .filter((s): s is string => !!s);
     const quoteBatchSize = 100;
-    const bySymbol = new Map<string, { marketCap: number | null }>();
+    const bySymbol = new Map<string, { marketCapUsd: number | null }>();
     for (let i = 0; i < symbols.length; i += quoteBatchSize) {
       const batch = symbols.slice(i, i + quoteBatchSize);
       const rows = await yahooQuoteMetaBatch(batch);
       for (const row of rows) {
-        bySymbol.set(row.yahooSymbol, { marketCap: row.marketCap });
+        // marketCapUsd is home-currency marketCap × current FX rate.
+        // yahooQuoteMetaBatch applies the conversion internally.
+        bySymbol.set(row.yahooSymbol, { marketCapUsd: row.marketCapUsd });
       }
     }
 
@@ -440,14 +442,14 @@ export async function POST(req: NextRequest) {
         return entity;
       }
       const q = bySymbol.get(sym);
-      if (!q || q.marketCap == null) {
+      if (!q || q.marketCapUsd == null) {
         mcFailed++;
         return entity;
       }
-      const newTier = capTierFor(q.marketCap);
+      const newTier = capTierFor(q.marketCapUsd);
       const priorTier = entity.capTier ?? "unknown";
       const changed =
-        entity.marketCapUsd !== q.marketCap || priorTier !== newTier;
+        entity.marketCapUsd !== q.marketCapUsd || priorTier !== newTier;
       if (!changed) {
         mcUnchanged++;
         return entity;
@@ -458,12 +460,12 @@ export async function POST(req: NextRequest) {
           ticker: entity.ticker,
           priorTier,
           newTier,
-          marketCapUsd: q.marketCap,
+          marketCapUsd: q.marketCapUsd,
         });
       }
       return {
         ...entity,
-        marketCapUsd: q.marketCap,
+        marketCapUsd: q.marketCapUsd,
         marketCapAsOf: asOfDate,
         capTier: newTier,
       };
