@@ -213,7 +213,17 @@ export function WatchlistTable({ rows }: { rows: WatchlistRow[] }) {
       </div>
 
       <div
-        className="mt-3 overflow-hidden rounded-panel border border-bd bg-s1"
+        // `overflow-hidden` on the container broke position:sticky for
+        // the HeaderRow — sticky pins to the closest ancestor that
+        // establishes a scroll container, and overflow:hidden qualifies.
+        // Result: the header scrolled with the rows, and the first data
+        // row could visually appear above the (no-longer-pinned) header.
+        // We drop overflow-hidden; the rounded-panel border still gives
+        // us clean visual edges since no child overflows its cells.
+        // isolation:isolate keeps sub-tree stacking contained so no
+        // absolute-positioned badge inside a row can render above the
+        // sticky header (z-20 already puts the header above rows).
+        className="mt-3 rounded-panel border border-bd bg-s1 [isolation:isolate]"
         role="grid"
         tabIndex={0}
         onKeyDown={(e) => {
@@ -271,7 +281,15 @@ export function WatchlistTable({ rows }: { rows: WatchlistRow[] }) {
 
 function HeaderRow() {
   return (
-    <div className="sticky top-14 z-10 grid grid-cols-[2fr_1.3fr_1.1fr_1fr_1.2fr_0.7fr_0.7fr] gap-3 border-b border-bd bg-panel2 px-[18px] py-[11px] font-mono text-[10px] uppercase tracking-[0.08em] text-tx3">
+    <div
+      // z-20 keeps the header above any row content that establishes its
+      // own stacking context (rounded pills, sparkline SVG etc.). Site
+      // header uses z-30 so this still sits below it. Inline background
+      // makes the opaque cover unconditional — no chance for a Tailwind
+      // purge or var lookup to leave it transparent.
+      className="sticky top-14 z-20 grid grid-cols-[2fr_1.3fr_1.1fr_1fr_1.2fr_0.7fr_0.7fr] gap-3 border-b border-bd px-[18px] py-[11px] font-mono text-[10px] uppercase tracking-[0.08em] text-tx3"
+      style={{ background: "var(--panel2)" }}
+    >
       <span className="text-tx2">Name ▾</span>
       <span>Next event</span>
       <span>Last surprise</span>

@@ -42,6 +42,10 @@ export const OFFICIAL_SOURCES: Record<string, OfficialSource[]> = {
   "SHLE US": [
     // Silver Horn Lithium not on EDGAR/OTC feeds we can reach; leave empty.
   ],
+  "HBM US": [
+    { kind: "rss", url: "https://hudbayminerals.com/rss/PressRelease.aspx", provenance: "ir-page", label: "Investor Relations" },
+    { kind: "edgar", url: "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0001322520&type=&dateb=&owner=include&count=40&output=atom", provenance: "regulatory", label: "SEC EDGAR" },
+  ],
   "CS CN": [
     { kind: "rss", url: "https://capstonecopper.com/feed/", provenance: "ir-page", label: "Investor Relations" },
   ],
