@@ -163,13 +163,6 @@ export function PriceChart({
         viewBox={`0 0 ${W} ${H}`}
         width="100%"
         height={H}
-        // Stretch viewBox horizontally to fill the container. Default
-        // xMidYMid meet letterboxes the 900-wide viewBox inside wider
-        // containers, so rect.width includes dead space and clientX-to-
-        // viewBox mapping is off by the letterbox offset — exact "zero
-        // at center, grows toward the edges" offset. Vertical is safe
-        // because H matches viewBox height, so `none` doesn't distort.
-        preserveAspectRatio="none"
         role="img"
         aria-label={`${label} price chart`}
         onMouseLeave={() => {
@@ -186,8 +179,24 @@ export function PriceChart({
           rafRef.current = requestAnimationFrame(() => {
             rafRef.current = null;
             const rect = target.getBoundingClientRect();
-            const scale = W / rect.width;
-            const x = (clientX - rect.left) * scale;
+            // Default preserveAspectRatio="xMidYMid meet" keeps the
+            // 900x200 viewBox proportional — in wider containers the
+            // viewBox is horizontally centered with letterbox padding
+            // on both sides. Compensate for that offset here so
+            // clientX maps to the correct viewBox x.
+            const viewBoxAspect = W / H;
+            const rectAspect = rect.width / rect.height;
+            let renderedW: number;
+            let offsetX: number;
+            if (rectAspect > viewBoxAspect) {
+              renderedW = rect.height * viewBoxAspect;
+              offsetX = (rect.width - renderedW) / 2;
+            } else {
+              renderedW = rect.width;
+              offsetX = 0;
+            }
+            const scale = W / renderedW;
+            const x = (clientX - rect.left - offsetX) * scale;
             if (x < padL || x > W - padR) {
               if (lastFRef.current !== null) {
                 lastFRef.current = null;
