@@ -16,7 +16,35 @@
 
 ---
 
-## ✅ Done this cycle (audit + cleanup)
+## 🔴 CRITICAL — Vercel env pointing at wrong GitHub repo
+
+Audit against prod (`earnings-neon.vercel.app`) found that
+`/api/entity-registry` returns 17 entities while local + git origin
+have 1593. Root cause: `GH_REPO_OWNER` / `GH_REPO_NAME` in Vercel
+production env vars **don't match** `Karlis321/earnings` (verified by
+boolean equality on the pulled values). Every git-snapshot read in
+prod is hitting a stale/unrelated repo, so none of the last ~15 hours
+of pushes have landed on the live site.
+
+**Fix (needs your action):**
+1. Open Vercel dashboard → project `earnings` → Settings →
+   Environment Variables.
+2. Set `GH_REPO_OWNER = Karlis321` and `GH_REPO_NAME = earnings`
+   (both Production).
+3. Redeploy (or `git commit --allow-empty && git push` and confirm the
+   Git integration builds — recent empty commits didn't trigger a
+   build, so a real edit may be needed).
+4. Verify with `curl https://earnings-neon.vercel.app/api/entity-registry | jq '.entities | length'` → expect 1593.
+
+Everything else in the code is correct — this single env mismatch is
+why the sector page looks empty. (The CRON_SECRET 401s from earlier
+this session are a separate issue — env var change requires a
+redeploy to take effect on running functions; the CLI deploy limit of
+100/day was hit so redeploy is blocked until Vercel's daily reset.)
+
+---
+
+## ✅ Done this cycle (sector rows, banded expansion, logo removal, audit)
 
 - [x] **Data-consistency audit.** Cross-referenced registry × earnings
       × fixtures × metric-dictionary × shared-state. Found 10 orphan
