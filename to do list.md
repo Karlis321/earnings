@@ -7,7 +7,21 @@
 
 ---
 
-## ✅ Done this cycle (sector universe + admin coverage)
+## ✅ Done this cycle (admin coverage click-to-prefill)
+
+- [x] **Click-to-prefill from coverage grid.** New client wrapper
+      `AdminEntryPanel` lifts `(eventId, metric, slot)` selection state.
+      Coverage grid cells (`actual` / `est` chips) are now buttons that
+      emit `onSelect`; parent syncs `<ManualEntryForm selection={...}>`.
+      Form's useEffect resets `eventId`, `metric`, `slot`, clears value,
+      then focuses the value input on the next frame. Parent also
+      smooth-scrolls the form into view. Source / as-of / method
+      persist across cell clicks so a run of related entries doesn't
+      wipe the paper trail.
+
+---
+
+## ✅ Done previous cycle (sector universe + admin coverage)
 
 - [x] **Sector universe repopulated from Yahoo.**
       Registry went from 17 → 282 (17 core + 265 universe). Top 60 per
@@ -290,12 +304,11 @@
       matter for coverage).
 
 - [ ] **Headline-metric Fact coverage (data-population).** Coverage
-      grid on `/admin/entry/:ticker` now surfaces the empty rows, but
-      the manual-entry form is still one-metric-at-a-time. Two follow
-      ups: (a) wire click-to-prefill from the coverage grid cells into
-      the form (needs a small state lift); (b) LLM extractor against
-      ingested 10-Q/press-release text once documents start landing in
-      `data/documents/`.
+      grid + click-to-prefill on `/admin/entry/:ticker` make the entry
+      flow fast, but each Fact is still a manual keystroke. Remaining
+      option: LLM extractor against ingested 10-Q / press-release text
+      once documents start landing in `data/documents/`. Deferred until
+      $0 no-LLM mode gates open.
 
 - [ ] **Verify document ingest is actually writing.** Allowlist was
       widened to include wire services + Yahoo Finance last cycle. Next

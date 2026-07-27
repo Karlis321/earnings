@@ -4,8 +4,7 @@ import {
   findEntity,
   eventsForTicker,
 } from "@/server/lib/registryHelpers";
-import { ManualEntryForm } from "@/components/admin/ManualEntryForm";
-import { CoverageGrid } from "@/components/admin/CoverageGrid";
+import { AdminEntryPanel } from "@/components/admin/AdminEntryPanel";
 
 export const dynamic = "force-dynamic";
 
@@ -36,8 +35,7 @@ export default async function ManualEntryPage({
           entries that skip them are blocked inline.
         </p>
       </div>
-      <CoverageGrid entity={entity} events={events} />
-      <ManualEntryForm entity={entity} events={events} />
+      <AdminEntryPanel entity={entity} events={events} />
     </div>
   );
 }

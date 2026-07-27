@@ -4,7 +4,7 @@
 // Wired to POST /api/manual-entry (W4). Per-field errors from the server are
 // merged onto the client's form-level `errors` map.
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { Entity, EventRecord, MetricDictionary } from "@/lib/types";
 import {
   Button,
@@ -17,13 +17,18 @@ import {
 import { useToast } from "@/providers/ToastProvider";
 import { usePersistence } from "@/providers/PersistenceProvider";
 import { api, ApiError } from "@/lib/apiClient";
+import type { CellSelection } from "./CoverageGrid";
 
 interface Props {
   entity: Entity;
   events: EventRecord[];
+  // Optional external selection — parent (AdminEntryPanel) sets this
+  // when the user clicks a cell in CoverageGrid; the form syncs its
+  // eventId / metric / slot to match and focuses the value input.
+  selection?: CellSelection | null;
 }
 
-export function ManualEntryForm({ entity, events }: Props) {
+export function ManualEntryForm({ entity, events, selection }: Props) {
   const { push } = useToast();
   const { markSyncing, markSynced, markLocal } = usePersistence();
   const [dictionary, setDictionary] = useState<MetricDictionary["metrics"]>({});
@@ -58,6 +63,25 @@ export function ManualEntryForm({ entity, events }: Props) {
   >("bloomberg_manual");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
+  const valueInputRef = useRef<HTMLInputElement | null>(null);
+
+  // Sync external CoverageGrid selection into the form. `selection` is a
+  // fresh object on every click so referential equality is enough to
+  // trigger the effect; we don't want to fight the user's edits after.
+  useEffect(() => {
+    if (!selection) return;
+    setEventId(selection.eventId);
+    setMetric(selection.metric);
+    setSlot(selection.slot);
+    setUnit(dictionary[selection.metric]?.unit ?? unit);
+    // Clear stale value; keep source / asOf / method so a quick sequence
+    // of related entries doesn't wipe the paper trail on every click.
+    setValue("");
+    setErrors({});
+    // Focus the value input right after the state applies.
+    requestAnimationFrame(() => valueInputRef.current?.focus());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selection]);
 
   const selectedEvent = useMemo(
     () => events.find((e) => e.id === eventId) ?? null,
@@ -192,6 +216,7 @@ export function ManualEntryForm({ entity, events }: Props) {
           <div>
             <Label required>Value</Label>
             <Input
+              ref={valueInputRef}
               value={value}
               onChange={(e) => setValue(e.target.value)}
               placeholder="e.g. 16100"
