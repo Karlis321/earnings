@@ -461,22 +461,57 @@ export interface YahooQuoteRow {
 // a hardcoded table when the fetch fails (offline dev, transient 401).
 
 const FX_TTL_MS = 15 * 60_000;
+// Rate = USD per 1 unit of the given currency. Fallback values from mid-2026;
+// live rates from Yahoo `<CCY>USD=X` override these on every fetch. Keep in
+// sync with Yahoo's supported cross-pairs — every currency here must have a
+// working `<CCY>USD=X` symbol on Yahoo or the fetch step ignores it and
+// falls back to the value below.
 const FX_FALLBACK: Record<string, number> = {
   USD: 1,
-  CAD: 0.735,
-  EUR: 1.07,
-  GBP: 1.27,
-  CHF: 1.12,
-  BRL: 0.185,
-  MXN: 0.055,
-  AUD: 0.66,
+  // Majors
+  EUR: 1.14,
+  GBP: 1.33,
   JPY: 0.0067,
-  HKD: 0.128,
+  CHF: 1.12,
+  CAD: 0.71,
+  AUD: 0.70,
+  NZD: 0.58,
+  // Nordics
   SEK: 0.096,
   NOK: 0.093,
   DKK: 0.144,
-  INR: 0.012,
+  ISK: 0.008,
+  // Europe (non-euro)
+  PLN: 0.26,
+  CZK: 0.047,
+  HUF: 0.0032,
+  RON: 0.22,
+  TRY: 0.021,
+  // Asia
+  HKD: 0.128,
   SGD: 0.75,
+  CNY: 0.148,
+  KRW: 0.00068,
+  TWD: 0.031,
+  INR: 0.012,
+  IDR: 0.000056,
+  THB: 0.030,
+  MYR: 0.245,
+  PHP: 0.016,
+  // Middle East
+  ILS: 0.33,
+  AED: 0.272,
+  SAR: 0.266,
+  QAR: 0.275,
+  // Africa
+  ZAR: 0.060,
+  // Latin America
+  BRL: 0.197,
+  MXN: 0.055,
+  CLP: 0.00105,
+  COP: 0.00031,
+  PEN: 0.295,
+  ARS: 0.00067,
 };
 interface FxCache {
   rates: Record<string, number>;
