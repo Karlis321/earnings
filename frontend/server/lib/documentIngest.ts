@@ -280,6 +280,7 @@ export interface IngestInput {
 // generally friendly to server-side fetches with a UA. Extend after
 // confirming a host's terms allow re-serving sanitized content.
 export const INGESTABLE_HOSTS: Set<string> = new Set([
+  // Regulatory
   "www.sec.gov",
   "sec.gov",
   "www.federalreserve.gov",
@@ -287,6 +288,8 @@ export const INGESTABLE_HOSTS: Set<string> = new Set([
   "www.ecb.europa.eu",
   "ecb.europa.eu",
   "www.bankofengland.co.uk",
+  // Company IR sites (individually vetted — extend only after
+  // confirming a host serves clean press-release HTML)
   "capstonecopper.com",
   "www.capstonecopper.com",
   "hudbayminerals.com",
@@ -295,9 +298,25 @@ export const INGESTABLE_HOSTS: Set<string> = new Set([
   "www.centuryaluminum.com",
   "silvercrestmetals.com",
   "www.silvercrestmetals.com",
+  // Wire services — designed for redistribution, so safe defaults for
+  // any ticker whose press releases route through these hosts.
   "www.newsfilecorp.com",
   "newsfilecorp.com",
   "feeds.newsfilecorp.com",
+  "www.globenewswire.com",
+  "globenewswire.com",
+  "www.prnewswire.com",
+  "prnewswire.com",
+  "www.newswire.ca",
+  "newswire.ca",
+  "www.businesswire.com",
+  "businesswire.com",
+  "www.accesswire.com",
+  "accesswire.com",
+  // Yahoo Finance — earnings source URLs in past-event Facts point here.
+  // The article shell is thin (mostly JS-shimmed) but the sanitizer
+  // handles it cleanly and the source link stays traceable.
+  "finance.yahoo.com",
 ]);
 
 export function isIngestableUrl(url: string): boolean {
