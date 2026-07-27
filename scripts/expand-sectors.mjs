@@ -236,6 +236,58 @@ function capTierFor(mc) {
   return "unknown";
 }
 
+// FX conversion — mirrors server/vendors/yahoo.ts fallback table so
+// non-USD market caps aren't treated as USD. Rate = USD per 1 unit of CCY.
+// Live rates from Yahoo's `<CCY>USD=X` override these at runtime; here we
+// use the same fallback so the one-shot script is self-contained.
+const FX_FALLBACK = {
+  USD: 1,
+  EUR: 1.14, GBP: 1.33, JPY: 0.0067, CHF: 1.12, CAD: 0.71, AUD: 0.70, NZD: 0.58,
+  SEK: 0.096, NOK: 0.093, DKK: 0.144, ISK: 0.008,
+  PLN: 0.26, CZK: 0.047, HUF: 0.0032, RON: 0.22, TRY: 0.021,
+  HKD: 0.128, SGD: 0.75, CNY: 0.148, KRW: 0.00068, TWD: 0.031, INR: 0.012,
+  IDR: 0.000056, THB: 0.030, MYR: 0.245, PHP: 0.016,
+  ILS: 0.33, AED: 0.272, SAR: 0.266, QAR: 0.275,
+  ZAR: 0.060,
+  BRL: 0.197, MXN: 0.055, CLP: 0.00105, COP: 0.00031, PEN: 0.295, ARS: 0.00067,
+};
+
+// Live-rate fetch: hit Yahoo's `<CCY>USD=X` cross-rates once per run.
+async function fetchLiveFxRates() {
+  const symbols = Object.keys(FX_FALLBACK)
+    .filter((c) => c !== "USD")
+    .map((c) => `${c}USD=X`);
+  const rates = { USD: 1 };
+  try {
+    const crumb = await primeCrumb();
+    if (!crumb) throw new Error("no crumb");
+    const url =
+      "https://query1.finance.yahoo.com/v7/finance/quote" +
+      `?symbols=${encodeURIComponent(symbols.join(","))}&crumb=${encodeURIComponent(crumb)}`;
+    const r = await fetch(url, {
+      headers: { "User-Agent": UA, Cookie: COOKIE_HEADER },
+    });
+    if (!r.ok) throw new Error(`${r.status}`);
+    const j = await r.json();
+    for (const q of j.quoteResponse?.result ?? []) {
+      const ccy = (q.symbol ?? "").replace(/USD=X$/, "");
+      if (typeof q.regularMarketPrice === "number" && q.regularMarketPrice > 0) {
+        rates[ccy] = q.regularMarketPrice;
+      }
+    }
+  } catch {
+    /* fall through — merged with fallback below */
+  }
+  return { ...FX_FALLBACK, ...rates };
+}
+
+function toUsd(mc, ccy, rates) {
+  if (mc == null || Number.isNaN(mc)) return null;
+  const rate = rates[ccy] ?? FX_FALLBACK[ccy] ?? null;
+  if (rate == null) return null;
+  return Math.round(mc * rate);
+}
+
 // ---------- Sector definitions ----------
 const SECTORS = [
   {
@@ -300,7 +352,7 @@ const SECTORS = [
 ];
 
 // ---------- Entity builder ----------
-function buildEntity(hit, sectorDef, asOf) {
+function buildEntity(hit, sectorDef, asOf, fxRates) {
   const bb = bloombergFromYahoo(hit.symbol, hit.exchange);
   if (!bb) return null; // exchange not on our Bloomberg map
   const displayName =
@@ -312,6 +364,7 @@ function buildEntity(hit, sectorDef, asOf) {
     : null;
   const sectorTags = new Set(sectorDef.sectorTags);
   if (industryTag) sectorTags.add(industryTag);
+  const marketCapUsd = toUsd(hit.marketCap, hit.currency ?? "USD", fxRates);
   return {
     ticker: bb,
     legalName: hit.name,
@@ -328,9 +381,9 @@ function buildEntity(hit, sectorDef, asOf) {
     benchmark: sectorDef.benchmark,
     headlineMetrics: sectorDef.headlineMetrics,
     catalystTypes: sectorDef.catalystTypes,
-    marketCapUsd: hit.marketCap,
-    marketCapAsOf: asOf,
-    capTier: capTierFor(hit.marketCap),
+    marketCapUsd,
+    marketCapAsOf: marketCapUsd != null ? asOf : null,
+    capTier: capTierFor(marketCapUsd),
     yahooSymbol: hit.symbol,
   };
 }
@@ -342,6 +395,10 @@ async function main() {
   const registry = JSON.parse(raw);
   const existing = new Set(registry.entities.map((e) => e.ticker));
   const asOf = new Date().toISOString().slice(0, 10);
+
+  const fxRates = await fetchLiveFxRates();
+  const liveCcys = Object.keys(fxRates).filter((c) => c !== "USD" && fxRates[c] !== FX_FALLBACK[c]);
+  console.log(`FX: live rates for ${liveCcys.length}/${Object.keys(FX_FALLBACK).length - 1} currencies`);
 
   const per = [];
   const additions = [];
@@ -372,7 +429,7 @@ async function main() {
         dupes++;
         continue;
       }
-      const entity = buildEntity(hit, sectorDef, asOf);
+      const entity = buildEntity(hit, sectorDef, asOf, fxRates);
       if (!entity) {
         skipped++;
         continue;

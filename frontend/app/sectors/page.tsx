@@ -13,6 +13,8 @@ export default async function SectorsPage() {
   const sectors = sectorCounts(entities);
   const totalCore = entities.filter((e) => e.isCore).length;
   const totalUniverse = entities.length - totalCore;
+  const totalEquities = entities.filter((e) => e.securityType !== "etf").length;
+  const totalEtfs = entities.length - totalEquities;
 
   return (
     <div className="mx-auto max-w-[1800px] px-10 py-8">
@@ -23,9 +25,10 @@ export default async function SectorsPage() {
         </h1>
         <p className="mt-2 max-w-[64ch] text-[13.5px] text-tx2">
           Thematic grouping across covered names. {entities.length} total
-          entities · {totalCore} portfolio · {totalUniverse} sector universe
-          across {sectors.length} tags. Auto-refreshes on the daily cron
-          (sector expansion + market-cap pass).
+          entities · {totalEquities} equities · {totalEtfs} ETFs ·{" "}
+          {totalCore} portfolio · {totalUniverse} sector universe across{" "}
+          {sectors.length} tags. Auto-refreshes on the daily cron (sector
+          expansion + market-cap pass).
         </p>
       </div>
 
@@ -43,14 +46,17 @@ export default async function SectorsPage() {
                   <span>
                     {s.count} name{s.count === 1 ? "" : "s"}
                   </span>
+                  {s.equities > 0 ? (
+                    <span className="text-tx-mid">
+                      · {s.equities} equit{s.equities === 1 ? "y" : "ies"}
+                    </span>
+                  ) : null}
+                  {s.etfs > 0 ? (
+                    <span className="text-tx-mid">· {s.etfs} ETF{s.etfs === 1 ? "" : "s"}</span>
+                  ) : null}
                   {s.portfolio > 0 ? (
                     <span className="text-brand-fg">
                       · {s.portfolio} portfolio
-                    </span>
-                  ) : null}
-                  {s.universe > 0 ? (
-                    <span className="text-tx-mid">
-                      · {s.universe} universe
                     </span>
                   ) : null}
                 </div>

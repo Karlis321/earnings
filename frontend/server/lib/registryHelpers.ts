@@ -19,13 +19,25 @@ export function coreEntities(entities: Entity[]): Entity[] {
 
 export function sectorCounts(
   entities: Entity[],
-): Array<{ id: string; count: number; portfolio: number; universe: number }> {
+): Array<{
+  id: string;
+  count: number;
+  portfolio: number;
+  universe: number;
+  equities: number;
+  etfs: number;
+}> {
   const total = new Map<string, number>();
   const core = new Map<string, number>();
+  const equities = new Map<string, number>();
+  const etfs = new Map<string, number>();
   for (const e of entities) {
+    const isEtf = e.securityType === "etf";
     for (const s of e.sectorTags) {
       total.set(s, (total.get(s) ?? 0) + 1);
       if (e.isCore) core.set(s, (core.get(s) ?? 0) + 1);
+      if (isEtf) etfs.set(s, (etfs.get(s) ?? 0) + 1);
+      else equities.set(s, (equities.get(s) ?? 0) + 1);
     }
   }
   return Array.from(total, ([id, count]) => ({
@@ -33,6 +45,8 @@ export function sectorCounts(
     count,
     portfolio: core.get(id) ?? 0,
     universe: count - (core.get(id) ?? 0),
+    equities: equities.get(id) ?? 0,
+    etfs: etfs.get(id) ?? 0,
   })).sort((a, b) => b.count - a.count);
 }
 
