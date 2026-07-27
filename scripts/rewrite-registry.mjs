@@ -81,15 +81,6 @@ const PORTFOLIO = [
     catalystTypes: [],
   },
   {
-    ticker: "HBM US", yahooSymbol: "HBM",
-    legalName: "Hudbay Minerals Inc.", displayName: "Hudbay Minerals",
-    aliases: ["Hudbay", "Hudbay Minerals", "HudBay"],
-    sectorTags: ["copper", "materials", "mining"],
-    cashtag: "HBM", securityType: "operating", listing: "NYSE", currency: "USD",
-    benchmark: "HG=F", headlineMetrics: ["production_cu_kt", "c1_usd_lb", "revenue_usd_m"],
-    catalystTypes: [],
-  },
-  {
     ticker: "SHLE CN", yahooSymbol: "SHLE.TO",
     legalName: "Source Energy Services Ltd.", displayName: "Source Energy Services",
     aliases: ["Source Energy Services", "Source Energy"],

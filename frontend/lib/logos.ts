@@ -6,7 +6,6 @@ export const TICKER_DOMAINS: Record<string, string> = {
   "INTC US": "intel.com",
   "NVDA US": "nvidia.com",
   "CS CN": "capstonecopper.com",
-  "HBM CN": "hudbayminerals.com",
   "RIO PA": "riotinto.com",
   "BN US": "brookfield.com",
   "CENX US": "centuryaluminum.com",
