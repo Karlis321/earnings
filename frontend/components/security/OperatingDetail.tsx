@@ -21,8 +21,15 @@ interface Props {
 }
 
 export function OperatingDetail({ entity, events }: Props) {
-  const latest = events[0];
-  if (!latest) {
+  // Events arrive sorted DESC by scheduledDate. Split upcoming from past
+  // so "Latest print" always shows a reported quarter — showing metric
+  // rows full of "—" for an unreleased event is confusing.
+  const upcoming = events.find((e) => !e.eventDate);
+  const pastEvents = events.filter((e) => e.eventDate);
+  const latestPast = pastEvents[0];
+  const primary = latestPast ?? upcoming ?? events[0];
+
+  if (!primary) {
     return (
       <div>
         <SecurityPriceChart
@@ -46,46 +53,74 @@ export function OperatingDetail({ entity, events }: Props) {
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1.4fr_1fr]">
       <div className="flex flex-col gap-4">
-        <Card
-          eyebrow={`Latest print · ${latest.period}`}
-          actions={
-            <Link
-              href={`/s/${encodeURIComponent(entity.ticker)}/e/${latest.id}`}
-              className="text-[12.5px] text-brand-hi hover:text-brand-fg"
-            >
-              Open event →
-            </Link>
-          }
-        >
-          <MetricRowHeader />
-          {latest.metrics.map((m) => (
-            <MetricRow key={m.key} metric={m} />
-          ))}
-          {events.length > 1 ? (
-            <Link
-              href={`/s/${encodeURIComponent(entity.ticker)}/e/${latest.id}`}
-              className="flex items-center justify-between px-[18px] py-3 text-[13px] text-tx2 hover:bg-hover2"
-            >
-              All {events.length - 1} earlier events
-              <ChevronRight size={14} className="text-tx3" />
-            </Link>
-          ) : null}
-        </Card>
+        {upcoming ? (
+          <Panel eyebrow={`Next reporting · ${upcoming.period}`}>
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="font-mono text-[16px] font-semibold text-tx">
+                  {upcoming.scheduledDate}
+                  {upcoming.timing ? (
+                    <span className="ml-2 text-[12.5px] font-normal text-tx-mid">
+                      · {upcoming.timing}
+                    </span>
+                  ) : null}
+                </div>
+                <div className="mt-1 text-[12.5px] text-tx-mid">
+                  Watchlist window opens 2 days ahead — sources start
+                  accruing then.
+                </div>
+              </div>
+              <Link
+                href={`/s/${encodeURIComponent(entity.ticker)}/e/${upcoming.id}`}
+                className="text-[12.5px] text-brand-hi hover:text-brand-fg"
+              >
+                Open event →
+              </Link>
+            </div>
+          </Panel>
+        ) : null}
+        {latestPast ? (
+          <Card
+            eyebrow={`Latest print · ${latestPast.period}`}
+            actions={
+              <Link
+                href={`/s/${encodeURIComponent(entity.ticker)}/e/${latestPast.id}`}
+                className="text-[12.5px] text-brand-hi hover:text-brand-fg"
+              >
+                Open event →
+              </Link>
+            }
+          >
+            <MetricRowHeader />
+            {latestPast.metrics.map((m) => (
+              <MetricRow key={m.key} metric={m} />
+            ))}
+            {pastEvents.length > 1 ? (
+              <Link
+                href={`/s/${encodeURIComponent(entity.ticker)}/e/${latestPast.id}`}
+                className="flex items-center justify-between px-[18px] py-3 text-[13px] text-tx2 hover:bg-hover2"
+              >
+                All {pastEvents.length - 1} earlier prints
+                <ChevronRight size={14} className="text-tx3" />
+              </Link>
+            ) : null}
+          </Card>
+        ) : null}
 
         <Panel eyebrow="Guidance" padded={false}>
-          <GuidanceTimeline items={latest.guidance} />
+          <GuidanceTimeline items={primary.guidance} />
         </Panel>
 
         <Panel eyebrow="Reaction · 4-horizon">
           <ReactionChart
-            points={latest.reaction.points}
-            benchmark={latest.reaction.benchmark}
+            points={primary.reaction.points}
+            benchmark={primary.reaction.benchmark}
           />
           <div className="mt-4 font-mono text-[11.5px] text-tx-mid">
             baseline{" "}
-            <span className="text-tx">{latest.reaction.baselineDate ?? "—"}</span>{" "}
+            <span className="text-tx">{primary.reaction.baselineDate ?? "—"}</span>{" "}
             · timing{" "}
-            <span className="text-tx">{latest.timing ?? "—"}</span>
+            <span className="text-tx">{primary.timing ?? "—"}</span>
           </div>
         </Panel>
       </div>
@@ -101,20 +136,20 @@ export function OperatingDetail({ entity, events }: Props) {
         >
           <div className="flex items-center justify-between border-b border-bd px-4 py-3 text-[12px] text-tx-mid">
             <span>
-              Window {latest.sources.windowStart} → {latest.sources.windowEnd}
+              Window {primary.sources.windowStart} → {primary.sources.windowEnd}
             </span>
             <Link
-              href={`/s/${encodeURIComponent(entity.ticker)}/e/${latest.id}`}
+              href={`/s/${encodeURIComponent(entity.ticker)}/e/${primary.id}`}
               className="text-brand-hi hover:text-brand-fg"
             >
-              All {latest.sources.items.length} →
+              All {primary.sources.items.length} →
             </Link>
           </div>
           <div className="flex flex-col gap-3 p-4">
-            {latest.sources.items.slice(0, 3).map((it) => (
+            {primary.sources.items.slice(0, 3).map((it) => (
               <SourceItemCard key={it.id} item={it} />
             ))}
-            {latest.sources.items.length === 0 && (
+            {primary.sources.items.length === 0 && (
               <div className="p-4 text-center text-[13px] text-tx-mid">
                 No sources captured yet in the window.
               </div>
