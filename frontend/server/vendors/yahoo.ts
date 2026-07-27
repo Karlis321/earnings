@@ -570,6 +570,10 @@ interface QuoteResp {
       exchange?: string;
       currency?: string;
       marketCap?: number;
+      // ETFs: Yahoo returns AUM under netAssets / totalAssets, not marketCap.
+      netAssets?: number;
+      totalAssets?: number;
+      quoteType?: string;
       sector?: string;
       industry?: string;
       regularMarketPrice?: number;
@@ -607,7 +611,11 @@ async function yahooQuoteMetaBatchRaw(
     name: row.longName ?? row.shortName ?? "",
     exchange: row.exchange ?? "",
     currency: row.currency ?? "USD",
-    marketCap: row.marketCap ?? null,
+    // For ETFs, `marketCap` isn't populated by Yahoo — the AUM lives under
+    // netAssets (preferred) or totalAssets. Fall through so downstream
+    // capTier + display don't null-out for the whole ETF universe.
+    marketCap:
+      row.marketCap ?? row.netAssets ?? row.totalAssets ?? null,
     sector: row.sector ?? null,
     industry: row.industry ?? null,
     regularMarketPrice: row.regularMarketPrice ?? null,
