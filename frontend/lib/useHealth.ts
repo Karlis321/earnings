@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { api } from "./apiClient";
-import type { EngineStatus, Horizon } from "./types";
+import type { DocumentKind, EngineStatus, Horizon } from "./types";
 
 export interface HealthSnapshot {
   ok: boolean;
@@ -39,6 +39,20 @@ export interface HealthSnapshot {
     deltaPct: number;
     at: string;
   }>;
+  documents: {
+    attempted: number;
+    ingested: number;
+    unchanged: number;
+    failed: number;
+    recent: Array<{
+      id: string;
+      url: string;
+      ingestVersion: number;
+      changed: boolean;
+      kind: DocumentKind | null;
+      error?: string;
+    }>;
+  };
   staleThresholdHours: number;
 }
 

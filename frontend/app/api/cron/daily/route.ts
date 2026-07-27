@@ -9,6 +9,11 @@ import {
   detectRestatements,
   periodFromReportingDate,
 } from "@/server/lib/cronDetections";
+import {
+  fetchAndIngest,
+  isIngestableUrl,
+  type FetchAndIngestInput,
+} from "@/server/lib/documentIngest";
 import { yahooEarnings, yahooLookup } from "@/server/vendors/yahoo";
 import { urlHash } from "@/lib/itemDedupe";
 import { mentionsHolding, matchesExclusionAlias } from "@/lib/tickerMatch";
@@ -109,6 +114,15 @@ export async function POST(req: NextRequest) {
   // Newly-created event shells (Yahoo next-event detection). Committed
   // alongside pendingEvents in the same mutateEarnings call.
   const newlyCreated: EventRecord[] = [];
+  // Candidate URLs for document ingestion (press-release items we pulled
+  // during the sources fan-out). Deduped + capped globally after the loop.
+  const ingestCandidates = new Map<string, FetchAndIngestInput>();
+  // Document ingest counters, filled by the Phase B pass.
+  let docsAttempted = 0;
+  let docsIngested = 0;
+  let docsUnchanged = 0;
+  let docsFailed = 0;
+  let docsRecent: CronRunSummary["documents"]["recent"] = [];
 
   try {
     const snap = await store.readEarnings();
@@ -175,9 +189,17 @@ export async function POST(req: NextRequest) {
             articleType: "news",
             engine: bucketPressEngine(p.source, p.kind),
             language: "en",
-            hosted: false,
+            hosted: isIngestableUrl(p.url),
             summary: null,
           });
+          if (isIngestableUrl(p.url) && !ingestCandidates.has(p.url)) {
+            ingestCandidates.set(p.url, {
+              url: p.url,
+              provenance: p.provenance,
+              source: p.source,
+              publishedAt: p.time,
+            });
+          }
         }
 
         // Aggregate per-engine status across the run.
@@ -323,6 +345,45 @@ export async function POST(req: NextRequest) {
         } matured, ${newlyCreated.length} new, ${restatements.length} restated)`,
       );
     }
+
+    // ---- 5. Document auto-ingestion (Phase B) ----
+    // Loop press-release URLs through the ingestion pipeline. Capped +
+    // concurrency-limited so a slow host doesn't blow the cron budget.
+    // Each successful new ingest is a separate git commit (per-file);
+    // idempotent replays are no-ops when the content hash is unchanged.
+    const MAX_DOCS_PER_RUN = 8;
+    const DOC_CONCURRENCY = 3;
+    const candidates = Array.from(ingestCandidates.values()).slice(0, MAX_DOCS_PER_RUN);
+    docsRecent = [];
+    if (candidates.length > 0) {
+      let i = 0;
+      const worker = async () => {
+        while (i < candidates.length) {
+          const idx = i++;
+          const c = candidates[idx];
+          const r = await fetchAndIngest(
+            c,
+            (id) => store.readDocument(id),
+            (doc) => store.writeDocument(doc),
+          );
+          docsAttempted++;
+          if (!r.ok) docsFailed++;
+          else if (r.changed) docsIngested++;
+          else docsUnchanged++;
+          docsRecent.push({
+            id: r.id,
+            url: r.url,
+            ingestVersion: r.ingestVersion,
+            changed: r.changed,
+            kind: r.kind,
+            error: r.error,
+          });
+        }
+      };
+      await Promise.all(
+        Array.from({ length: Math.min(DOC_CONCURRENCY, candidates.length) }, worker),
+      );
+    }
   } catch (e) {
     ok = false;
     eventSummaries.push({
@@ -347,6 +408,13 @@ export async function POST(req: NextRequest) {
     totalMatured: eventSummaries.reduce((a, e) => a + e.maturedHorizons.length, 0),
     newEvents,
     restatements,
+    documents: {
+      attempted: docsAttempted,
+      ingested: docsIngested,
+      unchanged: docsUnchanged,
+      failed: docsFailed,
+      recent: docsRecent,
+    },
   };
 
   try {

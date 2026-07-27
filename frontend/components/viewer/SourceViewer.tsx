@@ -200,7 +200,7 @@ export function SourceViewer() {
           {doc.status === "hit" ? (
             <HostedRender
               hostedRef={hostedRef}
-              html={doc.doc.html}
+              doc={doc.doc}
               anchorFound={anchorFound}
               locator={locator}
             />
@@ -252,15 +252,31 @@ export function SourceViewer() {
 
 function HostedRender({
   hostedRef,
-  html,
+  doc,
   anchorFound,
   locator,
 }: {
   hostedRef: React.MutableRefObject<HTMLDivElement | null>;
-  html: string;
+  doc: Document;
   anchorFound: boolean | null;
   locator: string | null;
 }) {
+  const jumpTo = (paraId: string | undefined) => {
+    if (!paraId) return;
+    const container = hostedRef.current;
+    if (!container) return;
+    const el = container.querySelector(`#${CSS.escape(paraId)}`);
+    if (el) {
+      (el as HTMLElement).scrollIntoView({ behavior: "smooth", block: "start" });
+      el.classList.remove("hosted-anchor-highlight");
+      // force reflow so the animation restarts
+      void (el as HTMLElement).offsetWidth;
+      el.classList.add("hosted-anchor-highlight");
+    }
+  };
+
+  const segs = doc.meta.segments;
+
   return (
     <div className="flex flex-1 flex-col gap-2 overflow-hidden">
       {locator && anchorFound === false ? (
@@ -270,10 +286,50 @@ function HostedRender({
           this document version — showing top of document.
         </div>
       ) : null}
+      {segs.length > 1 ? (
+        <div className="flex flex-wrap items-center gap-[6px] rounded-panel border border-bd bg-panel2 px-3 py-2">
+          <span className="mr-1 font-mono text-[10.5px] uppercase tracking-[0.1em] text-tx3">
+            Segments
+          </span>
+          {segs.map((s) => (
+            <button
+              key={s.id}
+              type="button"
+              onClick={() => jumpTo(s.paragraphIds[0])}
+              className="inline-flex h-[22px] items-center gap-[6px] rounded-[5px] border border-bd2 bg-s2 px-[9px] text-[11.5px] text-tx hover:bg-s3"
+              title={
+                s.speaker
+                  ? `${s.speaker} · ${s.role}`
+                  : s.role === "prepared"
+                  ? "Prepared Remarks"
+                  : s.role === "qa"
+                  ? "Q&A"
+                  : `Segment ${s.id}`
+              }
+            >
+              <span
+                className={`h-[6px] w-[6px] rounded-full ${
+                  s.role === "prepared"
+                    ? "bg-success"
+                    : s.role === "qa"
+                    ? "bg-brand"
+                    : "bg-tx3"
+                }`}
+              />
+              {s.speaker ??
+                (s.role === "prepared"
+                  ? "Prepared"
+                  : s.role === "qa"
+                  ? "Q&A"
+                  : s.id)}
+            </button>
+          ))}
+        </div>
+      ) : null}
       <div
         ref={hostedRef}
         className="hosted-doc flex-1 overflow-auto rounded-panel border border-bd bg-s1 p-6 text-[14px] leading-[1.55] text-tx"
-        dangerouslySetInnerHTML={{ __html: html }}
+        dangerouslySetInnerHTML={{ __html: doc.html }}
       />
     </div>
   );

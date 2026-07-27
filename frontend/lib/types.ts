@@ -288,6 +288,21 @@ export interface CronRunSummary {
     deltaPct: number; // positive percentage
     at: string;
   }>;
+  documents: {
+    attempted: number;
+    ingested: number; // changed=true, wrote a new version
+    unchanged: number; // reachable but hash unchanged
+    failed: number;
+    // Latest ingest headlines (bounded so the file stays small)
+    recent: Array<{
+      id: string;
+      url: string;
+      ingestVersion: number;
+      changed: boolean;
+      kind: DocumentKind | null;
+      error?: string;
+    }>;
+  };
 }
 
 export interface DiscoverFeedResult {

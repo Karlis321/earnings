@@ -196,6 +196,38 @@ export default function SettingsPage() {
                   </div>
                 ) : null}
 
+                {health.documents.attempted > 0 ? (
+                  <div className="mt-4">
+                    <div className="mb-2 font-mono text-[11px] uppercase tracking-[0.1em] text-tx3">
+                      Documents · {health.documents.ingested} new /{" "}
+                      {health.documents.unchanged} unchanged /{" "}
+                      {health.documents.failed} failed
+                    </div>
+                    {health.documents.recent.length > 0 ? (
+                      <div className="grid grid-cols-1 gap-[2px] font-mono text-[11.5px]">
+                        {health.documents.recent.slice(0, 8).map((d) => (
+                          <div
+                            key={d.id}
+                            className="flex items-center gap-3 border-b border-bd/40 py-1"
+                          >
+                            <span className="text-tx">{d.kind ?? "—"}</span>
+                            <span className="text-tx-mid">
+                              v{d.ingestVersion}
+                              {d.changed ? " ·new" : ""}
+                            </span>
+                            <span className="truncate text-tx-mid">
+                              {d.url}
+                            </span>
+                            {d.error ? (
+                              <span className="text-danger">{d.error}</span>
+                            ) : null}
+                          </div>
+                        ))}
+                      </div>
+                    ) : null}
+                  </div>
+                ) : null}
+
                 {health.restatements.length > 0 ? (
                   <div className="mt-4">
                     <div className="mb-2 font-mono text-[11px] uppercase tracking-[0.1em] text-tx3">

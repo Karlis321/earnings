@@ -275,6 +275,36 @@ export interface IngestInput {
   priorHash?: string;
 }
 
+// Hosts we're willing to fetch + ingest server-side. Kept narrow: analyst
+// clicks routinely land on EDGAR / IR press pages, and those hosts are
+// generally friendly to server-side fetches with a UA. Extend after
+// confirming a host's terms allow re-serving sanitized content.
+export const INGESTABLE_HOSTS: Set<string> = new Set([
+  "www.sec.gov",
+  "sec.gov",
+  "www.federalreserve.gov",
+  "federalreserve.gov",
+  "www.ecb.europa.eu",
+  "ecb.europa.eu",
+  "www.bankofengland.co.uk",
+  "capstonecopper.com",
+  "www.capstonecopper.com",
+  "hudbayminerals.com",
+  "www.hudbayminerals.com",
+  "centuryaluminum.com",
+  "www.centuryaluminum.com",
+  "silvercrestmetals.com",
+  "www.silvercrestmetals.com",
+  "www.newsfilecorp.com",
+  "newsfilecorp.com",
+  "feeds.newsfilecorp.com",
+]);
+
+export function isIngestableUrl(url: string): boolean {
+  const h = safeHost(url);
+  return INGESTABLE_HOSTS.has(h);
+}
+
 export function ingestDocument(input: IngestInput): {
   document: Document;
   changed: boolean;
@@ -305,4 +335,108 @@ export function ingestDocument(input: IngestInput): {
     document: { schema: "document/v1", meta, html: bodyWithAnchors },
     changed,
   };
+}
+
+// End-to-end fetch + ingest + persist for a single URL. Used by the cron
+// (server-side) to auto-ingest press-release URLs on the allowlist.
+// Returns a rich result the cron can roll up into CronRunSummary.
+const CRON_UA =
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +
+  "(KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36";
+
+export interface FetchAndIngestInput {
+  url: string;
+  provenance: Provenance;
+  source: string;
+  language?: string;
+  publishedAt?: string | null;
+  timeoutMs?: number;
+}
+
+export interface FetchAndIngestResult {
+  id: string;
+  url: string;
+  ok: boolean;
+  changed: boolean;
+  ingestVersion: number;
+  kind: DocumentKind | null;
+  paragraphCount: number;
+  error?: string;
+}
+
+export async function fetchAndIngest(
+  input: FetchAndIngestInput,
+  storeRead: (id: string) => Promise<Document | null>,
+  storeWrite: (doc: Document) => Promise<void>,
+): Promise<FetchAndIngestResult> {
+  const id = urlHash(input.url);
+  try {
+    const r = await fetch(input.url, {
+      headers: {
+        "User-Agent": CRON_UA,
+        Accept:
+          "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.9",
+      },
+      redirect: "follow",
+      signal: AbortSignal.timeout(input.timeoutMs ?? 12_000),
+    });
+    if (!r.ok) {
+      return {
+        id,
+        url: input.url,
+        ok: false,
+        changed: false,
+        ingestVersion: 0,
+        kind: null,
+        paragraphCount: 0,
+        error: `${r.status}`,
+      };
+    }
+    const raw = await r.text();
+    const existing = await storeRead(id);
+    const { document, changed } = ingestDocument({
+      url: input.url,
+      rawHtml: raw,
+      provenance: input.provenance,
+      source: input.source,
+      language: input.language ?? "en",
+      publishedAt: input.publishedAt ?? null,
+      priorVersion: existing?.meta.ingestVersion,
+      priorHash: existing?.meta.sourceContentHash,
+    });
+    // Skip the write when hash matches — cron stays a no-op on replay.
+    if (!changed && existing) {
+      return {
+        id,
+        url: input.url,
+        ok: true,
+        changed: false,
+        ingestVersion: existing.meta.ingestVersion,
+        kind: existing.meta.kind,
+        paragraphCount: existing.meta.paragraphCount,
+      };
+    }
+    await storeWrite(document);
+    return {
+      id,
+      url: input.url,
+      ok: true,
+      changed: true,
+      ingestVersion: document.meta.ingestVersion,
+      kind: document.meta.kind,
+      paragraphCount: document.meta.paragraphCount,
+    };
+  } catch (e) {
+    return {
+      id,
+      url: input.url,
+      ok: false,
+      changed: false,
+      ingestVersion: 0,
+      kind: null,
+      paragraphCount: 0,
+      error: (e as Error).message,
+    };
+  }
 }

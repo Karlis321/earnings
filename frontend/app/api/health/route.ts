@@ -29,6 +29,13 @@ export async function GET() {
       cronEventSummaries: cron?.events ?? [],
       newEvents: cron?.newEvents ?? [],
       restatements: cron?.restatements ?? [],
+      documents: cron?.documents ?? {
+        attempted: 0,
+        ingested: 0,
+        unchanged: 0,
+        failed: 0,
+        recent: [],
+      },
       staleThresholdHours: 26,
     },
     { headers: { "Cache-Control": "no-store" } },
