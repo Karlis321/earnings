@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import type { Entity, EventRecord, Horizon, ReactionPoint } from "@/lib/types";
+import type { Entity, EventRecord } from "@/lib/types";
 import {
   Card,
   MetricRow,
   MetricRowHeader,
   GuidanceTimeline,
   ReactionChart,
+  ReactionRow,
   Panel,
   SourceItemCard,
   SurprisePill,
@@ -19,66 +20,6 @@ import { ChevronRight } from "lucide-react";
 interface Props {
   entity: Entity;
   events: EventRecord[];
-}
-
-// Compact reaction row for past-quarter entries. Renders:
-//   +1d +3.2% · +3d +5.1% · 1w +4.8% · 1m +2.1% (clipped)
-// Pending horizons show "+1m —" in muted style; clipped horizons append
-// "(clipped)" to just that value; contaminated horizons render at lower
-// opacity with a hover-only badge.
-const HORIZON_LABEL: Record<Horizon, string> = {
-  d1: "+1d",
-  d3: "+3d",
-  w1: "1w",
-  m1: "1m",
-};
-const HORIZON_ORDER: Horizon[] = ["d1", "d3", "w1", "m1"];
-function fmtPct(v: number): string {
-  const pct = v * 100;
-  const sign = pct >= 0 ? "+" : "";
-  return `${sign}${pct.toFixed(1)}%`;
-}
-function ReactionRow({ points }: { points: ReactionPoint[] }) {
-  const byH = new Map<Horizon, ReactionPoint>();
-  for (const p of points) byH.set(p.horizon, p);
-  if (points.length === 0) return null;
-  return (
-    <div className="px-4 pb-3 pt-1 font-mono text-[11px] text-tx-mid flex flex-wrap items-center gap-x-2 gap-y-0.5">
-      {HORIZON_ORDER.map((h, idx) => {
-        const p = byH.get(h);
-        const label = HORIZON_LABEL[h];
-        if (!p || p.absReturn === null || p.absReturn === undefined) {
-          return (
-            <span key={h}>
-              {idx > 0 ? <span className="text-tx3 mr-2">·</span> : null}
-              {label} <span className="text-tx3">—</span>
-            </span>
-          );
-        }
-        const contaminated = p.contaminated === true;
-        const clipped = p.clipped === true;
-        return (
-          <span
-            key={h}
-            className={contaminated ? "opacity-50" : ""}
-            title={contaminated ? "⚠ contaminated — newer event inside the window" : undefined}
-          >
-            {idx > 0 ? <span className="text-tx3 mr-2">·</span> : null}
-            {label}{" "}
-            <span className={p.absReturn >= 0 ? "text-tx" : "text-tx"}>
-              {fmtPct(p.absReturn)}
-            </span>
-            {clipped ? (
-              <span className="text-tx3"> (clipped)</span>
-            ) : null}
-            {contaminated ? (
-              <span className="ml-1 text-tx3">⚠</span>
-            ) : null}
-          </span>
-        );
-      })}
-    </div>
-  );
 }
 
 export function OperatingDetail({ entity, events }: Props) {
@@ -233,7 +174,9 @@ export function OperatingDetail({ entity, events }: Props) {
                       )}
                     </span>
                   </Link>
-                  <ReactionRow points={e.reaction?.points ?? []} />
+                  <div className="px-4 pb-3 pt-1">
+                    <ReactionRow points={e.reaction?.points ?? []} />
+                  </div>
                 </div>
               );
             })}

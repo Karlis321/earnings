@@ -68,6 +68,26 @@ export interface PipelineReport {
   // in without going through the assignment step).
   companies_total: number;
   entities_unassigned: number;
+  // Cross-listing revenue consistency invariant. Every listing of a
+  // single company must show the same headline revenue for the same
+  // fiscal period — Alphabet's four listings each storing a different
+  // Q2 2026 revenue was the exact symptom that surfaced in the July-
+  // 2026 financials audit. This counter catches that bug class WITHOUT
+  // needing an external source (SEC XBRL); a non-zero value flags
+  // degraded and lists a sample of affected companies in reasons[].
+  companies_with_inconsistent_financials: number;
+  // Sweep 1: estimator label conflict count. A forward-dated shell must
+  // carry a period STRICTLY AFTER the ticker's latest reported period,
+  // stepped along the entity's own fiscal calendar. Non-zero here
+  // means the label-increment logic in estimateNextEvent.ts regressed;
+  // MSFT / AAPL / NVDA-class fiscal-offset filers are the canary.
+  estimator_label_conflicts: number;
+  // Part 5c: market-cap staleness across canonical listings. Sector +
+  // search views both order by marketCapUsd descending; a stale cap
+  // silently corrupts both orderings, so count entities whose cap
+  // hasn't been refreshed in 7+ days. Degraded if >10% of canonicals
+  // are stale — see checkRegressions.
+  marketcap_stale_count: number;
   // Per-vendor call counters. Increment during the cron run; drives the
   // >20% error-rate regression rule.
   per_vendor: {
@@ -156,12 +176,72 @@ export function countCorpusQualityGaps(snap: EarningsSnapshot): {
       // an actual value must carry an ISO-3 currency code (optionally
       // suffixed with _m for millions).
       const isCurrencyMetric = /^(revenue_|eps_|ebitda_|adj_ebitda_|net_income_|gross_profit_|operating_income_|dr_eps_)/.test(m.key);
-      if (isCurrencyMetric && !/^[A-Z]{3}(_m)?$/.test(unit ?? "")) {
+      // Accept currency-only forms (USD, EUR_m, CAD) AND EPS
+      // per-share forms (USD/shares, DKK/shares) — SEC XBRL reports
+      // basic/diluted EPS with the /shares suffix and the unit-
+      // inheritance rederive keeps SEC's label verbatim.
+      const isValidCurrencyUnit =
+        /^[A-Z]{3}(_m)?$/.test(unit ?? "") ||
+        /^[A-Z]{3}\/shares$/.test(unit ?? "");
+      if (isCurrencyMetric && !isValidCurrencyUnit) {
         missingCurrency++;
       }
     }
   }
   return { events_missing_provenance: missingProv, metrics_missing_currency: missingCurrency };
+}
+
+// Cross-listing revenue consistency check (audit-prompt follow-up).
+// Every listing of a single company must show the same headline
+// revenue for the same fiscal period. Returns the count of companies
+// with any inconsistency + a sample of up to 5 for reasons[].
+//
+// Tolerance is 0.5% — same threshold as the "match" bucket in
+// scripts/verify-financials.mjs. Prevents false positives from
+// currency rounding across ADR mirror listings.
+export function checkCrossListingConsistency(
+  snap: EarningsSnapshot,
+  entities: Entity[],
+): { count: number; samples: string[] } {
+  const companyByTicker = new Map<string, string>();
+  for (const e of entities) {
+    if (e.companyId) companyByTicker.set(e.ticker, e.companyId);
+  }
+  // group[companyId][period] = { tickers: Set<string>, values: number[] }
+  const groups = new Map<string, Map<string, { tickers: Set<string>; values: number[] }>>();
+  for (const ev of snap.events) {
+    if (!ev.eventDate) continue;
+    const cid = companyByTicker.get(ev.ticker);
+    if (!cid) continue;
+    const revenue = ev.metrics?.find((m) => /^revenue_/i.test(m.key ?? ""))?.actual;
+    if (revenue?.value == null) continue;
+    const key = ev.period ?? "";
+    if (!groups.has(cid)) groups.set(cid, new Map());
+    const perCo = groups.get(cid)!;
+    if (!perCo.has(key)) perCo.set(key, { tickers: new Set(), values: [] });
+    const cell = perCo.get(key)!;
+    cell.tickers.add(ev.ticker);
+    cell.values.push(revenue.value);
+  }
+  const bad = new Set<string>();
+  const samples: string[] = [];
+  for (const [cid, perCo] of groups) {
+    for (const [period, cell] of perCo) {
+      if (cell.values.length < 2) continue;
+      const min = Math.min(...cell.values);
+      const max = Math.max(...cell.values);
+      const denom = Math.max(Math.abs(max), 1e-9);
+      const spread = ((max - min) / denom) * 100;
+      if (spread <= 0.5) continue;
+      bad.add(cid);
+      if (samples.length < 5) {
+        samples.push(
+          `${cid} · ${period} · ${[...cell.tickers].join("/")} · spread=${spread.toFixed(1)}% (${min.toFixed(1)}–${max.toFixed(1)})`,
+        );
+      }
+    }
+  }
+  return { count: bad.size, samples };
 }
 
 // Cross-check the events-index against the reconstituted snapshot. Any
@@ -291,6 +371,56 @@ export function computePipelineReport(input: ComputeReportInput): PipelineReport
       else entitiesUnassigned++;
     }
   }
+  // Cross-listing revenue consistency invariant. Detects the multi-
+  // listing drift the July-2026 financials audit surfaced (Alphabet's
+  // four listings storing four different Q2 revenue values). Only
+  // runnable when we have the registry (needs companyId lookup).
+  const crossListing = entities
+    ? checkCrossListingConsistency(snap, entities)
+    : { count: 0, samples: [] };
+  // Market-cap staleness (Part 5c). Count canonical entities whose
+  // marketCapAsOf is >7 days old. Non-canonicals are omitted — they
+  // don't drive the ordering.
+  let marketcapStale = 0;
+  let canonicalTotal = 0;
+  const staleThresholdIso = new Date(
+    finishedAt.getTime() - 7 * 86_400_000,
+  ).toISOString().slice(0, 10);
+  if (entities) {
+    for (const e of entities) {
+      if (!e.isCanonical) continue;
+      canonicalTotal++;
+      const asOf = e.marketCapAsOf ?? "";
+      if (!asOf || asOf < staleThresholdIso) marketcapStale++;
+    }
+  }
+
+  // Estimator label conflicts (Sweep 1). Per-ticker: latest reported
+  // period vs each forward shell's period. Violations = shells labelled
+  // at or before the latest reported period.
+  let estimatorLabelConflicts = 0;
+  const latestPeriodByTicker = new Map<string, string>();
+  const latestDateByTicker = new Map<string, string>();
+  for (const ev of snap.events) {
+    if (!ev.eventDate) continue;
+    const prev = latestDateByTicker.get(ev.ticker);
+    if (!prev || ev.eventDate > prev) {
+      latestDateByTicker.set(ev.ticker, ev.eventDate);
+      if (ev.period) latestPeriodByTicker.set(ev.ticker, ev.period);
+    }
+  }
+  const parsePeriod = (label: string | undefined) => {
+    const m = /FY\s*(\d{4})\s+Q\s*(\d)/i.exec(label ?? "");
+    return m ? Number(m[1]) * 4 + Number(m[2]) : null;
+  };
+  for (const ev of snap.events) {
+    if (ev.eventDate) continue;
+    const latest = latestPeriodByTicker.get(ev.ticker);
+    if (!latest) continue;
+    const a = parsePeriod(ev.period);
+    const b = parsePeriod(latest);
+    if (a != null && b != null && a <= b) estimatorLabelConflicts++;
+  }
   return {
     schema: "pipeline-report/v2",
     date: finishedAt.toISOString().slice(0, 10),
@@ -311,6 +441,9 @@ export function computePipelineReport(input: ComputeReportInput): PipelineReport
     reactions_unavailable: reactionsUnavailable,
     companies_total: companyIds.size,
     entities_unassigned: entitiesUnassigned,
+    companies_with_inconsistent_financials: crossListing.count,
+    estimator_label_conflicts: estimatorLabelConflicts,
+    marketcap_stale_count: marketcapStale,
     per_vendor: perVendor,
     cron_duration_ms: cronDurationMs,
   };
@@ -363,6 +496,28 @@ export function checkRegressions(
   if (current.entities_unassigned > 0) {
     reasons.push(
       `entities_unassigned=${current.entities_unassigned} — companyId assignment leaked`,
+    );
+  }
+  if (current.companies_with_inconsistent_financials > 0) {
+    reasons.push(
+      `companies_with_inconsistent_financials=${current.companies_with_inconsistent_financials} — same-company listings show different revenue for the same period`,
+    );
+  }
+  if (current.estimator_label_conflicts > 0) {
+    reasons.push(
+      `estimator_label_conflicts=${current.estimator_label_conflicts} — forward shells labelled at/before latest reported period (non-calendar-year fiscal label drift)`,
+    );
+  }
+  // Part 5c: marketcap_stale_count degraded threshold — 10% of canonicals.
+  if (
+    current.companies_total > 0 &&
+    current.marketcap_stale_count > current.companies_total * 0.1
+  ) {
+    const pct = Math.round(
+      (current.marketcap_stale_count / current.companies_total) * 100,
+    );
+    reasons.push(
+      `marketcap_stale_count=${current.marketcap_stale_count} (${pct}% of canonicals stale >7d) — sector + search orderings silently corrupt`,
     );
   }
 

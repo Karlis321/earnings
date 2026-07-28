@@ -57,19 +57,31 @@
           },
           "actual": {
             "value": -0.22,
-            "unit": "USD",
+            "unit": "USD/shares",
             "source": {
-              "url": "https://finance.yahoo.com/quote/BEP/earnings",
-              "label": "Yahoo Finance · earnings",
-              "provenance": "wire",
+              "url": "https://www.sec.gov/Archives/edgar/data/1533232/000153323225000014/",
+              "label": "SEC EDGAR · 6-K · BasicEarningsLossPerShare",
+              "provenance": "regulatory",
               "locator": null
             },
-            "asOf": "2026-07-28",
-            "fetchedAt": "2026-07-28T06:29:31.441Z",
-            "method": "yahoo",
-            "confidence": 0.85
+            "asOf": "2025-06-30",
+            "fetchedAt": "2026-07-28T13:46:45.422Z",
+            "method": "filing_manual",
+            "confidence": 0.98
           },
-          "prior": null
+          "prior": null,
+          "superseded": [
+            {
+              "value": -0.22,
+              "unit": "USD",
+              "source": "Yahoo Finance · earnings",
+              "asOf": "2026-07-28",
+              "fetchedAt": "2026-07-28T06:29:31.441Z",
+              "replaced_at": "2026-07-28T13:46:45.422Z",
+              "replaced_by": "rederive-sec-xbrl",
+              "pct_delta": 0
+            }
+          ]
         },
         {
           "key": "net_income_usd_m",
@@ -78,20 +90,32 @@
           "surprisePct": null,
           "estimate": null,
           "actual": {
-            "value": -88,
+            "value": 100,
             "unit": "USD",
             "source": {
-              "url": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0001533232&type=6-K",
+              "url": "https://www.sec.gov/Archives/edgar/data/1533232/000153323225000014/",
               "label": "SEC EDGAR · 6-K · ProfitLoss",
               "provenance": "regulatory",
               "locator": null
             },
-            "asOf": "2026-07-28",
-            "fetchedAt": "2026-07-28T07:30:17.540Z",
+            "asOf": "2025-06-30",
+            "fetchedAt": "2026-07-28T13:11:47.552Z",
             "method": "filing_manual",
             "confidence": 0.98
           },
-          "prior": null
+          "prior": null,
+          "superseded": [
+            {
+              "value": -88,
+              "unit": "USD",
+              "source": "SEC EDGAR · 6-K · ProfitLoss",
+              "asOf": "2026-07-28",
+              "fetchedAt": "2026-07-28T07:30:17.540Z",
+              "replaced_at": "2026-07-28T13:11:47.552Z",
+              "replaced_by": "rederive-sec-xbrl",
+              "pct_delta": -188
+            }
+          ]
         },
         {
           "key": "eps_diluted_usd",
@@ -100,20 +124,42 @@
           "surprisePct": null,
           "estimate": null,
           "actual": {
-            "value": -0.28,
-            "unit": "USD",
+            "value": -0.22,
+            "unit": "USD/shares",
             "source": {
-              "url": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0001533232&type=6-K",
+              "url": "https://www.sec.gov/Archives/edgar/data/1533232/000153323225000014/",
               "label": "SEC EDGAR · 6-K · DilutedEarningsLossPerShare",
               "provenance": "regulatory",
               "locator": null
             },
-            "asOf": "2026-07-28",
-            "fetchedAt": "2026-07-28T07:30:17.540Z",
+            "asOf": "2025-06-30",
+            "fetchedAt": "2026-07-28T13:46:45.422Z",
             "method": "filing_manual",
             "confidence": 0.98
           },
-          "prior": null
+          "prior": null,
+          "superseded": [
+            {
+              "value": -0.28,
+              "unit": "USD",
+              "source": "SEC EDGAR · 6-K · DilutedEarningsLossPerShare",
+              "asOf": "2026-07-28",
+              "fetchedAt": "2026-07-28T07:30:17.540Z",
+              "replaced_at": "2026-07-28T13:11:47.552Z",
+              "replaced_by": "rederive-sec-xbrl",
+              "pct_delta": -27.27272727272728
+            },
+            {
+              "value": -0.22,
+              "unit": "USD",
+              "source": "SEC EDGAR · 6-K · DilutedEarningsLossPerShare",
+              "asOf": "2025-06-30",
+              "fetchedAt": "2026-07-28T13:11:47.552Z",
+              "replaced_at": "2026-07-28T13:46:45.422Z",
+              "replaced_by": "rederive-sec-xbrl",
+              "pct_delta": 0
+            }
+          ]
         },
         {
           "key": "ebitda_usd_m",
@@ -202,6 +248,97 @@
             "confidence": 0.85
           },
           "prior": null
+        },
+        {
+          "key": "operating_cash_flow_usd_m",
+          "displayLabel": "operating cash flow (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 379,
+            "unit": "USD",
+            "source": {
+              "url": "https://www.sec.gov/Archives/edgar/data/1533232/000153323225000014/",
+              "label": "SEC EDGAR · 6-K · CashFlowsFromUsedInOperatingActivities",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2025-06-30",
+            "fetchedAt": "2026-07-28T14:27:55.432Z",
+            "method": "filing_manual",
+            "confidence": 0.98
+          },
+          "prior": null
+        },
+        {
+          "key": "gross_margin_pct",
+          "displayLabel": "Gross margin",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 0.5868794326241135,
+            "unit": "%",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/BEP/financials",
+              "label": "Derived from gross_profit_usd_m + revenue_usd_m",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2025-06-30",
+            "fetchedAt": "2026-07-28T14:31:08.780Z",
+            "method": "filing_manual",
+            "confidence": 0.85,
+            "derived": true
+          },
+          "prior": null
+        },
+        {
+          "key": "operating_margin_pct",
+          "displayLabel": "Operating margin",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 0.1938534278959811,
+            "unit": "%",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/BEP/financials",
+              "label": "Derived from operating_income_usd_m + revenue_usd_m",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2025-06-30",
+            "fetchedAt": "2026-07-28T14:31:08.780Z",
+            "method": "filing_manual",
+            "confidence": 0.85,
+            "derived": true
+          },
+          "prior": null
+        },
+        {
+          "key": "net_margin_pct",
+          "displayLabel": "Net margin",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 0.0591016548463357,
+            "unit": "%",
+            "source": {
+              "url": "https://www.sec.gov/Archives/edgar/data/1533232/000153323225000014/",
+              "label": "Derived from net_income_usd_m + revenue_usd_m",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2025-06-30",
+            "fetchedAt": "2026-07-28T14:31:08.780Z",
+            "method": "filing_manual",
+            "confidence": 0.98,
+            "derived": true
+          },
+          "prior": null
         }
       ],
       "guidance": [],
@@ -252,10 +389,10 @@
         "engineStatus": []
       },
       "provenance": "sec-xbrl-companyfacts",
-      "provenanceAsOf": "2026-07-28T08:51:36.151Z",
+      "provenanceAsOf": "2026-07-28T14:27:55.432Z",
       "sourceLink": {
-        "url": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0001533232&type=10-Q&dateb=&owner=include&count=40",
-        "kind": "fallback"
+        "url": "https://www.sec.gov/Archives/edgar/data/1533232/000117184325004464/f6k_071425.htm",
+        "kind": "filing"
       }
     },
     {
@@ -456,6 +593,75 @@
             "fetchedAt": "2026-07-28T08:37:45.759Z",
             "method": "yahoo",
             "confidence": 0.85
+          },
+          "prior": null
+        },
+        {
+          "key": "gross_margin_pct",
+          "displayLabel": "Gross margin",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 0.5482456140350878,
+            "unit": "%",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/BEP/financials",
+              "label": "Derived from gross_profit_usd_m + revenue_usd_m",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2025-09-30",
+            "fetchedAt": "2026-07-28T14:31:08.780Z",
+            "method": "filing_manual",
+            "confidence": 0.85,
+            "derived": true
+          },
+          "prior": null
+        },
+        {
+          "key": "operating_margin_pct",
+          "displayLabel": "Operating margin",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 0.12969924812030076,
+            "unit": "%",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/BEP/financials",
+              "label": "Derived from operating_income_usd_m + revenue_usd_m",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2025-09-30",
+            "fetchedAt": "2026-07-28T14:31:08.780Z",
+            "method": "filing_manual",
+            "confidence": 0.85,
+            "derived": true
+          },
+          "prior": null
+        },
+        {
+          "key": "net_margin_pct",
+          "displayLabel": "Net margin",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": -0.03571428571428571,
+            "unit": "%",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/BEP/financials",
+              "label": "Derived from net_income_usd_m + revenue_usd_m",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2025-09-30",
+            "fetchedAt": "2026-07-28T14:31:08.780Z",
+            "method": "filing_manual",
+            "confidence": 0.85,
+            "derived": true
           },
           "prior": null
         }
@@ -718,6 +924,75 @@
             "confidence": 0.85
           },
           "prior": null
+        },
+        {
+          "key": "gross_margin_pct",
+          "displayLabel": "Gross margin",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 0.47498375568551005,
+            "unit": "%",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/BEP/financials",
+              "label": "Derived from gross_profit_usd_m + revenue_usd_m",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2025-12-31",
+            "fetchedAt": "2026-07-28T14:31:08.780Z",
+            "method": "filing_manual",
+            "confidence": 0.85,
+            "derived": true
+          },
+          "prior": null
+        },
+        {
+          "key": "operating_margin_pct",
+          "displayLabel": "Operating margin",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 0.031189083820662766,
+            "unit": "%",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/BEP/financials",
+              "label": "Derived from operating_income_usd_m + revenue_usd_m",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2025-12-31",
+            "fetchedAt": "2026-07-28T14:31:08.780Z",
+            "method": "filing_manual",
+            "confidence": 0.85,
+            "derived": true
+          },
+          "prior": null
+        },
+        {
+          "key": "net_margin_pct",
+          "displayLabel": "Net margin",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 0.10851202079272254,
+            "unit": "%",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/BEP/financials",
+              "label": "Derived from net_income_usd_m + revenue_usd_m",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2025-12-31",
+            "fetchedAt": "2026-07-28T14:31:08.780Z",
+            "method": "filing_manual",
+            "confidence": 0.85,
+            "derived": true
+          },
+          "prior": null
         }
       ],
       "guidance": [],
@@ -976,6 +1251,75 @@
             "fetchedAt": "2026-07-28T08:37:45.759Z",
             "method": "yahoo",
             "confidence": 0.85
+          },
+          "prior": null
+        },
+        {
+          "key": "gross_margin_pct",
+          "displayLabel": "Gross margin",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 0.4854689564068692,
+            "unit": "%",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/BEP/financials",
+              "label": "Derived from gross_profit_usd_m + revenue_usd_m",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2026-03-31",
+            "fetchedAt": "2026-07-28T14:31:08.780Z",
+            "method": "filing_manual",
+            "confidence": 0.85,
+            "derived": true
+          },
+          "prior": null
+        },
+        {
+          "key": "operating_margin_pct",
+          "displayLabel": "Operating margin",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 0.07529722589167767,
+            "unit": "%",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/BEP/financials",
+              "label": "Derived from operating_income_usd_m + revenue_usd_m",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2026-03-31",
+            "fetchedAt": "2026-07-28T14:31:08.780Z",
+            "method": "filing_manual",
+            "confidence": 0.85,
+            "derived": true
+          },
+          "prior": null
+        },
+        {
+          "key": "net_margin_pct",
+          "displayLabel": "Net margin",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": -0.07595772787318363,
+            "unit": "%",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/BEP/financials",
+              "label": "Derived from net_income_usd_m + revenue_usd_m",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2026-03-31",
+            "fetchedAt": "2026-07-28T14:31:08.780Z",
+            "method": "filing_manual",
+            "confidence": 0.85,
+            "derived": true
           },
           "prior": null
         }
@@ -1285,6 +1629,75 @@
             "fetchedAt": "2026-07-28T08:37:45.759Z",
             "method": "yahoo",
             "confidence": 0.85
+          },
+          "prior": null
+        },
+        {
+          "key": "gross_margin_pct",
+          "displayLabel": "Gross margin",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 0.5727848101265823,
+            "unit": "%",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/BEP/financials",
+              "label": "Derived from gross_profit_usd_m + revenue_usd_m",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2025-03-31",
+            "fetchedAt": "2026-07-28T14:31:08.780Z",
+            "method": "filing_manual",
+            "confidence": 0.85,
+            "derived": true
+          },
+          "prior": null
+        },
+        {
+          "key": "operating_margin_pct",
+          "displayLabel": "Operating margin",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 0.17278481012658228,
+            "unit": "%",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/BEP/financials",
+              "label": "Derived from operating_income_usd_m + revenue_usd_m",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2025-03-31",
+            "fetchedAt": "2026-07-28T14:31:08.780Z",
+            "method": "filing_manual",
+            "confidence": 0.85,
+            "derived": true
+          },
+          "prior": null
+        },
+        {
+          "key": "net_margin_pct",
+          "displayLabel": "Net margin",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": -0.05886075949367089,
+            "unit": "%",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/BEP/financials",
+              "label": "Derived from net_income_usd_m + revenue_usd_m",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2025-03-31",
+            "fetchedAt": "2026-07-28T14:31:08.780Z",
+            "method": "filing_manual",
+            "confidence": 0.85,
+            "derived": true
           },
           "prior": null
         }

@@ -110,7 +110,21 @@ function modalCadence(classes) {
   return known[0].n > 0 ? known[0].c : "unknown";
 }
 
-function estimate(pastDates, now) {
+function incrementPeriod(label, cadence) {
+  const m = /FY\s*(\d{4})\s+Q\s*(\d)/i.exec(label ?? "");
+  if (!m) return null;
+  let year = Number(m[1]);
+  let q = Number(m[2]);
+  const stepQ =
+    cadence === "quarterly" ? 1 :
+    cadence === "semiannual" ? 2 :
+    cadence === "annual" ? 4 : 1;
+  q += stepQ;
+  while (q > 4) { q -= 4; year++; }
+  return `FY${year} Q${q}`;
+}
+
+function estimate(pastDates, now, latestPastPeriod) {
   if (pastDates.length < ESTIMATE_MIN_PAST) return null;
   const sortedISO = pastDates.slice().sort();
   const latest = sortedISO[sortedISO.length - 1];
@@ -137,10 +151,16 @@ function estimate(pastDates, now) {
     daysAhead = (projected.getTime() - now.getTime()) / 86_400_000;
     safety++;
   }
+  // Increment the source-reported period label along the entity's own
+  // fiscal calendar. MSFT / AAPL / NVDA and every non-calendar-year
+  // filer are wrong under the old date-derived label.
+  const period =
+    latestPastPeriod ? incrementPeriod(latestPastPeriod, cadence) : null;
   return {
     scheduledDate: projected.toISOString().slice(0, 10),
     medianGap: median(gaps),
     cadence,
+    period,
   };
 }
 
@@ -152,10 +172,19 @@ async function main() {
   const byTicker = new Map(reg.entities.map((e) => [e.ticker, e]));
 
   const pastByTicker = new Map();
+  // Also track the latest-known fiscal-period LABEL per ticker so the
+  // estimator can increment from it (Sweep 1 fix — MSFT / AAPL / NVDA
+  // etc. had wrong labels because the old code derived from calendar-
+  // quarter of the projected date).
+  const latestPeriodByTicker = new Map();
   for (const ev of snap.events) {
     if (!ev.eventDate) continue;
     if (!pastByTicker.has(ev.ticker)) pastByTicker.set(ev.ticker, []);
     pastByTicker.get(ev.ticker).push(ev.eventDate);
+    const prev = latestPeriodByTicker.get(ev.ticker);
+    if (!prev || ev.eventDate > prev.date) {
+      latestPeriodByTicker.set(ev.ticker, { date: ev.eventDate, period: ev.period });
+    }
   }
   const shellByTicker = new Set(snap.events.filter((ev) => !ev.eventDate).map((ev) => ev.ticker));
 
@@ -169,10 +198,16 @@ async function main() {
     if (!entity) { skipped.noEntity++; continue; }
     if (entity.securityType !== "operating") { skipped.notOperating++; continue; }
     if (shellByTicker.has(ticker)) { skipped.hasShell++; continue; }
-    const est = estimate(past, now);
+    const latestPeriod = latestPeriodByTicker.get(ticker)?.period;
+    const est = estimate(past, now, latestPeriod);
     if (!est) { skipped.failed++; continue; }
-    const { year, quarter } = periodFromDate(est.scheduledDate);
-    const period = `FY${year} Q${quarter}`;
+    // Prefer the source-reported label incremented by cadence; fall back
+    // to calendar-quarter derivation when no source label was known.
+    let period = est.period;
+    if (!period) {
+      const { year, quarter } = periodFromDate(est.scheduledDate);
+      period = `FY${year} Q${quarter}`;
+    }
     const id = hashId(`${ticker}_${est.scheduledDate}_${period}`);
     const shell = {
       id,

@@ -34,6 +34,10 @@ import {
 } from "@/server/vendors/yahoo";
 import { fmpEarnings } from "@/server/vendors/fmp";
 import { secSubmissionsShells } from "@/server/vendors/sec";
+import {
+  applySecVerbatimToEvent,
+  makeSecFactsCache,
+} from "@/server/lib/secVerbatim";
 import { refreshSectorUniverse } from "@/server/lib/sectorExpansion";
 import { resolveEdgarCik } from "@/server/lib/edgarCikResolver";
 import {
@@ -752,6 +756,17 @@ export async function POST(req: NextRequest) {
         .filter((ev) => !ev.eventDate)
         .map((ev) => ev.ticker),
     );
+    // Latest reported fiscal-period label per ticker — needed so the
+    // estimator can INCREMENT along the entity's own calendar rather
+    // than deriving from the projected date (Sweep 1 fix).
+    const latestPeriodByTicker = new Map<string, string>();
+    for (const ev of combinedForEstimator) {
+      if (!ev.eventDate) continue;
+      const prev = latestPeriodByTicker.get(ev.ticker);
+      if (!prev || (ev.eventDate ?? "") > (prev.split("|")[0] ?? "")) {
+        latestPeriodByTicker.set(ev.ticker, `${ev.eventDate}|${ev.period}`);
+      }
+    }
     let estimated = 0;
     for (const entity of registry) {
       if (entity.securityType !== "operating") continue;
@@ -759,10 +774,13 @@ export async function POST(req: NextRequest) {
       if (shellByTicker.has(entity.ticker)) continue;
       const past = pastByTicker.get(entity.ticker);
       if (!past || past.length < 2) continue;
+      const latestPastPeriod =
+        latestPeriodByTicker.get(entity.ticker)?.split("|")[1];
       const est = estimateNextEvent({
         ticker: entity.ticker,
         benchmark: entity.benchmark ?? "",
         pastEventDates: past,
+        latestPastPeriod,
       });
       if (!est.ok || !est.scheduledDate || !est.period) continue;
       const shell = buildEventShell(entity, est.scheduledDate, est.period);
@@ -795,6 +813,69 @@ export async function POST(req: NextRequest) {
         appended: 0,
         maturedHorizons: [],
         errors: [`estimated ${estimated} next-event shells via median-gap`],
+      });
+    }
+
+    // ---- 3d. SEC-verbatim reconciliation ----
+    // Rule (established by scripts/rederive-sec-xbrl.mjs and its
+    // July-2026 residual pass): for any listing of a company where any
+    // sibling has an edgarCik, financial metrics come from SEC XBRL
+    // verbatim. Per-company fetch (one call per companyId across the
+    // whole run, cached), actual unitKey from the response, latest-
+    // filed wins, distributed to every listing. Yahoo/FMP values on
+    // those events are superseded here — never stored as primary.
+    //
+    // Runs against events created OR mutated during this cron pass
+    // only (touched-event set). Cached SecFacts response reuses across
+    // all listings of a company. Fair-access: 1 req/sec.
+    const touchedByCompany = new Map<string, EventRecord[]>();
+    for (const ev of newlyCreated) {
+      const entity = registry.find((e) => e.ticker === ev.ticker);
+      if (!entity?.companyId) continue;
+      if (!touchedByCompany.has(entity.companyId))
+        touchedByCompany.set(entity.companyId, []);
+      touchedByCompany.get(entity.companyId)!.push(ev);
+    }
+    for (const [, ev] of pendingEvents) {
+      const entity = registry.find((e) => e.ticker === ev.ticker);
+      if (!entity?.companyId) continue;
+      if (!touchedByCompany.has(entity.companyId))
+        touchedByCompany.set(entity.companyId, []);
+      touchedByCompany.get(entity.companyId)!.push(ev);
+    }
+    const secCache = makeSecFactsCache();
+    let secReplaced = 0;
+    let secAdded = 0;
+    let secCompaniesTouched = 0;
+    for (const [companyId, evs] of touchedByCompany) {
+      // Find any CIK on any member of this company.
+      const members = registry.filter((e) => e.companyId === companyId);
+      const cik =
+        members.find((e) => e.isCanonical)?.edgarCik ??
+        members.find((e) => e.edgarCik)?.edgarCik ??
+        null;
+      if (!cik) continue;
+      const facts = await secCache.fetch(cik);
+      if (!facts) continue;
+      const paddedCik = String(cik).padStart(10, "0");
+      let anyTouch = false;
+      for (const ev of evs) {
+        const r = applySecVerbatimToEvent(ev, facts, paddedCik);
+        secReplaced += r.replaced;
+        secAdded += r.added;
+        if (r.touched) anyTouch = true;
+      }
+      if (anyTouch) secCompaniesTouched++;
+    }
+    if (secCompaniesTouched > 0) {
+      eventSummaries.push({
+        eventId: "sec-verbatim",
+        ticker: "*",
+        appended: 0,
+        maturedHorizons: [],
+        errors: [
+          `SEC-verbatim reconciled ${secCompaniesTouched} companies · ${secReplaced} metrics replaced · ${secAdded} added`,
+        ],
       });
     }
 

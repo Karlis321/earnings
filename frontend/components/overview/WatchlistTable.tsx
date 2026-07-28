@@ -12,6 +12,7 @@ import {
   GuidanceMoveBadge,
   FreshnessDot,
   StalenessLegend,
+  ReactionRow,
 } from "@/components/primitives";
 import { TickerLogo } from "@/components/primitives/TickerLogo";
 import {
@@ -19,7 +20,7 @@ import {
   PriceDeltaLabel,
 } from "./RealPriceSparkline";
 import { fmtDaysUntil, fmtDateShort } from "@/lib/format";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, ChevronDown, ChevronRight } from "lucide-react";
 import clsx from "clsx";
 
 // Server response shape from /api/prices/bulk
@@ -485,18 +486,35 @@ function Row({
         (new Date(nextIso).getTime() - Date.now()) / 86_400_000,
       )
     : null;
+  const [expanded, setExpanded] = useState(false);
   return (
+    <div
+      className={clsx(
+        "border-b border-bd last:border-b-0 transition-colors",
+        selected ? "bg-hover" : "hover:bg-hover",
+        r.recentEvent && "bg-[rgba(47,127,255,0.05)]",
+      )}
+    >
     <div
       role="row"
       tabIndex={-1}
       onClick={onClick}
       className={clsx(
-        "grid cursor-pointer grid-cols-[2fr_1.3fr_1.1fr_1fr_1.2fr_0.7fr_0.7fr] items-center gap-3 border-b border-bd px-[18px] py-3 last:border-b-0 transition-colors",
-        selected ? "bg-hover" : "hover:bg-hover",
-        r.recentEvent && "bg-[rgba(47,127,255,0.05)]",
+        "grid cursor-pointer grid-cols-[2fr_1.3fr_1.1fr_1fr_1.2fr_0.7fr_0.7fr] items-center gap-3 px-[18px] py-3",
       )}
     >
       <div className="flex min-w-0 items-center gap-[10px]">
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            setExpanded((v) => !v);
+          }}
+          aria-label={expanded ? "Collapse reaction" : "Expand reaction"}
+          className="flex h-5 w-5 shrink-0 items-center justify-center rounded hover:bg-hover2 text-tx3 hover:text-tx"
+        >
+          {expanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+        </button>
         <TickerLogo
           ticker={r.ticker}
           name={r.entity.displayName}
@@ -621,6 +639,12 @@ function Row({
           </span>
         ) : null}
       </span>
+    </div>
+    {expanded ? (
+      <div className="px-[18px] pb-3 pl-[50px]">
+        <ReactionRow points={r.reactionPoints ?? []} size="xs" />
+      </div>
+    ) : null}
     </div>
   );
 }

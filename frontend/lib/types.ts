@@ -337,6 +337,10 @@ export interface WatchlistRow {
   guidanceMove: GuidanceMove;
   reactionSpark: number[]; // 4 values, one per horizon, null-safe
   reactionPending: boolean;
+  // Full reaction horizons on the latest past event — populated by the
+  // index builder so the compact <ReactionRow /> can render on the
+  // sector row + watchlist expanded row without touching the shard.
+  reactionPoints?: ReactionPoint[];
   freshness: Freshness;
   sourceCount: number;
   newSinceLastView: number;
@@ -373,6 +377,12 @@ export interface EventsIndexEntry {
   sourceCount: number;
   guidanceMove: GuidanceMove;
   freshness: Freshness;
+  // Reaction horizons on the latest past event — carried in the index
+  // so the sector member rows + watchlist expanded row can render a
+  // compact ReactionRow without loading the full shard. Undefined when
+  // the last event has no reaction points (developer / etf / not-yet
+  // -matured shells).
+  lastEventReactionPoints?: ReactionPoint[];
 }
 
 export interface EventsIndex {

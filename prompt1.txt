@@ -1,95 +1,74 @@
-Entity deduplication: one company, many listings — plus four data-quality
-follow-ups that depend on or complement it. Symptom: searching "nvidia"
-returns 4 rows (US primary + foreign lines/BDRs/ADRs of the same company).
-Fix by grouping listings under a canonical company, not by deleting any
-listing.
+Three follow-ups from the last session's deferred list, in strict order.
+Print a one-line status after each numbered step. Session-closing report
+in the Done / Deferred / Acceptance format per CLAUDE.md.
 
-PART 1 — DETECT DUPLICATE GROUPS. Scan the entity registry (1,867
-entities). Candidate grouping signals, in order of trust:
-  a. Same edgarCik (strongest — same SEC filer)
-  b. Same ISIN root where available
-  c. Normalized name match: lowercase, strip legal suffixes (Inc, Corp,
-     PLC, SA, AG, NV, Ltd, ADR, "- BDR", share-class markers), collapse
-     whitespace. Require exact match after normalization OR one name
-     being a prefix of the other plus a known wrapper suffix.
-  d. Known wrapper patterns: BDR suffix 34/35/32 (BZ), GR/GY lines,
-     F/Y-suffix OTC pinks, LN vs primary.
-Name-only matches (c without a or b) go to a REVIEW list, not auto-merge
-— "First National Bank" collisions are real. Print all proposed groups:
-canonical | members | matched-on signal | confidence, and write to
-scripts/audits/entity-groups.json. STOP for review before applying
-(print the low-confidence subset separately).
+TASK 1 — BULK US-PRIMARY POPULATION (199 remaining companies).
+Context: scripts/add-missing-us-primaries.mjs succeeded for MSFT US then
+got throttled on Yahoo v7/quote. That endpoint now requires auth anyway.
+  1. Switch the lookup to crumb-authed quoteSummary (same handshake the
+     registry ingest already uses), concurrency 1, 2–3s spacing between
+     calls. ~199 lookups ≈ 10 min — print a counter every 20.
+  2. For each company with a US CIK but no US-primary listing: resolve
+     the US symbol, add the entity to the registry, set it canonical for
+     its companyId per the existing selection rule.
+  3. CRITICAL — no canonical-but-empty listings: every newly added US
+     entity must immediately get the standard ingest — yahoo-timeseries
+     history + SEC-verbatim financials (per-company CIK fetch, actual
+     unitKey, distribute to listings) + estimator shell with correct
+     incremented period label. A canonical listing with zero events is
+     worse than the foreign line it replaced. Verify: zero newly-added
+     entities with empty shards.
+  4. Re-run detect + apply for company grouping so the new listings join
+     their groups. Expect coverage counters and marketcap_stale_count to
+     shift — report before/after, that's the counters working.
+  5. Acceptance: AAPL US, NVDA US, WMT US, MU US canonical for their
+     companies, each with populated latest print; the 100-largest-
+     companies canonical table from Sweep 2 re-printed for eyeball
+     review; companies_with_inconsistent_financials still 0.
 
-PART 2 — CANONICAL COMPANY MODEL. Add companyId to each entity. Rules:
-  - Canonical listing = the primary exchange line: prefer US primary for
-    US companies, home-exchange for others; explicit override map for
-    ambiguous cases (canonicalOverrides in a config file).
-  - Every entity keeps its own ticker, events, shards — NOTHING merges at
-    the event level. This is grouping, not data merging: the German line's
-    price history is legitimately different data.
-  - Registry gains: company { companyId, canonicalTicker, name,
-    listingCount }.
-  - INDUSTRY-GROUP INHERITANCE: after grouping, propagate industryGroup
-    within each company — any member missing it inherits from the
-    canonical listing (stamp industryGroupSource: "inherited"). This
-    should shrink the 157 unclassified entities; report how many resolve
-    this way. Whatever remains unclassified after inheritance gets
-    industryGroup rendered as "Unclassified" in all UI groupings (store
-    null, render "Unclassified") so cap-band × industry views account for
-    100% of names.
+TASK 2 — EXTRACTOR REWRITE + METRIC EXPANSION (deferred Sweep 3 + Part 4).
+Run this FIRST thing after Task 1 while SEC quota is fresh; ~10–15 min
+of SEC calls at 1 req/sec.
+  1. Sweep: count past events having gross profit OR operating income OR
+     net income but NO revenue, grouped by provenance — baseline table.
+  2. Rewrite the extractor concept mapping with a full priority list per
+     metric. Revenue: us-gaap Revenues >
+     RevenueFromContractWithCustomerExcludingAssessedTax >
+     RevenueFromContractWithCustomerIncludingAssessedTax >
+     SalesRevenueNet; ifrs-full:Revenue. Build equivalent priority lists
+     for: cost of revenue, gross profit, operating income, EBIT, pretax
+     income, net income, EPS basic/diluted, operating cash flow, capex,
+     total cash, total debt, shareholders' equity, weighted diluted
+     shares. EBITDA only if source-reported — never computed silently.
+  3. Derived metrics: FCF (OCF − capex, only when both source-present),
+     gross/operating/net margins — all carry derived:true and render
+     visually distinct from reported figures.
+  4. Backfill across all past events of CIK-bearing companies (SEC
+     verbatim rule applies — per-company fetch, distribute to listings,
+     old values to superseded[]). Quarter-span filter and latest-filed
+     rules from rederive-sec-xbrl.mjs apply — reuse that code, don't
+     reimplement.
+  5. UI: event detail shows the full set grouped (income statement /
+     cash flow / balance sheet / derived); past-quarters grid stays
+     compact (revenue, net income, EPS + expand).
+  6. Acceptance: missing-revenue-with-siblings count → ~0 for
+     CIK-bearing companies; MSFT US latest print shows the expanded set
+     with margins marked derived; per-metric before/after population
+     table by provenance; verification sample re-run stays at 0% error;
+     shard/index consistency clean.
 
-PART 3 — SEARCH & UI BEHAVIOR:
-  - Search matches on company name + any member ticker, returns ONE row
-    per company: canonical listing front, badge "+3 listings".
-  - Company page / expanded row lists all member listings with exchange,
-    currency, and their own event data.
-  - Watchlist and cap-category views: default to canonical listings only
-    (config flag showAllListings=false), so NVIDIA counts once in
-    large-cap tech, not four times. IMPORTANT: check whether any sector
-    aggregates currently count the same company multiple times via
-    marketCapUsd — if so this fix also corrects inflated aggregates;
-    report the before/after for affected sectors.
-  - The 17 covered tickers in covered.json keep their exact current
-    symbols — do not remap them.
+TASK 3 — UI: SORT CONTROL + REACTION ROW EVERYWHERE (deferred 5a + 6).
+  1. Extract ReactionRow from OperatingDetail.tsx into
+     frontend/components/primitives/ReactionRow.tsx, then render it on:
+     sector view expanded rows, watchlist expanded rows, event detail
+     header. Same compact format, clipped/contaminated semantics
+     preserved, "—" for pending/unavailable, never blank.
+  2. Add the sort dropdown to SectorMemberRows: Market cap ↓ (default),
+     Market cap ↑, Name A-Z, Next report date. Cap-band × industry
+     grouping keeps the chosen ordering inside each group.
+  3. Acceptance: Technology sector view — mega-caps first, dropdown
+     works, expanded rows show reaction rows; watchlist expanded row for
+     a covered ticker shows its reaction row.
 
-PART 4 — WIRE INTO DAILY: new-entity ingestion must attempt company
-assignment on creation (same signals); unassigned new entities get their
-own companyId. Add companies_total and entities_unassigned to the
-pipeline report. Report: groups found | entities grouped | singletons |
-review-list size | sample search "nvidia" before vs after.
-
-PART 5 — ACCESSION-URL RESOLUTION (upgrade fallback links to direct
-filing links). Current state: sourceLink counts are filing 22 · fallback
-7,121 · none 1,315. For every event with provenance sec-xbrl or
-sec-submissions and a CIK: resolve the SPECIFIC filing for that fiscal
-period from the submissions endpoint we already use (match period to the
-10-Q/10-K/20-F/40-F/6-K whose report date aligns; accession number →
-https://www.sec.gov/Archives/edgar/data/{cik}/{accession-no-dashes}/
-{primary-doc}). Upgrade sourceLink to kind: "filing". Respect SEC
-fair-access limits. Yahoo-provenance events without a CIK keep their
-fallback. Report new filing/fallback/none counts — expect filing to rise
-from 22 to ~2,000.
-
-PART 6 — REACTION PENDING-DECAY RULE. reactions_pending is 23,120 and
-includes events that will never mature (old events, foreign tickers Yahoo
-has no bars for). Rule: if an event's report date is more than 60 trading
-days in the past and bars for the baseline still cannot be fetched, set
-each unresolved horizon to a terminal state { status: "unavailable" }
-instead of pending. Pending must mean only "genuinely still maturing."
-Apply retroactively across shards and in the cron maturation step. Add
-reactions_unavailable to the pipeline report; keep reactions_pending as
-the live counter and add a degraded rule if pending GROWS week-over-week
-without corresponding new events. Report: pending before | moved to
-unavailable | pending after (should be a small, interpretable number).
-
-PART 7 — RESHARD FALLBACK FIX. scripts/reshard (or whichever script
-errors) still assumes data/earnings.json exists locally; it is gitignored
-and must not be a dependency. Shards are canonical: make every script
-that previously read the monolith reconstitute from index + shards, and
-delete or hard-deprecate any remaining monolith read path in scripts/.
-Grep scripts/ for earnings.json references and fix each. Verify by
-running the reshard script in a checkout with no local earnings.json.
-
-Order of work: 1 → 2 → 3 → 4 (the dedup spine), then 5, 6, 7 in any
-order. Shard/index consistency check after each part. Nothing pushed —
-report per part: what existed, what changed, counts, one sample each.
+Consistency check after each task. Nothing pushed; per-task report:
+what existed | what changed | counts | acceptance result.

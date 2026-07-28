@@ -25,6 +25,7 @@ const EARNINGS = path.join(ROOT, "data", "earnings.json");
 const EVENTS_DIR = path.join(ROOT, "data", "events");
 const INDEX_PATH = path.join(ROOT, "data", "events-index.json");
 const REPORT_PATH = path.join(ROOT, "data", "pipeline-report.json");
+const REGISTRY = path.join(ROOT, "data", "entity-registry.json");
 const HISTORY_PATH = path.join(ROOT, "data", "pipeline-history.json");
 
 const args = new Set(process.argv.slice(2));
@@ -68,7 +69,10 @@ function countCorpusQualityGaps(events) {
     for (const m of ev.metrics ?? []) {
       if (m.actual?.value == null) continue;
       const isCurrencyMetric = /^(revenue_|eps_|ebitda_|adj_ebitda_|net_income_|gross_profit_|operating_income_|dr_eps_)/.test(m.key);
-      if (isCurrencyMetric && !/^[A-Z]{3}(_m)?$/.test(m.actual.unit ?? "")) missingCurrency++;
+      const isValidCurrencyUnit =
+        /^[A-Z]{3}(_m)?$/.test(m.actual.unit ?? "") ||
+        /^[A-Z]{3}\/shares$/.test(m.actual.unit ?? "");
+      if (isCurrencyMetric && !isValidCurrencyUnit) missingCurrency++;
     }
   }
   return { events_missing_provenance: missingProv, metrics_missing_currency: missingCurrency };
@@ -149,6 +153,81 @@ async function compute() {
       else if (p.populatesOn && p.populatesOn <= todayIso) reactionsPending++;
     }
   }
+
+  // Cross-listing revenue consistency invariant. Every listing of a
+  // single company must show the same headline revenue for the same
+  // fiscal period. Alphabet violated this (4 listings × 4 different
+  // Q2 2026 values) in the July-2026 audit.
+  const registry = await readJson(REGISTRY, { entities: [] });
+  const companyByTicker = new Map();
+  for (const e of registry.entities ?? []) {
+    if (e.companyId) companyByTicker.set(e.ticker, e.companyId);
+  }
+  const groups = new Map();
+  for (const ev of snap.events) {
+    if (!ev.eventDate) continue;
+    const cid = companyByTicker.get(ev.ticker);
+    if (!cid) continue;
+    const rev = ev.metrics?.find((m) => /^revenue_/i.test(m.key ?? ""))?.actual;
+    if (rev?.value == null) continue;
+    const key = ev.period ?? "";
+    if (!groups.has(cid)) groups.set(cid, new Map());
+    const perCo = groups.get(cid);
+    if (!perCo.has(key)) perCo.set(key, { values: [], tickers: new Set() });
+    const cell = perCo.get(key);
+    cell.values.push(rev.value);
+    cell.tickers.add(ev.ticker);
+  }
+  const inconsistent = new Set();
+  for (const [cid, perCo] of groups) {
+    for (const [, cell] of perCo) {
+      if (cell.values.length < 2) continue;
+      const min = Math.min(...cell.values);
+      const max = Math.max(...cell.values);
+      const denom = Math.max(Math.abs(max), 1e-9);
+      if (((max - min) / denom) * 100 > 0.5) inconsistent.add(cid);
+    }
+  }
+  const crossListingBad = inconsistent.size;
+
+  // Sweep 1: estimator label conflicts. Forward shells must carry a
+  // period STRICTLY after the ticker's latest reported period.
+  const latestPeriod = new Map();
+  const latestDate = new Map();
+  for (const ev of snap.events) {
+    if (!ev.eventDate) continue;
+    const prev = latestDate.get(ev.ticker);
+    if (!prev || ev.eventDate > prev) {
+      latestDate.set(ev.ticker, ev.eventDate);
+      if (ev.period) latestPeriod.set(ev.ticker, ev.period);
+    }
+  }
+  const parsePeriodNum = (label) => {
+    const m = /FY\s*(\d{4})\s+Q\s*(\d)/i.exec(label ?? "");
+    return m ? Number(m[1]) * 4 + Number(m[2]) : null;
+  };
+  let estimatorLabelConflicts = 0;
+  for (const ev of snap.events) {
+    if (ev.eventDate) continue;
+    const latest = latestPeriod.get(ev.ticker);
+    if (!latest) continue;
+    const a = parsePeriodNum(ev.period);
+    const b = parsePeriodNum(latest);
+    if (a != null && b != null && a <= b) estimatorLabelConflicts++;
+  }
+
+  // Part 5c: marketcap_stale_count. Canonical entities whose
+  // marketCapAsOf is >7 days old.
+  const staleThresholdIso = new Date(now.getTime() - 7 * 86_400_000)
+    .toISOString().slice(0, 10);
+  let marketcapStale = 0;
+  let canonicalTotal = 0;
+  for (const e of registry.entities ?? []) {
+    if (!e.isCanonical) continue;
+    canonicalTotal++;
+    const asOf = e.marketCapAsOf ?? "";
+    if (!asOf || asOf < staleThresholdIso) marketcapStale++;
+  }
   const report = {
     schema: "pipeline-report/v2",
     date: now.toISOString().slice(0, 10),
@@ -167,6 +246,9 @@ async function compute() {
     reactions_computed: reactionsComputed,
     reactions_pending: reactionsPending,
     reactions_unavailable: reactionsUnavailable,
+    companies_with_inconsistent_financials: crossListingBad,
+    estimator_label_conflicts: estimatorLabelConflicts,
+    marketcap_stale_count: marketcapStale,
     per_vendor: {
       yahoo_qs: { attempted: 0, succeeded: 0, empty: 0, errored: 0 },
       yahoo_ts: { attempted: 0, succeeded: 0, empty: 0, errored: 0 },
@@ -180,12 +262,32 @@ async function compute() {
   if (report.events_missing_provenance > 0) reasons.push(`events_missing_provenance=${report.events_missing_provenance}`);
   if (report.metrics_missing_currency > 0) reasons.push(`metrics_missing_currency=${report.metrics_missing_currency}`);
   if (report.shard_index_mismatches > 0) reasons.push(`shard_index_mismatches=${report.shard_index_mismatches}`);
+  if (report.companies_with_inconsistent_financials > 0)
+    reasons.push(
+      `companies_with_inconsistent_financials=${report.companies_with_inconsistent_financials} — same-company listings show different revenue for the same period`,
+    );
+  if (report.estimator_label_conflicts > 0)
+    reasons.push(
+      `estimator_label_conflicts=${report.estimator_label_conflicts} — forward shells labelled at/before latest reported period`,
+    );
+  if (
+    canonicalTotal > 0 &&
+    report.marketcap_stale_count > canonicalTotal * 0.1
+  ) {
+    const pct = Math.round((report.marketcap_stale_count / canonicalTotal) * 100);
+    reasons.push(
+      `marketcap_stale_count=${report.marketcap_stale_count} (${pct}% of canonicals stale >7d) — sector + search orderings silently corrupt`,
+    );
+  }
 
   // Part 6: reactions_pending growing without new events (compare against
-  // yesterday's history entry). Skip if either side lacks the field.
+  // the previous history entry — the last one strictly earlier than today,
+  // since today's entry gets rewritten each run).
   const prevHistory = await readJson(HISTORY_PATH, { entries: [] });
   const prevEntries = (prevHistory.entries ?? []).slice();
-  const prev = prevEntries.length > 0 ? prevEntries[prevEntries.length - 1] : null;
+  const prev = [...prevEntries]
+    .reverse()
+    .find((e) => e.date < report.date) ?? null;
   if (
     prev &&
     typeof prev.reactions_pending === "number" &&

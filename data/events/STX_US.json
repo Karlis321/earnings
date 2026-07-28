@@ -202,6 +202,75 @@
             "confidence": 0.85
           },
           "prior": null
+        },
+        {
+          "key": "gross_margin_pct",
+          "displayLabel": "Gross margin",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 0.3739770867430442,
+            "unit": "%",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/STX/financials",
+              "label": "Derived from gross_profit_usd_m + revenue_usd_m",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2025-06-30",
+            "fetchedAt": "2026-07-28T14:31:09.343Z",
+            "method": "filing_manual",
+            "confidence": 0.85,
+            "derived": true
+          },
+          "prior": null
+        },
+        {
+          "key": "operating_margin_pct",
+          "displayLabel": "Operating margin",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 0.05073649754500818,
+            "unit": "%",
+            "source": {
+              "url": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0001137789&type=10-Q",
+              "label": "Derived from operating_income_usd_m + revenue_usd_m",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2026-07-28",
+            "fetchedAt": "2026-07-28T14:31:09.343Z",
+            "method": "filing_manual",
+            "confidence": 0.98,
+            "derived": true
+          },
+          "prior": null
+        },
+        {
+          "key": "net_margin_pct",
+          "displayLabel": "Net margin",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": -0.007774140752864157,
+            "unit": "%",
+            "source": {
+              "url": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0001137789&type=10-Q",
+              "label": "Derived from net_income_usd_m + revenue_usd_m",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2026-07-28",
+            "fetchedAt": "2026-07-28T14:31:09.343Z",
+            "method": "filing_manual",
+            "confidence": 0.98,
+            "derived": true
+          },
+          "prior": null
         }
       ],
       "guidance": [],
@@ -312,20 +381,42 @@
             "confidence": 0.75
           },
           "actual": {
-            "value": 2.61,
-            "unit": "USD",
+            "value": 2.58,
+            "unit": "USD/shares",
             "source": {
-              "url": "https://finance.yahoo.com/quote/STX/earnings",
-              "label": "Yahoo Finance · earnings",
-              "provenance": "wire",
+              "url": "https://www.sec.gov/Archives/edgar/data/1137789/000113778925000317/",
+              "label": "SEC EDGAR · 10-Q · EarningsPerShareBasic",
+              "provenance": "regulatory",
               "locator": null
             },
-            "asOf": "2026-07-28",
-            "fetchedAt": "2026-07-28T06:07:29.398Z",
-            "method": "yahoo",
-            "confidence": 0.85
+            "asOf": "2025-10-03",
+            "fetchedAt": "2026-07-28T13:49:13.691Z",
+            "method": "filing_manual",
+            "confidence": 0.98
           },
-          "prior": null
+          "prior": null,
+          "superseded": [
+            {
+              "value": 2.61,
+              "unit": "USD",
+              "source": "Yahoo Finance · earnings",
+              "asOf": "2026-07-28",
+              "fetchedAt": "2026-07-28T06:07:29.398Z",
+              "replaced_at": "2026-07-28T13:13:34.816Z",
+              "replaced_by": "rederive-sec-xbrl",
+              "pct_delta": 1.162790697674411
+            },
+            {
+              "value": 2.58,
+              "unit": "USD",
+              "source": "SEC EDGAR · 10-Q · EarningsPerShareBasic",
+              "asOf": "2025-10-03",
+              "fetchedAt": "2026-07-28T13:13:34.816Z",
+              "replaced_at": "2026-07-28T13:49:13.691Z",
+              "replaced_by": "rederive-sec-xbrl",
+              "pct_delta": 0
+            }
+          ]
         },
         {
           "key": "operating_income_usd_m",
@@ -334,20 +425,32 @@
           "surprisePct": null,
           "estimate": null,
           "actual": {
-            "value": 143,
+            "value": 694,
             "unit": "USD",
             "source": {
-              "url": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0001137789&type=10-Q",
+              "url": "https://www.sec.gov/Archives/edgar/data/1137789/000113778925000317/",
               "label": "SEC EDGAR · 10-Q · OperatingIncomeLoss",
               "provenance": "regulatory",
               "locator": null
             },
-            "asOf": "2026-07-28",
-            "fetchedAt": "2026-07-28T07:30:17.540Z",
+            "asOf": "2025-10-03",
+            "fetchedAt": "2026-07-28T13:13:34.816Z",
             "method": "filing_manual",
             "confidence": 0.98
           },
-          "prior": null
+          "prior": null,
+          "superseded": [
+            {
+              "value": 143,
+              "unit": "USD",
+              "source": "SEC EDGAR · 10-Q · OperatingIncomeLoss",
+              "asOf": "2026-07-28",
+              "fetchedAt": "2026-07-28T07:30:17.540Z",
+              "replaced_at": "2026-07-28T13:13:34.816Z",
+              "replaced_by": "rederive-sec-xbrl",
+              "pct_delta": -79.39481268011528
+            }
+          ]
         },
         {
           "key": "net_income_usd_m",
@@ -356,20 +459,32 @@
           "surprisePct": null,
           "estimate": null,
           "actual": {
-            "value": 25,
+            "value": 549,
             "unit": "USD",
             "source": {
-              "url": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0001137789&type=10-Q",
+              "url": "https://www.sec.gov/Archives/edgar/data/1137789/000113778925000317/",
               "label": "SEC EDGAR · 10-Q · NetIncomeLoss",
               "provenance": "regulatory",
               "locator": null
             },
-            "asOf": "2026-07-28",
-            "fetchedAt": "2026-07-28T07:30:17.540Z",
+            "asOf": "2025-10-03",
+            "fetchedAt": "2026-07-28T13:13:34.816Z",
             "method": "filing_manual",
             "confidence": 0.98
           },
-          "prior": null
+          "prior": null,
+          "superseded": [
+            {
+              "value": 25,
+              "unit": "USD",
+              "source": "SEC EDGAR · 10-Q · NetIncomeLoss",
+              "asOf": "2026-07-28",
+              "fetchedAt": "2026-07-28T07:30:17.540Z",
+              "replaced_at": "2026-07-28T13:13:34.816Z",
+              "replaced_by": "rederive-sec-xbrl",
+              "pct_delta": -95.44626593806922
+            }
+          ]
         },
         {
           "key": "eps_diluted_usd",
@@ -378,20 +493,42 @@
           "surprisePct": null,
           "estimate": null,
           "actual": {
-            "value": 0.12,
-            "unit": "USD",
+            "value": 2.43,
+            "unit": "USD/shares",
             "source": {
-              "url": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0001137789&type=10-Q",
+              "url": "https://www.sec.gov/Archives/edgar/data/1137789/000113778925000317/",
               "label": "SEC EDGAR · 10-Q · EarningsPerShareDiluted",
               "provenance": "regulatory",
               "locator": null
             },
-            "asOf": "2026-07-28",
-            "fetchedAt": "2026-07-28T07:30:17.540Z",
+            "asOf": "2025-10-03",
+            "fetchedAt": "2026-07-28T13:49:13.691Z",
             "method": "filing_manual",
             "confidence": 0.98
           },
-          "prior": null
+          "prior": null,
+          "superseded": [
+            {
+              "value": 0.12,
+              "unit": "USD",
+              "source": "SEC EDGAR · 10-Q · EarningsPerShareDiluted",
+              "asOf": "2026-07-28",
+              "fetchedAt": "2026-07-28T07:30:17.540Z",
+              "replaced_at": "2026-07-28T13:13:34.816Z",
+              "replaced_by": "rederive-sec-xbrl",
+              "pct_delta": -95.06172839506173
+            },
+            {
+              "value": 2.43,
+              "unit": "USD",
+              "source": "SEC EDGAR · 10-Q · EarningsPerShareDiluted",
+              "asOf": "2025-10-03",
+              "fetchedAt": "2026-07-28T13:13:34.816Z",
+              "replaced_at": "2026-07-28T13:49:13.691Z",
+              "replaced_by": "rederive-sec-xbrl",
+              "pct_delta": 0
+            }
+          ]
         },
         {
           "key": "ebitda_usd_m",
@@ -458,6 +595,208 @@
             "confidence": 0.85
           },
           "prior": null
+        },
+        {
+          "key": "cost_of_revenue_usd_m",
+          "displayLabel": "cost of revenue (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 1592,
+            "unit": "USD",
+            "source": {
+              "url": "https://www.sec.gov/Archives/edgar/data/1137789/000113778925000317/",
+              "label": "SEC EDGAR · 10-Q · CostOfGoodsAndServicesSold",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2025-10-03",
+            "fetchedAt": "2026-07-28T14:30:22.750Z",
+            "method": "filing_manual",
+            "confidence": 0.98
+          },
+          "prior": null
+        },
+        {
+          "key": "pretax_income_usd_m",
+          "displayLabel": "pretax income (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 614,
+            "unit": "USD",
+            "source": {
+              "url": "https://www.sec.gov/Archives/edgar/data/1137789/000113778925000317/",
+              "label": "SEC EDGAR · 10-Q · IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2025-10-03",
+            "fetchedAt": "2026-07-28T14:30:22.750Z",
+            "method": "filing_manual",
+            "confidence": 0.98
+          },
+          "prior": null
+        },
+        {
+          "key": "operating_cash_flow_usd_m",
+          "displayLabel": "operating cash flow (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 532,
+            "unit": "USD",
+            "source": {
+              "url": "https://www.sec.gov/Archives/edgar/data/1137789/000113778925000317/",
+              "label": "SEC EDGAR · 10-Q · NetCashProvidedByUsedInOperatingActivities",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2025-10-03",
+            "fetchedAt": "2026-07-28T14:30:22.750Z",
+            "method": "filing_manual",
+            "confidence": 0.98
+          },
+          "prior": null
+        },
+        {
+          "key": "capex_usd_m",
+          "displayLabel": "capex (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 105,
+            "unit": "USD",
+            "source": {
+              "url": "https://www.sec.gov/Archives/edgar/data/1137789/000113778925000317/",
+              "label": "SEC EDGAR · 10-Q · PaymentsToAcquirePropertyPlantAndEquipment",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2025-10-03",
+            "fetchedAt": "2026-07-28T14:30:22.750Z",
+            "method": "filing_manual",
+            "confidence": 0.98
+          },
+          "prior": null
+        },
+        {
+          "key": "weighted_diluted_shares_m",
+          "displayLabel": "weighted diluted shares m",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 226,
+            "unit": "shares",
+            "source": {
+              "url": "https://www.sec.gov/Archives/edgar/data/1137789/000113778925000317/",
+              "label": "SEC EDGAR · 10-Q · WeightedAverageNumberOfDilutedSharesOutstanding",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2025-10-03",
+            "fetchedAt": "2026-07-28T14:30:22.750Z",
+            "method": "filing_manual",
+            "confidence": 0.98
+          },
+          "prior": null
+        },
+        {
+          "key": "fcf_usd_m",
+          "displayLabel": "Free cash flow (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 427,
+            "unit": "USD",
+            "source": {
+              "url": "https://www.sec.gov/Archives/edgar/data/1137789/000113778925000317/",
+              "label": "Derived from operating_cash_flow_usd_m + capex_usd_m",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2025-10-03",
+            "fetchedAt": "2026-07-28T14:31:09.343Z",
+            "method": "filing_manual",
+            "confidence": 0.98,
+            "derived": true
+          },
+          "prior": null
+        },
+        {
+          "key": "gross_margin_pct",
+          "displayLabel": "Gross margin",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 0.39444655762647396,
+            "unit": "%",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/STX/financials",
+              "label": "Derived from gross_profit_usd_m + revenue_usd_m",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2025-09-30",
+            "fetchedAt": "2026-07-28T14:31:09.343Z",
+            "method": "filing_manual",
+            "confidence": 0.85,
+            "derived": true
+          },
+          "prior": null
+        },
+        {
+          "key": "operating_margin_pct",
+          "displayLabel": "Operating margin",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 0.26397869912514266,
+            "unit": "%",
+            "source": {
+              "url": "https://www.sec.gov/Archives/edgar/data/1137789/000113778925000317/",
+              "label": "Derived from operating_income_usd_m + revenue_usd_m",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2025-10-03",
+            "fetchedAt": "2026-07-28T14:31:09.343Z",
+            "method": "filing_manual",
+            "confidence": 0.98,
+            "derived": true
+          },
+          "prior": null
+        },
+        {
+          "key": "net_margin_pct",
+          "displayLabel": "Net margin",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 0.20882464815519208,
+            "unit": "%",
+            "source": {
+              "url": "https://www.sec.gov/Archives/edgar/data/1137789/000113778925000317/",
+              "label": "Derived from net_income_usd_m + revenue_usd_m",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2025-10-03",
+            "fetchedAt": "2026-07-28T14:31:09.343Z",
+            "method": "filing_manual",
+            "confidence": 0.98,
+            "derived": true
+          },
+          "prior": null
         }
       ],
       "guidance": [],
@@ -512,7 +851,7 @@
         "engineStatus": []
       },
       "provenance": "sec-xbrl-companyfacts",
-      "provenanceAsOf": "2026-07-28T08:51:36.151Z",
+      "provenanceAsOf": "2026-07-28T14:30:22.750Z",
       "sourceLink": {
         "url": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0001137789&type=10-Q&dateb=&owner=include&count=40",
         "kind": "fallback"
@@ -572,20 +911,42 @@
             "confidence": 0.75
           },
           "actual": {
-            "value": 3.11,
-            "unit": "USD",
+            "value": 2.75,
+            "unit": "USD/shares",
             "source": {
-              "url": "https://finance.yahoo.com/quote/STX/earnings",
-              "label": "Yahoo Finance · earnings",
-              "provenance": "wire",
+              "url": "https://www.sec.gov/Archives/edgar/data/1137789/000113778926000026/",
+              "label": "SEC EDGAR · 10-Q · EarningsPerShareBasic",
+              "provenance": "regulatory",
               "locator": null
             },
-            "asOf": "2026-07-28",
-            "fetchedAt": "2026-07-28T06:07:29.398Z",
-            "method": "yahoo",
-            "confidence": 0.85
+            "asOf": "2026-01-02",
+            "fetchedAt": "2026-07-28T13:49:13.692Z",
+            "method": "filing_manual",
+            "confidence": 0.98
           },
-          "prior": null
+          "prior": null,
+          "superseded": [
+            {
+              "value": 3.11,
+              "unit": "USD",
+              "source": "Yahoo Finance · earnings",
+              "asOf": "2026-07-28",
+              "fetchedAt": "2026-07-28T06:07:29.398Z",
+              "replaced_at": "2026-07-28T13:37:18.442Z",
+              "replaced_by": "rederive-sec-xbrl",
+              "pct_delta": 13.090909090909086
+            },
+            {
+              "value": 2.75,
+              "unit": "USD",
+              "source": "SEC EDGAR · 10-Q · EarningsPerShareBasic",
+              "asOf": "2026-01-02",
+              "fetchedAt": "2026-07-28T13:37:18.442Z",
+              "replaced_at": "2026-07-28T13:49:13.692Z",
+              "replaced_by": "rederive-sec-xbrl",
+              "pct_delta": 0
+            }
+          ]
         },
         {
           "key": "ebitda_usd_m",
@@ -617,19 +978,31 @@
           "estimate": null,
           "actual": {
             "value": 2.6,
-            "unit": "USD",
+            "unit": "USD/shares",
             "source": {
-              "url": "https://finance.yahoo.com/quote/STX/financials",
-              "label": "Yahoo · fundamentals-timeseries",
-              "provenance": "wire",
+              "url": "https://www.sec.gov/Archives/edgar/data/1137789/000113778926000026/",
+              "label": "SEC EDGAR · 10-Q · EarningsPerShareDiluted",
+              "provenance": "regulatory",
               "locator": null
             },
-            "asOf": "2025-12-31",
-            "fetchedAt": "2026-07-28T08:37:31.545Z",
-            "method": "yahoo",
-            "confidence": 0.85
+            "asOf": "2026-01-02",
+            "fetchedAt": "2026-07-28T13:49:13.692Z",
+            "method": "filing_manual",
+            "confidence": 0.98
           },
-          "prior": null
+          "prior": null,
+          "superseded": [
+            {
+              "value": 2.6,
+              "unit": "USD",
+              "source": "Yahoo · fundamentals-timeseries",
+              "asOf": "2025-12-31",
+              "fetchedAt": "2026-07-28T08:37:31.545Z",
+              "replaced_at": "2026-07-28T13:49:13.692Z",
+              "replaced_by": "rederive-sec-xbrl",
+              "pct_delta": 0
+            }
+          ]
         },
         {
           "key": "operating_income_usd_m",
@@ -718,6 +1091,141 @@
             "confidence": 0.85
           },
           "prior": null
+        },
+        {
+          "key": "cost_of_revenue_usd_m",
+          "displayLabel": "cost of revenue (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 1649,
+            "unit": "USD",
+            "source": {
+              "url": "https://www.sec.gov/Archives/edgar/data/1137789/000113778926000026/",
+              "label": "SEC EDGAR · 10-Q · CostOfGoodsAndServicesSold",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2026-01-02",
+            "fetchedAt": "2026-07-28T14:30:22.751Z",
+            "method": "filing_manual",
+            "confidence": 0.98
+          },
+          "prior": null
+        },
+        {
+          "key": "pretax_income_usd_m",
+          "displayLabel": "pretax income (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 707,
+            "unit": "USD",
+            "source": {
+              "url": "https://www.sec.gov/Archives/edgar/data/1137789/000113778926000026/",
+              "label": "SEC EDGAR · 10-Q · IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2026-01-02",
+            "fetchedAt": "2026-07-28T14:30:22.751Z",
+            "method": "filing_manual",
+            "confidence": 0.98
+          },
+          "prior": null
+        },
+        {
+          "key": "weighted_diluted_shares_m",
+          "displayLabel": "weighted diluted shares m",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 228,
+            "unit": "shares",
+            "source": {
+              "url": "https://www.sec.gov/Archives/edgar/data/1137789/000113778926000026/",
+              "label": "SEC EDGAR · 10-Q · WeightedAverageNumberOfDilutedSharesOutstanding",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2026-01-02",
+            "fetchedAt": "2026-07-28T14:30:22.751Z",
+            "method": "filing_manual",
+            "confidence": 0.98
+          },
+          "prior": null
+        },
+        {
+          "key": "gross_margin_pct",
+          "displayLabel": "Gross margin",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 0.41628318584070795,
+            "unit": "%",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/STX/financials",
+              "label": "Derived from gross_profit_usd_m + revenue_usd_m",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2025-12-31",
+            "fetchedAt": "2026-07-28T14:31:09.343Z",
+            "method": "filing_manual",
+            "confidence": 0.85,
+            "derived": true
+          },
+          "prior": null
+        },
+        {
+          "key": "operating_margin_pct",
+          "displayLabel": "Operating margin",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 0.2994690265486726,
+            "unit": "%",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/STX/financials",
+              "label": "Derived from operating_income_usd_m + revenue_usd_m",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2025-12-31",
+            "fetchedAt": "2026-07-28T14:31:09.343Z",
+            "method": "filing_manual",
+            "confidence": 0.85,
+            "derived": true
+          },
+          "prior": null
+        },
+        {
+          "key": "net_margin_pct",
+          "displayLabel": "Net margin",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 0.20991150442477877,
+            "unit": "%",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/STX/financials",
+              "label": "Derived from net_income_usd_m + revenue_usd_m",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2025-12-31",
+            "fetchedAt": "2026-07-28T14:31:09.343Z",
+            "method": "filing_manual",
+            "confidence": 0.85,
+            "derived": true
+          },
+          "prior": null
         }
       ],
       "guidance": [],
@@ -772,7 +1280,7 @@
         "engineStatus": []
       },
       "provenance": "yahoo-timeseries",
-      "provenanceAsOf": "2026-07-28T08:51:36.151Z",
+      "provenanceAsOf": "2026-07-28T14:30:22.751Z",
       "sourceLink": {
         "url": "https://finance.yahoo.com/quote/STX/financials",
         "kind": "fallback"
@@ -832,20 +1340,42 @@
             "confidence": 0.75
           },
           "actual": {
-            "value": 4.1,
-            "unit": "USD",
+            "value": 3.38,
+            "unit": "USD/shares",
             "source": {
-              "url": "https://finance.yahoo.com/quote/STX/earnings",
-              "label": "Yahoo Finance · earnings",
-              "provenance": "wire",
+              "url": "https://www.sec.gov/Archives/edgar/data/1137789/000113778926000088/",
+              "label": "SEC EDGAR · 10-Q · EarningsPerShareBasic",
+              "provenance": "regulatory",
               "locator": null
             },
-            "asOf": "2026-07-28",
-            "fetchedAt": "2026-07-28T06:07:29.398Z",
-            "method": "yahoo",
-            "confidence": 0.85
+            "asOf": "2026-04-03",
+            "fetchedAt": "2026-07-28T13:49:13.692Z",
+            "method": "filing_manual",
+            "confidence": 0.98
           },
-          "prior": null
+          "prior": null,
+          "superseded": [
+            {
+              "value": 4.1,
+              "unit": "USD",
+              "source": "Yahoo Finance · earnings",
+              "asOf": "2026-07-28",
+              "fetchedAt": "2026-07-28T06:07:29.398Z",
+              "replaced_at": "2026-07-28T13:13:34.817Z",
+              "replaced_by": "rederive-sec-xbrl",
+              "pct_delta": 21.301775147928986
+            },
+            {
+              "value": 3.38,
+              "unit": "USD",
+              "source": "SEC EDGAR · 10-Q · EarningsPerShareBasic",
+              "asOf": "2026-04-03",
+              "fetchedAt": "2026-07-28T13:13:34.817Z",
+              "replaced_at": "2026-07-28T13:49:13.692Z",
+              "replaced_by": "rederive-sec-xbrl",
+              "pct_delta": 0
+            }
+          ]
         },
         {
           "key": "operating_income_usd_m",
@@ -854,20 +1384,32 @@
           "surprisePct": null,
           "estimate": null,
           "actual": {
-            "value": 403,
+            "value": 998,
             "unit": "USD",
             "source": {
-              "url": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0001137789&type=10-Q",
+              "url": "https://www.sec.gov/Archives/edgar/data/1137789/000113778926000088/",
               "label": "SEC EDGAR · 10-Q · OperatingIncomeLoss",
               "provenance": "regulatory",
               "locator": null
             },
-            "asOf": "2026-07-28",
-            "fetchedAt": "2026-07-28T07:30:17.540Z",
+            "asOf": "2026-04-03",
+            "fetchedAt": "2026-07-28T13:13:34.816Z",
             "method": "filing_manual",
             "confidence": 0.98
           },
-          "prior": null
+          "prior": null,
+          "superseded": [
+            {
+              "value": 403,
+              "unit": "USD",
+              "source": "SEC EDGAR · 10-Q · OperatingIncomeLoss",
+              "asOf": "2026-07-28",
+              "fetchedAt": "2026-07-28T07:30:17.540Z",
+              "replaced_at": "2026-07-28T13:13:34.816Z",
+              "replaced_by": "rederive-sec-xbrl",
+              "pct_delta": -59.6192384769539
+            }
+          ]
         },
         {
           "key": "net_income_usd_m",
@@ -876,20 +1418,32 @@
           "surprisePct": null,
           "estimate": null,
           "actual": {
-            "value": 305,
+            "value": 748,
             "unit": "USD",
             "source": {
-              "url": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0001137789&type=10-Q",
+              "url": "https://www.sec.gov/Archives/edgar/data/1137789/000113778926000088/",
               "label": "SEC EDGAR · 10-Q · NetIncomeLoss",
               "provenance": "regulatory",
               "locator": null
             },
-            "asOf": "2026-07-28",
-            "fetchedAt": "2026-07-28T07:30:17.540Z",
+            "asOf": "2026-04-03",
+            "fetchedAt": "2026-07-28T13:13:34.817Z",
             "method": "filing_manual",
             "confidence": 0.98
           },
-          "prior": null
+          "prior": null,
+          "superseded": [
+            {
+              "value": 305,
+              "unit": "USD",
+              "source": "SEC EDGAR · 10-Q · NetIncomeLoss",
+              "asOf": "2026-07-28",
+              "fetchedAt": "2026-07-28T07:30:17.540Z",
+              "replaced_at": "2026-07-28T13:13:34.817Z",
+              "replaced_by": "rederive-sec-xbrl",
+              "pct_delta": -59.224598930481285
+            }
+          ]
         },
         {
           "key": "eps_diluted_usd",
@@ -898,20 +1452,42 @@
           "surprisePct": null,
           "estimate": null,
           "actual": {
-            "value": 1.41,
-            "unit": "USD",
+            "value": 3.27,
+            "unit": "USD/shares",
             "source": {
-              "url": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0001137789&type=10-Q",
+              "url": "https://www.sec.gov/Archives/edgar/data/1137789/000113778926000088/",
               "label": "SEC EDGAR · 10-Q · EarningsPerShareDiluted",
               "provenance": "regulatory",
               "locator": null
             },
-            "asOf": "2026-07-28",
-            "fetchedAt": "2026-07-28T07:30:17.540Z",
+            "asOf": "2026-04-03",
+            "fetchedAt": "2026-07-28T13:49:13.692Z",
             "method": "filing_manual",
             "confidence": 0.98
           },
-          "prior": null
+          "prior": null,
+          "superseded": [
+            {
+              "value": 1.41,
+              "unit": "USD",
+              "source": "SEC EDGAR · 10-Q · EarningsPerShareDiluted",
+              "asOf": "2026-07-28",
+              "fetchedAt": "2026-07-28T07:30:17.540Z",
+              "replaced_at": "2026-07-28T13:13:34.817Z",
+              "replaced_by": "rederive-sec-xbrl",
+              "pct_delta": -56.88073394495413
+            },
+            {
+              "value": 3.27,
+              "unit": "USD",
+              "source": "SEC EDGAR · 10-Q · EarningsPerShareDiluted",
+              "asOf": "2026-04-03",
+              "fetchedAt": "2026-07-28T13:13:34.817Z",
+              "replaced_at": "2026-07-28T13:49:13.692Z",
+              "replaced_by": "rederive-sec-xbrl",
+              "pct_delta": 0
+            }
+          ]
         },
         {
           "key": "ebitda_usd_m",
@@ -978,6 +1554,141 @@
             "confidence": 0.85
           },
           "prior": null
+        },
+        {
+          "key": "cost_of_revenue_usd_m",
+          "displayLabel": "cost of revenue (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 1665,
+            "unit": "USD",
+            "source": {
+              "url": "https://www.sec.gov/Archives/edgar/data/1137789/000113778926000088/",
+              "label": "SEC EDGAR · 10-Q · CostOfGoodsAndServicesSold",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2026-04-03",
+            "fetchedAt": "2026-07-28T14:30:22.753Z",
+            "method": "filing_manual",
+            "confidence": 0.98
+          },
+          "prior": null
+        },
+        {
+          "key": "pretax_income_usd_m",
+          "displayLabel": "pretax income (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 864,
+            "unit": "USD",
+            "source": {
+              "url": "https://www.sec.gov/Archives/edgar/data/1137789/000113778926000088/",
+              "label": "SEC EDGAR · 10-Q · IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2026-04-03",
+            "fetchedAt": "2026-07-28T14:30:22.753Z",
+            "method": "filing_manual",
+            "confidence": 0.98
+          },
+          "prior": null
+        },
+        {
+          "key": "weighted_diluted_shares_m",
+          "displayLabel": "weighted diluted shares m",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 229,
+            "unit": "shares",
+            "source": {
+              "url": "https://www.sec.gov/Archives/edgar/data/1137789/000113778926000088/",
+              "label": "SEC EDGAR · 10-Q · WeightedAverageNumberOfDilutedSharesOutstanding",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2026-04-03",
+            "fetchedAt": "2026-07-28T14:30:22.753Z",
+            "method": "filing_manual",
+            "confidence": 0.98
+          },
+          "prior": null
+        },
+        {
+          "key": "gross_margin_pct",
+          "displayLabel": "Gross margin",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 0.46497429305912596,
+            "unit": "%",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/STX/financials",
+              "label": "Derived from gross_profit_usd_m + revenue_usd_m",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2026-03-31",
+            "fetchedAt": "2026-07-28T14:31:09.343Z",
+            "method": "filing_manual",
+            "confidence": 0.85,
+            "derived": true
+          },
+          "prior": null
+        },
+        {
+          "key": "operating_margin_pct",
+          "displayLabel": "Operating margin",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 0.32069408740359895,
+            "unit": "%",
+            "source": {
+              "url": "https://www.sec.gov/Archives/edgar/data/1137789/000113778926000088/",
+              "label": "Derived from operating_income_usd_m + revenue_usd_m",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2026-04-03",
+            "fetchedAt": "2026-07-28T14:31:09.343Z",
+            "method": "filing_manual",
+            "confidence": 0.98,
+            "derived": true
+          },
+          "prior": null
+        },
+        {
+          "key": "net_margin_pct",
+          "displayLabel": "Net margin",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 0.2403598971722365,
+            "unit": "%",
+            "source": {
+              "url": "https://www.sec.gov/Archives/edgar/data/1137789/000113778926000088/",
+              "label": "Derived from net_income_usd_m + revenue_usd_m",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2026-04-03",
+            "fetchedAt": "2026-07-28T14:31:09.343Z",
+            "method": "filing_manual",
+            "confidence": 0.98,
+            "derived": true
+          },
+          "prior": null
         }
       ],
       "guidance": [],
@@ -1032,10 +1743,10 @@
         "engineStatus": []
       },
       "provenance": "sec-xbrl-companyfacts",
-      "provenanceAsOf": "2026-07-28T08:51:36.151Z",
+      "provenanceAsOf": "2026-07-28T14:30:22.753Z",
       "sourceLink": {
-        "url": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0001137789&type=10-Q&dateb=&owner=include&count=40",
-        "kind": "fallback"
+        "url": "https://www.sec.gov/Archives/edgar/data/1137789/000113778926000088/stx-20260403.htm",
+        "kind": "filing"
       }
     },
     {
@@ -1142,19 +1853,31 @@
           "estimate": null,
           "actual": {
             "value": 1.57,
-            "unit": "USD",
+            "unit": "USD/shares",
             "source": {
-              "url": "https://finance.yahoo.com/quote/STX/financials",
-              "label": "Yahoo · fundamentals-timeseries",
-              "provenance": "wire",
+              "url": "https://www.sec.gov/Archives/edgar/data/1137789/000113778926000088/",
+              "label": "SEC EDGAR · 10-Q · EarningsPerShareDiluted",
+              "provenance": "regulatory",
               "locator": null
             },
-            "asOf": "2025-03-31",
-            "fetchedAt": "2026-07-28T08:37:31.545Z",
-            "method": "yahoo",
-            "confidence": 0.85
+            "asOf": "2025-03-28",
+            "fetchedAt": "2026-07-28T13:49:13.693Z",
+            "method": "filing_manual",
+            "confidence": 0.98
           },
-          "prior": null
+          "prior": null,
+          "superseded": [
+            {
+              "value": 1.57,
+              "unit": "USD",
+              "source": "Yahoo · fundamentals-timeseries",
+              "asOf": "2025-03-31",
+              "fetchedAt": "2026-07-28T08:37:31.545Z",
+              "replaced_at": "2026-07-28T13:49:13.693Z",
+              "replaced_by": "rederive-sec-xbrl",
+              "pct_delta": 0
+            }
+          ]
         },
         {
           "key": "operating_income_usd_m",
@@ -1163,20 +1886,32 @@
           "surprisePct": null,
           "estimate": null,
           "actual": {
-            "value": 441,
+            "value": 431,
             "unit": "USD",
             "source": {
-              "url": "https://finance.yahoo.com/quote/STX/financials",
-              "label": "Yahoo · fundamentals-timeseries",
-              "provenance": "wire",
+              "url": "https://www.sec.gov/Archives/edgar/data/1137789/000113778926000088/",
+              "label": "SEC EDGAR · 10-Q · OperatingIncomeLoss",
+              "provenance": "regulatory",
               "locator": null
             },
-            "asOf": "2025-03-31",
-            "fetchedAt": "2026-07-28T08:37:31.545Z",
-            "method": "yahoo",
-            "confidence": 0.85
+            "asOf": "2025-03-28",
+            "fetchedAt": "2026-07-28T13:37:18.443Z",
+            "method": "filing_manual",
+            "confidence": 0.98
           },
-          "prior": null
+          "prior": null,
+          "superseded": [
+            {
+              "value": 441,
+              "unit": "USD",
+              "source": "Yahoo · fundamentals-timeseries",
+              "asOf": "2025-03-31",
+              "fetchedAt": "2026-07-28T08:37:31.545Z",
+              "replaced_at": "2026-07-28T13:37:18.443Z",
+              "replaced_by": "rederive-sec-xbrl",
+              "pct_delta": 2.320185614849188
+            }
+          ]
         },
         {
           "key": "revenue_usd_m",
@@ -1208,19 +1943,31 @@
           "estimate": null,
           "actual": {
             "value": 1.6,
-            "unit": "USD",
+            "unit": "USD/shares",
             "source": {
-              "url": "https://finance.yahoo.com/quote/STX/financials",
-              "label": "Yahoo · fundamentals-timeseries",
-              "provenance": "wire",
+              "url": "https://www.sec.gov/Archives/edgar/data/1137789/000113778926000088/",
+              "label": "SEC EDGAR · 10-Q · EarningsPerShareBasic",
+              "provenance": "regulatory",
               "locator": null
             },
-            "asOf": "2025-03-31",
-            "fetchedAt": "2026-07-28T08:37:31.545Z",
-            "method": "yahoo",
-            "confidence": 0.85
+            "asOf": "2025-03-28",
+            "fetchedAt": "2026-07-28T13:49:13.693Z",
+            "method": "filing_manual",
+            "confidence": 0.98
           },
-          "prior": null
+          "prior": null,
+          "superseded": [
+            {
+              "value": 1.6,
+              "unit": "USD",
+              "source": "Yahoo · fundamentals-timeseries",
+              "asOf": "2025-03-31",
+              "fetchedAt": "2026-07-28T08:37:31.545Z",
+              "replaced_at": "2026-07-28T13:49:13.693Z",
+              "replaced_by": "rederive-sec-xbrl",
+              "pct_delta": 0
+            }
+          ]
         },
         {
           "key": "ebit_usd_m",
@@ -1287,6 +2034,141 @@
             "confidence": 0.85
           },
           "prior": null
+        },
+        {
+          "key": "cost_of_revenue_usd_m",
+          "displayLabel": "cost of revenue (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 1400,
+            "unit": "USD",
+            "source": {
+              "url": "https://www.sec.gov/Archives/edgar/data/1137789/000113778926000088/",
+              "label": "SEC EDGAR · 10-Q · CostOfGoodsAndServicesSold",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2025-03-28",
+            "fetchedAt": "2026-07-28T14:30:22.755Z",
+            "method": "filing_manual",
+            "confidence": 0.98
+          },
+          "prior": null
+        },
+        {
+          "key": "pretax_income_usd_m",
+          "displayLabel": "pretax income (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 355,
+            "unit": "USD",
+            "source": {
+              "url": "https://www.sec.gov/Archives/edgar/data/1137789/000113778926000088/",
+              "label": "SEC EDGAR · 10-Q · IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2025-03-28",
+            "fetchedAt": "2026-07-28T14:30:22.755Z",
+            "method": "filing_manual",
+            "confidence": 0.98
+          },
+          "prior": null
+        },
+        {
+          "key": "weighted_diluted_shares_m",
+          "displayLabel": "weighted diluted shares m",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 216,
+            "unit": "shares",
+            "source": {
+              "url": "https://www.sec.gov/Archives/edgar/data/1137789/000113778926000088/",
+              "label": "SEC EDGAR · 10-Q · WeightedAverageNumberOfDilutedSharesOutstanding",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2025-03-28",
+            "fetchedAt": "2026-07-28T14:30:22.755Z",
+            "method": "filing_manual",
+            "confidence": 0.98
+          },
+          "prior": null
+        },
+        {
+          "key": "gross_margin_pct",
+          "displayLabel": "Gross margin",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 0.35185185185185186,
+            "unit": "%",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/STX/financials",
+              "label": "Derived from gross_profit_usd_m + revenue_usd_m",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2025-03-31",
+            "fetchedAt": "2026-07-28T14:31:09.343Z",
+            "method": "filing_manual",
+            "confidence": 0.85,
+            "derived": true
+          },
+          "prior": null
+        },
+        {
+          "key": "operating_margin_pct",
+          "displayLabel": "Operating margin",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 0.19953703703703704,
+            "unit": "%",
+            "source": {
+              "url": "https://www.sec.gov/Archives/edgar/data/1137789/000113778926000088/",
+              "label": "Derived from operating_income_usd_m + revenue_usd_m",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2025-03-28",
+            "fetchedAt": "2026-07-28T14:31:09.343Z",
+            "method": "filing_manual",
+            "confidence": 0.98,
+            "derived": true
+          },
+          "prior": null
+        },
+        {
+          "key": "net_margin_pct",
+          "displayLabel": "Net margin",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 0.1574074074074074,
+            "unit": "%",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/STX/financials",
+              "label": "Derived from net_income_usd_m + revenue_usd_m",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2025-03-31",
+            "fetchedAt": "2026-07-28T14:31:09.343Z",
+            "method": "filing_manual",
+            "confidence": 0.85,
+            "derived": true
+          },
+          "prior": null
         }
       ],
       "guidance": [],
@@ -1337,7 +2219,7 @@
         "engineStatus": []
       },
       "provenance": "yahoo-timeseries",
-      "provenanceAsOf": "2026-07-28T08:51:36.151Z",
+      "provenanceAsOf": "2026-07-28T14:30:22.755Z",
       "sourceLink": {
         "url": "https://finance.yahoo.com/quote/STX/financials",
         "kind": "fallback"

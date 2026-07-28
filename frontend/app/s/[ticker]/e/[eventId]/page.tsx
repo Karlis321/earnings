@@ -8,6 +8,7 @@ import {
   MetricRowHeader,
   GuidanceTimeline,
   ReactionChart,
+  ReactionRow,
   Panel,
   CatalystCard,
   FreshnessDot,
@@ -119,6 +120,11 @@ export default async function EventDetailPage({ params }: Props) {
               </span>
             ) : null}
           </div>
+          {event.eventDate ? (
+            <div className="mt-2">
+              <ReactionRow points={event.reaction?.points ?? []} />
+            </div>
+          ) : null}
           </div>
         </div>
       </header>

@@ -52,8 +52,8 @@ const LIMIT = args.get("limit") ? Number(args.get("limit")) : null;
 
 const SEC_UA = "Earnings Tracker (contact@example.com)";
 const SEC_HOST = "https://data.sec.gov";
-const MAX_CONCURRENCY = 5;
-const MIN_INTERVAL_MS = 130; // <= ~7.7 req/s, well under 10 req/s limit
+const MAX_CONCURRENCY = 1;
+const MIN_INTERVAL_MS = 1500; // <= ~0.67 req/s — very conservative to recover from prior 429 throttle
 
 const PREFERRED_FORMS = new Set(["10-Q", "10-K", "20-F", "40-F", "6-K"]);
 
@@ -79,8 +79,9 @@ async function fetchSubmissions(paddedCik, attempt = 0) {
       signal: AbortSignal.timeout(25_000),
     });
     if (r.status === 429 || r.status === 503) {
-      if (attempt < 2) {
-        await new Promise((res) => setTimeout(res, 1000 * (attempt + 1)));
+      if (attempt < 4) {
+        const backoff = 5_000 * Math.pow(2, attempt); // 5s, 10s, 20s, 40s
+        await new Promise((res) => setTimeout(res, backoff));
         return fetchSubmissions(paddedCik, attempt + 1);
       }
       return null;

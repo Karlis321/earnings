@@ -75,8 +75,16 @@ export function GlobalSearch() {
     // Match any member listing; return the canonical of the matched
     // company. Dedup so the same company doesn't appear twice via two
     // matching member tickers.
+    //
+    // Ranking (Part 5b): exact ticker match wins the top slot regardless
+    // of cap. Otherwise sort by the company's marketCapUsd descending —
+    // so "micro" surfaces Microsoft above Micron above nano-caps. The
+    // canonical listing carries the cap value; non-canonicals don't
+    // affect ordering because they never enter the result set.
+    const upperTerm = q.trim().toUpperCase();
     const seenCompanies = new Set<string>();
-    const out: Array<{ hit: Entity; listings: Entity[] }> = [];
+    interface Hit { hit: Entity; listings: Entity[]; exactTicker: boolean; cap: number; }
+    const hits: Hit[] = [];
     for (const e of entities) {
       const matches =
         e.ticker.toLowerCase().includes(term) ||
@@ -87,10 +95,33 @@ export function GlobalSearch() {
       if (seenCompanies.has(cid)) continue;
       seenCompanies.add(cid);
       const list = byCompany.get(cid) ?? [e];
-      out.push({ hit: canonical(list), listings: list });
-      if (out.length >= 8) break;
+      const canon = canonical(list);
+      // Exact ticker match test — matches the full Bloomberg ticker
+      // ("TGB US") OR the base symbol ("TGB") of any member listing.
+      // A raw query typed as just "TGB" should match tickers like
+      // "TGB US" / "TGB CN" — split on whitespace and compare the base.
+      const isExact = list.some((m) => {
+        const parts = m.ticker.split(/\s+/);
+        return (
+          m.ticker.toUpperCase() === upperTerm ||
+          parts[0]?.toUpperCase() === upperTerm
+        );
+      });
+      hits.push({
+        hit: canon,
+        listings: list,
+        exactTicker: isExact,
+        cap: canon.marketCapUsd ?? 0,
+      });
     }
-    return out;
+    hits.sort((a, b) => {
+      // Exact ticker match always ranks first
+      if (a.exactTicker !== b.exactTicker) return a.exactTicker ? -1 : 1;
+      // Then by market cap desc — Microsoft (2.9T) above Micron (100B)
+      // above nano-caps
+      return b.cap - a.cap;
+    });
+    return hits.slice(0, 8).map(({ hit, listings }) => ({ hit, listings }));
   }, [q, entities]);
 
   const go = (ticker: string) => {

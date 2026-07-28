@@ -54,6 +54,14 @@ function buildIndexEntry(ticker, events, entity) {
     const epsMetric = latest.metrics?.find((m) => /eps/i.test(m.key ?? ""));
     lastSurprisePct = epsMetric?.surprisePct ?? null;
   }
+  // Carry the reaction points from the latest past event into the index
+  // so the sector member rows + watchlist expanded row can render a
+  // compact ReactionRow strip without touching the full shard.
+  const lastEventReactionPoints =
+    latest?.reaction?.points && latest.reaction.points.length > 0
+      ? latest.reaction.points
+      : undefined;
+
   return {
     ticker,
     count: events.length,
@@ -70,6 +78,7 @@ function buildIndexEntry(ticker, events, entity) {
     sourceCount: entity?.sourceCount ?? 0,
     guidanceMove: latest?.guidanceMove ?? null,
     freshness: latest?.freshness ?? "never",
+    lastEventReactionPoints,
   };
 }
 

@@ -15,6 +15,7 @@ export { Card, CardBody, Panel } from "./Card";
 export { LoadingSkeleton, EmptyState, ErrorState } from "./States";
 export { StalenessLegend } from "./StalenessLegend";
 export { ReactionChart } from "./ReactionChart";
+export { ReactionRow } from "./ReactionRow";
 export { MetricRow, MetricRowHeader } from "./MetricRow";
 export { GuidanceTimeline } from "./GuidanceTimeline";
 export { CatalystCard } from "./CatalystCard";

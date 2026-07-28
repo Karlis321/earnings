@@ -96,6 +96,50 @@ These are the rules that come from reading multiple sections together:
   "reported · no est" honestly for actuals; covered tier gets full
   treatment via Claude. Revisit only when an analyst names a specific
   missing ticker — that's the demand signal worth €60/mo.
+- **~86% of Yahoo-provenance events are structurally unverifiable against
+  SEC.** The July-2026 financials audit (`scripts/verify-financials.mjs`)
+  sampled 150 stratified events; 129 were unverifiable, of which the
+  vast majority were foreign-listed (no `edgarCik` → no SEC XBRL to
+  compare against). This is a structural fact of the ingest population,
+  not a sampling failure — there is no free second source for most
+  foreign wrappers. Two mitigations, both cheap and both in place:
+  **(a)** `companies_with_inconsistent_financials` on `pipeline-report/v2`
+  catches multi-listing revenue drift (Alphabet's four listings showing
+  four different Q2 2026 values was the surfacing bug) *without* any
+  external source — just cross-listing invariant math via companyId.
+  **(b)** For the two `yahoo-timeseries` events in the sample that
+  were verifiable, both matched SEC at 0.00% — a small (n=2) but real
+  signal that the pipe is clean; don't over-claim from the sample.
+- **sec-xbrl-companyfacts backfill: fetch per-CIK once, distribute
+  values to every listing (never per-listing).** Root cause of the
+  same July-2026 audit's Alphabet finding: the old backfill fetched SEC
+  per-listing and each pass captured a different XBRL snapshot, so
+  GOOG US / GOOGL US / GOGL34 BZ / 0HD6 LN stored four different Q2
+  revenue values. Fix: `scripts/rederive-sec-xbrl.mjs` fetches once per
+  companyId (via `Entity.companyId` from Part 2 of the dedup work) and
+  applies the same values to every listing. Also enforces a strict
+  80–100-day pure-quarter span filter (the old permissive filter let
+  180-day H1 sums through). Re-derivation moved 3,644 metrics across
+  184 companies; verification error rate dropped 37% → 2.3%.
+- **SEC-verbatim rule at ingest (kills per-provenance-exclusion bugs).**
+  Root cause of the July-2026 residuals (ENB CN unit mismatch, NOV GR
+  DKK-vs-USD scale, TTE 44,676-vs-49,627 cluster, WELL FX round-trip):
+  the old rederive only touched events with `provenance:
+  "sec-xbrl-companyfacts"`, so Yahoo-ingested siblings on the same
+  company drifted separately. Rule now enforced in the daily cron
+  (`frontend/server/lib/secVerbatim.ts` invoked as step 3d in
+  `/api/cron/daily`): for any listing of a company where ANY sibling
+  has an `edgarCik`, financial metrics come from SEC XBRL verbatim
+  regardless of ingest provenance — per-company fetch (cached per
+  companyId across the run), actual `unitKey` from the SEC response
+  (never hardcoded USD — Enbridge only files CAD, Novo only DKK),
+  latest-filed wins for amendments, distributed to every listing.
+  Yahoo/FMP values are superseded at ingest into `metric.superseded[]`,
+  never stored as primary. Standing test:
+  `node scripts/test-standing.mjs` runs the pipeline check + a
+  corruption test that plants a divergent value on one GOOGL listing
+  and asserts `companies_with_inconsistent_financials` fires with the
+  companyId in `reasons[]`, then restores and asserts back to `ok`.
 - **Wire shape is collapsed, DB shape is normalized (DC4).** On the wire,
   metrics carry named slots (`estimate`, `actual`, `prior`, `consensus`) —
   see `frontend/lib/types.ts` and `docs/PRD_Backend.md §3.3`. In the future

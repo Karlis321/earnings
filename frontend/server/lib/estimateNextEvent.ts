@@ -68,6 +68,13 @@ export interface EstimateInput {
   ticker: string;
   benchmark: string;
   pastEventDates: string[]; // ISO YYYY-MM-DD, any order
+  // Latest reported fiscal-period label (e.g. "FY2025 Q3"). When
+  // provided, the next-event label is derived by INCREMENTING this
+  // along the entity's fiscal calendar — not by taking the calendar
+  // quarter of the projected date. Fixes MSFT / AAPL / NVDA and every
+  // other non-calendar-year filer, whose fiscal Q4 lands in a
+  // different calendar quarter than the label suggests.
+  latestPastPeriod?: string;
 }
 
 export interface EstimateOutput {
@@ -85,6 +92,24 @@ function periodFromDate(iso: string): { year: number; quarter: number } {
     year: d.getUTCFullYear(),
     quarter: Math.floor(d.getUTCMonth() / 3) + 1,
   };
+}
+
+// Step a fiscal-period label along the entity's own calendar. Quarterly
+// +1 (wrapping Q4 → FY+1 Q1); semi-annual +2 (H1↔H2 within FY, wrap
+// Q3→FY+1 Q1); annual +4 (same quarter next year). Preserves the
+// fiscal-year offset the source-reported label carries.
+export function incrementPeriod(label: string, cadence: Cadence): string | null {
+  const m = /FY\s*(\d{4})\s+Q\s*(\d)/i.exec(label ?? "");
+  if (!m) return null;
+  let year = Number(m[1]);
+  let q = Number(m[2]);
+  const stepQ =
+    cadence === "quarterly" ? 1 :
+    cadence === "semiannual" ? 2 :
+    cadence === "annual" ? 4 : 1;
+  q += stepQ;
+  while (q > 4) { q -= 4; year++; }
+  return `FY${year} Q${q}`;
 }
 
 // Choose the modal cadence class from a list of per-gap classifications.
@@ -168,11 +193,30 @@ export function estimateNextEvent(
     safety++;
   }
   const iso = projected.toISOString().slice(0, 10);
-  const { year, quarter } = periodFromDate(iso);
+  // Derive the label by INCREMENTING the latest known period along the
+  // entity's own fiscal cadence — never from the calendar quarter of the
+  // projected date. MSFT's fiscal Q3 is calendar Q1; a next-quarter
+  // projection lands in July but labels as "FY-year Q4", not "Q3".
+  // Fall back to calendar-quarter derivation only when no source label
+  // is available (rare — mostly SEC-submissions shells before the
+  // first XBRL fill).
+  let period: string;
+  if (input.latestPastPeriod) {
+    const stepped = incrementPeriod(input.latestPastPeriod, cadence);
+    if (stepped) {
+      period = stepped;
+    } else {
+      const { year, quarter } = periodFromDate(iso);
+      period = `FY${year} Q${quarter}`;
+    }
+  } else {
+    const { year, quarter } = periodFromDate(iso);
+    period = `FY${year} Q${quarter}`;
+  }
   return {
     ok: true,
     scheduledDate: iso,
-    period: `FY${year} Q${quarter}`,
+    period,
     cadence,
     medianGapDays: median(gaps),
   };
