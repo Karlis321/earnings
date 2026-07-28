@@ -318,6 +318,151 @@ export function buildPastEvent(
   };
 }
 
+// Promote an existing shell to a completed past event, in place.
+//
+// When Yahoo's `calendarEvents.earningsDate` marks Aug 5 for Q2 2026, we
+// create a shell (via `buildEventShell`) with `scheduledDate=2026-08-05,
+// eventDate=null`. Come Aug 6 morning cron, Yahoo's
+// `earningsChart.quarterly` now includes 2Q2026 with the actual EPS +
+// revenue. We upgrade the SAME event record so:
+//
+//   - `eventDate = scheduledDate` (the real report day, not the
+//     mid-month stand-in that `buildPastEvent` uses when there was no
+//     prior shell)
+//   - Metric actuals + estimates come from Yahoo's chart
+//   - `reaction.points[i].populatesOn` are recomputed off the real date
+//   - `reaction.baselineDate` / `baselineClose` stay null so
+//     `matureEventReaction` seeds them from bars using the correct
+//     scheduledDate on the next pass (or same pass if it runs after)
+//
+// The metric fill logic mirrors buildPastEvent so the two paths produce
+// identical records — same displayLabel, same source URLs, same units.
+export function promoteShellToPast(
+  event: EventRecord,
+  quarter: {
+    period: string;
+    actual: number | null;
+    estimate: number | null;
+    revenue?: number | null;
+    netIncome?: number | null;
+  },
+  entity: Entity,
+  yahooSymbol: string,
+): EventRecord {
+  const now = new Date().toISOString();
+  const asOf = now.slice(0, 10);
+  const earningsUrl = `https://finance.yahoo.com/quote/${encodeURIComponent(yahooSymbol)}/earnings`;
+  const financialsUrl = `https://finance.yahoo.com/quote/${encodeURIComponent(yahooSymbol)}/financials`;
+  const analysisUrl = `https://finance.yahoo.com/quote/${encodeURIComponent(yahooSymbol)}/analysis`;
+
+  const epsKeys = new Set(entity.headlineMetrics.filter((k) => /eps/i.test(k)));
+  const includeStandaloneEps = epsKeys.size === 0 && quarter.actual !== null;
+  const keysToWrite = includeStandaloneEps
+    ? [...entity.headlineMetrics, "eps_usd"]
+    : entity.headlineMetrics;
+  const revenueM = quarter.revenue != null ? quarter.revenue / 1_000_000 : null;
+
+  const metrics: MetricEntry[] = keysToWrite.map((key) => {
+    const meta = labelFor(key);
+    const isEps = /eps/i.test(key);
+    const isRevenueM = /^revenue_[a-z]{3}_m$/.test(key);
+    let estimateVal: number | null = null;
+    let actualVal: number | null = null;
+    let srcUrl = earningsUrl;
+    let srcLabel = "Yahoo Finance · earnings";
+    if (isEps) {
+      estimateVal = quarter.estimate;
+      actualVal = quarter.actual;
+    } else if (isRevenueM) {
+      actualVal = revenueM;
+      srcUrl = financialsUrl;
+      srcLabel = "Yahoo Finance · financials";
+    }
+    const surprisePct =
+      estimateVal !== null &&
+      actualVal !== null &&
+      Math.abs(estimateVal) > 1e-9
+        ? ((actualVal - estimateVal) / Math.abs(estimateVal)) * 100
+        : null;
+    return {
+      key,
+      displayLabel: meta.label,
+      isHeadline: entity.headlineMetrics.includes(key),
+      surprisePct,
+      estimate:
+        estimateVal !== null
+          ? {
+              value: estimateVal,
+              unit: meta.unit,
+              source: { url: analysisUrl, label: "Yahoo Finance · consensus", provenance: "wire", locator: null },
+              asOf,
+              fetchedAt: now,
+              method: "yahoo",
+              confidence: 0.75,
+            }
+          : null,
+      actual:
+        actualVal !== null
+          ? {
+              value: actualVal,
+              unit: meta.unit,
+              source: { url: srcUrl, label: srcLabel, provenance: "wire", locator: null },
+              asOf,
+              fetchedAt: now,
+              method: "yahoo",
+              confidence: 0.85,
+            }
+          : null,
+      prior: null,
+    };
+  });
+
+  // Recompute populatesOn from the real date so reaction horizons no
+  // longer point at a stand-in.
+  const points = HORIZONS.map((h) => ({
+    horizon: h,
+    absReturn: null,
+    excessReturn: null,
+    benchmark: entity.benchmark,
+    computedAt: null,
+    populatesOn: horizonPopulatesOn(event.scheduledDate, h),
+  }));
+
+  return {
+    ...event,
+    // Promote the event to "past" — the scheduledDate WAS the real
+    // announced date, so eventDate == scheduledDate now.
+    eventDate: event.scheduledDate,
+    metrics,
+    reaction: {
+      ...event.reaction,
+      baselineDate: null,
+      baselineClose: null,
+      points,
+    },
+  };
+}
+
+// Given a past-quarter period label ("1Q2026"), find an existing shell
+// event for the same ticker + parsed period. Returns null if no match.
+export function findShellForPeriod(
+  events: EventRecord[],
+  ticker: string,
+  yahooPeriod: string,
+): EventRecord | null {
+  const parsed = parseYahooPeriod(yahooPeriod);
+  if (!parsed) return null;
+  for (const ev of events) {
+    if (ev.ticker !== ticker) continue;
+    if (ev.eventDate) continue; // already reported — not a shell
+    const p = parseStoredPeriod(ev.period);
+    if (p && p.year === parsed.year && p.quarter === parsed.quarter) {
+      return ev;
+    }
+  }
+  return null;
+}
+
 // Build a minimal EventRecord shell for an announced future earnings date.
 // baselineDate / baselineClose stay null until the event happens; a future
 // cron run seeds them from the security's bars on the event day.

@@ -118,8 +118,8 @@ export function EtfDetail({
           )}
 
           <CompanyNewsPanel
+            ticker={entity.ticker}
             displayName={entity.displayName}
-            aliases={entity.aliases}
           />
         </div>
       </div>

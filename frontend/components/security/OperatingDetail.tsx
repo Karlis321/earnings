@@ -174,8 +174,8 @@ export function OperatingDetail({ entity, events }: Props) {
 
       <div className="flex flex-col gap-4">
         <CompanyNewsPanel
+          ticker={entity.ticker}
           displayName={entity.displayName}
-          aliases={entity.aliases}
         />
         <Panel
           eyebrow="Latest sources"

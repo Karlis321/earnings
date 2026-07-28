@@ -334,6 +334,24 @@ export interface YahooEarnings {
   // oldest first). Used by the backfill to seed past events with actuals.
   pastQuarters: YahooEarningsQuarter[];
   currentQuarterEstimate: number | null;
+  // TTM / current fundamentals from financialData + defaultKeyStatistics.
+  // All optional — Yahoo doesn't return every field for every issuer.
+  ttm: YahooTtm | null;
+}
+
+export interface YahooTtm {
+  totalRevenue: number | null;
+  ebitda: number | null;
+  grossMargin: number | null; // 0..1
+  operatingMargin: number | null;
+  ebitdaMargin: number | null;
+  revenueGrowth: number | null; // 0..1 (YoY)
+  sharesOutstanding: number | null;
+  enterpriseValue: number | null;
+  trailingEps: number | null;
+  forwardEps: number | null;
+  profitMargin: number | null;
+  currency: string | null;
 }
 
 interface YahooRaw {
@@ -366,6 +384,25 @@ interface QuoteSummaryResponse {
           }>;
         };
       };
+      // TTM figures + margins. Yahoo populates most of these for
+      // US-listed operating companies; foreign wrappers often return
+      // null on the entire module.
+      financialData?: {
+        totalRevenue?: YahooRaw;
+        revenueGrowth?: YahooRaw;
+        ebitda?: YahooRaw;
+        grossMargins?: YahooRaw;
+        operatingMargins?: YahooRaw;
+        ebitdaMargins?: YahooRaw;
+        profitMargins?: YahooRaw;
+        financialCurrency?: string;
+      };
+      defaultKeyStatistics?: {
+        trailingEps?: YahooRaw;
+        forwardEps?: YahooRaw;
+        sharesOutstanding?: YahooRaw;
+        enterpriseValue?: YahooRaw;
+      };
     }>;
   };
 }
@@ -377,7 +414,7 @@ async function fetchQuoteSummary(
   // We handshake once, cache for ~55 min, and retry once on 401.
   const baseUrl =
     `https://query1.finance.yahoo.com/v10/finance/quoteSummary/${encodeURIComponent(yahooSymbol)}` +
-    `?modules=earnings,calendarEvents&formatted=true`;
+    `?modules=earnings,calendarEvents,financialData,defaultKeyStatistics&formatted=true`;
 
   const attempt = async (state: CrumbState): Promise<Response> => {
     const url = `${baseUrl}&crumb=${encodeURIComponent(state.crumb)}`;
@@ -460,6 +497,33 @@ export async function yahooEarnings(
     });
     const lastQuarter = pastQuarters[pastQuarters.length - 1] ?? null;
 
+    // TTM fundamentals — populated when Yahoo returns them. Yahoo zeros
+    // per-quarter EBIT/EBITDA on incomeStatementHistoryQuarterly (deliberate),
+    // but financialData carries the trailing-12-month version which is
+    // often what we actually want for entity-level fundamentals.
+    const fd = result.financialData ?? {};
+    const ks = result.defaultKeyStatistics ?? {};
+    const anyTtm =
+      fd.totalRevenue?.raw != null ||
+      fd.ebitda?.raw != null ||
+      ks.trailingEps?.raw != null;
+    const ttm: YahooTtm | null = anyTtm
+      ? {
+          totalRevenue: fd.totalRevenue?.raw ?? null,
+          ebitda: fd.ebitda?.raw ?? null,
+          grossMargin: fd.grossMargins?.raw ?? null,
+          operatingMargin: fd.operatingMargins?.raw ?? null,
+          ebitdaMargin: fd.ebitdaMargins?.raw ?? null,
+          revenueGrowth: fd.revenueGrowth?.raw ?? null,
+          sharesOutstanding: ks.sharesOutstanding?.raw ?? null,
+          enterpriseValue: ks.enterpriseValue?.raw ?? null,
+          trailingEps: ks.trailingEps?.raw ?? null,
+          forwardEps: ks.forwardEps?.raw ?? null,
+          profitMargin: fd.profitMargins?.raw ?? null,
+          currency: fd.financialCurrency ?? null,
+        }
+      : null;
+
     return {
       yahooSymbol,
       nextEarningsDate,
@@ -467,6 +531,7 @@ export async function yahooEarnings(
       pastQuarters,
       currentQuarterEstimate:
         result.earnings?.earningsChart?.currentQuarterEstimate?.raw ?? null,
+      ttm,
     };
   } catch {
     return null;

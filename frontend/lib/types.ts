@@ -98,6 +98,27 @@ export interface Entity {
   // ticker→CIK JSON and refreshed by cron. `null` = confirmed not an SEC
   // filer (searched and not found); `undefined` = not yet checked.
   edgarCik?: string | null;
+  // TTM fundamentals from Yahoo `financialData` + `defaultKeyStatistics`.
+  // Refreshed alongside marketCap in the daily cron; populated at
+  // add-entity time when Yahoo returns data. Not every field is
+  // available for every issuer (foreign wrappers often return null).
+  fundamentals?: EntityFundamentals | null;
+}
+
+export interface EntityFundamentals {
+  totalRevenueTTM: number | null;
+  ebitdaTTM: number | null;
+  grossMargin: number | null; // 0..1
+  operatingMargin: number | null;
+  ebitdaMargin: number | null;
+  revenueGrowth: number | null; // 0..1 YoY
+  sharesOutstanding: number | null;
+  enterpriseValue: number | null;
+  trailingEps: number | null;
+  forwardEps: number | null;
+  profitMargin: number | null;
+  currency: string | null;
+  asOf: string; // ISO date
 }
 
 export interface MetricEntry {

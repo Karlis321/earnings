@@ -118,6 +118,7 @@ export async function POST(req: NextRequest) {
       capTier: capTierFor(marketCapUsd ?? null),
       yahooSymbol,
       edgarCik,
+      // fundamentals populated below after yahooEarnings call
     };
     await store.writeRegistry([...existing, entity]);
 
@@ -127,10 +128,38 @@ export async function POST(req: NextRequest) {
     // still lands cleanly, just without seeded events.
     let pastAdded = 0;
     let upcomingAdded = 0;
+    let fundamentalsPopulated = false;
     if (entity.securityType === "operating" && yahooSymbol) {
       try {
         const yahoo = await yahooEarnings(yahooSymbol);
         if (yahoo) {
+          // Populate entity fundamentals from the TTM chunk of the same
+          // response — no extra HTTP call.
+          if (yahoo.ttm) {
+            const asOf = new Date().toISOString().slice(0, 10);
+            entity.fundamentals = {
+              totalRevenueTTM: yahoo.ttm.totalRevenue,
+              ebitdaTTM: yahoo.ttm.ebitda,
+              grossMargin: yahoo.ttm.grossMargin,
+              operatingMargin: yahoo.ttm.operatingMargin,
+              ebitdaMargin: yahoo.ttm.ebitdaMargin,
+              revenueGrowth: yahoo.ttm.revenueGrowth,
+              sharesOutstanding: yahoo.ttm.sharesOutstanding,
+              enterpriseValue: yahoo.ttm.enterpriseValue,
+              trailingEps: yahoo.ttm.trailingEps,
+              forwardEps: yahoo.ttm.forwardEps,
+              profitMargin: yahoo.ttm.profitMargin,
+              currency: yahoo.ttm.currency,
+              asOf,
+            };
+            fundamentalsPopulated = true;
+            // Write registry again with fundamentals attached — this is a
+            // second commit but small, and only fires when we actually
+            // got useful data back.
+            await store.writeRegistry(
+              [...existing, entity],
+            );
+          }
           await store.mutateEarnings(
             (s: EarningsSnapshot) => {
               const events = s.events.slice();
@@ -184,6 +213,7 @@ export async function POST(req: NextRequest) {
       edgarCik: entity.edgarCik ?? null,
       pastAdded,
       upcomingAdded,
+      fundamentalsPopulated,
     });
   } catch (e) {
     const msg = (e as Error).message;

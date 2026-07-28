@@ -34,12 +34,13 @@ const CATEGORY_LABELS: Record<string, string> = {
 };
 
 interface Props {
+  ticker: string;
   displayName: string;
-  aliases: string[];
+  aliases?: string[];
   limit?: number;
 }
 
-export function CompanyNewsPanel({ displayName, aliases, limit = 12 }: Props) {
+export function CompanyNewsPanel({ ticker, displayName, limit = 12 }: Props) {
   const [items, setItems] = useState<NewsItem[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
@@ -48,32 +49,22 @@ export function CompanyNewsPanel({ displayName, aliases, limit = 12 }: Props) {
   const load = () => {
     setLoading(true);
     setErr(null);
-    // Query by display name first — most specific match. Backend does a
-    // substring match on headline+source across the whole fanout.
-    const q = displayName;
-    fetch(`/api/news?q=${encodeURIComponent(q)}`, { cache: "no-store" })
+    // New endpoint contract: /api/news?ticker=<bloomberg> runs a targeted
+    // Google-News RSS OR-query over the entity's aliases + cashtag +
+    // Yahoo-suffix forms (via fetchEntityNews) instead of the strict
+    // .includes(displayName) pre-filter. Server already returns fully
+    // filtered items, so no client-side alias re-filter needed.
+    fetch(`/api/news?ticker=${encodeURIComponent(ticker)}&days=14`, { cache: "no-store" })
       .then(async (r) => {
         if (!r.ok) throw new Error(`${r.status}`);
         return r.json() as Promise<NewsPayload>;
       })
-      .then((j) => {
-        // Client-side aliases filter — anything containing an alias or the
-        // display name (case-insensitive) counts. Prevents an over-broad
-        // substring hit like "Copper" from returning irrelevant items.
-        const needles = [displayName, ...aliases]
-          .map((s) => s.trim().toLowerCase())
-          .filter((s) => s.length >= 3);
-        const scored = j.items.filter((it) => {
-          const h = it.headline.toLowerCase();
-          return needles.some((n) => h.includes(n));
-        });
-        setItems(scored.slice(0, limit));
-      })
+      .then((j) => setItems((j.items ?? []).slice(0, limit)))
       .catch((e) => setErr(String(e)))
       .finally(() => setLoading(false));
   };
 
-  useEffect(load, [displayName]);
+  useEffect(load, [ticker]);
 
   return (
     <Panel

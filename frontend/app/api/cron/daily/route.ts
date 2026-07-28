@@ -8,9 +8,11 @@ import {
   buildEventShell,
   buildPastEvent,
   detectRestatements,
+  findShellForPeriod,
   parseStoredPeriod,
   parseYahooPeriod,
   periodFromReportingDate,
+  promoteShellToPast,
   seedReactionPoints,
 } from "@/server/lib/cronDetections";
 import {
@@ -144,6 +146,10 @@ export async function POST(req: NextRequest) {
   let mcUnchanged = 0;
   let mcFailed = 0;
   const mcTierChanges: NonNullable<CronRunSummary["marketCap"]>["tierChanges"] = [];
+  // TTM fundamentals collected during step 3's per-entity Yahoo pass.
+  // Applied to registry in step 6b alongside market-cap updates.
+  const fundamentalsMap = new Map<string, import("@/lib/types").EntityFundamentals>();
+  const asOfDateForCron = new Date().toISOString().slice(0, 10);
 
   try {
     const snap = await store.readEarnings();
@@ -381,6 +387,26 @@ export async function POST(req: NextRequest) {
       const yahoo = await yahooEarnings(yahooSymbol);
       if (!yahoo) continue;
 
+      // Capture TTM fundamentals from the same response — no extra HTTP.
+      // Applied to the registry alongside market-cap refresh in step 6b.
+      if (yahoo.ttm) {
+        fundamentalsMap.set(entity.ticker, {
+          totalRevenueTTM: yahoo.ttm.totalRevenue,
+          ebitdaTTM: yahoo.ttm.ebitda,
+          grossMargin: yahoo.ttm.grossMargin,
+          operatingMargin: yahoo.ttm.operatingMargin,
+          ebitdaMargin: yahoo.ttm.ebitdaMargin,
+          revenueGrowth: yahoo.ttm.revenueGrowth,
+          sharesOutstanding: yahoo.ttm.sharesOutstanding,
+          enterpriseValue: yahoo.ttm.enterpriseValue,
+          trailingEps: yahoo.ttm.trailingEps,
+          forwardEps: yahoo.ttm.forwardEps,
+          profitMargin: yahoo.ttm.profitMargin,
+          currency: yahoo.ttm.currency,
+          asOf: asOfDateForCron,
+        });
+      }
+
       // --- 3a. Next-event upsert ---
       if (yahoo.nextEarningsDate) {
         const { label } = periodFromReportingDate(yahoo.nextEarningsDate);
@@ -400,20 +426,44 @@ export async function POST(req: NextRequest) {
         }
       }
 
-      // --- 3a.5. Past-quarter backfill ---
+      // --- 3a.5. Past-quarter backfill + shell promotion ---
       // Yahoo returns the last 4 completed quarters in earningsChart.quarterly.
-      // If any of those aren't in our snapshot for this ticker, insert them
-      // with the actual EPS baked in — powers the historical earnings table
-      // on the security detail page.
+      // For each:
+      //   (a) if we already have a shell (announced future date, no eventDate,
+      //       no actuals yet), PROMOTE it in place — fill EPS + revenue,
+      //       set eventDate = scheduledDate (the real announced report day).
+      //       Reaction baseline stays null so matureEventReaction seeds it
+      //       from the real close.
+      //   (b) if a past event already exists (eventDate set), leave it —
+      //       restatement detection below handles Δ.
+      //   (c) if nothing exists, fall back to buildPastEvent with the
+      //       mid-month stand-in scheduledDate.
+      const combinedEvents = [...snap.events, ...newlyCreated];
       for (const q of yahoo.pastQuarters ?? []) {
         const parsed = parseYahooPeriod(q.period);
         if (!parsed) continue;
-        const covered = [...snap.events, ...newlyCreated].some((e) => {
+        const shell = findShellForPeriod(combinedEvents, entity.ticker, q.period);
+        if (shell) {
+          // Promote the announced-date shell into a completed past event.
+          const promoted = promoteShellToPast(shell, q, entity, yahooSymbol);
+          pendingEvents.set(shell.id, promoted);
+          newEvents.push({
+            eventId: shell.id,
+            ticker: entity.ticker,
+            period: shell.period,
+            scheduledDate: shell.scheduledDate,
+          });
+          continue;
+        }
+        // Already-past covered by same period label?
+        const covered = combinedEvents.some((e) => {
           if (e.ticker !== entity.ticker) return false;
+          if (!e.eventDate) return false;
           const p = parseStoredPeriod(e.period);
           return p && p.year === parsed.year && p.quarter === parsed.quarter;
         });
         if (covered) continue;
+        // No shell + no past — create with stand-in date.
         const past = buildPastEvent(entity, q, yahooSymbol);
         if (past) {
           newlyCreated.push(past);
@@ -593,20 +643,36 @@ export async function POST(req: NextRequest) {
       const cikChanged =
         cikResolutions.has(entity.ticker) &&
         cikResolutions.get(entity.ticker) !== entity.edgarCik;
+      const fresh = fundamentalsMap.get(entity.ticker);
+      const fundamentalsChanged = fresh !== undefined;
       if (!sym) {
         mcFailed++;
-        return cikChanged ? { ...entity, edgarCik: cikResolved } : entity;
+        if (cikChanged || fundamentalsChanged) {
+          return {
+            ...entity,
+            ...(cikChanged ? { edgarCik: cikResolved } : {}),
+            ...(fundamentalsChanged ? { fundamentals: fresh } : {}),
+          };
+        }
+        return entity;
       }
       const q = bySymbol.get(sym);
       if (!q || q.marketCapUsd == null) {
         mcFailed++;
-        return cikChanged ? { ...entity, edgarCik: cikResolved } : entity;
+        if (cikChanged || fundamentalsChanged) {
+          return {
+            ...entity,
+            ...(cikChanged ? { edgarCik: cikResolved } : {}),
+            ...(fundamentalsChanged ? { fundamentals: fresh } : {}),
+          };
+        }
+        return entity;
       }
       const newTier = capTierFor(q.marketCapUsd);
       const priorTier = entity.capTier ?? "unknown";
       const changed =
         entity.marketCapUsd !== q.marketCapUsd || priorTier !== newTier;
-      if (!changed && !cikChanged) {
+      if (!changed && !cikChanged && !fundamentalsChanged) {
         mcUnchanged++;
         return entity;
       }
@@ -631,10 +697,11 @@ export async function POST(req: NextRequest) {
             }
           : {}),
         ...(cikChanged ? { edgarCik: cikResolved } : {}),
+        ...(fundamentalsChanged ? { fundamentals: fresh } : {}),
       };
     });
 
-    if (mcUpdated > 0 || cikResolutions.size > 0) {
+    if (mcUpdated > 0 || cikResolutions.size > 0 || fundamentalsMap.size > 0) {
       await store.writeRegistry(updatedEntities);
     }
   } catch (e) {
