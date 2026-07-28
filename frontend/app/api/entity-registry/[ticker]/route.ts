@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { store } from "@/server/store";
+import { isAuthorizedWrite, unauthorizedWriteResponse } from "@/server/lib/writeAuth";
 import type { Entity } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -21,6 +22,7 @@ function persistenceUnavailable() {
 // stays pinned to the URL param even if a rename is attempted (rename
 // requires DELETE + POST to keep historical events consistent).
 export async function PUT(req: NextRequest, ctx: Ctx) {
+  if (!isAuthorizedWrite(req)) return unauthorizedWriteResponse();
   try {
     const { ticker } = await ctx.params;
     const body = (await req.json()) as Partial<Entity>;
@@ -51,7 +53,8 @@ export async function PUT(req: NextRequest, ctx: Ctx) {
 // DELETE /api/entity-registry/:ticker — drop from registry.
 // Historical events in earnings.json are left intact (their ticker still
 // resolves for /s/:ticker deep links to prior prints).
-export async function DELETE(_req: NextRequest, ctx: Ctx) {
+export async function DELETE(req: NextRequest, ctx: Ctx) {
+  if (!isAuthorizedWrite(req)) return unauthorizedWriteResponse();
   try {
     const { ticker } = await ctx.params;
     if (store.mode() === "in-memory") return persistenceUnavailable();

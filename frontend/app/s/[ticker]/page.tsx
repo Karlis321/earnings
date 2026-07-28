@@ -1,12 +1,13 @@
 import { notFound } from "next/navigation";
 import { store } from "@/server/store";
-import { findEntity, eventsForTicker } from "@/server/lib/registryHelpers";
+import { findEntity } from "@/server/lib/registryHelpers";
 import { SecurityHeader } from "@/components/security/SecurityHeader";
 import { OperatingDetail } from "@/components/security/OperatingDetail";
 import { DeveloperDetail } from "@/components/security/DeveloperDetail";
 import { EtfDetail } from "@/components/security/EtfDetail";
 import { EmptyState } from "@/components/primitives";
 import { computeFreshness, todayIso } from "@/lib/freshness";
+import type { EventRecord } from "@/lib/types";
 
 // Security Detail — three variants per FE PRD §7.3–7.5.
 
@@ -19,14 +20,25 @@ export const dynamic = "force-dynamic";
 export default async function SecurityDetailPage({ params }: Props) {
   const { ticker: raw } = await params;
   const ticker = decodeURIComponent(raw);
-  const [entities, snapshot] = await Promise.all([
-    store.readRegistry(),
-    store.readEarnings(),
-  ]);
+  const entities = await store.readRegistry();
   const entity = findEntity(entities, ticker);
   if (!entity) notFound();
 
-  const events = eventsForTicker(snapshot, ticker);
+  // Per-ticker shard read replaces filtering the whole monolith.
+  const tickerEvents = store.readEventsForTicker
+    ? await store.readEventsForTicker(ticker)
+    : [];
+  const events: EventRecord[] = tickerEvents
+    .slice()
+    .sort((a, b) => b.scheduledDate.localeCompare(a.scheduledDate));
+
+  // ETF details still live inside the earnings snapshot — only pay the
+  // monolith-read cost when the entity actually needs it.
+  const etfDetail =
+    entity.securityType === "etf"
+      ? (await store.readEarnings()).etfDetails?.[ticker]
+      : undefined;
+
   // Prefer most recent PAST event for the header stamp — an upcoming
   // event has no eventDate + empty metrics, which makes the header
   // "Last: <period>" line show a future quarter with no data behind it.
@@ -55,7 +67,7 @@ export default async function SecurityDetailPage({ params }: Props) {
       {entity.securityType === "etf" && (
         <EtfDetail
           entity={entity}
-          detail={snapshot.etfDetails?.[ticker]}
+          detail={etfDetail}
           coveredTickers={entities.map((e) => e.ticker)}
         />
       )}

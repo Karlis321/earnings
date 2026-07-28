@@ -7,6 +7,7 @@ import type {
   EarningsSnapshot,
   Entity,
   EventRecord,
+  EventsIndex,
   FeedbackEntry,
   ReactionPoint,
   SourceItem,
@@ -14,6 +15,10 @@ import type {
   MetricDictionary,
   EngineStatus,
 } from "@/lib/types";
+import type {
+  PipelineHistoryEntry,
+  PipelineReport,
+} from "./lib/pipelineReport";
 import { inMemoryStore } from "./stores/inMemory";
 import { tryGitSnapshot } from "./stores/gitSnapshot";
 
@@ -22,6 +27,14 @@ export interface Store {
   writeRegistry(entities: Entity[]): Promise<void>;
 
   readEarnings(): Promise<EarningsSnapshot>;
+  // Lightweight index of every ticker's event summary — the shape the
+  // watchlist / overview grid needs. Reads a small file
+  // (data/events-index.json) instead of the 10+ MB monolith. Falls
+  // back to computing from readEarnings() when the index isn't present.
+  readEventsIndex?(): Promise<EventsIndex>;
+  // Per-ticker event shard read — for security detail pages. Falls
+  // back to filtering readEarnings().events when shards aren't present.
+  readEventsForTicker?(ticker: string): Promise<EventRecord[]>;
   upsertEvent(event: EventRecord): Promise<void>;
   appendEventSources(
     eventId: string,
@@ -48,6 +61,15 @@ export interface Store {
 
   readCronStatus(): Promise<CronRunSummary | null>;
   writeCronStatus(status: CronRunSummary): Promise<void>;
+
+  // Daily pipeline self-check. `writePipelineReport` overwrites the
+  // latest snapshot; `readPipelineHistory` returns the append-only jsonl
+  // (last N days) for the health-page sparkline; `appendPipelineHistory`
+  // adds one row per cron run.
+  readPipelineReport?(): Promise<PipelineReport | null>;
+  writePipelineReport?(report: PipelineReport): Promise<void>;
+  readPipelineHistory?(): Promise<PipelineHistoryEntry[]>;
+  appendPipelineHistory?(entry: PipelineHistoryEntry): Promise<void>;
 
   readDocument(id: string): Promise<Document | null>;
   writeDocument(doc: Document): Promise<void>;

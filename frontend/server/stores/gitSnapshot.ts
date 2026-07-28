@@ -2,6 +2,28 @@
 // - Reads: pull deploy-baked JSON from the repo (cached in-memory 60s).
 // - Writes: GET file SHA → PUT with new content + SHA → 409 retry.
 // - Missing GH_PAT: return 503 shape so the API surface can respond cleanly.
+//
+// Write-ordering invariant (load-bearing):
+//   Shard PUTs land BEFORE the events-index rebuild. Since readers
+//   reconstitute events from index + shards, an index that references a
+//   shard that hasn't been written yet would surface stale data. The
+//   reverse (a shard newer than the index) is tolerated: readers walk
+//   the shard list; a briefly-stale index entry just means the grid
+//   summary lags for one cache cycle. `mutateEarnings` enforces this
+//   with sequential awaits (all shard commits, then one index rebuild);
+//   `writeShardForTicker` follows the same shard-then-index order.
+//
+// Atomicity gap (documented upgrade path):
+//   Each shard PUT is its own git commit — so a cron interrupted after
+//   12 of 20 shard writes leaves 12 fresh shards + a stale index (or a
+//   half-refreshed index if `refreshIndexEntry` fired between shards).
+//   The Git Trees API (POST /git/trees + /git/commits) can bundle all
+//   changed shards + the rebuilt index into ONE atomic commit — that's
+//   the future direction. Two wins: no partial-write window, and no
+//   ~20-commits-per-cron history noise. Not a v1 blocker; the current
+//   ordering invariant means any partial run only ever leaves a
+//   *stale* index (readers still work) rather than a *dangling* one
+//   (readers would reference a missing shard).
 
 import type {
   CronRunSummary,
@@ -9,6 +31,8 @@ import type {
   EarningsSnapshot,
   Entity,
   EventRecord,
+  EventsIndex,
+  EventsIndexEntry,
   FeedbackEntry,
   ReactionPoint,
   SourceItem,
@@ -210,12 +234,254 @@ async function commit<T>(
 const P = {
   registry: "data/entity-registry.json",
   earnings: "data/earnings.json",
+  eventsIndex: "data/events-index.json",
+  eventsShard: (tickerSlug: string) => `data/events/${tickerSlug}.json`,
   sharedState: "data/shared-state.json",
   feedback: "data/feedback-log.json",
   dictionary: "data/metric-dictionary.json",
   cronStatus: "data/cron-status.json",
+  pipelineReport: "data/pipeline-report.json",
+  // Stored as a JSON object `{schema, entries:[...]}` rather than raw
+  // JSONL — the write path uses commit() which JSON.stringifies, and
+  // append-then-commit reduces to updating one entry. The health page
+  // consumes it programmatically so the exact file suffix is cosmetic.
+  pipelineHistory: "data/pipeline-history.json",
   document: (id: string) => `data/documents/${id}.json`,
 };
+
+// "HBM US" → "HBM_US"; "AAPL34 BZ" → "AAPL34_BZ" — must match
+// scripts/shard-earnings.mjs::tickerSlug.
+function tickerSlug(ticker: string): string {
+  return ticker.replace(/\s+/g, "_").replace(/[^A-Z0-9_.-]/gi, "_");
+}
+
+// Build a single index entry from a ticker's events + its registry row.
+function buildIndexEntry(
+  ticker: string,
+  events: EventRecord[],
+  entity: Entity | undefined,
+): EventsIndexEntry {
+  const past = events.filter((e) => e.eventDate);
+  past.sort((a, b) => (b.eventDate ?? "").localeCompare(a.eventDate ?? ""));
+  const future = events.filter((e) => !e.eventDate);
+  future.sort((a, b) =>
+    (a.scheduledDate ?? "").localeCompare(b.scheduledDate ?? ""),
+  );
+  const latest = past[0];
+  const next = future[0];
+  return {
+    ticker,
+    count: events.length,
+    lastEventId: latest?.id ?? null,
+    lastEventDate: latest?.eventDate ?? null,
+    lastPeriod: latest?.period ?? null,
+    lastSurprisePct:
+      latest?.metrics?.find((m) => /eps/i.test(m.key ?? ""))?.surprisePct ??
+      null,
+    nextEventId: next?.id ?? null,
+    nextScheduled: next?.scheduledDate ?? null,
+    nextPeriod: next?.period ?? null,
+    nextIsEstimated: !!next && next.freshness === "stale",
+    nextCadence: next?.cadence,
+    sourceCount: entity?.sourceCount ?? 0,
+    guidanceMove: latest?.guidanceMove ?? null,
+    freshness: latest?.freshness ?? "never",
+  };
+}
+
+// Rebuild the entire events-index.json from a fresh EarningsSnapshot.
+// Registry is read separately to preserve entity.sourceCount + include
+// tickers with zero events.
+async function rebuildAndWriteEventsIndex(
+  cfg: GhConfig,
+  snap: EarningsSnapshot,
+) {
+  const registryState = await readFile<{ entities: Entity[] } | Entity[]>(
+    cfg,
+    P.registry,
+  );
+  const entities = registryState
+    ? Array.isArray(registryState.content)
+      ? registryState.content
+      : registryState.content.entities
+    : [];
+  const entityByTicker = new Map(entities.map((e) => [e.ticker, e]));
+  const byTicker = new Map<string, EventRecord[]>();
+  for (const ev of snap.events) {
+    if (!byTicker.has(ev.ticker)) byTicker.set(ev.ticker, []);
+    byTicker.get(ev.ticker)!.push(ev);
+  }
+  const entries: EventsIndexEntry[] = [];
+  for (const [ticker, events] of byTicker) {
+    entries.push(buildIndexEntry(ticker, events, entityByTicker.get(ticker)));
+  }
+  for (const e of entities) {
+    if (byTicker.has(e.ticker)) continue;
+    entries.push({
+      ticker: e.ticker,
+      count: 0,
+      lastEventId: null,
+      lastEventDate: null,
+      lastPeriod: null,
+      lastSurprisePct: null,
+      nextEventId: null,
+      nextScheduled: null,
+      nextPeriod: null,
+      nextIsEstimated: false,
+      sourceCount: e.sourceCount ?? 0,
+      guidanceMove: null,
+      freshness: "never",
+    });
+  }
+  await commit<EventsIndex>(
+    cfg,
+    P.eventsIndex,
+    () => ({
+      schema: "events-index/v1",
+      updatedAt: new Date().toISOString(),
+      entries,
+    }),
+    `store: events-index refresh`,
+  );
+}
+
+// Patch a single entry in the events-index without rebuilding the whole
+// thing. Used by single-shard writes (upsertEvent, appendEventSources,
+// setReactionPoint, setVerdictNote). Fetches the entity once so
+// sourceCount stays accurate.
+async function refreshIndexEntry(
+  cfg: GhConfig,
+  ticker: string,
+  events: EventRecord[],
+) {
+  const registryState = await readFile<{ entities: Entity[] } | Entity[]>(
+    cfg,
+    P.registry,
+  );
+  const entities = registryState
+    ? Array.isArray(registryState.content)
+      ? registryState.content
+      : registryState.content.entities
+    : [];
+  const entity = entities.find((e) => e.ticker === ticker);
+  const patched = buildIndexEntry(ticker, events, entity);
+  await commit<EventsIndex>(
+    cfg,
+    P.eventsIndex,
+    (cur) => {
+      const base: EventsIndex = cur ?? {
+        schema: "events-index/v1",
+        updatedAt: new Date().toISOString(),
+        entries: [],
+      };
+      const idx = base.entries.findIndex((e) => e.ticker === ticker);
+      const entries = base.entries.slice();
+      if (idx >= 0) entries[idx] = patched;
+      else entries.push(patched);
+      return { ...base, entries, updatedAt: new Date().toISOString() };
+    },
+    `index: refresh ${ticker}`,
+  );
+}
+
+// Unwrap a shard file body — accepts both {schema, ticker, events} and
+// the bare EventRecord[] shape (older shards may lack the wrapper).
+function unwrapShard(content: unknown): EventRecord[] {
+  if (Array.isArray(content)) return content as EventRecord[];
+  const wrapped = content as { events?: EventRecord[] } | null;
+  return wrapped?.events ?? [];
+}
+
+// Reconstitute a full EarningsSnapshot from the events-index + per-ticker
+// shards. Bounded-concurrency parallel reads keep the cost tolerable even
+// with ~1500 shards. The result is cached in-process for
+// RECONSTITUTE_CACHE_MS so downstream RSC pages that call readEarnings
+// multiple times per request only pay the fan-out once.
+const SHARD_READ_CONCURRENCY = 20;
+const RECONSTITUTE_CACHE_MS = 60_000;
+interface ReconstituteCache {
+  snapshot: EarningsSnapshot;
+  expiresAt: number;
+  cacheKey: string;
+}
+let reconstituteCache: ReconstituteCache | null = null;
+
+function invalidateReconstitute() {
+  reconstituteCache = null;
+}
+
+async function reconstituteFromShards(
+  cfg: GhConfig,
+): Promise<EarningsSnapshot | null> {
+  const key = `${cfg.owner}/${cfg.repo}@${cfg.branch}`;
+  const now = Date.now();
+  if (
+    reconstituteCache &&
+    reconstituteCache.cacheKey === key &&
+    reconstituteCache.expiresAt > now
+  ) {
+    return reconstituteCache.snapshot;
+  }
+  const indexState = await readFile<EventsIndex>(cfg, P.eventsIndex);
+  if (!indexState) return null;
+  const tickers = indexState.content.entries
+    .filter((e) => e.count > 0)
+    .map((e) => e.ticker);
+  const shardEvents: EventRecord[][] = new Array(tickers.length);
+  let i = 0;
+  const worker = async () => {
+    while (i < tickers.length) {
+      const idx = i++;
+      const ticker = tickers[idx];
+      try {
+        const r = await readCached<unknown>(cfg, P.eventsShard(tickerSlug(ticker)));
+        shardEvents[idx] = r ? unwrapShard(r.content) : [];
+      } catch {
+        shardEvents[idx] = [];
+      }
+    }
+  };
+  await Promise.all(
+    Array.from(
+      { length: Math.min(SHARD_READ_CONCURRENCY, tickers.length) },
+      worker,
+    ),
+  );
+  const snapshot: EarningsSnapshot = {
+    schema: "earnings/v1",
+    lastUpdated: indexState.content.updatedAt,
+    events: shardEvents.flat(),
+  };
+  reconstituteCache = {
+    snapshot,
+    expiresAt: now + RECONSTITUTE_CACHE_MS,
+    cacheKey: key,
+  };
+  return snapshot;
+}
+
+// Write a single ticker's shard + refresh its index entry. Two commits.
+// Best-effort on the index (a shard write is authoritative; if the index
+// falls behind briefly, it re-syncs on the next mutation).
+async function writeShardForTicker(
+  cfg: GhConfig,
+  ticker: string,
+  events: EventRecord[],
+  message: string,
+) {
+  await commit<{ schema: string; ticker: string; events: EventRecord[] }>(
+    cfg,
+    P.eventsShard(tickerSlug(ticker)),
+    () => ({ schema: "events-shard/v1", ticker, events }),
+    message,
+  );
+  invalidateReconstitute();
+  try {
+    await refreshIndexEntry(cfg, ticker, events);
+  } catch {
+    /* index-entry refresh is best-effort */
+  }
+}
 
 // Fallback to in-memory for reads that haven't been seeded to the repo yet.
 async function readOrFallback<T>(
@@ -252,27 +518,96 @@ export function gitSnapshotStore(cfg: GhConfig): Store {
     },
 
     async readEarnings(): Promise<EarningsSnapshot> {
+      // Shards are the source of truth. earnings.json remains in the repo
+      // as a frozen archive but is no longer written to; skipping it here
+      // avoids the 46 MB fetch on every RSC page render. If the index is
+      // missing (fresh clone / local dev), fall back to the monolith so
+      // legacy paths still return data.
+      try {
+        const reconstituted = await reconstituteFromShards(cfg);
+        if (reconstituted) return reconstituted;
+      } catch {
+        /* fall through to monolith */
+      }
       return readOrFallback(cfg, P.earnings, () =>
         inMemoryStore.readEarnings(),
       );
     },
-    async upsertEvent(event: EventRecord) {
-      await commit<EarningsSnapshot>(
+    async readEventsIndex() {
+      return readOrFallback<EventsIndex>(
         cfg,
-        P.earnings,
-        (cur) => {
-          const base = cur ?? {
-            schema: "earnings/v1" as const,
-            lastUpdated: new Date().toISOString(),
-            events: [],
+        P.eventsIndex,
+        async () => {
+          // Fallback: compute from readEarnings() on the fly. Slower but
+          // keeps callers working before the shard migration lands.
+          const snap = await inMemoryStore.readEarnings();
+          const byTicker = new Map<string, typeof snap.events>();
+          for (const ev of snap.events) {
+            if (!byTicker.has(ev.ticker)) byTicker.set(ev.ticker, []);
+            byTicker.get(ev.ticker)!.push(ev);
+          }
+          const entries: EventsIndexEntry[] = [];
+          for (const [ticker, events] of byTicker) {
+            const past = events.filter((e) => e.eventDate);
+            past.sort((a, b) => (b.eventDate ?? "").localeCompare(a.eventDate ?? ""));
+            const future = events.filter((e) => !e.eventDate);
+            future.sort((a, b) => (a.scheduledDate ?? "").localeCompare(b.scheduledDate ?? ""));
+            const latest = past[0];
+            const next = future[0];
+            entries.push({
+              ticker,
+              count: events.length,
+              lastEventId: latest?.id ?? null,
+              lastEventDate: latest?.eventDate ?? null,
+              lastPeriod: latest?.period ?? null,
+              lastSurprisePct:
+                latest?.metrics?.find((m) => /eps/i.test(m.key ?? ""))?.surprisePct ?? null,
+              nextEventId: next?.id ?? null,
+              nextScheduled: next?.scheduledDate ?? null,
+              nextPeriod: next?.period ?? null,
+              nextIsEstimated: !!next && next.freshness === "stale",
+              sourceCount: 0,
+              guidanceMove: latest?.guidanceMove ?? null,
+              freshness: latest?.freshness ?? "never",
+            });
+          }
+          return {
+            schema: "events-index/v1" as const,
+            updatedAt: new Date().toISOString(),
+            entries,
           };
-          const idx = base.events.findIndex((e) => e.id === event.id);
-          const events = base.events.slice();
-          if (idx >= 0) events[idx] = event;
-          else events.push(event);
-          return { ...base, events, lastUpdated: new Date().toISOString() };
         },
-        `store: upsert event ${event.id}`,
+      );
+    },
+    async readEventsForTicker(ticker: string) {
+      const r = await readOrFallback<unknown>(
+        cfg,
+        P.eventsShard(tickerSlug(ticker)),
+        async () => {
+          // Fallback: filter reconstituted snapshot by ticker.
+          const snap = await this.readEarnings();
+          return snap.events.filter((e) => e.ticker === ticker);
+        },
+      );
+      return unwrapShard(r);
+    },
+    async upsertEvent(event: EventRecord) {
+      // Shard-only write. Fetches the current shard, upserts by event.id,
+      // writes the shard back, then patches this ticker's index entry.
+      const existing = await readFile<unknown>(
+        cfg,
+        P.eventsShard(tickerSlug(event.ticker)),
+      );
+      const prior = existing ? unwrapShard(existing.content) : [];
+      const idx = prior.findIndex((e) => e.id === event.id);
+      const next = prior.slice();
+      if (idx >= 0) next[idx] = event;
+      else next.push(event);
+      await writeShardForTicker(
+        cfg,
+        event.ticker,
+        next,
+        `shard: ${event.ticker} upsert ${event.id}`,
       );
     },
     async appendEventSources(
@@ -280,87 +615,157 @@ export function gitSnapshotStore(cfg: GhConfig): Store {
       items: SourceItem[],
       engineStatus: EngineStatus[],
     ) {
-      await commit<EarningsSnapshot>(
+      // Find the event's ticker via the reconstituted snapshot (cached).
+      const snap = await this.readEarnings();
+      const target = snap.events.find((e) => e.id === eventId);
+      if (!target) throw new Error(`no event ${eventId} to append to`);
+      const ticker = target.ticker;
+      // Read this ticker's shard and update the matching event.
+      const existing = await readFile<unknown>(
         cfg,
-        P.earnings,
-        (cur) => {
-          if (!cur) throw new Error("no earnings snapshot to append to");
-          const events = cur.events.map((e) => {
-            if (e.id !== eventId) return e;
-            // Dedup by item.id
-            const seen = new Set(e.sources.items.map((i) => i.id));
-            const newItems = items.filter((i) => !seen.has(i.id));
-            return {
-              ...e,
-              sources: {
-                ...e.sources,
-                items: [...e.sources.items, ...newItems],
-                engineStatus,
-                capturedAt: new Date().toISOString(),
-              },
-            };
-          });
-          return { ...cur, events, lastUpdated: new Date().toISOString() };
-        },
-        `store: append sources to ${eventId} (${items.length} items)`,
+        P.eventsShard(tickerSlug(ticker)),
+      );
+      if (!existing) throw new Error(`no shard for ${ticker}`);
+      const prior = unwrapShard(existing.content);
+      const next = prior.map((e) => {
+        if (e.id !== eventId) return e;
+        const seen = new Set(e.sources.items.map((i) => i.id));
+        const newItems = items.filter((i) => !seen.has(i.id));
+        return {
+          ...e,
+          sources: {
+            ...e.sources,
+            items: [...e.sources.items, ...newItems],
+            engineStatus,
+            capturedAt: new Date().toISOString(),
+          },
+        };
+      });
+      await writeShardForTicker(
+        cfg,
+        ticker,
+        next,
+        `shard: ${ticker} append sources to ${eventId} (${items.length} items)`,
       );
     },
     async setReactionPoint(eventId: string, point: ReactionPoint) {
-      await commit<EarningsSnapshot>(
+      const snap = await this.readEarnings();
+      const target = snap.events.find((e) => e.id === eventId);
+      if (!target) throw new Error(`no event ${eventId}`);
+      const ticker = target.ticker;
+      const existing = await readFile<unknown>(
         cfg,
-        P.earnings,
-        (cur) => {
-          if (!cur) throw new Error("no earnings snapshot");
-          const events = cur.events.map((e) => {
-            if (e.id !== eventId) return e;
-            const points = e.reaction.points.map((p) =>
-              p.horizon === point.horizon ? point : p,
-            );
-            return { ...e, reaction: { ...e.reaction, points } };
-          });
-          return { ...cur, events, lastUpdated: new Date().toISOString() };
-        },
-        `store: reaction ${point.horizon} for ${eventId}`,
+        P.eventsShard(tickerSlug(ticker)),
+      );
+      if (!existing) throw new Error(`no shard for ${ticker}`);
+      const prior = unwrapShard(existing.content);
+      const next = prior.map((e) => {
+        if (e.id !== eventId) return e;
+        const points = e.reaction.points.map((p) =>
+          p.horizon === point.horizon ? point : p,
+        );
+        return { ...e, reaction: { ...e.reaction, points } };
+      });
+      await writeShardForTicker(
+        cfg,
+        ticker,
+        next,
+        `shard: ${ticker} reaction ${point.horizon} for ${eventId}`,
       );
     },
     async mutateEarnings(
       mutator: (snap: EarningsSnapshot) => EarningsSnapshot,
       message: string,
     ) {
-      await commit<EarningsSnapshot>(
-        cfg,
-        P.earnings,
-        (cur) => {
-          const base = cur ?? {
-            schema: "earnings/v1" as const,
-            lastUpdated: new Date().toISOString(),
-            events: [],
-          };
-          const next = mutator(base);
-          return { ...next, lastUpdated: new Date().toISOString() };
-        },
-        message,
-      );
+      // Read the current snapshot (shard-reconstituted, cached in-process),
+      // apply the mutator, then diff by ticker and write only the shards
+      // whose events changed. Finally, rebuild the full events-index.
+      // No monolith write.
+      const current = await this.readEarnings();
+      const next = {
+        ...mutator(current),
+        lastUpdated: new Date().toISOString(),
+      };
+      invalidateReconstitute();
+
+      const groupBy = (events: EventRecord[]) => {
+        const m = new Map<string, EventRecord[]>();
+        for (const ev of events) {
+          if (!m.has(ev.ticker)) m.set(ev.ticker, []);
+          m.get(ev.ticker)!.push(ev);
+        }
+        return m;
+      };
+      const currentByTicker = groupBy(current.events);
+      const nextByTicker = groupBy(next.events);
+
+      const allTickers = new Set<string>([
+        ...currentByTicker.keys(),
+        ...nextByTicker.keys(),
+      ]);
+      const changedTickers: string[] = [];
+      for (const ticker of allTickers) {
+        const prev = currentByTicker.get(ticker) ?? [];
+        const nxt = nextByTicker.get(ticker) ?? [];
+        // Cheap length short-circuit, then structural compare.
+        if (prev.length !== nxt.length) {
+          changedTickers.push(ticker);
+          continue;
+        }
+        if (JSON.stringify(prev) !== JSON.stringify(nxt)) {
+          changedTickers.push(ticker);
+        }
+      }
+
+      // Write each changed shard sequentially. GH commit-pipe serializes
+      // per-file anyway, and this keeps rate-limit pressure predictable.
+      for (const ticker of changedTickers) {
+        const events = nextByTicker.get(ticker) ?? [];
+        await commit<{
+          schema: string;
+          ticker: string;
+          events: EventRecord[];
+        }>(
+          cfg,
+          P.eventsShard(tickerSlug(ticker)),
+          () => ({ schema: "events-shard/v1", ticker, events }),
+          `${message} · shard ${ticker}`,
+        );
+      }
+
+      // Full index rebuild so any lastPeriod/nextScheduled shifts land.
+      try {
+        await rebuildAndWriteEventsIndex(cfg, next);
+      } catch {
+        /* index refresh is best-effort — shards remain authoritative */
+      }
     },
     async setVerdictNote(eventId: string, text: string) {
-      await commit<EarningsSnapshot>(
+      const snap = await this.readEarnings();
+      const target = snap.events.find((e) => e.id === eventId);
+      if (!target) throw new Error(`no event ${eventId}`);
+      const ticker = target.ticker;
+      const existing = await readFile<unknown>(
         cfg,
-        P.earnings,
-        (cur) => {
-          if (!cur) throw new Error("no earnings snapshot");
-          const events = cur.events.map((e) =>
-            e.id === eventId
-              ? {
-                  ...e,
-                  verdictNote: text
-                    ? { text, lastEditedAt: new Date().toISOString() }
-                    : undefined,
-                }
-              : e,
-          );
-          return { ...cur, events, lastUpdated: new Date().toISOString() };
-        },
-        `store: verdict for ${eventId}`,
+        P.eventsShard(tickerSlug(ticker)),
+      );
+      if (!existing) throw new Error(`no shard for ${ticker}`);
+      const prior = unwrapShard(existing.content);
+      const next = prior.map((e) =>
+        e.id === eventId
+          ? {
+              ...e,
+              verdictNote: text
+                ? { text, lastEditedAt: new Date().toISOString() }
+                : undefined,
+            }
+          : e,
+      );
+      await writeShardForTicker(
+        cfg,
+        ticker,
+        next,
+        `shard: ${ticker} verdict for ${eventId}`,
       );
     },
 
@@ -410,6 +815,61 @@ export function gitSnapshotStore(cfg: GhConfig): Store {
     },
     async writeCronStatus(status: CronRunSummary) {
       await commit(cfg, P.cronStatus, () => status, `cron: run @ ${status.finishedAt}`);
+    },
+
+    // Pipeline self-check artifacts.
+    // pipeline-report.json is a single-object snapshot (overwrite per run).
+    // pipeline-history.jsonl is append-only — one JSON object per line —
+    // used by the health page's 30-day sparkline. Small enough that
+    // fetch-append-commit stays fast even after years of history.
+    async readPipelineReport() {
+      try {
+        const r = await readCached<import("../lib/pipelineReport").PipelineReport>(
+          cfg,
+          P.pipelineReport,
+        );
+        return r?.content ?? null;
+      } catch {
+        return null;
+      }
+    },
+    async writePipelineReport(report) {
+      await commit(
+        cfg,
+        P.pipelineReport,
+        () => report,
+        `pipeline-report: ${report.date} · ${report.status}`,
+      );
+    },
+    async readPipelineHistory() {
+      try {
+        const r = await readCached<{
+          schema?: string;
+          entries?: import("../lib/pipelineReport").PipelineHistoryEntry[];
+        }>(cfg, P.pipelineHistory);
+        return r?.content?.entries ?? [];
+      } catch {
+        return [];
+      }
+    },
+    async appendPipelineHistory(entry) {
+      // Append-then-commit. Same-day dedupe by date (idempotent on retry).
+      await commit<{
+        schema: string;
+        entries: import("../lib/pipelineReport").PipelineHistoryEntry[];
+      }>(
+        cfg,
+        P.pipelineHistory,
+        (cur) => {
+          const base = cur ?? { schema: "pipeline-history/v1", entries: [] };
+          const entries = (base.entries ?? []).slice();
+          const idx = entries.findIndex((e) => e.date === entry.date);
+          if (idx >= 0) entries[idx] = entry;
+          else entries.push(entry);
+          return { schema: "pipeline-history/v1", entries };
+        },
+        `pipeline-history: ${entry.date} · ${entry.status}`,
+      );
     },
 
     async readDocument(id: string): Promise<Document | null> {

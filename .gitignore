@@ -30,6 +30,11 @@ yarn-error.log*
 .env*.local
 .env
 
+# Frozen monolith — shards + events-index are the source of truth now.
+# Kept locally for backfill scripts, but never committed. See
+# frontend/server/stores/gitSnapshot.ts for the shard-reconstitution reader.
+/data/earnings.json
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

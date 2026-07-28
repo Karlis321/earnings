@@ -14,6 +14,7 @@ import {
 } from "@/server/lib/cronDetections";
 import { capTierFor } from "@/lib/capTier";
 import { resolveEdgarCik } from "@/server/lib/edgarCikResolver";
+import { isAuthorizedWrite, unauthorizedWriteResponse } from "@/server/lib/writeAuth";
 import type { EarningsSnapshot, Entity } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -34,6 +35,7 @@ export async function GET() {
 // so the new ticker lands with a working history + graph immediately.
 // Best-effort — a Yahoo failure doesn't roll the registry write back.
 export async function POST(req: NextRequest) {
+  if (!isAuthorizedWrite(req)) return unauthorizedWriteResponse();
   try {
     const body = (await req.json()) as Partial<Entity>;
     if (!body.ticker || !body.displayName || !body.securityType) {

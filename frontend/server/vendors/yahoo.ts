@@ -872,6 +872,127 @@ export async function yahooScreener(
   return { hits, total: block.total ?? hits.length };
 }
 
+// ---------- Yahoo fundamentals-timeseries ----------
+//
+// Ported from scripts/backfill-yahoo-timeseries.mjs. Distinct from
+// earningsChart/financialsChart: returns real per-quarter Revenue / EBIT /
+// EBITDA / OperatingIncome / GrossProfit / NetIncome / Basic + Diluted EPS
+// for issuers whose earningsChart returns empty (BN, Canadian 40-F filers,
+// foreign wrappers, semi-annual reporters).
+//
+//   GET https://query2.finance.yahoo.com/ws/fundamentals-timeseries/v1/
+//       finance/timeseries/{sym}?type=quarterlyTotalRevenue,...&crumb=...
+//
+// Each data point carries its own `currencyCode` — we surface that as the
+// metric `unit` upstream so Korean / Japanese / Brazilian issuers don't
+// get their KRW / JPY / BRL numbers labeled USD (audit finding).
+
+// Map timeseries type → our internal metric key + display label + scale.
+// Same table used in the mjs script; kept in sync.
+const TS_MAP: Record<string, { key: string; label: string; scale: number }> = {
+  quarterlyTotalRevenue: { key: "revenue_usd_m", label: "Revenue (M)", scale: 1e6 },
+  quarterlyEBIT: { key: "ebit_usd_m", label: "EBIT (M)", scale: 1e6 },
+  quarterlyEBITDA: { key: "ebitda_usd_m", label: "EBITDA (M)", scale: 1e6 },
+  quarterlyOperatingIncome: { key: "operating_income_usd_m", label: "Operating income (M)", scale: 1e6 },
+  quarterlyGrossProfit: { key: "gross_profit_usd_m", label: "Gross profit (M)", scale: 1e6 },
+  quarterlyNetIncome: { key: "net_income_usd_m", label: "Net income (M)", scale: 1e6 },
+  quarterlyBasicEPS: { key: "eps_usd", label: "EPS", scale: 1 },
+  quarterlyDilutedEPS: { key: "eps_diluted_usd", label: "EPS diluted", scale: 1 },
+};
+
+interface TimeseriesRawDatum {
+  asOfDate?: string;
+  periodType?: string;
+  reportedValue?: { raw?: number };
+  currencyCode?: string;
+}
+interface TimeseriesSeriesResult {
+  meta?: { type?: string[] };
+  [dataKey: string]: unknown;
+}
+interface TimeseriesResp {
+  timeseries?: {
+    result?: TimeseriesSeriesResult[];
+  };
+}
+
+export interface YahooTimeseriesMetric {
+  value: number;
+  currencyCode: string;
+  label: string;
+}
+
+export interface YahooTimeseriesResult {
+  byQuarter: Map<string, Map<string, YahooTimeseriesMetric>>;
+}
+
+export async function yahooTimeseries(
+  symbol: string,
+): Promise<YahooTimeseriesResult | null> {
+  // Fail-soft: null on any error path so cron's per-entity pass silently
+  // falls back to earningsChart-only behavior.
+  try {
+    const state = await getCrumb();
+    if (!state) return null;
+    const now = Math.floor(Date.now() / 1000);
+    const from = now - 5 * 365 * 24 * 3600;
+    const types = Object.keys(TS_MAP).join(",");
+    const url =
+      `https://query2.finance.yahoo.com/ws/fundamentals-timeseries/v1/finance/timeseries/${encodeURIComponent(symbol)}` +
+      `?type=${types}&period1=${from}&period2=${now}&crumb=${encodeURIComponent(state.crumb)}`;
+
+    const attempt = async (s: CrumbState): Promise<Response> =>
+      fetch(url, {
+        headers: {
+          "User-Agent": UA,
+          Cookie: s.cookieHeader,
+        },
+        signal: AbortSignal.timeout(10_000),
+      });
+    let r = await attempt(state);
+    if (r.status === 401) {
+      const fresh = await getCrumb(true);
+      if (!fresh) return null;
+      r = await attempt(fresh);
+    }
+    if (!r.ok) return null;
+    const j = (await r.json()) as TimeseriesResp;
+    const seriesResults = j.timeseries?.result ?? [];
+
+    const byQuarter = new Map<string, Map<string, YahooTimeseriesMetric>>();
+    for (const rr of seriesResults) {
+      const type = rr.meta?.type?.[0];
+      if (!type || !TS_MAP[type]) continue;
+      const spec = TS_MAP[type];
+      const dataKey = Object.keys(rr).find(
+        (k) => k !== "meta" && k !== "timestamp",
+      );
+      if (!dataKey) continue;
+      const data = (rr[dataKey] as TimeseriesRawDatum[] | undefined) ?? [];
+      for (const d of data) {
+        if (!d) continue;
+        const asOfDate = d.asOfDate;
+        const raw = d.reportedValue?.raw;
+        if (asOfDate == null || raw == null) continue;
+        if (d.periodType && d.periodType !== "3M") continue;
+        if (!byQuarter.has(asOfDate)) byQuarter.set(asOfDate, new Map());
+        const bucket = byQuarter.get(asOfDate)!;
+        if (bucket.has(spec.key)) continue;
+        bucket.set(spec.key, {
+          value: raw / spec.scale,
+          // Real filing currency, not hardcoded USD (per audit finding —
+          // .TO/.L/.DE/.KS issuers report in local currency).
+          currencyCode: d.currencyCode ?? "USD",
+          label: spec.label,
+        });
+      }
+    }
+    return { byQuarter };
+  } catch {
+    return null;
+  }
+}
+
 // Full daily series for chart rendering.
 export async function yahooSeries(
   symbol: string,

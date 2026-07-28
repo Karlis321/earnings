@@ -4,17 +4,22 @@ import { fanoutNews, fetchEntityNews } from "@/server/vendors/news";
 import { fetchPressReleases } from "@/server/vendors/pressReleases";
 import { matureEventReaction } from "@/server/lib/reactionMaturation";
 import {
-  alreadyHasEvent,
   buildEventShell,
   buildPastEvent,
+  buildTimeseriesEvent,
   detectRestatements,
+  findMatchingEvent,
   findShellForPeriod,
-  parseStoredPeriod,
+  mergeMetricsInto,
   parseYahooPeriod,
   periodFromReportingDate,
   promoteShellToPast,
   seedReactionPoints,
 } from "@/server/lib/cronDetections";
+import {
+  collectPastDatesByTicker,
+  estimateNextEvent,
+} from "@/server/lib/estimateNextEvent";
 import {
   fetchAndIngest,
   isIngestableUrl,
@@ -24,9 +29,18 @@ import {
   yahooEarnings,
   yahooLookup,
   yahooQuoteMetaBatch,
+  yahooTimeseries,
 } from "@/server/vendors/yahoo";
+import { fmpEarnings } from "@/server/vendors/fmp";
+import { secSubmissionsShells } from "@/server/vendors/sec";
 import { refreshSectorUniverse } from "@/server/lib/sectorExpansion";
 import { resolveEdgarCik } from "@/server/lib/edgarCikResolver";
+import {
+  checkRegressions,
+  computePipelineReport,
+  emptyVendorStats,
+  toHistoryEntry,
+} from "@/server/lib/pipelineReport";
 import { capTierFor } from "@/lib/capTier";
 import { urlHash } from "@/lib/itemDedupe";
 import {
@@ -125,6 +139,11 @@ export async function POST(req: NextRequest) {
   const restatements: CronRunSummary["restatements"] = [];
   let ok = true;
 
+  // Per-vendor call counters for the pipeline self-check (audit-prompt Part 2).
+  // Incremented at each yahoo/timeseries/sec/fmp call site; consumed by
+  // computePipelineReport at end of run.
+  const perVendor = emptyVendorStats();
+
   // Snapshot of all in-memory event mutations for this run. We apply them
   // in one commit at the end (single-commit rule).
   const pendingEvents = new Map<string, EventRecord>();
@@ -150,11 +169,49 @@ export async function POST(req: NextRequest) {
   // Applied to registry in step 6b alongside market-cap updates.
   const fundamentalsMap = new Map<string, import("@/lib/types").EntityFundamentals>();
   const asOfDateForCron = new Date().toISOString().slice(0, 10);
+  // Pre-run snapshot — hoisted out of the try so the pipeline self-check
+  // block after writeCronStatus can compute events_added_today from the
+  // difference between the pre-run snap and the post-run reconciled snap.
+  let snap: EarningsSnapshot = {
+    schema: "earnings/v1",
+    lastUpdated: startedAt.toISOString(),
+    events: [],
+  };
 
   try {
-    const snap = await store.readEarnings();
+    snap = await store.readEarnings();
     const registry = await store.readRegistry();
     const now = new Date();
+
+    // Merge-or-push router (audit finding — capability e).
+    // Every place that previously did `alreadyHasEvent + push` now routes
+    // through this: if an existing event matches (by ticker + period, or by
+    // ticker + eventDate within 45d), enrich it via mergeMetricsInto and
+    // record the merge in pendingEvents so it lands in the single commit.
+    // Otherwise the event is appended to newlyCreated.
+    //
+    // Returns { merged: true, into: <id> } or { merged: false, id: <new id> }
+    // so the caller can decide whether to push a "newEvents" summary entry.
+    const routeCreatedEvent = (
+      ev: EventRecord,
+    ): { merged: true; into: string } | { merged: false; id: string } => {
+      const combined: EventRecord[] = [
+        ...snap.events.map((e) => pendingEvents.get(e.id) ?? e),
+        ...newlyCreated,
+      ];
+      const match = findMatchingEvent(
+        combined,
+        ev.ticker,
+        ev.period,
+        ev.eventDate ?? ev.scheduledDate ?? null,
+      );
+      if (match) {
+        pendingEvents.set(match.id, mergeMetricsInto(match, ev));
+        return { merged: true, into: match.id };
+      }
+      newlyCreated.push(ev);
+      return { merged: false, id: ev.id };
+    };
 
     // ---- Pre-loop: fetch news + press-releases ONCE per run ----
     // Previously fanoutNews ran inside the per-event loop with
@@ -384,8 +441,38 @@ export async function POST(req: NextRequest) {
           yahooSymbol = resolved.yahooSymbol;
         } catch { continue; }
       }
+      perVendor.yahoo_qs.attempted++;
       const yahoo = await yahooEarnings(yahooSymbol);
-      if (!yahoo) continue;
+      if (!yahoo) {
+        perVendor.yahoo_qs.errored++;
+        continue;
+      }
+      if ((yahoo.pastQuarters?.length ?? 0) === 0) {
+        perVendor.yahoo_qs.empty++;
+      } else {
+        perVendor.yahoo_qs.succeeded++;
+      }
+
+      // --- FMP fallback for Yahoo blanks ---
+      // Foreign 40-F / 20-F filers often return empty earningsChart from
+      // Yahoo (see earlier data audit: 44% coverage ceiling). If FMP_API_KEY
+      // is set and Yahoo returned zero past quarters, try FMP as a
+      // secondary source. Fail-soft: null result restores Yahoo-only path.
+      let fmp: Awaited<ReturnType<typeof fmpEarnings>> = null;
+      if (
+        yahoo.pastQuarters.length === 0 &&
+        process.env.FMP_API_KEY
+      ) {
+        perVendor.fmp.attempted++;
+        fmp = await fmpEarnings(yahooSymbol).catch(() => null);
+        if (!fmp) {
+          perVendor.fmp.errored++;
+        } else if ((fmp.pastQuarters?.length ?? 0) === 0) {
+          perVendor.fmp.empty++;
+        } else {
+          perVendor.fmp.succeeded++;
+        }
+      }
 
       // Capture TTM fundamentals from the same response — no extra HTTP.
       // Applied to the registry alongside market-cap refresh in step 6b.
@@ -408,20 +495,21 @@ export async function POST(req: NextRequest) {
       }
 
       // --- 3a. Next-event upsert ---
-      if (yahoo.nextEarningsDate) {
-        const { label } = periodFromReportingDate(yahoo.nextEarningsDate);
-        const combined = [
-          ...snap.events,
-          ...newlyCreated,
-        ];
-        if (!alreadyHasEvent(combined, entity.ticker, yahoo.nextEarningsDate, label)) {
-          const shell = buildEventShell(entity, yahoo.nextEarningsDate, label);
-          newlyCreated.push(shell);
+      // Audit finding (capability e): route via merge-on-match instead of
+      // alreadyHasEvent boolean skip. A same-period shell already on file
+      // (e.g. estimator-median-gap) gets its metadata enriched rather
+      // than shadowed by a duplicate row.
+      const effectiveNextDate = yahoo.nextEarningsDate ?? fmp?.nextEarningsDate ?? null;
+      if (effectiveNextDate) {
+        const { label } = periodFromReportingDate(effectiveNextDate);
+        const shell = buildEventShell(entity, effectiveNextDate, label);
+        const routed = routeCreatedEvent(shell);
+        if (!routed.merged) {
           newEvents.push({
-            eventId: shell.id,
+            eventId: routed.id,
             ticker: entity.ticker,
             period: label,
-            scheduledDate: yahoo.nextEarningsDate,
+            scheduledDate: effectiveNextDate,
           });
         }
       }
@@ -439,13 +527,52 @@ export async function POST(req: NextRequest) {
       //   (c) if nothing exists, fall back to buildPastEvent with the
       //       mid-month stand-in scheduledDate.
       const combinedEvents = [...snap.events, ...newlyCreated];
-      for (const q of yahoo.pastQuarters ?? []) {
+      // Merge Yahoo pastQuarters with FMP fallback quarters when Yahoo
+      // was empty. FMP's shape overlaps enough that we treat it as an
+      // equivalent past-quarter list for backfill.
+      // Currency pass-through (audit finding — capability g): Yahoo's
+      // ttm.currency and FMP's reportedCurrency describe the reporting
+      // currency for the numeric actuals. Fall back to entity.currency
+      // (registry value) when neither vendor returned one.
+      const yahooReportingCurrency = yahoo.ttm?.currency ?? null;
+      const fmpReportingCurrency: string | null = null; // FmpQuarter doesn't surface it today
+      const pastQuartersToProcess: Array<{
+        period: string;
+        actual: number | null;
+        estimate: number | null;
+        surprisePct: number | null;
+        revenue: number | null;
+        netIncome: number | null;
+        _currency: string | undefined;
+      }> =
+        (yahoo.pastQuarters?.length ?? 0) > 0
+          ? yahoo.pastQuarters.map((q) => ({
+              ...q,
+              _currency: yahooReportingCurrency ?? entity.currency ?? undefined,
+            }))
+          : (fmp?.pastQuarters ?? []).map((q) => ({
+              period: q.period,
+              actual: q.eps,
+              estimate: null,
+              surprisePct: null,
+              revenue: q.revenue,
+              netIncome: q.netIncome,
+              _currency: fmpReportingCurrency ?? entity.currency ?? undefined,
+            }));
+      for (const q of pastQuartersToProcess) {
         const parsed = parseYahooPeriod(q.period);
         if (!parsed) continue;
         const shell = findShellForPeriod(combinedEvents, entity.ticker, q.period);
         if (shell) {
           // Promote the announced-date shell into a completed past event.
-          const promoted = promoteShellToPast(shell, q, entity, yahooSymbol);
+          // Currency passes through — audit finding (capability g).
+          const promoted = promoteShellToPast(
+            shell,
+            q,
+            entity,
+            yahooSymbol,
+            q._currency,
+          );
           pendingEvents.set(shell.id, promoted);
           newEvents.push({
             eventId: shell.id,
@@ -455,24 +582,53 @@ export async function POST(req: NextRequest) {
           });
           continue;
         }
-        // Already-past covered by same period label?
-        const covered = combinedEvents.some((e) => {
-          if (e.ticker !== entity.ticker) return false;
-          if (!e.eventDate) return false;
-          const p = parseStoredPeriod(e.period);
-          return p && p.year === parsed.year && p.quarter === parsed.quarter;
-        });
-        if (covered) continue;
-        // No shell + no past — create with stand-in date.
-        const past = buildPastEvent(entity, q, yahooSymbol);
+        // No shell — build a past event; route through the merge helper so
+        // an FY-period sibling (from timeseries / SEC XBRL) gets enriched
+        // rather than shadowed by a duplicate row (audit finding — capability e).
+        const past = buildPastEvent(entity, q, yahooSymbol, q._currency);
         if (past) {
-          newlyCreated.push(past);
-          newEvents.push({
-            eventId: past.id,
-            ticker: entity.ticker,
-            period: past.period,
-            scheduledDate: past.scheduledDate,
-          });
+          const routed = routeCreatedEvent(past);
+          if (!routed.merged) {
+            newEvents.push({
+              eventId: routed.id,
+              ticker: entity.ticker,
+              period: past.period,
+              scheduledDate: past.scheduledDate,
+            });
+          }
+        }
+      }
+
+      // --- 3a.6. Yahoo fundamentals-timeseries enrichment ---
+      // Audit finding (capability b): call the fundamentals-timeseries
+      // endpoint AFTER earningsChart + FMP fallback. This is the primary
+      // source of Revenue / EBIT / EBITDA / GrossProfit / NetIncome for
+      // foreign wrappers whose earningsChart returns empty. Each metric
+      // is stamped with `d.currencyCode` as its unit (currency per data
+      // point — capability g).
+      // Fail-soft: null result skips this step entirely.
+      perVendor.yahoo_ts.attempted++;
+      const ts = await yahooTimeseries(yahooSymbol).catch(() => null);
+      if (!ts) {
+        perVendor.yahoo_ts.errored++;
+      } else if (ts.byQuarter.size === 0) {
+        perVendor.yahoo_ts.empty++;
+      } else {
+        perVendor.yahoo_ts.succeeded++;
+      }
+      if (ts && ts.byQuarter.size > 0) {
+        for (const [asOfDate, bucket] of ts.byQuarter) {
+          if (bucket.size === 0) continue;
+          const tsEvent = buildTimeseriesEvent(entity, yahooSymbol, asOfDate, bucket);
+          const routed = routeCreatedEvent(tsEvent);
+          if (!routed.merged) {
+            newEvents.push({
+              eventId: routed.id,
+              ticker: entity.ticker,
+              period: tsEvent.period,
+              scheduledDate: tsEvent.scheduledDate,
+            });
+          }
         }
       }
 
@@ -489,6 +645,127 @@ export async function POST(req: NextRequest) {
           pendingEvents.set(original.id, updated);
         }
       }
+    }
+
+    // ---- 3b.5. SEC submissions date shells ----
+    // Audit finding (capability c): for entities WITH edgarCik but fewer
+    // than 2 past events on file, pull EDGAR submissions/CIK{n}.json and
+    // create one shell per periodic filing (10-Q / 10-K / 20-F / 40-F /
+    // 6-K). These carry no metric values but give the median-gap
+    // estimator a real historical rhythm to project a next-event date and
+    // provide real filing URLs for click-through.
+    //
+    // Per memory note `project_estimator_46_nulls`, secSubmissionsShells()
+    // pulls the last 12 periods so semi-annual filers get both cycles in
+    // history — that's the free-coverage fix scoped for the estimator gap.
+    //
+    // Every incoming shell routes through routeCreatedEvent so a Yahoo
+    // timeseries event on the same fiscal period (higher provenance rank
+    // = 90 vs 20) enriches instead of getting shadowed.
+    {
+      const countPastByTicker = new Map<string, number>();
+      const rolledEvents: EventRecord[] = [
+        ...snap.events.map((e) => pendingEvents.get(e.id) ?? e),
+        ...newlyCreated,
+      ];
+      for (const ev of rolledEvents) {
+        if (!ev.eventDate) continue;
+        countPastByTicker.set(
+          ev.ticker,
+          (countPastByTicker.get(ev.ticker) ?? 0) + 1,
+        );
+      }
+      for (const entity of registry) {
+        if (!entity.edgarCik) continue;
+        if (entity.securityType !== "operating") continue;
+        if ((countPastByTicker.get(entity.ticker) ?? 0) >= 2) continue;
+        perVendor.sec.attempted++;
+        let shells: Awaited<ReturnType<typeof secSubmissionsShells>> = [];
+        try {
+          shells = await secSubmissionsShells(entity);
+          if (shells.length === 0) {
+            perVendor.sec.empty++;
+          } else {
+            perVendor.sec.succeeded++;
+          }
+        } catch {
+          perVendor.sec.errored++;
+          shells = [];
+        }
+        for (const s of shells) {
+          const routed = routeCreatedEvent(s);
+          if (!routed.merged) {
+            newEvents.push({
+              eventId: routed.id,
+              ticker: entity.ticker,
+              period: s.period,
+              scheduledDate: s.scheduledDate,
+            });
+          }
+        }
+      }
+    }
+
+    // ---- 3c. Next-event estimator ----
+    // For any operating entity WITHOUT a shell for a next event, project
+    // one forward using the median gap between its past-event dates.
+    // Self-healing: on the next cron pass, if a real Yahoo nextEarningsDate
+    // shows up for the same period, the promotion pass upgrades the
+    // estimated shell to a real one.
+    const combinedForEstimator = [
+      ...snap.events,
+      ...newlyCreated,
+    ];
+    const pastByTicker = collectPastDatesByTicker(combinedForEstimator);
+    const shellByTicker = new Set(
+      combinedForEstimator
+        .filter((ev) => !ev.eventDate)
+        .map((ev) => ev.ticker),
+    );
+    let estimated = 0;
+    for (const entity of registry) {
+      if (entity.securityType !== "operating") continue;
+      // Skip if we already have a next-event shell (real or estimated)
+      if (shellByTicker.has(entity.ticker)) continue;
+      const past = pastByTicker.get(entity.ticker);
+      if (!past || past.length < 2) continue;
+      const est = estimateNextEvent({
+        ticker: entity.ticker,
+        benchmark: entity.benchmark ?? "",
+        pastEventDates: past,
+      });
+      if (!est.ok || !est.scheduledDate || !est.period) continue;
+      const shell = buildEventShell(entity, est.scheduledDate, est.period);
+      // Marker so the UI can distinguish an estimated next-event shell
+      // from a Yahoo-confirmed one. `freshness: "stale"` communicates
+      // "we projected this, waiting for a real date" and the
+      // client-side pill can hint that visually. `cadence` records
+      // which class the estimator inferred (quarterly / semiannual /
+      // annual) so the card can render "H2 results expected ~Feb" for
+      // BHP LN / RIO LN / ULVR LN and similar.
+      shell.freshness = "stale";
+      if (est.cadence) shell.cadence = est.cadence;
+      // Route through merge-on-match (audit finding — capability e).
+      const routed = routeCreatedEvent(shell);
+      if (!routed.merged) {
+        newEvents.push({
+          eventId: routed.id,
+          ticker: entity.ticker,
+          period: est.period,
+          scheduledDate: est.scheduledDate,
+        });
+      }
+      estimated++;
+    }
+    if (estimated > 0) {
+      // Note it for the cron-status summary; harmless if empty.
+      eventSummaries.push({
+        eventId: "estimator",
+        ticker: "*",
+        appended: 0,
+        maturedHorizons: [],
+        errors: [`estimated ${estimated} next-event shells via median-gap`],
+      });
     }
 
     // ---- 4. Single commit for all earnings.json mutations ----
@@ -749,6 +1026,47 @@ export async function POST(req: NextRequest) {
   } catch (e) {
     // Never let cron-status write failure mask the run result.
     console.error("cron: writeCronStatus failed", e);
+  }
+
+  // ---- 7. Pipeline self-check (audit-prompt Part 2) ----
+  // Runs AFTER writeCronStatus so it adds two extra commits (report +
+  // history append). That's an accepted trade-off — see file header of
+  // server/lib/pipelineReport.ts. Fail-soft: any error here is logged and
+  // does not affect the run response.
+  try {
+    const [snapAfter, indexAfter, prevReport] = await Promise.all([
+      store.readEarnings(),
+      store.readEventsIndex?.() ?? Promise.resolve({ entries: [] } as any),
+      store.readPipelineReport?.() ?? Promise.resolve(null),
+    ]);
+    void prevReport; // reserved for future drift checks
+    const historyPrev = await (store.readPipelineHistory?.() ?? Promise.resolve([]));
+    const shardFileCount = indexAfter.entries?.length ?? 0;
+    // Rough events_added_today = size of the newlyCreated push +
+    // pendingEvents whose id wasn't in the pre-run snap.
+    const preIds = new Set(snap.events.map((e) => e.id));
+    const eventsAddedToday =
+      newlyCreated.length +
+      [...pendingEvents.keys()].filter((id) => !preIds.has(id)).length;
+    const raw = computePipelineReport({
+      snap: snapAfter,
+      index: indexAfter,
+      shardFileCount,
+      eventsAddedToday,
+      perVendor,
+      cronDurationMs: finishedAt.getTime() - startedAt.getTime(),
+      startedAt,
+      finishedAt,
+    });
+    // Yesterday's history row (last entry with date < today) for the drop rule.
+    const todayIso = finishedAt.toISOString().slice(0, 10);
+    const prev =
+      historyPrev.filter((h) => h.date < todayIso).slice(-1)[0] ?? null;
+    const report = checkRegressions(raw, prev, null);
+    if (store.writePipelineReport) await store.writePipelineReport(report);
+    if (store.appendPipelineHistory) await store.appendPipelineHistory(toHistoryEntry(report));
+  } catch (e) {
+    console.error("cron: pipeline-report step failed", e);
   }
 
   return NextResponse.json(

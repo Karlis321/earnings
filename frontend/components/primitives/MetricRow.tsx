@@ -7,10 +7,17 @@ import { FreshnessDot } from "./FreshnessDot";
 import { computeFreshness } from "@/lib/freshness";
 import { fmtMoney, fmtNumber } from "@/lib/format";
 
-function renderValue(fact: MetricEntry["actual"]) {
+// The metric key carries the millions convention (`_m` suffix). The unit
+// carries the currency. Combine both so KRW / CAD / JPY / etc. render
+// with a scaled magnitude AND a visible currency prefix — surprise-%
+// and beat/miss ratios are currency-safe within a ticker, but the raw
+// figure needs the ISO code so cross-ticker readers don't silently mix.
+function renderValue(fact: MetricEntry["actual"], key: string) {
   if (!fact || fact.value === null) return "—";
-  if (fact.unit.endsWith("_m") || fact.unit === "USD" || fact.unit === "EUR") {
-    return fmtMoney(fact.value, fact.unit);
+  const looksLikeCurrency = /^[A-Z]{3}(_m)?$/.test(fact.unit ?? "");
+  if (looksLikeCurrency) {
+    const storedInMillions = key.endsWith("_m") || fact.unit.endsWith("_m");
+    return fmtMoney(fact.value, fact.unit, storedInMillions);
   }
   return fmtNumber(fact.value, 2);
 }
@@ -23,24 +30,34 @@ export function MetricRow({ metric }: { metric: MetricEntry }) {
         {metric.displayLabel}
       </div>
 
-      <FactPopover fact={metric.actual} displayValue={renderValue(metric.actual)}>
+      <FactPopover
+        fact={metric.actual}
+        displayValue={renderValue(metric.actual, metric.key)}
+      >
         <span
           className={
             "block text-right font-mono text-[14px] font-semibold text-tx tabular-nums"
           }
         >
-          {renderValue(metric.actual)}
+          {renderValue(metric.actual, metric.key)}
         </span>
       </FactPopover>
 
-      <FactPopover fact={metric.estimate} displayValue={renderValue(metric.estimate)}>
+      <FactPopover
+        fact={metric.estimate}
+        displayValue={renderValue(metric.estimate, metric.key)}
+      >
         <span className="block text-right font-mono text-[14px] text-tx-mid tabular-nums">
-          {renderValue(metric.estimate)}
+          {renderValue(metric.estimate, metric.key)}
         </span>
       </FactPopover>
 
       <div className="flex justify-end">
-        <SurprisePill surprisePct={metric.surprisePct} compact />
+        <SurprisePill
+          surprisePct={metric.surprisePct}
+          hasActual={metric.actual?.value != null}
+          compact
+        />
       </div>
 
       <FreshnessDot state={actualFresh} asOf={metric.actual?.asOf ?? null} />

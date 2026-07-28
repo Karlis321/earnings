@@ -10,14 +10,19 @@ export const dynamic = "force-dynamic";
 //   - staleThresholdHours: banner trigger threshold (26h weekday default)
 //   - totals: appended + matured from the last run
 export async function GET() {
-  const snap = await store.readEarnings();
+  // Event count comes from the compact events-index — no need to pull
+  // the 40+ MB earnings monolith just to count rows.
+  const index = store.readEventsIndex
+    ? await store.readEventsIndex()
+    : { entries: [] as Array<{ count: number }> };
+  const eventCount = index.entries.reduce((n, e) => n + (e.count ?? 0), 0);
   const cron = await store.readCronStatus();
   return NextResponse.json(
     {
       ok: true,
       snapshotAt: await store.snapshotAt(),
-      schema: snap.schema,
-      events: snap.events.length,
+      schema: "earnings/v1",
+      events: eventCount,
       mode: store.mode(),
       ghPatPresent: store.ghPatPresent(),
       lastCronRun: cron?.finishedAt ?? null,

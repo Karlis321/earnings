@@ -1,18 +1,3 @@
-SYMPTOM (from screenshot): the "Hudbay Minerals" row renders ON TOP of the
-column-header row (NAME / NEXT EVENT / LAST SURPRISE / GUIDANCE / 1-MONTH
-REACTION / FRESH / SRC). There are dark/black blocks bleeding over the header
-where the surprise/guidance/reaction cells sit.
+One arithmetic flag before push: forward_dates_confirmed (55) + window (51) + estimated (1315) = 1421, but tickers_with_forward_dates = 1370. A 51-entry gap means either some tickers carry more than one forward entry (in which case the three sub-counts are per-entry while the headline is per-ticker — fine, but the report should say so, e.g. rename to forward_entries_*), or 51 tickers are double-counted across precision classes, which would hint at a confirmed-vs-estimated collision the precision hierarchy should have resolved. Given AGL SJ, ambiguous metric semantics is exactly the failure mode this report exists to kill — worth a two-minute check of which explanation it is, and either a rename or a dedup, before the schema ossifies as pipeline-report/v1.
 
-EXPECTED: the header row stays fixed and fully opaque at the top; data rows
-scroll UNDER it; no dark artifacts; each cell's content stays within its column.
-
-LIKELY AREAS (check in this order, don't guess-rewrite everything):
-1. Sticky <thead>/header has no solid background → set an opaque background
-   (matches the theme token, not transparent) and a z-index above rows.
-2. z-index / stacking: a row (or its badge/pill) sits above the header.
-3. An absolutely/negatively-positioned element (badge, chart, freshness dot)
-   with no background or wrong offset is painting outside its cell.
-4. Row height/overflow: content taller than the row leaking over the header.
-
-CONSTRAINTS: fix with CSS/layout only; do not change the data or column set.
-Keep it accessible (contrast, no color-only signals). Show me the diff.
+Also confirm one regression-rule nuance survived into the wiring: events_added_today == 0 should flag only when calendar.json expected reports that weekday — today's baseline correctly shows ok with zero adds, so it looks right, but the corruption test didn't exercise that particular rule; a quick mental trace of the condition is enough.

@@ -94,7 +94,12 @@ function SectorRow({
         ) : null}
       </span>
       <span className="font-mono text-[12.5px] text-tx-mid">
-        {r.nextEvent.date ? fmtDateShort(r.nextEvent.date) : "—"}
+        {r.nextEvent.date
+          ? r.nextEvent.cadence === "semiannual" ||
+            r.nextEvent.cadence === "annual"
+            ? r.nextEvent.label
+            : fmtDateShort(r.nextEvent.date)
+          : "—"}
       </span>
       <span className="flex items-center gap-2">
         <RealPriceSparkline
@@ -116,8 +121,12 @@ function SectorRow({
         </span>
       </span>
       <span>
-        {r.entity.securityType === "operating" && r.lastSurprisePct !== null ? (
-          <SurprisePill surprisePct={r.lastSurprisePct} compact />
+        {r.entity.securityType === "operating" ? (
+          <SurprisePill
+            surprisePct={r.lastSurprisePct}
+            hasActual={r.lastPeriod != null}
+            compact
+          />
         ) : (
           <span className="text-[12.5px] text-tx3">—</span>
         )}

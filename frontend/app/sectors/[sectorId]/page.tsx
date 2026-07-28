@@ -1,12 +1,13 @@
 import { store } from "@/server/store";
 import { entitiesInSector } from "@/server/lib/registryHelpers";
-import { buildWatchlistRows } from "@/lib/watchlist";
+import { buildWatchlistRowsFromIndex } from "@/lib/watchlist";
 import { todayIso } from "@/lib/freshness";
 import { notFound } from "next/navigation";
 import { Panel } from "@/components/primitives";
 import { Breadcrumb } from "@/components/shell/Breadcrumb";
 import { SectorMemberRows } from "@/components/sectors/SectorMemberRows";
 import { AlertOctagon } from "lucide-react";
+import type { EventsIndex } from "@/lib/types";
 
 interface Props {
   params: Promise<{ sectorId: string }>;
@@ -14,17 +15,23 @@ interface Props {
 
 export const dynamic = "force-dynamic";
 
+const EMPTY_INDEX: EventsIndex = {
+  schema: "events-index/v1",
+  updatedAt: "",
+  entries: [],
+};
+
 export default async function SectorDetailPage({ params }: Props) {
   const { sectorId: raw } = await params;
   const sectorId = decodeURIComponent(raw);
-  const [entities, snapshot] = await Promise.all([
+  const [entities, index] = await Promise.all([
     store.readRegistry(),
-    store.readEarnings(),
+    store.readEventsIndex?.() ?? Promise.resolve(EMPTY_INDEX),
   ]);
   const members = entitiesInSector(entities, sectorId);
   if (members.length === 0) notFound();
 
-  const allRows = buildWatchlistRows(entities, snapshot, todayIso());
+  const allRows = buildWatchlistRowsFromIndex(entities, index.entries, todayIso());
   const inSector = allRows.filter((r) =>
     members.some((m) => m.ticker === r.ticker),
   );

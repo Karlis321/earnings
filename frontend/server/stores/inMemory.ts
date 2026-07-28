@@ -64,6 +64,46 @@ export const inMemoryStore: Store = {
   async readEarnings(): Promise<EarningsSnapshot> {
     return snapshotWithEtf;
   },
+  async readEventsIndex() {
+    const byTicker = new Map<string, EventRecord[]>();
+    for (const ev of snapshotWithEtf.events) {
+      if (!byTicker.has(ev.ticker)) byTicker.set(ev.ticker, []);
+      byTicker.get(ev.ticker)!.push(ev);
+    }
+    const entries = [] as import("@/lib/types").EventsIndexEntry[];
+    for (const [ticker, events] of byTicker) {
+      const past = events.filter((e) => e.eventDate);
+      past.sort((a, b) => (b.eventDate ?? "").localeCompare(a.eventDate ?? ""));
+      const future = events.filter((e) => !e.eventDate);
+      future.sort((a, b) => (a.scheduledDate ?? "").localeCompare(b.scheduledDate ?? ""));
+      const latest = past[0];
+      const next = future[0];
+      entries.push({
+        ticker,
+        count: events.length,
+        lastEventId: latest?.id ?? null,
+        lastEventDate: latest?.eventDate ?? null,
+        lastPeriod: latest?.period ?? null,
+        lastSurprisePct:
+          latest?.metrics?.find((m) => /eps/i.test(m.key ?? ""))?.surprisePct ?? null,
+        nextEventId: next?.id ?? null,
+        nextScheduled: next?.scheduledDate ?? null,
+        nextPeriod: next?.period ?? null,
+        nextIsEstimated: !!next && next.freshness === "stale",
+        sourceCount: 0,
+        guidanceMove: latest?.guidanceMove ?? null,
+        freshness: latest?.freshness ?? "never",
+      });
+    }
+    return {
+      schema: "events-index/v1" as const,
+      updatedAt: snapshotWithEtf.lastUpdated,
+      entries,
+    };
+  },
+  async readEventsForTicker(ticker: string) {
+    return snapshotWithEtf.events.filter((e) => e.ticker === ticker);
+  },
   async upsertEvent(_event: EventRecord): Promise<void> {
     notImplemented("upsertEvent");
   },
@@ -113,6 +153,19 @@ export const inMemoryStore: Store = {
   },
   async writeCronStatus(): Promise<void> {
     notImplemented("writeCronStatus");
+  },
+
+  async readPipelineReport() {
+    return null;
+  },
+  async writePipelineReport(): Promise<void> {
+    notImplemented("writePipelineReport");
+  },
+  async readPipelineHistory() {
+    return [];
+  },
+  async appendPipelineHistory(): Promise<void> {
+    notImplemented("appendPipelineHistory");
   },
 
   async readDocument(_id: string): Promise<Document | null> {

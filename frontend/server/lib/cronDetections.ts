@@ -5,6 +5,7 @@
 // spinning up the whole cron.
 
 import type {
+  EventProvenance,
   EventRecord,
   Entity,
   Fact,
@@ -13,6 +14,25 @@ import type {
   ReactionPoint,
 } from "@/lib/types";
 import type { YahooEarnings } from "@/server/vendors/yahoo";
+
+// Provenance rank — higher wins on conflict. Mirrors scripts/dedupe-events.mjs
+// so cron merges use the same ordering as the offline dedup pass. See audit
+// finding (capability e — merge-on-incoming).
+export const PROVENANCE_RANK: Record<string, number> = {
+  "sec-xbrl-companyfacts": 100,
+  "yahoo-timeseries": 90,
+  "yahoo-earnings-chart": 80,
+  fmp: 70,
+  "manual-entry": 60,
+  "sec-submissions": 20,
+  "estimator-median-gap": 10,
+  fixture: 5,
+  unknown: 0,
+};
+
+function provRank(p: EventProvenance | string | undefined | null): number {
+  return PROVENANCE_RANK[p ?? "unknown"] ?? 0;
+}
 
 const HORIZONS: Horizon[] = ["d1", "d3", "w1", "m1"];
 const HORIZON_TRADING_DAYS: Record<Horizon, number> = {
@@ -178,6 +198,12 @@ export function buildPastEvent(
     netIncome?: number | null;
   },
   yahooSymbol: string,
+  // Audit finding (capability g — currency per data point). When the
+  // upstream data source returns a reporting currency (Yahoo's
+  // financialCurrency, FMP's reportedCurrency), pass it through so we
+  // stamp the actual metric `unit` with the real filing currency instead
+  // of METRIC_LABEL_BY_KEY's default (usually "USD" for revenue_usd_m).
+  currency?: string,
 ): EventRecord | null {
   const parsed = parseYahooPeriod(quarter.period);
   if (!parsed) return null;
@@ -211,6 +237,12 @@ export function buildPastEvent(
     const meta = labelFor(key);
     const isEps = /eps/i.test(key);
     const isRevenueM = /^revenue_[a-z]{3}_m$/.test(key);
+    // Currency-per-data-point (audit finding): for currency-bearing scalar
+    // keys, override meta.unit with the real reporting currency when the
+    // caller passed one. Keeps non-currency keys (kt, %, USD/lb, …) intact.
+    const isCurrencyBearing = isEps || /_m$/.test(key);
+    const effectiveUnit =
+      currency && isCurrencyBearing ? currency : meta.unit;
 
     let estimateVal: number | null = null;
     let actualVal: number | null = null;
@@ -244,7 +276,7 @@ export function buildPastEvent(
         estimateVal !== null
           ? {
               value: estimateVal,
-              unit: meta.unit,
+              unit: effectiveUnit,
               source: {
                 url: yahooAnalysisUrl,
                 label: "Yahoo Finance · consensus",
@@ -261,7 +293,7 @@ export function buildPastEvent(
         actualVal !== null
           ? {
               value: actualVal,
-              unit: meta.unit,
+              unit: effectiveUnit,
               source: {
                 url: sourceUrlActual,
                 label: sourceLabelActual,
@@ -289,6 +321,8 @@ export function buildPastEvent(
     expectation: "unset",
     guidanceMove: null,
     freshness: "fresh",
+    provenance: "yahoo-earnings-chart",
+    provenanceAsOf: now,
     metrics,
     guidance: [],
     reaction: {
@@ -348,6 +382,10 @@ export function promoteShellToPast(
   },
   entity: Entity,
   yahooSymbol: string,
+  // Currency-per-data-point (audit finding). Same pass-through as
+  // buildPastEvent — Yahoo's financialCurrency / FMP's reportedCurrency
+  // override the METRIC_LABEL_BY_KEY default unit for currency-bearing keys.
+  currency?: string,
 ): EventRecord {
   const now = new Date().toISOString();
   const asOf = now.slice(0, 10);
@@ -366,6 +404,9 @@ export function promoteShellToPast(
     const meta = labelFor(key);
     const isEps = /eps/i.test(key);
     const isRevenueM = /^revenue_[a-z]{3}_m$/.test(key);
+    const isCurrencyBearing = isEps || /_m$/.test(key);
+    const effectiveUnit =
+      currency && isCurrencyBearing ? currency : meta.unit;
     let estimateVal: number | null = null;
     let actualVal: number | null = null;
     let srcUrl = earningsUrl;
@@ -393,7 +434,7 @@ export function promoteShellToPast(
         estimateVal !== null
           ? {
               value: estimateVal,
-              unit: meta.unit,
+              unit: effectiveUnit,
               source: { url: analysisUrl, label: "Yahoo Finance · consensus", provenance: "wire", locator: null },
               asOf,
               fetchedAt: now,
@@ -405,7 +446,7 @@ export function promoteShellToPast(
         actualVal !== null
           ? {
               value: actualVal,
-              unit: meta.unit,
+              unit: effectiveUnit,
               source: { url: srcUrl, label: srcLabel, provenance: "wire", locator: null },
               asOf,
               fetchedAt: now,
@@ -491,6 +532,8 @@ export function buildEventShell(
     expectation: "unset",
     guidanceMove: null,
     freshness: "fresh",
+    provenance: "yahoo-earnings-chart",
+    provenanceAsOf: new Date().toISOString(),
     metrics: [],
     guidance: [],
     reaction: {
@@ -618,5 +661,241 @@ export function detectRestatements(
   return {
     updated: { ...event, metrics: nextMetrics },
     hits,
+  };
+}
+
+// ---------- Merge-on-incoming (audit finding — capability e) ----------
+//
+// Every place that creates a new EventRecord in cron/daily should route
+// through findMatchingEvent + mergeMetricsInto INSTEAD of pushing another
+// row that dedupe-events.mjs will have to clean up later. Same behavior
+// as the offline dedup script; higher provenance wins, losers move to
+// `superseded[]`, nothing is silently dropped.
+
+export interface SupersededMetric {
+  key: string;
+  value: number | null;
+  unit: string;
+  source: string | null;
+  from_provenance: EventProvenance | string | null;
+  from_event_id: string;
+}
+
+// Extend EventRecord in-memory with the merge bookkeeping fields (not on
+// the public type — dedupe writes them today; we just make the cron write
+// them shape-compatibly).
+export type MergedEventRecord = EventRecord & {
+  superseded?: SupersededMetric[];
+  provenance_merged?: string[];
+};
+
+// Return the first event where:
+//   (a) same ticker AND matching parsed period, OR
+//   (b) same ticker AND both events have an eventDate/scheduledDate within 45 days.
+// If either period or eventDate matches, that's the same underlying report cycle.
+export function findMatchingEvent(
+  events: EventRecord[],
+  ticker: string,
+  period: string,
+  eventDate: string | null,
+): EventRecord | null {
+  const parsedIncoming = parseStoredPeriod(period);
+  const targetTs = eventDate ? new Date(eventDate).getTime() : null;
+  for (const ev of events) {
+    if (ev.ticker !== ticker) continue;
+    // (a) fiscal period match
+    if (parsedIncoming) {
+      const p = parseStoredPeriod(ev.period);
+      if (p && p.year === parsedIncoming.year && p.quarter === parsedIncoming.quarter) {
+        return ev;
+      }
+    } else if (ev.period === period && period) {
+      return ev;
+    }
+    // (b) close-date match within 45d
+    if (targetTs != null) {
+      const anchor = ev.eventDate ?? ev.scheduledDate ?? null;
+      if (anchor) {
+        const diffDays = Math.abs(new Date(anchor).getTime() - targetTs) / 86_400_000;
+        if (diffDays <= 45) return ev;
+      }
+    }
+  }
+  return null;
+}
+
+// Merge metrics from `incoming` into `target`:
+//   - Target lacks the key (or target.actual.value is null) → enrich.
+//   - Both present, incoming provenance rank > target's → swap; record
+//     the losing metric to `superseded[]` so nothing is silently discarded.
+//   - Otherwise target keeps; incoming loser moves to `superseded[]` if
+//     it carried a distinct actual value.
+// Also updates `provenance_merged` (sorted, unique).
+export function mergeMetricsInto(
+  target: EventRecord,
+  incoming: EventRecord,
+): MergedEventRecord {
+  const merged: MergedEventRecord = { ...target };
+  const targetRank = provRank(target.provenance);
+  const incomingRank = provRank(incoming.provenance);
+
+  const byKey = new Map<string, MetricEntry>();
+  for (const m of target.metrics ?? []) byKey.set(m.key, m);
+
+  const superseded: SupersededMetric[] = Array.isArray(
+    (target as MergedEventRecord).superseded,
+  )
+    ? [...((target as MergedEventRecord).superseded as SupersededMetric[])]
+    : [];
+
+  for (const inc of incoming.metrics ?? []) {
+    const cur = byKey.get(inc.key);
+    if (!cur) {
+      byKey.set(inc.key, inc);
+      continue;
+    }
+    const curHasActual =
+      cur.actual != null && cur.actual.value != null;
+    const incHasActual =
+      inc.actual != null && inc.actual.value != null;
+
+    if (!curHasActual && incHasActual) {
+      // Target null → fill it in regardless of provenance ordering.
+      byKey.set(inc.key, { ...cur, ...inc });
+      continue;
+    }
+    if (!incHasActual) continue;
+    if (incomingRank > targetRank) {
+      // Winner swap: current metric goes to superseded, incoming takes over.
+      if (cur.actual?.value != null) {
+        superseded.push({
+          key: cur.key,
+          value: cur.actual.value,
+          unit: cur.actual.unit,
+          source: cur.actual.source?.label ?? null,
+          from_provenance: target.provenance ?? null,
+          from_event_id: target.id,
+        });
+      }
+      byKey.set(inc.key, inc);
+    } else if (
+      inc.actual?.value != null &&
+      cur.actual?.value !== inc.actual.value
+    ) {
+      // Target keeps; incoming loser noted so nothing is silently discarded.
+      superseded.push({
+        key: inc.key,
+        value: inc.actual.value,
+        unit: inc.actual.unit,
+        source: inc.actual.source?.label ?? null,
+        from_provenance: incoming.provenance ?? null,
+        from_event_id: incoming.id,
+      });
+    }
+  }
+
+  const provs = new Set<string>();
+  const existingMerged = (target as MergedEventRecord).provenance_merged;
+  if (Array.isArray(existingMerged)) existingMerged.forEach((p) => provs.add(p));
+  if (target.provenance) provs.add(target.provenance);
+  if (incoming.provenance) provs.add(incoming.provenance);
+  const provenanceMerged = [...provs].sort();
+
+  merged.metrics = [...byKey.values()];
+  if (superseded.length > 0) merged.superseded = superseded;
+  if (provenanceMerged.length > 0) merged.provenance_merged = provenanceMerged;
+  return merged;
+}
+
+// ---------- Timeseries → EventRecord adapter (capability b support) ----------
+//
+// Convert a Yahoo fundamentals-timeseries bucket (asOfDate → per-key value)
+// into a full EventRecord shaped like buildPastEvent's output. Used by the
+// cron's per-entity Yahoo pass so the timeseries enrichment routes through
+// the same merge-or-push path as everything else. Provenance is stamped
+// as "yahoo-timeseries" at creation; unit comes from `d.currencyCode` on
+// each metric (audit finding — currency per data point).
+export function buildTimeseriesEvent(
+  entity: Entity,
+  yahooSymbol: string,
+  asOfDate: string,
+  bucket: Map<string, { value: number; currencyCode: string; label: string }>,
+): EventRecord {
+  const { year, quarter } = (() => {
+    const d = new Date(asOfDate);
+    return {
+      year: d.getUTCFullYear(),
+      quarter: Math.floor(d.getUTCMonth() / 3) + 1,
+    };
+  })();
+  const periodLabel = `FY${year} Q${quarter}`;
+  const id = nextEventId(entity.ticker, asOfDate);
+  const now = new Date().toISOString();
+  const financialsUrl = `https://finance.yahoo.com/quote/${encodeURIComponent(yahooSymbol)}/financials`;
+
+  const metrics: MetricEntry[] = [];
+  for (const [key, m] of bucket) {
+    metrics.push({
+      key,
+      displayLabel: m.label,
+      isHeadline: entity.headlineMetrics?.includes(key) ?? false,
+      surprisePct: null,
+      estimate: null,
+      actual: {
+        value: m.value,
+        // Currency per data point — audit finding.
+        unit: m.currencyCode,
+        source: {
+          url: financialsUrl,
+          label: "Yahoo · fundamentals-timeseries",
+          provenance: "wire",
+          locator: null,
+        },
+        asOf: asOfDate,
+        fetchedAt: now,
+        method: "yahoo",
+        confidence: 0.85,
+      },
+      prior: null,
+    });
+  }
+
+  const points: ReactionPoint[] = HORIZONS.map((h) => ({
+    horizon: h,
+    absReturn: null,
+    excessReturn: null,
+    benchmark: entity.benchmark ?? "",
+    computedAt: null,
+    populatesOn: horizonPopulatesOn(asOfDate, h),
+  }));
+
+  return {
+    id,
+    ticker: entity.ticker,
+    kind: "earnings",
+    period: periodLabel,
+    scheduledDate: asOfDate,
+    eventDate: asOfDate,
+    timing: null,
+    expectation: "unset",
+    guidanceMove: null,
+    freshness: "fresh",
+    provenance: "yahoo-timeseries",
+    provenanceAsOf: now,
+    metrics,
+    guidance: [],
+    reaction: {
+      benchmark: entity.benchmark ?? "",
+      baselineDate: null,
+      baselineClose: null,
+      points,
+    },
+    sources: {
+      windowStart: addDays(asOfDate, -2),
+      windowEnd: addDays(asOfDate, 35),
+      capturedAt: null,
+      items: [],
+      engineStatus: [],
+    },
   };
 }

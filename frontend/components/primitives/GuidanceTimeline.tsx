@@ -7,11 +7,17 @@ import { FactPopover } from "./FactPopover";
 import { fmtMoney, fmtNumber } from "@/lib/format";
 import { ChevronDown } from "lucide-react";
 
-function renderRange(low: GuidanceEntry["low"], high: GuidanceEntry["high"]) {
+function renderRange(
+  low: GuidanceEntry["low"],
+  high: GuidanceEntry["high"],
+  key: string,
+) {
   if (!low?.value || !high?.value) return "—";
   const unit = low.unit;
+  const looksLikeCurrency = /^[A-Z]{3}(_m)?$/.test(unit ?? "");
+  const storedInMillions = key.endsWith("_m") || unit.endsWith("_m");
   const fmt = (v: number) =>
-    unit.endsWith("_m") ? fmtMoney(v, unit) : fmtNumber(v, 2);
+    looksLikeCurrency ? fmtMoney(v, unit, storedInMillions) : fmtNumber(v, 2);
   return `${fmt(low.value)}–${fmt(high.value)}`;
 }
 
@@ -78,7 +84,7 @@ function GuidanceRow({
       <div className="mt-2 flex items-baseline gap-4">
         <FactPopover fact={entry.midpoint ?? entry.low}>
           <span className="font-mono text-[16px] font-semibold tabular-nums">
-            {renderRange(entry.low, entry.high)}
+            {renderRange(entry.low, entry.high, entry.key)}
           </span>
         </FactPopover>
         <span className="font-mono text-[11px] uppercase tracking-[0.08em] text-tx3">

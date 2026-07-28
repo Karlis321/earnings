@@ -1,15 +1,35 @@
 // Number and money formatting for the dashboard.
 // All figures use tabular-nums; magnitudes collapse to K/M/B for compactness.
 
-export function fmtMoney(value: number | null, unit = "USD"): string {
+// Format a monetary value. Non-USD units render with an ISO prefix so
+// cross-ticker readers can distinguish CAD/KRW/JPY/etc. from USD — the
+// underlying data is *not* FX-normalized, and silently mixing figures
+// across currencies is the failure mode we're guarding against.
+//
+// `storedInMillions` says the raw value is already in millions (typical
+// for our metric-store convention on keys ending in `_m`). Callers with
+// a metric key should compute this from `key.endsWith("_m")`.
+export function fmtMoney(
+  value: number | null,
+  unit = "USD",
+  storedInMillions = false,
+): string {
   if (value === null) return "—";
   const abs = Math.abs(value);
   let suffix = "";
   let out = value;
-  if (unit.endsWith("_m") || unit === "USD_m" || unit === "EUR_m") {
-    // stored as millions
-    if (abs >= 1000) {
-      out = value / 1000;
+  // Legacy unit strings ("USD_m", "EUR_m") also imply millions.
+  const millions =
+    storedInMillions ||
+    unit.endsWith("_m") ||
+    unit === "USD_m" ||
+    unit === "EUR_m";
+  if (millions) {
+    if (abs >= 1_000_000) {
+      out = value / 1_000_000;
+      suffix = "T";
+    } else if (abs >= 1_000) {
+      out = value / 1_000;
       suffix = "B";
     } else {
       suffix = "M";
@@ -24,12 +44,18 @@ export function fmtMoney(value: number | null, unit = "USD"): string {
     out = value / 1_000;
     suffix = "K";
   }
-  const rounded = Math.abs(out) < 10
-    ? out.toFixed(2)
-    : Math.abs(out) < 100
-    ? out.toFixed(1)
-    : Math.round(out).toString();
-  return `${rounded}${suffix}`;
+  const rounded =
+    Math.abs(out) < 10
+      ? out.toFixed(2)
+      : Math.abs(out) < 100
+      ? out.toFixed(1)
+      : Math.round(out).toString();
+  const currencyCode = unit.endsWith("_m") ? unit.slice(0, -2) : unit;
+  const prefix =
+    currencyCode && currencyCode !== "USD" && /^[A-Z]{3}$/.test(currencyCode)
+      ? `${currencyCode} `
+      : "";
+  return `${prefix}${rounded}${suffix}`;
 }
 
 export function fmtNumber(value: number | null, dp = 1): string {

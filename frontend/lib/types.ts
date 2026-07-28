@@ -16,6 +16,12 @@ export type GuidanceMove =
   | "withdrawn"
   | null;
 export type Horizon = "d1" | "d3" | "w1" | "m1";
+// How often the issuer reports. Detected by the estimator via gap
+// clustering across past-event dates; snap targets are ~91 / ~182 / ~365
+// days. Used to project forward the *right* number of days (a quarterly
+// bias would leave BHP/Rio/Unilever as "unscheduled" forever) and to
+// hint at what the UI card should say ("H2 results expected ~Feb").
+export type Cadence = "quarterly" | "semiannual" | "annual" | "unknown";
 export type FactMethod =
   | "yahoo"
   | "fmp"
@@ -103,6 +109,13 @@ export interface Entity {
   // add-entity time when Yahoo returns data. Not every field is
   // available for every issuer (foreign wrappers often return null).
   fundamentals?: EntityFundamentals | null;
+  // Rolling count of news items + press releases mentioning this
+  // entity within the last 14 days. Populated by cron / a local
+  // backfill via fetchEntityNews + fetchPressReleases. Independent
+  // of event coverage — universe tickers without earnings events
+  // still have a live news count for the watchlist SRC column.
+  sourceCount?: number;
+  sourceCountAsOf?: string;
 }
 
 export interface EntityFundamentals {
@@ -186,6 +199,19 @@ export interface CatalystDetail {
   source: FactSource | null;
 }
 
+// Which pipe produced this event's core structure. Metric-level source
+// is on `Fact.source.label`; this is the WHOLE-event provenance so a
+// glance at an EventRecord tells you where the shell came from.
+export type EventProvenance =
+  | "yahoo-earnings-chart" // buildPastEvent / buildEventShell
+  | "yahoo-timeseries" // scripts/backfill-yahoo-timeseries.mjs
+  | "sec-xbrl-companyfacts" // scripts/backfill-sec-events.mjs
+  | "sec-submissions" // scripts/backfill-sec-submissions-shells.mjs
+  | "fmp" // scripts/backfill-fmp.mjs
+  | "estimator-median-gap" // scripts/run-estimator.mjs
+  | "manual-entry" // ManualEntryForm
+  | "fixture";
+
 export interface EventRecord {
   id: string;
   ticker: string;
@@ -198,6 +224,14 @@ export interface EventRecord {
   expectation: Expectation;
   guidanceMove: GuidanceMove;
   freshness: Freshness;
+  // Which backfill / cron step produced this event. Set once at
+  // creation; not overwritten by later mutations. Optional for
+  // backwards-compat with events written before this field existed.
+  provenance?: EventProvenance;
+  provenanceAsOf?: string; // ISO — when this event was first produced
+  // Reporting cadence detected by the estimator (only populated on
+  // estimator-projected shells). "quarterly" | "semiannual" | "annual".
+  cadence?: Cadence;
   metrics: MetricEntry[];
   guidance: GuidanceEntry[];
   catalysts?: CatalystDetail[];
@@ -240,6 +274,10 @@ export interface WatchlistRow {
     date: string | null;
     daysUntil: number | null;
     label: string;
+    // Reporting cadence — when set to semiannual/annual the UI should
+    // prefer the fuzzy `label` over the precise ISO date, since the
+    // estimator only knows the month.
+    cadence?: Cadence;
   };
   lastPeriod: string | null;
   lastSurprisePct: number | null;
@@ -258,6 +296,36 @@ export interface EarningsSnapshot {
   lastUpdated: string;
   events: EventRecord[];
   etfDetails?: Record<string, EtfDetail>;
+}
+
+// Lightweight per-ticker index — replaces monolithic earnings.json reads
+// for the watchlist / overview grid. Populated by scripts/shard-earnings.mjs
+// and refreshed by the cron.
+export interface EventsIndexEntry {
+  ticker: string;
+  count: number;
+  lastEventId: string | null;
+  lastEventDate: string | null; // ISO YYYY-MM-DD
+  lastPeriod: string | null;
+  lastSurprisePct: number | null;
+  nextEventId: string | null;
+  nextScheduled: string | null; // ISO YYYY-MM-DD
+  nextPeriod: string | null;
+  nextIsEstimated: boolean; // true when scheduled via median-gap estimator
+  // Reporting cadence detected by the estimator when the next-event
+  // shell is estimator-produced. Absent for Yahoo-confirmed dates.
+  // The UI uses this to render "H2 results expected ~Feb" instead of
+  // a spuriously precise day for a semi-annual or annual filer.
+  nextCadence?: Cadence;
+  sourceCount: number;
+  guidanceMove: GuidanceMove;
+  freshness: Freshness;
+}
+
+export interface EventsIndex {
+  schema: "events-index/v1";
+  updatedAt: string;
+  entries: EventsIndexEntry[];
 }
 
 export interface SharedState {

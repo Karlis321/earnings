@@ -71,6 +71,31 @@ These are the rules that come from reading multiple sections together:
   `503` (no `GH_PAT` → graceful localStorage-only fallback). The
   Prisma/Postgres model in `docs/PRD_Backend.md` Appendix A is the upgrade
   path, not v1.
+- **Events are sharded per ticker; `earnings.json` is a frozen archive.**
+  Source of truth is `data/events/<TICKER_SLUG>.json` (one shard per
+  ticker) + `data/events-index.json` (lightweight grid summary). Cron
+  writes only shards + index. `data/earnings.json` is `.gitignored` and
+  kept locally for backfill scripts; it is never re-committed. Runtime
+  reads reconstitute from shards via `gitSnapshot.readEarnings()` with a
+  60s in-process cache (see `frontend/server/stores/gitSnapshot.ts`).
+- **Repo weight — organic growth is ~10–15 MB/year.** The 18 → 101 MB jump
+  in July 2026 was a one-time backfill step (Yahoo timeseries + SEC XBRL
+  pushed 8,486 events across 1,416 tickers). Organic growth from here is
+  ~6k events/year at current JSON density. Revisit only if the plan
+  becomes to store per-ticker full-text summaries for the ~1,500-name
+  universe — until then, no action.
+- **Residual coverage gap (~14% ≈ 235 foreign tickers) is a deferred
+  purchase decision, not a bug.** Yahoo timeseries + SEC XBRL closed the
+  US path; FMP's free tier is US-primary-only (foreign symbols return
+  HTTP 402 "Premium Query Parameter"), and the gap is exclusively
+  foreign ADRs and pink sheets. Closing it costs: FMP paid ≈$19/mo
+  (verify foreign coverage before paying — 402 doesn't prove data
+  exists behind it) or EODHD ≈€60/mo (built for exactly this
+  population). Current stance: **don't buy**. The estimator carries
+  most of these on cadence-based next-event shells; cards render
+  "reported · no est" honestly for actuals; covered tier gets full
+  treatment via Claude. Revisit only when an analyst names a specific
+  missing ticker — that's the demand signal worth €60/mo.
 - **Wire shape is collapsed, DB shape is normalized (DC4).** On the wire,
   metrics carry named slots (`estimate`, `actual`, `prior`, `consensus`) —
   see `frontend/lib/types.ts` and `docs/PRD_Backend.md §3.3`. In the future

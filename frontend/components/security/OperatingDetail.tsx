@@ -142,11 +142,11 @@ export function OperatingDetail({ entity, events }: Props) {
                     {est != null ? est.toFixed(3) : "—"}
                   </span>
                   <span className="text-right">
-                    {surp != null ? (
-                      <SurprisePill surprisePct={surp} compact />
-                    ) : (
-                      <span className="text-[12px] text-tx3">—</span>
-                    )}
+                    <SurprisePill
+                      surprisePct={surp ?? null}
+                      hasActual={actual != null}
+                      compact
+                    />
                   </span>
                 </Link>
               );

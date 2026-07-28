@@ -125,7 +125,13 @@ export async function matureEventReaction(
     return { updated: event, matured: [], errors: [] };
   }
 
-  const secSymbol = await resolveYahooSymbol(entity.ticker);
+  // Prefer the persisted yahooSymbol on the entity — yahooLookup is
+  // search-based and fails for foreign tickers (SHLE CN → SHLE.TO,
+  // IJ / KS / IN listings) where the search endpoint doesn't return
+  // the correct listing. Fall back to the search only when we have
+  // no persisted symbol.
+  const secSymbol =
+    entity.yahooSymbol ?? (await resolveYahooSymbol(entity.ticker));
   if (!secSymbol) {
     return {
       updated: event,

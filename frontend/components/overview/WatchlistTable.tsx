@@ -376,12 +376,18 @@ function Row({
         )}
       >
         {nextIso ? (
-          <>
-            {fmtDateShort(nextIso)}{" "}
-            <span className="text-tx-mid">
-              · {fmtDaysUntil(daysUntil)}
-            </span>
-          </>
+          r.nextEvent.cadence === "semiannual" ||
+          r.nextEvent.cadence === "annual" ? (
+            // Fuzzy cadence label — the estimator only knows the month.
+            <span title={nextIso}>{r.nextEvent.label}</span>
+          ) : (
+            <>
+              {fmtDateShort(nextIso)}{" "}
+              <span className="text-tx-mid">
+                · {fmtDaysUntil(daysUntil)}
+              </span>
+            </>
+          )
         ) : isEtf ? (
           "—"
         ) : (
@@ -392,10 +398,15 @@ function Row({
       <span>
         {isDev || isEtf ? (
           <span className="text-[12.5px] text-tx3">—</span>
-        ) : surprise === null ? (
-          <span className="text-[12px] text-tx3">n/a</span>
         ) : (
-          <SurprisePill surprisePct={surprise} compact />
+          <SurprisePill
+            surprisePct={surprise}
+            // r.lastPeriod present means we DO have a last-print event
+            // for this ticker — the actual is reported, we just may not
+            // have an estimate to compare against.
+            hasActual={r.lastPeriod != null}
+            compact
+          />
         )}
       </span>
 

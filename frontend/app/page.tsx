@@ -1,20 +1,28 @@
 import { WatchlistTable } from "@/components/overview/WatchlistTable";
 import { MarketPulse } from "@/components/overview/MarketPulse";
 import { store } from "@/server/store";
-import { buildWatchlistRows } from "@/lib/watchlist";
+import { buildWatchlistRowsFromIndex } from "@/lib/watchlist";
 import { todayIso } from "@/lib/freshness";
+import type { EventsIndex } from "@/lib/types";
 
 // W8 cutover: home page reads from the store, not fixtures. The 60s
 // git-snapshot read cache keeps this cheap when the same request renders
-// multiple pages / the header pill.
+// multiple pages / the header pill. Reads the lightweight
+// data/events-index.json instead of the whole earnings monolith.
 export const dynamic = "force-dynamic";
 
+const EMPTY_INDEX: EventsIndex = {
+  schema: "events-index/v1",
+  updatedAt: "",
+  entries: [],
+};
+
 export default async function OverviewPage() {
-  const [entities, snapshot] = await Promise.all([
+  const [entities, index] = await Promise.all([
     store.readRegistry(),
-    store.readEarnings(),
+    store.readEventsIndex?.() ?? Promise.resolve(EMPTY_INDEX),
   ]);
-  const rows = buildWatchlistRows(entities, snapshot, todayIso());
+  const rows = buildWatchlistRowsFromIndex(entities, index.entries, todayIso());
   const coreCount = rows.filter((r) => r.entity.isCore).length;
   const universeCount = rows.length - coreCount;
   return (

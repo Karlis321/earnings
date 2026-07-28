@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { store } from "@/server/store";
-import { findEntity, findEvent } from "@/server/lib/registryHelpers";
+import { findEntity } from "@/server/lib/registryHelpers";
 import { Breadcrumb } from "@/components/shell/Breadcrumb";
 import {
   Card,
@@ -32,12 +32,14 @@ export default async function EventDetailPage({ params }: Props) {
   const { ticker: rawTicker, eventId: rawEventId } = await params;
   const ticker = decodeURIComponent(rawTicker);
   const eventId = decodeURIComponent(rawEventId);
-  const [entities, snapshot] = await Promise.all([
+  const [entities, tickerEvents] = await Promise.all([
     store.readRegistry(),
-    store.readEarnings(),
+    store.readEventsForTicker
+      ? store.readEventsForTicker(ticker)
+      : Promise.resolve([]),
   ]);
   const entity = findEntity(entities, ticker);
-  const event = findEvent(snapshot, eventId);
+  const event = tickerEvents.find((e) => e.id === eventId);
   if (!entity || !event) notFound();
 
   const freshness = computeFreshness(event.sources.capturedAt ?? event.eventDate);
@@ -73,9 +75,12 @@ export default async function EventDetailPage({ params }: Props) {
           </div>
           <h1 className="text-[32px] font-semibold leading-tight tracking-[-0.02em]">
             {event.period}
-            {headline && headline.surprisePct !== null ? (
+            {headline ? (
               <span className="ml-3 align-middle text-[16px] font-normal">
-                <SurprisePill surprisePct={headline.surprisePct} />
+                <SurprisePill
+                  surprisePct={headline.surprisePct}
+                  hasActual={headline.actual?.value != null}
+                />
               </span>
             ) : null}
           </h1>
