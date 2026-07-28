@@ -61,11 +61,40 @@ async function readFile<T>(
   const r = await fetch(url, { headers: headers(cfg), cache: "no-store" });
   if (r.status === 404) return null;
   if (!r.ok) throw new Error(`GH read ${path} → ${r.status}`);
-  const j = (await r.json()) as { content: string; sha: string; encoding: string };
-  const raw =
-    j.encoding === "base64"
-      ? Buffer.from(j.content, "base64").toString("utf8")
-      : j.content;
+  const j = (await r.json()) as {
+    content?: string;
+    sha: string;
+    encoding?: string;
+    size?: number;
+    download_url?: string;
+  };
+  // GitHub's Contents API caps inline content at 1 MB. For larger files
+  // it returns metadata with an empty `content` field and a
+  // `download_url` we have to fetch separately. Since data/earnings.json
+  // and data/entity-registry.json crossed 1 MB after universe expansion,
+  // we always follow the download_url when content is empty.
+  let raw: string;
+  if (!j.content || j.content.length === 0) {
+    if (!j.download_url) {
+      throw new Error(`GH read ${path} → 200 but no content and no download_url (size=${j.size})`);
+    }
+    const rawResp = await fetch(j.download_url, {
+      headers: {
+        Authorization: `Bearer ${cfg.pat}`,
+        "User-Agent": "EarningsDashboard/1.0",
+      },
+      cache: "no-store",
+    });
+    if (!rawResp.ok) {
+      throw new Error(`GH raw ${path} → ${rawResp.status}`);
+    }
+    raw = await rawResp.text();
+  } else {
+    raw =
+      j.encoding === "base64"
+        ? Buffer.from(j.content, "base64").toString("utf8")
+        : j.content;
+  }
   return { sha: j.sha, content: JSON.parse(raw) as T };
 }
 
