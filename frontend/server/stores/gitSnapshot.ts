@@ -890,8 +890,16 @@ export function gitSnapshotStore(cfg: GhConfig): Store {
     },
 
     async snapshotAt(): Promise<string> {
-      const snap = await this.readEarnings();
-      return snap.lastUpdated;
+      // Read the tiny events-index for its updatedAt stamp — same signal
+      // as reading readEarnings().lastUpdated but one API call instead of
+      // 1,416 shard reads. `/api/health` calls this on every request.
+      try {
+        const r = await readCached<EventsIndex>(cfg, P.eventsIndex);
+        if (r?.content.updatedAt) return r.content.updatedAt;
+      } catch {
+        /* fall through */
+      }
+      return new Date().toISOString();
     },
     ghPatPresent(): boolean {
       return true;

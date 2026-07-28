@@ -35,10 +35,19 @@ function fmtDuration(ms: number | undefined): string {
 }
 
 export default async function HealthPage() {
-  const [status, entities, snapshot, report, history] = await Promise.all([
+  // Deliberately NOT calling store.readEarnings() here — that path
+  // reconstitutes from 1,416 shards on cold serverless start and burns
+  // through the GH_PAT rate limit (5000 req/hr) in ~3 page loads.
+  // Corpus counters come from the events-index (one API call) and the
+  // pipeline-report (already computed at cron end).
+  const [status, entities, index, report, history] = await Promise.all([
     store.readCronStatus(),
     store.readRegistry(),
-    store.readEarnings(),
+    store.readEventsIndex?.() ?? Promise.resolve({
+      schema: "events-index/v1" as const,
+      updatedAt: "",
+      entries: [],
+    }),
     store.readPipelineReport?.() ?? Promise.resolve(null),
     store.readPipelineHistory?.() ?? Promise.resolve([]),
   ]);
@@ -50,7 +59,7 @@ export default async function HealthPage() {
   const totalErrors =
     s?.events?.reduce((n, e) => n + (e.errors?.length ?? 0), 0) ?? 0;
 
-  // Coverage snapshot from the registry + earnings we just read.
+  // Coverage snapshot from the registry + events-index (no shard reads).
   const totalEntities = entities.length;
   const withMarketCap = entities.filter(
     (e) => e.marketCapUsd != null,
@@ -62,17 +71,17 @@ export default async function HealthPage() {
   const withSources = entities.filter(
     (e) => (e.sourceCount ?? 0) > 0,
   ).length;
-  const eventCount = snapshot.events.length;
-  const pastEvents = snapshot.events.filter((e) => e.eventDate).length;
-  const withBaseline = snapshot.events.filter(
-    (e) => e.reaction?.baselineDate,
-  ).length;
-  const maturedHorizons = snapshot.events.reduce(
-    (n, ev) =>
-      n +
-      (ev.reaction?.points?.filter((p) => p.absReturn !== null).length ?? 0),
+  const eventCount = (index.entries ?? []).reduce(
+    (n, e) => n + (e.count ?? 0),
     0,
   );
+  const pastEvents = (index.entries ?? []).filter(
+    (e) => e.lastEventDate,
+  ).length;
+  // Baselines and matured horizons come from the last cron summary now —
+  // the events-index doesn't carry per-event reaction data, and pulling
+  // shards to derive it is what caused the rate-limit blowup.
+  const cronTotalMatured = s?.totalMatured ?? 0;
 
   return (
     <div className="mx-auto max-w-[1400px] px-10 py-8">
@@ -93,8 +102,9 @@ export default async function HealthPage() {
         <p className="mt-2 max-w-[64ch] text-[13.5px] text-tx2">
           Last cron run + per-vendor status + coverage counters. Renders
           live from <code>data/cron-status.json</code>,
-          <code>data/entity-registry.json</code>, and
-          <code>data/earnings.json</code>.
+          <code>data/entity-registry.json</code>,
+          <code>data/events-index.json</code>, and{" "}
+          <code>data/pipeline-report.json</code>.
         </p>
       </div>
 
@@ -188,21 +198,16 @@ export default async function HealthPage() {
               d={`${((withSources / totalEntities) * 100).toFixed(0)}% populated`}
             />
             <div className="my-2 h-px bg-bd" />
-            <Row label="Events" v={eventCount} d="total in earnings.json" />
+            <Row label="Events" v={eventCount} d="sum across shards" />
             <Row
               label="Past events"
               v={pastEvents}
-              d="have eventDate set"
-            />
-            <Row
-              label="Baselines seeded"
-              v={withBaseline}
-              d="reaction can compute"
+              d="tickers with lastEventDate"
             />
             <Row
               label="Horizons matured"
-              v={maturedHorizons}
-              d="d1/d3/w1/m1 filled"
+              v={cronTotalMatured}
+              d="last cron run"
             />
           </div>
         </Panel>
