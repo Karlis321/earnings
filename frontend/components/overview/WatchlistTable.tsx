@@ -56,13 +56,47 @@ interface BulkEarningsResponse {
   tickers: Record<string, BulkEarningsEntry>;
 }
 
-// Industry buckets — sectorTag → industry group. Anything not mapped falls
-// through to "other".
+// Industry buckets — sectorTag → industry group. The registry tags are
+// a mix of Yahoo-screener top-level names ("technology", "materials",
+// "healthcare", "financial-services", ...) and older fine-grained tags
+// from the manual portfolio setup ("copper", "gold", "uranium", "ai").
+// Each bucket needle list includes both so a filter tab matches
+// regardless of which vintage populated the entity.
 const INDUSTRY_GROUPS: Record<string, string[]> = {
-  portfolio: [], // special: all rows
-  technology: ["semiconductors", "ai", "hardware", "software"],
-  materials: ["copper", "gold", "silver", "aluminum", "iron-ore", "lithium", "mining"],
-  energy: ["uranium", "oil", "gas", "energy", "renewables"],
+  portfolio: [], // special: matches all core rows
+  technology: ["technology", "semiconductors", "ai", "hardware", "software"],
+  materials: [
+    "materials",
+    "mining",
+    "copper",
+    "gold",
+    "silver",
+    "aluminum",
+    "iron-ore",
+    "lithium",
+    "commodities",
+  ],
+  energy: [
+    "energy",
+    "uranium",
+    "oil",
+    "gas",
+    "oil-gas",
+    "oil-gas-services",
+    "renewables",
+  ],
+  healthcare: ["healthcare"],
+  financials: [
+    "financials",
+    "financial-services",
+    "exchanges",
+    "alternative-asset-management",
+  ],
+  consumer: ["consumer-cyclical", "consumer-defensive"],
+  industrials: ["industrials"],
+  communications: ["communication-services"],
+  realestate: ["real-estate"],
+  utilities: ["utilities"],
   etfs: ["etf"],
   developer: ["developer"],
 };
@@ -72,6 +106,13 @@ type Filter =
   | "technology"
   | "materials"
   | "energy"
+  | "healthcare"
+  | "financials"
+  | "consumer"
+  | "industrials"
+  | "communications"
+  | "realestate"
+  | "utilities"
   | "etfs"
   | "developer";
 type SortKey = "next" | "surprise" | "reaction" | "freshness" | "name";
@@ -486,6 +527,13 @@ function FilterBar({
             { id: "technology", label: "Technology" },
             { id: "materials", label: "Materials" },
             { id: "energy", label: "Energy" },
+            { id: "healthcare", label: "Healthcare" },
+            { id: "financials", label: "Financials" },
+            { id: "consumer", label: "Consumer" },
+            { id: "industrials", label: "Industrials" },
+            { id: "communications", label: "Communications" },
+            { id: "realestate", label: "Real estate" },
+            { id: "utilities", label: "Utilities" },
             { id: "etfs", label: "ETFs" },
             { id: "developer", label: "Developer" },
           ] as { id: Filter; label: string }[]
