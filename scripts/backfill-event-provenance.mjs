@@ -1,5 +1,9 @@
 #!/usr/bin/env node
 /**
+ * DEPRECATED (shard-first): reads + writes data/earnings.json (gitignored).
+ * Shards are canonical now. This retroactive stamp already ran; kept for
+ * archival re-runs against a locally-reconstituted monolith.
+ *
  * Stamp EventRecord.provenance retroactively on existing events based
  * on their metric source labels. Idempotent — safe to re-run.
  *

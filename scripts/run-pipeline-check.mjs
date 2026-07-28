@@ -112,7 +112,19 @@ async function readJson(p, fallback) {
 }
 
 async function compute() {
-  const snap = await readJson(EARNINGS, { events: [] });
+  // The monolithic earnings.json is .gitignored (see CLAUDE.md) — reconstitute
+  // from shards when it isn't present locally so this script still works.
+  let snap = await readJson(EARNINGS, null);
+  if (!snap) {
+    const files = (await fs.readdir(EVENTS_DIR)).filter((f) => f.endsWith(".json"));
+    const events = [];
+    for (const f of files) {
+      const j = JSON.parse(await fs.readFile(path.join(EVENTS_DIR, f), "utf-8"));
+      const evs = Array.isArray(j) ? j : (j.events ?? []);
+      for (const ev of evs) events.push(ev);
+    }
+    snap = { events };
+  }
   const index = await readJson(INDEX_PATH, { entries: [] });
   const files = (await fs.readdir(EVENTS_DIR)).filter((f) => f.endsWith(".json"));
   const shardFileCount = files.length;
@@ -122,9 +134,23 @@ async function compute() {
   const quality = countCorpusQualityGaps(snap.events);
   const dupes = countDuplicates(snap.events);
   const mism = countIndexMismatches(index, snap.events);
+  // Reaction counters (schema v2). `unavailable` is a terminal state
+  // stamped by matureEventReaction / scripts/apply-reaction-decay.mjs
+  // for events >60 trading days old whose baseline bars never fetched.
   const now = new Date();
+  const todayIso = now.toISOString().slice(0, 10);
+  let reactionsComputed = 0;
+  let reactionsPending = 0;
+  let reactionsUnavailable = 0;
+  for (const ev of snap.events) {
+    for (const p of ev.reaction?.points ?? []) {
+      if (p.status === "unavailable") reactionsUnavailable++;
+      else if (p.absReturn !== null && p.absReturn !== undefined) reactionsComputed++;
+      else if (p.populatesOn && p.populatesOn <= todayIso) reactionsPending++;
+    }
+  }
   const report = {
-    schema: "pipeline-report/v1",
+    schema: "pipeline-report/v2",
     date: now.toISOString().slice(0, 10),
     finishedAt: now.toISOString(),
     status: "ok",
@@ -138,6 +164,9 @@ async function compute() {
     events_missing_provenance: quality.events_missing_provenance,
     metrics_missing_currency: quality.metrics_missing_currency,
     shard_index_mismatches: mism,
+    reactions_computed: reactionsComputed,
+    reactions_pending: reactionsPending,
+    reactions_unavailable: reactionsUnavailable,
     per_vendor: {
       yahoo_qs: { attempted: 0, succeeded: 0, empty: 0, errored: 0 },
       yahoo_ts: { attempted: 0, succeeded: 0, empty: 0, errored: 0 },
@@ -151,6 +180,24 @@ async function compute() {
   if (report.events_missing_provenance > 0) reasons.push(`events_missing_provenance=${report.events_missing_provenance}`);
   if (report.metrics_missing_currency > 0) reasons.push(`metrics_missing_currency=${report.metrics_missing_currency}`);
   if (report.shard_index_mismatches > 0) reasons.push(`shard_index_mismatches=${report.shard_index_mismatches}`);
+
+  // Part 6: reactions_pending growing without new events (compare against
+  // yesterday's history entry). Skip if either side lacks the field.
+  const prevHistory = await readJson(HISTORY_PATH, { entries: [] });
+  const prevEntries = (prevHistory.entries ?? []).slice();
+  const prev = prevEntries.length > 0 ? prevEntries[prevEntries.length - 1] : null;
+  if (
+    prev &&
+    typeof prev.reactions_pending === "number" &&
+    typeof report.reactions_pending === "number" &&
+    report.reactions_pending > prev.reactions_pending &&
+    report.events_total <= prev.events_total
+  ) {
+    reasons.push(
+      `reactions_pending growing without new events (${prev.reactions_pending}→${report.reactions_pending})`,
+    );
+  }
+
   report.status = reasons.length === 0 ? "ok" : "degraded";
   report.reasons = reasons;
   return report;
@@ -187,14 +234,20 @@ async function main() {
       : picked.evs;
     await fs.writeFile(picked.path, JSON.stringify(corruptBody, null, 2));
 
-    // Also patch the monolith so compute() (which reads earnings.json) sees the corruption.
-    const monoRaw = await fs.readFile(EARNINGS, "utf-8");
-    const mono = JSON.parse(monoRaw);
-    const monoIdx = mono.events.findIndex((e) => e.id === picked.evs[picked.idx].id);
-    if (monoIdx >= 0) {
-      delete mono.events[monoIdx].provenance;
-      delete mono.events[monoIdx].provenanceAsOf;
-      await fs.writeFile(EARNINGS, JSON.stringify(mono, null, 2));
+    // Also patch the monolith IF it exists — shards are canonical, but a
+    // legacy monolith would still be read first by compute() when present.
+    let mono = null;
+    let monoIdx = -1;
+    try {
+      mono = JSON.parse(await fs.readFile(EARNINGS, "utf-8"));
+      monoIdx = mono.events.findIndex((e) => e.id === picked.evs[picked.idx].id);
+      if (monoIdx >= 0) {
+        delete mono.events[monoIdx].provenance;
+        delete mono.events[monoIdx].provenanceAsOf;
+        await fs.writeFile(EARNINGS, JSON.stringify(mono, null, 2));
+      }
+    } catch {
+      // earnings.json absent — shards-only run; compute() reconstitutes from them.
     }
 
     const after = await compute();
@@ -208,7 +261,7 @@ async function main() {
       ? { ...picked.body, events: picked.evs }
       : picked.evs;
     await fs.writeFile(picked.path, JSON.stringify(restoredBody, null, 2));
-    if (monoIdx >= 0) {
+    if (mono && monoIdx >= 0) {
       mono.events[monoIdx].provenance = picked.originalProv;
       if (picked.originalProvAsOf) mono.events[monoIdx].provenanceAsOf = picked.originalProvAsOf;
       await fs.writeFile(EARNINGS, JSON.stringify(mono, null, 2));
@@ -231,6 +284,7 @@ async function main() {
     forward_dates_estimated: report.forward_dates_estimated,
     duplicates_detected: report.duplicates_detected,
     status: report.status,
+    reactions_pending: report.reactions_pending,
   };
   const entries = (historyRaw.entries ?? []).slice();
   const eIdx = entries.findIndex((e) => e.date === entry.date);

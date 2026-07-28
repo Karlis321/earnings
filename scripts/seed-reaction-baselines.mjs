@@ -1,5 +1,10 @@
 #!/usr/bin/env node
 /**
+ * DEPRECATED (shard-first): reads + writes data/earnings.json (gitignored).
+ * Retained for archival re-runs against a reconstituted monolith.
+ * Ongoing reaction maturation happens in cron via matureEventReaction and
+ * scripts/apply-reaction-decay.mjs (shard-first).
+ *
  * Mirror the reactionMaturation step: for each event whose scheduledDate
  * has passed and whose baselineDate is null, fetch the security's bars
  * from Yahoo and seed baseline + mature every horizon whose populatesOn

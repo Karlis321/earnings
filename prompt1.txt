@@ -1,3 +1,95 @@
-One arithmetic flag before push: forward_dates_confirmed (55) + window (51) + estimated (1315) = 1421, but tickers_with_forward_dates = 1370. A 51-entry gap means either some tickers carry more than one forward entry (in which case the three sub-counts are per-entry while the headline is per-ticker — fine, but the report should say so, e.g. rename to forward_entries_*), or 51 tickers are double-counted across precision classes, which would hint at a confirmed-vs-estimated collision the precision hierarchy should have resolved. Given AGL SJ, ambiguous metric semantics is exactly the failure mode this report exists to kill — worth a two-minute check of which explanation it is, and either a rename or a dedup, before the schema ossifies as pipeline-report/v1.
+Entity deduplication: one company, many listings — plus four data-quality
+follow-ups that depend on or complement it. Symptom: searching "nvidia"
+returns 4 rows (US primary + foreign lines/BDRs/ADRs of the same company).
+Fix by grouping listings under a canonical company, not by deleting any
+listing.
 
-Also confirm one regression-rule nuance survived into the wiring: events_added_today == 0 should flag only when calendar.json expected reports that weekday — today's baseline correctly shows ok with zero adds, so it looks right, but the corruption test didn't exercise that particular rule; a quick mental trace of the condition is enough.
+PART 1 — DETECT DUPLICATE GROUPS. Scan the entity registry (1,867
+entities). Candidate grouping signals, in order of trust:
+  a. Same edgarCik (strongest — same SEC filer)
+  b. Same ISIN root where available
+  c. Normalized name match: lowercase, strip legal suffixes (Inc, Corp,
+     PLC, SA, AG, NV, Ltd, ADR, "- BDR", share-class markers), collapse
+     whitespace. Require exact match after normalization OR one name
+     being a prefix of the other plus a known wrapper suffix.
+  d. Known wrapper patterns: BDR suffix 34/35/32 (BZ), GR/GY lines,
+     F/Y-suffix OTC pinks, LN vs primary.
+Name-only matches (c without a or b) go to a REVIEW list, not auto-merge
+— "First National Bank" collisions are real. Print all proposed groups:
+canonical | members | matched-on signal | confidence, and write to
+scripts/audits/entity-groups.json. STOP for review before applying
+(print the low-confidence subset separately).
+
+PART 2 — CANONICAL COMPANY MODEL. Add companyId to each entity. Rules:
+  - Canonical listing = the primary exchange line: prefer US primary for
+    US companies, home-exchange for others; explicit override map for
+    ambiguous cases (canonicalOverrides in a config file).
+  - Every entity keeps its own ticker, events, shards — NOTHING merges at
+    the event level. This is grouping, not data merging: the German line's
+    price history is legitimately different data.
+  - Registry gains: company { companyId, canonicalTicker, name,
+    listingCount }.
+  - INDUSTRY-GROUP INHERITANCE: after grouping, propagate industryGroup
+    within each company — any member missing it inherits from the
+    canonical listing (stamp industryGroupSource: "inherited"). This
+    should shrink the 157 unclassified entities; report how many resolve
+    this way. Whatever remains unclassified after inheritance gets
+    industryGroup rendered as "Unclassified" in all UI groupings (store
+    null, render "Unclassified") so cap-band × industry views account for
+    100% of names.
+
+PART 3 — SEARCH & UI BEHAVIOR:
+  - Search matches on company name + any member ticker, returns ONE row
+    per company: canonical listing front, badge "+3 listings".
+  - Company page / expanded row lists all member listings with exchange,
+    currency, and their own event data.
+  - Watchlist and cap-category views: default to canonical listings only
+    (config flag showAllListings=false), so NVIDIA counts once in
+    large-cap tech, not four times. IMPORTANT: check whether any sector
+    aggregates currently count the same company multiple times via
+    marketCapUsd — if so this fix also corrects inflated aggregates;
+    report the before/after for affected sectors.
+  - The 17 covered tickers in covered.json keep their exact current
+    symbols — do not remap them.
+
+PART 4 — WIRE INTO DAILY: new-entity ingestion must attempt company
+assignment on creation (same signals); unassigned new entities get their
+own companyId. Add companies_total and entities_unassigned to the
+pipeline report. Report: groups found | entities grouped | singletons |
+review-list size | sample search "nvidia" before vs after.
+
+PART 5 — ACCESSION-URL RESOLUTION (upgrade fallback links to direct
+filing links). Current state: sourceLink counts are filing 22 · fallback
+7,121 · none 1,315. For every event with provenance sec-xbrl or
+sec-submissions and a CIK: resolve the SPECIFIC filing for that fiscal
+period from the submissions endpoint we already use (match period to the
+10-Q/10-K/20-F/40-F/6-K whose report date aligns; accession number →
+https://www.sec.gov/Archives/edgar/data/{cik}/{accession-no-dashes}/
+{primary-doc}). Upgrade sourceLink to kind: "filing". Respect SEC
+fair-access limits. Yahoo-provenance events without a CIK keep their
+fallback. Report new filing/fallback/none counts — expect filing to rise
+from 22 to ~2,000.
+
+PART 6 — REACTION PENDING-DECAY RULE. reactions_pending is 23,120 and
+includes events that will never mature (old events, foreign tickers Yahoo
+has no bars for). Rule: if an event's report date is more than 60 trading
+days in the past and bars for the baseline still cannot be fetched, set
+each unresolved horizon to a terminal state { status: "unavailable" }
+instead of pending. Pending must mean only "genuinely still maturing."
+Apply retroactively across shards and in the cron maturation step. Add
+reactions_unavailable to the pipeline report; keep reactions_pending as
+the live counter and add a degraded rule if pending GROWS week-over-week
+without corresponding new events. Report: pending before | moved to
+unavailable | pending after (should be a small, interpretable number).
+
+PART 7 — RESHARD FALLBACK FIX. scripts/reshard (or whichever script
+errors) still assumes data/earnings.json exists locally; it is gitignored
+and must not be a dependency. Shards are canonical: make every script
+that previously read the monolith reconstitute from index + shards, and
+delete or hard-deprecate any remaining monolith read path in scripts/.
+Grep scripts/ for earnings.json references and fix each. Verify by
+running the reshard script in a checkout with no local earnings.json.
+
+Order of work: 1 → 2 → 3 → 4 (the dedup spine), then 5, 6, 7 in any
+order. Shard/index consistency check after each part. Nothing pushed —
+report per part: what existed, what changed, counts, one sample each.

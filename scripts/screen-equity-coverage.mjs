@@ -152,10 +152,32 @@ async function pool(items, n, fn) {
   return results;
 }
 
+async function loadSnapshot() {
+  try {
+    return JSON.parse(await fs.readFile(EARNINGS, "utf-8"));
+  } catch {
+    // Reconstitute from shards (canonical per CLAUDE.md).
+    const EVENTS_DIR = path.join(ROOT, "data", "events");
+    let files;
+    try {
+      files = (await fs.readdir(EVENTS_DIR)).filter((f) => f.endsWith(".json"));
+    } catch {
+      return { events: [] };
+    }
+    const events = [];
+    for (const f of files) {
+      const j = JSON.parse(await fs.readFile(path.join(EVENTS_DIR, f), "utf-8"));
+      const evs = Array.isArray(j) ? j : j.events ?? [];
+      for (const ev of evs) events.push(ev);
+    }
+    return { schema: "earnings/v1", events };
+  }
+}
+
 async function main() {
   console.log(`screen-equity-coverage · portfolio_only=${PORTFOLIO_ONLY} dry=${DRY}`);
   const reg = JSON.parse(await fs.readFile(REGISTRY, "utf-8"));
-  const snap = JSON.parse(await fs.readFile(EARNINGS, "utf-8"));
+  const snap = await loadSnapshot();
 
   const eventTickers = new Set(snap.events.map((ev) => ev.ticker));
   const eventCountByTicker = new Map();

@@ -1,5 +1,9 @@
 #!/usr/bin/env node
 /**
+ * DEPRECATED (shard-first): reads + writes data/earnings.json (gitignored).
+ * Shards are canonical. Kept for archival re-runs against a reconstituted
+ * monolith.
+ *
  * Backfill revenue actuals into existing past events. Reads
  * yahoo.earnings.financialsChart.quarterly (revenue + earnings per
  * quarter) and updates the revenue_*_m metric on any past event whose

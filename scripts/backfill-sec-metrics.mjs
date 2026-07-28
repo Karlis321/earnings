@@ -1,5 +1,8 @@
 #!/usr/bin/env node
 /**
+ * DEPRECATED (shard-first): reads + writes data/earnings.json (gitignored).
+ * Retained for archival re-runs against a reconstituted monolith.
+ *
  * Enrich past-event metrics with SEC XBRL company-facts data.
  *
  * For each entity with edgarCik, fetch

@@ -116,7 +116,21 @@ type Filter =
   | "etfs"
   | "developer";
 type SortKey = "next" | "surprise" | "reaction" | "freshness" | "name";
-type Group = "flat" | "type" | "sector";
+type Group = "flat" | "type" | "sector" | "industry" | "cap-industry";
+const CAP_TIER_ORDER: Array<"mega" | "large" | "mid" | "small" | "unknown"> = [
+  "mega",
+  "large",
+  "mid",
+  "small",
+  "unknown",
+];
+const CAP_TIER_LABEL: Record<string, string> = {
+  mega: "Mega cap · ≥$200B",
+  large: "Large cap · $10B–$200B",
+  mid: "Mid cap · $2B–$10B",
+  small: "Small cap · $250M–$2B",
+  unknown: "Nano / unknown",
+};
 type TierFilter = "any" | "mega" | "large" | "mid" | "small" | "unknown";
 
 export function WatchlistTable({ rows }: { rows: WatchlistRow[] }) {
@@ -127,6 +141,23 @@ export function WatchlistTable({ rows }: { rows: WatchlistRow[] }) {
   const [group, setGroup] = useState<Group>("flat");
   const [selectedIdx, setSelectedIdx] = useState<number>(0);
   const [tier, setTier] = useState<TierFilter>("any");
+  // Canonical-listings-only by default — so NVIDIA counts once in
+  // large-cap tech instead of four times (once per BDR / MM / TB / CN
+  // wrapper listing). Portfolio rows (isCore) always show regardless,
+  // so the 17 covered tickers are never hidden even if a rare one
+  // happens not to be canonical of its company group.
+  const [showAllListings, setShowAllListings] = useState(false);
+  // Sibling-listing counts per company — used for the "+N listings"
+  // badge on canonical rows and to expose the hidden members via title.
+  const listingsByCompany = useMemo(() => {
+    const m = new Map<string, WatchlistRow[]>();
+    for (const r of rows) {
+      const cid = r.entity.companyId ?? r.entity.ticker;
+      if (!m.has(cid)) m.set(cid, []);
+      m.get(cid)!.push(r);
+    }
+    return m;
+  }, [rows]);
 
   // Real 1-month prices + Yahoo earnings, fetched in parallel on mount.
   const [prices, setPrices] = useState<BulkPricesResponse | null>(null);
@@ -173,6 +204,13 @@ export function WatchlistTable({ rows }: { rows: WatchlistRow[] }) {
     if (tier !== "any") {
       list = list.filter((r) => (r.entity.capTier ?? "unknown") === tier);
     }
+    if (!showAllListings) {
+      // Canonical-only default. isCore is a hard OVERRIDE — the 17
+      // covered tickers always show even if the audit picked a
+      // different member as canonical of their company (rare, but
+      // preserves the "don't remap" invariant from the prompt).
+      list = list.filter((r) => r.entity.isCanonical || r.entity.isCore);
+    }
     list.sort((a, b) => {
       switch (sortKey) {
         case "next":
@@ -199,16 +237,58 @@ export function WatchlistTable({ rows }: { rows: WatchlistRow[] }) {
 
   const grouped = useMemo(() => {
     if (group === "flat") return [{ id: "", label: "", rows: filtered }];
+
+    // "cap-industry" mode: two-level grouping — cap tier at the top,
+    // industry group underneath. We flatten to a single-level list so
+    // the existing render loop keeps working, but the labels are
+    // constructed as "<Cap band> · <Industry group>". Cap bands sort
+    // in fixed order (mega→large→mid→small→unknown); industries within
+    // a band sort by row count desc so the biggest sub-groups surface
+    // first.
+    if (group === "cap-industry") {
+      const byBand = new Map<string, Map<string, WatchlistRow[]>>();
+      for (const r of filtered) {
+        const band = (r.entity.capTier ?? "unknown") as string;
+        const ind = r.entity.industryGroup ?? "(unclassified)";
+        if (!byBand.has(band)) byBand.set(band, new Map());
+        const inner = byBand.get(band)!;
+        if (!inner.has(ind)) inner.set(ind, []);
+        inner.get(ind)!.push(r);
+      }
+      const out: Array<{ id: string; label: string; rows: WatchlistRow[] }> = [];
+      for (const band of CAP_TIER_ORDER) {
+        const inner = byBand.get(band);
+        if (!inner) continue;
+        const industries = [...inner.entries()].sort(
+          (a, b) => b[1].length - a[1].length,
+        );
+        for (const [ind, rows] of industries) {
+          out.push({
+            id: `${band}::${ind}`,
+            label: `${CAP_TIER_LABEL[band] ?? band}  ·  ${ind}`,
+            rows,
+          });
+        }
+      }
+      return out;
+    }
+
     const map = new Map<string, WatchlistRow[]>();
     for (const r of filtered) {
       const key =
         group === "type"
           ? r.entity.securityType
+          : group === "industry"
+          ? r.entity.industryGroup ?? "(unclassified)"
           : r.entity.sectorTags[0] ?? "other";
       if (!map.has(key)) map.set(key, []);
       map.get(key)!.push(r);
     }
-    return Array.from(map, ([id, rows]) => ({
+    // Sort industry / sector groups by row count desc so meaningful
+    // buckets rise to the top; type stays alpha for a stable order.
+    const entries = [...map.entries()];
+    if (group !== "type") entries.sort((a, b) => b[1].length - a[1].length);
+    return entries.map(([id, rows]) => ({
       id,
       label: id.charAt(0).toUpperCase() + id.slice(1),
       rows,
@@ -254,6 +334,24 @@ export function WatchlistTable({ rows }: { rows: WatchlistRow[] }) {
             {t.label}
           </button>
         ))}
+        <span className="ml-3 font-mono text-[10.5px] uppercase tracking-[0.1em] text-tx3">
+          Listings
+        </span>
+        <button
+          onClick={() => setShowAllListings((v) => !v)}
+          title={
+            showAllListings
+              ? "Showing every listing including BDR / ADR / GY wrappers"
+              : "Only the canonical listing per company (default). NVIDIA appears once, not four times."
+          }
+          className={
+            showAllListings
+              ? "inline-flex h-[22px] items-center rounded-[5px] border border-brand bg-brand/10 px-[9px] text-[11px] text-brand-fg"
+              : "inline-flex h-[22px] items-center rounded-[5px] border border-bd2 bg-s2 px-[9px] text-[11px] text-tx2 hover:text-tx"
+          }
+        >
+          {showAllListings ? "All listings" : "Canonical only"}
+        </button>
       </div>
 
       <div
@@ -299,6 +397,18 @@ export function WatchlistTable({ rows }: { rows: WatchlistRow[] }) {
                 earningsEntry={earnings?.tickers[r.ticker]}
                 pricesLoading={pricesLoading}
                 selected={filtered.indexOf(r) === selectedIdx}
+                siblingCount={(() => {
+                  const cid = r.entity.companyId ?? r.entity.ticker;
+                  const list = listingsByCompany.get(cid);
+                  return list ? list.length - 1 : 0;
+                })()}
+                siblingTickers={(() => {
+                  const cid = r.entity.companyId ?? r.entity.ticker;
+                  const list = listingsByCompany.get(cid) ?? [];
+                  return list
+                    .filter((s) => s.ticker !== r.ticker)
+                    .map((s) => s.ticker);
+                })()}
                 onClick={() =>
                   router.push(`/s/${encodeURIComponent(r.ticker)}`)
                 }
@@ -352,6 +462,8 @@ function Row({
   priceEntry,
   earningsEntry,
   pricesLoading,
+  siblingCount,
+  siblingTickers,
 }: {
   r: WatchlistRow;
   onClick: () => void;
@@ -359,6 +471,8 @@ function Row({
   priceEntry?: BulkPriceEntry;
   earningsEntry?: BulkEarningsEntry;
   pricesLoading?: boolean;
+  siblingCount?: number;
+  siblingTickers?: string[];
 }) {
   const isDev = r.entity.securityType === "developer";
   const isEtf = r.entity.securityType === "etf";
@@ -394,6 +508,18 @@ function Row({
           </span>
           <span className="flex items-center gap-2 truncate font-mono text-[11px] text-tx-mid">
             {r.ticker}
+            {siblingCount && siblingCount > 0 ? (
+              <span
+                className="rounded-[4px] bg-s3 px-[5px] py-[1px] text-[10px] text-tx2"
+                title={
+                  siblingTickers && siblingTickers.length > 0
+                    ? "Also listed as: " + siblingTickers.join(", ")
+                    : undefined
+                }
+              >
+                +{siblingCount} listings
+              </span>
+            ) : null}
             {r.dataIncomplete ? (
               <span
                 className="inline-flex items-center gap-[3px] rounded-[4px] bg-[rgba(181,71,8,0.10)] px-[5px] py-[1px] text-[10px] text-warning"
@@ -582,6 +708,8 @@ function FilterBar({
         <option value="flat">Group: none</option>
         <option value="type">Group: type</option>
         <option value="sector">Group: sector</option>
+        <option value="industry">Group: industry</option>
+        <option value="cap-industry">Group: cap band × industry</option>
       </select>
     </div>
   );

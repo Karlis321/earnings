@@ -1,5 +1,8 @@
 #!/usr/bin/env node
 /**
+ * DEPRECATED (shard-first): reads + writes data/earnings.json (gitignored).
+ * Retained for archival re-runs against a reconstituted monolith.
+ *
  * Fix currency labels on timeseries-sourced metrics. My original
  * backfill hardcoded unit="USD" but Yahoo timeseries returns
  * currencyCode per data point — for .TO / .L / .DE issuers reporting

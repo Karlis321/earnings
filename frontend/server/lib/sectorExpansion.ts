@@ -256,6 +256,11 @@ function buildEntity(
     marketCapAsOf: marketCapUsd != null ? asOf : null,
     capTier: tier,
     yahooSymbol: hit.symbol,
+    // Yahoo screener returns industry at the GICS-industry-group
+    // granularity — persist it so the watchlist's cap-band × industry
+    // grouping shows new entities without needing a re-backfill.
+    industryGroup: hit.industry ?? null,
+    industryGroupAsOf: hit.industry ? asOf : undefined,
   };
 }
 
@@ -339,6 +344,51 @@ export async function refreshSectorUniverse(
         entity.marketCapUsd = q.marketCapUsd;
         entity.marketCapAsOf = asOf;
         entity.capTier = capTierFor(q.marketCapUsd);
+      }
+    }
+  }
+
+  // Third pass: attempt company assignment on new entities. Any new
+  // entity whose edgarCik matches an existing entity's CIK joins that
+  // company as a non-canonical listing. Otherwise it becomes its own
+  // singleton company (canonical of itself). Keeps the invariant "every
+  // entity has a companyId" that Part 2 established, without waiting
+  // for the next full re-run of the detect/apply audit pipeline.
+  if (newEntities.length > 0) {
+    const cikToCompany = new Map<string, { companyId: string; industryGroup?: string | null }>();
+    for (const e of existing) {
+      if (e.edgarCik && e.companyId) {
+        cikToCompany.set(e.edgarCik, {
+          companyId: e.companyId,
+          industryGroup: e.industryGroup,
+        });
+      }
+    }
+    for (const entity of newEntities) {
+      let assigned = false;
+      if (entity.edgarCik && cikToCompany.has(entity.edgarCik)) {
+        const co = cikToCompany.get(entity.edgarCik)!;
+        entity.companyId = co.companyId;
+        entity.isCanonical = false; // joins an existing company as a listing
+        // Inherit industryGroup if we don't have one for this new listing.
+        if (!entity.industryGroup && co.industryGroup) {
+          entity.industryGroup = co.industryGroup;
+          entity.industryGroupSource = "inherited";
+          entity.industryGroupAsOf = asOf;
+        }
+        assigned = true;
+      }
+      if (!assigned) {
+        // Singleton company — same SHA-1(ticker) recipe as
+        // scripts/apply-entity-groups.mjs. Import lazily to avoid a
+        // top-level crypto pull for the (rare) code path here.
+        const { createHash } = await import("node:crypto");
+        const h = createHash("sha1")
+          .update(entity.ticker)
+          .digest("hex")
+          .slice(0, 10);
+        entity.companyId = `co-${h}`;
+        entity.isCanonical = true;
       }
     }
   }

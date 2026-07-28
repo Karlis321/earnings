@@ -1,5 +1,11 @@
 #!/usr/bin/env node
 /**
+ * DEPRECATED (shard-first): reads + writes data/earnings.json (gitignored
+ * per CLAUDE.md). Preserved for the original backfill workflow that produced
+ * the monolith; new enrichment paths should write shards + re-run
+ * shard-earnings.mjs. Run this only after temporarily reconstituting the
+ * monolith from shards.
+ *
  * FMP fallback backfill. Runs once per day (250 req/day free tier),
  * targeting the tickers that STILL have no past events after Yahoo
  * timeseries + SEC XBRL passes. Chunk the run across multiple days:

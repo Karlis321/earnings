@@ -51,17 +51,46 @@ export function GlobalSearch() {
     if (open) setTimeout(() => inputRef.current?.focus(), 20);
   }, [open]);
 
+  // Group listings under one row per company. Search matches on ANY
+  // member ticker or name — so searching "GOGL34" still surfaces the
+  // Alphabet row — but we return only the canonical listing plus a
+  // count of siblings, so "nvidia" gives 1 row not 4.
   const filtered = useMemo(() => {
     const term = q.trim().toLowerCase();
-    if (!term) return entities.slice(0, 6);
-    return entities
-      .filter(
-        (e) =>
-          e.ticker.toLowerCase().includes(term) ||
-          e.displayName.toLowerCase().includes(term) ||
-          e.aliases.some((a) => a.toLowerCase().includes(term)),
-      )
-      .slice(0, 8);
+    // Index entities by companyId once so we can attach listing counts.
+    const byCompany = new Map<string, Entity[]>();
+    for (const e of entities) {
+      const cid = e.companyId ?? e.ticker;
+      if (!byCompany.has(cid)) byCompany.set(cid, []);
+      byCompany.get(cid)!.push(e);
+    }
+    // Empty query: default to the first N canonical listings (matches
+    // watchlist ordering: portfolio picks first).
+    const canonical = (list: Entity[]) => list.find((e) => e.isCanonical) ?? list[0];
+    if (!term) {
+      return [...byCompany.values()]
+        .map((list) => ({ hit: canonical(list), listings: list }))
+        .slice(0, 6);
+    }
+    // Match any member listing; return the canonical of the matched
+    // company. Dedup so the same company doesn't appear twice via two
+    // matching member tickers.
+    const seenCompanies = new Set<string>();
+    const out: Array<{ hit: Entity; listings: Entity[] }> = [];
+    for (const e of entities) {
+      const matches =
+        e.ticker.toLowerCase().includes(term) ||
+        e.displayName.toLowerCase().includes(term) ||
+        e.aliases.some((a) => a.toLowerCase().includes(term));
+      if (!matches) continue;
+      const cid = e.companyId ?? e.ticker;
+      if (seenCompanies.has(cid)) continue;
+      seenCompanies.add(cid);
+      const list = byCompany.get(cid) ?? [e];
+      out.push({ hit: canonical(list), listings: list });
+      if (out.length >= 8) break;
+    }
+    return out;
   }, [q, entities]);
 
   const go = (ticker: string) => {
@@ -110,7 +139,7 @@ export function GlobalSearch() {
                   } else if (e.key === "Enter") {
                     e.preventDefault();
                     const pick = filtered[selected];
-                    if (pick) go(pick.ticker);
+                    if (pick) go(pick.hit.ticker);
                   }
                 }}
                 placeholder="Jump to security or event…"
@@ -126,26 +155,37 @@ export function GlobalSearch() {
                   </div>
                 </div>
               ) : (
-                filtered.map((e, i) => (
-                  <button
-                    key={e.ticker}
-                    onClick={() => go(e.ticker)}
-                    className={`flex w-full items-center justify-between rounded-button px-[10px] py-2 text-left text-[13px] ${
-                      i === selected
-                        ? "bg-[rgba(47,127,255,0.12)]"
-                        : "hover:bg-hover"
-                    }`}
-                  >
-                    <span className="flex items-center gap-3">
-                      <TypeBadge type={e.securityType} size="sm" />
-                      <span className="font-mono text-[11.5px] text-brand-fg">
-                        {e.ticker}
+                filtered.map(({ hit, listings }, i) => {
+                  const extra = listings.length - 1;
+                  return (
+                    <button
+                      key={hit.companyId ?? hit.ticker}
+                      onClick={() => go(hit.ticker)}
+                      className={`flex w-full items-center justify-between rounded-button px-[10px] py-2 text-left text-[13px] ${
+                        i === selected
+                          ? "bg-[rgba(47,127,255,0.12)]"
+                          : "hover:bg-hover"
+                      }`}
+                    >
+                      <span className="flex items-center gap-3">
+                        <TypeBadge type={hit.securityType} size="sm" />
+                        <span className="font-mono text-[11.5px] text-brand-fg">
+                          {hit.ticker}
+                        </span>
+                        <span className="text-tx">{hit.displayName}</span>
+                        {extra > 0 ? (
+                          <span
+                            className="rounded-[4px] bg-s3 px-[5px] py-[1px] font-mono text-[10px] text-tx2"
+                            title={listings.map((l) => l.ticker).join(", ")}
+                          >
+                            +{extra} listings
+                          </span>
+                        ) : null}
                       </span>
-                      <span className="text-tx">{e.displayName}</span>
-                    </span>
-                    <span className="text-[11px] text-tx-mid">⏎</span>
-                  </button>
-                ))
+                      <span className="text-[11px] text-tx-mid">⏎</span>
+                    </button>
+                  );
+                })
               )}
             </div>
           </div>

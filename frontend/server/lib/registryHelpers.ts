@@ -17,6 +17,13 @@ export function coreEntities(entities: Entity[]): Entity[] {
   return entities.filter((e) => e.isCore);
 }
 
+// Sector counts by canonical company — NVIDIA has 4 listings (BDR / MM
+// / TB / CN) that all carry the same sectorTags. Previously each was
+// counted separately and inflated tech-adjacent tags by +3 per multi-
+// listed company. Now we count each company once by filtering to the
+// canonical listing per companyId. Entities predating the Part-2 dedup
+// (or singletons) all have isCanonical: true, so this stays correct
+// even before the audit runs.
 export function sectorCounts(
   entities: Entity[],
 ): Array<{
@@ -27,11 +34,12 @@ export function sectorCounts(
   equities: number;
   etfs: number;
 }> {
+  const canonicalOnly = entities.filter((e) => e.isCanonical !== false);
   const total = new Map<string, number>();
   const core = new Map<string, number>();
   const equities = new Map<string, number>();
   const etfs = new Map<string, number>();
-  for (const e of entities) {
+  for (const e of canonicalOnly) {
     const isEtf = e.securityType === "etf";
     for (const s of e.sectorTags) {
       total.set(s, (total.get(s) ?? 0) + 1);
@@ -50,11 +58,15 @@ export function sectorCounts(
   })).sort((a, b) => b.count - a.count);
 }
 
+// Sector membership by canonical listing. A search for /sectors/technology
+// returns one row per company, not one per listing — same reason as above.
 export function entitiesInSector(
   entities: Entity[],
   sectorId: string,
 ): Entity[] {
-  return entities.filter((e) => e.sectorTags.includes(sectorId));
+  return entities.filter(
+    (e) => e.isCanonical !== false && e.sectorTags.includes(sectorId),
+  );
 }
 
 export function eventsForTicker(

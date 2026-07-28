@@ -1,5 +1,8 @@
 #!/usr/bin/env node
 /**
+ * DEPRECATED (shard-first): reads + writes data/earnings.json (gitignored).
+ * Retained for archival re-runs; production ingest flows now write shards.
+ *
  * Create past events for entities that have edgarCik but no past
  * events (Yahoo returned nothing for those listings — foreign wrappers,
  * ADRs). Uses SEC XBRL company-facts to construct the events with

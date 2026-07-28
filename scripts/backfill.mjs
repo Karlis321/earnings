@@ -1,5 +1,10 @@
 #!/usr/bin/env node
 /**
+ * DEPRECATED (shard-first): this script produced the original
+ * data/earnings.json monolith. That file is now gitignored per CLAUDE.md;
+ * shards + index are canonical. Retained for archival re-runs — its output
+ * needs to be re-sharded via `node scripts/shard-earnings.mjs`.
+ *
  * Backfill event shells for the current portfolio.
  *
  * Reads data/entity-registry.json (source of truth after cutover; managed

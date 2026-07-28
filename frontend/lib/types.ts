@@ -116,6 +116,30 @@ export interface Entity {
   // still have a live news count for the watchlist SRC column.
   sourceCount?: number;
   sourceCountAsOf?: string;
+  // Yahoo `assetProfile.industry` — GICS-industry-group-granularity
+  // label (e.g. "Semiconductors", "Software—Infrastructure",
+  // "Metals & Mining", "Banks—Diversified", "Oil & Gas E&P").
+  // Coarser than sectorTags (which mixes materials/thematic labels);
+  // finer than the top-level Yahoo sector. Used by the watchlist to
+  // break down each cap band into industry-group sub-groups. Kept
+  // alongside sectorTags for backward compat — the old field still
+  // drives the tab-filter chips; industryGroup is the *grouping*
+  // dimension inside each tab.
+  industryGroup?: string | null;
+  industryGroupAsOf?: string;
+  // "direct" = fetched from Yahoo assetProfile for this entity.
+  // "inherited" = copied from the canonical member of the same company
+  //   after entity-group detection (Part 2). Preserves the audit trail
+  //   so a re-backfill knows which values are ground truth vs propagated.
+  industryGroupSource?: "direct" | "inherited";
+  // Company grouping (Part 2 of the entity-dedup work). Every entity
+  // belongs to exactly one company; the group can have any number of
+  // listings. `isCanonical` marks the one listing UI aggregations count
+  // (search results, cap-band × industry views, sector aggregates).
+  // Populated by scripts/apply-entity-groups.mjs. Singletons get their
+  // own companyId so this field is never absent after backfill.
+  companyId?: string;
+  isCanonical?: boolean;
 }
 
 export interface EntityFundamentals {
@@ -165,6 +189,21 @@ export interface ReactionPoint {
   computedAt: string | null;
   gapFlagged?: boolean;
   populatesOn?: string; // ISO date — when a pending horizon will populate
+  // True when the horizon window extended past the last available bar
+  // and the return was computed against the latest close instead
+  // (partial-horizon result — "we ran out of chart before the horizon").
+  clipped?: boolean;
+  // True when a NEWER same-ticker event fell inside this horizon window,
+  // meaning the price move mixes two earnings reactions. Display but
+  // visually de-emphasize.
+  contaminated?: boolean;
+  // Terminal decay state (Part 6 of entity-dedup work). Applied when the
+  // event's report date is >60 trading days past AND the security's
+  // baseline bars still cannot be fetched — flips this horizon from
+  // "pending" (will retry forever) to "unavailable" (give up). Keeps
+  // the pipeline-report's `reactions_pending` counter meaningful: it
+  // now represents *live* maturation candidates only.
+  status?: "matured" | "clipped" | "pending" | "unavailable";
 }
 
 export interface Reaction {
@@ -212,6 +251,16 @@ export type EventProvenance =
   | "manual-entry" // ManualEntryForm
   | "fixture";
 
+// One-liner "Source" click-through on every event. Computed at event
+// creation time from provenance (see computeSourceLink). "filing" means
+// we have a direct filing/release URL; "fallback" means we linked the
+// best available page (Yahoo financials, EDGAR filings index, ...) and
+// the UI should render it as "check the source".
+export interface SourceLink {
+  url: string;
+  kind: "filing" | "fallback";
+}
+
 export interface EventRecord {
   id: string;
   ticker: string;
@@ -235,6 +284,10 @@ export interface EventRecord {
   metrics: MetricEntry[];
   guidance: GuidanceEntry[];
   catalysts?: CatalystDetail[];
+  // Best-effort click-through to the source document. Computed from
+  // provenance at event creation time; null for estimator shells /
+  // fixture rows / unknown provenance. See computeSourceLink.
+  sourceLink?: SourceLink | null;
   reaction: Reaction;
   sources: {
     windowStart: string;

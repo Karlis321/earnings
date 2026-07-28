@@ -106,6 +106,12 @@ function pickBaselineIdx(
 export async function matureEventReaction(
   event: EventRecord,
   entity: Entity,
+  // Same-ticker past events used to flag contamination — if a newer
+  // event lands inside a horizon window, that horizon's price move
+  // mixes two earnings reactions and gets `contaminated: true`.
+  // Caller passes the ticker's group of events (self OK — we skip
+  // matches on id/eventDate == current).
+  siblings: EventRecord[] = [],
 ): Promise<Result> {
   const now = new Date();
   const anchor = event.eventDate ?? event.scheduledDate;
@@ -141,6 +147,33 @@ export async function matureEventReaction(
   }
   const secBars = (await yahooSeries(secSymbol, "3mo")) as Bar[];
   if (secBars.length === 0) {
+    // Decay rule (Part 6): if the event's report date is >60 trading days
+    // in the past (~90 calendar days) and we STILL cannot fetch baseline
+    // bars, stamp every unresolved horizon `unavailable` so the pipeline
+    // report's `reactions_pending` counter drops the ones that will never
+    // mature. Older events with no `status` field default to `pending`.
+    const anchorTs = anchor ? new Date(anchor).getTime() : null;
+    const isOld =
+      anchorTs !== null &&
+      (now.getTime() - anchorTs) / 86_400_000 > 90;
+    if (isOld) {
+      const stampedPoints: ReactionPoint[] = event.reaction.points.map((p) => {
+        if (p.absReturn !== null) return p;
+        return {
+          ...p,
+          status: "unavailable",
+          computedAt: now.toISOString(),
+        };
+      });
+      return {
+        updated: {
+          ...event,
+          reaction: { ...event.reaction, points: stampedPoints },
+        },
+        matured: [],
+        errors: [`no security bars for ${secSymbol} — decayed to unavailable`],
+      };
+    }
     return {
       updated: event,
       matured: [],
@@ -196,6 +229,20 @@ export async function matureEventReaction(
     }
   }
 
+  // Precompute newer siblings inside each horizon window to flag contamination.
+  // A "newer" sibling has eventDate strictly after this event's eventDate and
+  // its eventDate falls inside [baselineDate, baselineDate + horizon trading days].
+  // Since we don't have exact horizon-end calendar dates here, we compute the
+  // effective end bar's date per horizon after the fact.
+  const currentAnchorTs = new Date(anchor).getTime();
+  const newerSiblings = siblings.filter((s) => {
+    if (s.id === event.id) return false;
+    if (s.ticker !== event.ticker) return false;
+    const sDate = s.eventDate;
+    if (!sDate) return false;
+    return new Date(sDate).getTime() > currentAnchorTs;
+  });
+
   const errors: string[] = [];
   const matured: Horizon[] = [];
   const nextPoints: ReactionPoint[] = event.reaction.points.map((p) => {
@@ -203,11 +250,19 @@ export async function matureEventReaction(
     if (!p.populatesOn || new Date(p.populatesOn) > now) return p;
 
     const offset = OFFSETS[p.horizon];
-    const secIdx = secBaseIdx + offset;
+    let secIdx = secBaseIdx + offset;
+    let clipped = false;
     if (secIdx >= secBars.length) {
-      // Not enough bars yet — should have been ruled out by populatesOn,
-      // but Yahoo can be behind. Keep pending.
-      return p;
+      // Horizon extends past the last available bar. If the last bar is
+      // at least 1 session past baseline, clip to it and mark. Otherwise
+      // keep pending (Yahoo is genuinely behind — not something to fabricate).
+      const lastIdx = secBars.length - 1;
+      if (lastIdx > secBaseIdx) {
+        secIdx = lastIdx;
+        clipped = true;
+      } else {
+        return p;
+      }
     }
     const secClose = secBars[secIdx].close;
     const absReturn = (secClose - baselineClose) / baselineClose;
@@ -215,8 +270,16 @@ export async function matureEventReaction(
     let excessReturn: number | null = null;
     let gapFlagged = false;
     if (benchBaseIdx >= 0 && benchBars[benchBaseIdx] != null) {
-      const benchIdx = benchBaseIdx + offset;
-      if (benchIdx < benchBars.length) {
+      let benchIdx = benchBaseIdx + offset;
+      if (benchIdx >= benchBars.length) {
+        // Clip benchmark too so excess still computes off a comparable window.
+        if (benchBars.length - 1 > benchBaseIdx) {
+          benchIdx = benchBars.length - 1;
+        } else {
+          benchIdx = -1;
+        }
+      }
+      if (benchIdx >= 0) {
         const benchBase = benchBars[benchBaseIdx].close;
         const benchClose = benchBars[benchIdx].close;
         const benchAbs = (benchClose - benchBase) / benchBase;
@@ -228,6 +291,21 @@ export async function matureEventReaction(
       gapFlagged = true;
     }
 
+    // Contamination check: any newer sibling event whose eventDate falls
+    // between baselineDate (exclusive — the current event's own baseline)
+    // and the horizon-end bar's date (inclusive) mixes reactions.
+    const horizonEndDate = secBars[secIdx].date;
+    const baselineTs = new Date(baselineDate!).getTime();
+    const endTs = new Date(horizonEndDate).getTime();
+    let contaminated = false;
+    for (const sib of newerSiblings) {
+      const sTs = new Date(sib.eventDate!).getTime();
+      if (sTs > baselineTs && sTs <= endTs) {
+        contaminated = true;
+        break;
+      }
+    }
+
     matured.push(p.horizon);
     return {
       ...p,
@@ -235,6 +313,9 @@ export async function matureEventReaction(
       excessReturn,
       computedAt: now.toISOString(),
       gapFlagged: gapFlagged || undefined,
+      clipped: clipped || undefined,
+      contaminated: contaminated || undefined,
+      status: clipped ? "clipped" : "matured",
     };
   });
 

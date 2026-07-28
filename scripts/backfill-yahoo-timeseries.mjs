@@ -1,5 +1,8 @@
 #!/usr/bin/env node
 /**
+ * DEPRECATED (shard-first): reads + writes data/earnings.json (gitignored).
+ * Retained for archival re-runs against a reconstituted monolith.
+ *
  * Backfill events + metric actuals from Yahoo's fundamentals-timeseries
  * endpoint. This is DIFFERENT from earningsChart / financialsChart — it
  * returns real per-quarter Revenue + EBIT + OperatingIncome + NetIncome +

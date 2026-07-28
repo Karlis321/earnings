@@ -282,22 +282,34 @@ async function main() {
     );
   }
 
-  // Update the monolith to match the deduped shards.
+  // Optionally sync the (gitignored) monolith so any legacy local reader
+  // stays consistent. Shards are canonical — when earnings.json is absent
+  // we skip cleanly instead of erroring.
   if (!DRY) {
-    console.log("\nRebuilding data/earnings.json from cleaned shards…");
-    const snap = JSON.parse(await fs.readFile(EARNINGS, "utf-8"));
-    // Walk the shards again to build the fresh events list.
-    const fresh = [];
-    for (const f of files) {
-      const raw = await fs.readFile(path.join(EVENTS_DIR, f), "utf-8");
-      const j = JSON.parse(raw);
-      const evs = Array.isArray(j) ? j : j.events ?? [];
-      fresh.push(...evs);
+    let mono;
+    try {
+      mono = JSON.parse(await fs.readFile(EARNINGS, "utf-8"));
+    } catch {
+      mono = null;
     }
-    snap.events = fresh;
-    snap.lastUpdated = new Date().toISOString();
-    await fs.writeFile(EARNINGS, JSON.stringify(snap, null, 2));
-    console.log(`✓ wrote ${EARNINGS} (${fresh.length} events)`);
+    if (mono) {
+      console.log("\nRebuilding data/earnings.json from cleaned shards…");
+      const fresh = [];
+      for (const f of files) {
+        const raw = await fs.readFile(path.join(EVENTS_DIR, f), "utf-8");
+        const j = JSON.parse(raw);
+        const evs = Array.isArray(j) ? j : j.events ?? [];
+        fresh.push(...evs);
+      }
+      mono.events = fresh;
+      mono.lastUpdated = new Date().toISOString();
+      await fs.writeFile(EARNINGS, JSON.stringify(mono, null, 2));
+      console.log(`✓ wrote ${EARNINGS} (${fresh.length} events)`);
+    } else {
+      console.log(
+        "\n(earnings.json absent — shards are canonical, skipping monolith sync.)",
+      );
+    }
   }
 }
 

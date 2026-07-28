@@ -69,9 +69,28 @@ export default async function EventDetailPage({ params }: Props) {
             size={48}
           />
           <div>
-          <div className="mb-3 mono-caption normal-case">
-              {isCatalyst ? "Catalyst" : "Earnings"} ·{" "}
-              {event.timing ?? "unscheduled"} · {fmtDate(event.eventDate ?? event.scheduledDate)}
+          <div className="mb-3 mono-caption normal-case flex flex-wrap items-center gap-x-2 gap-y-1">
+              <span>
+                {isCatalyst ? "Catalyst" : "Earnings"} ·{" "}
+                {event.timing ?? "unscheduled"} · {fmtDate(event.eventDate ?? event.scheduledDate)}
+              </span>
+              {event.sourceLink ? (
+                <span>
+                  {" · "}
+                  Source{" "}
+                  <a
+                    href={event.sourceLink.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-brand-hi hover:text-brand-fg underline"
+                  >
+                    {event.sourceLink.kind === "filing"
+                      ? "filing"
+                      : "check the source"}
+                    {" ↗"}
+                  </a>
+                </span>
+              ) : null}
           </div>
           <h1 className="text-[32px] font-semibold leading-tight tracking-[-0.02em]">
             {event.period}

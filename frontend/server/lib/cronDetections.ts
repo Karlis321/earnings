@@ -12,8 +12,200 @@ import type {
   Horizon,
   MetricEntry,
   ReactionPoint,
+  SourceLink,
 } from "@/lib/types";
 import type { YahooEarnings } from "@/server/vendors/yahoo";
+
+// ---------- Source-link derivation ----------
+//
+// Every event carries a "Source" click-through. Rules by provenance:
+//   sec-submissions       → direct filing URL from filing_reference metric  → filing
+//   sec-xbrl-companyfacts → resolved accession URL from submissions cache   → filing
+//                           (falls back to EDGAR filings-index page)        → fallback
+//   yahoo-timeseries      → Yahoo financials page for the symbol            → fallback
+//   yahoo-earnings-chart  → Yahoo financials page for the symbol            → fallback
+//   fmp                   → FMP income-statement page for the symbol        → fallback
+//   estimator-median-gap  → no data yet                                     → null
+//   manual-entry, fixture → nothing to link                                 → null
+//
+// Kept in cronDetections.ts (rather than a separate module) because every
+// cron event-creation site imports from here already.
+
+// One resolved filing entry from SEC submissions. Callers precompute a
+// per-CIK lookup once per run and pass it in so this function stays pure.
+export interface AccessionCandidate {
+  form: string; // "10-Q" | "10-K" | "20-F" | "40-F" | "6-K"
+  filingDate: string; // ISO YYYY-MM-DD
+  accessionNumber: string; // "0000320193-24-000005" (with dashes)
+  primaryDocument: string; // "aapl-20240330.htm"
+}
+
+// paddedCik → sorted candidate list. Preferred forms first, then closest
+// filingDate wins in matchAccession.
+export type AccessionLookup = Map<string, AccessionCandidate[]>;
+
+// Preferred SEC forms for periodic earnings reports, in decreasing trust.
+const PREFERRED_FORMS = ["10-Q", "10-K", "20-F", "40-F", "6-K"] as const;
+
+// Match an event to its accession filing. Returns null if no candidate is
+// within ±14 days OR the CIK has no submissions cached.
+export function matchAccession(
+  event: EventRecord,
+  entity: Entity | undefined,
+  lookup: AccessionLookup | undefined,
+): AccessionCandidate | null {
+  if (!lookup || !entity?.edgarCik) return null;
+  const padded = String(entity.edgarCik).padStart(10, "0");
+  const candidates = lookup.get(padded);
+  if (!candidates || candidates.length === 0) return null;
+  const anchorIso = event.eventDate ?? event.scheduledDate;
+  if (!anchorIso) return null;
+  const anchor = new Date(anchorIso).getTime();
+  const isFY = /^FY\d{4}$/.test((event.period ?? "").trim());
+  // Prefer 10-K for FY-only periods, otherwise 10-Q or foreign equivalents.
+  const preferForm = (form: string): number => {
+    if (isFY && (form === "10-K" || form === "20-F")) return 0;
+    if (!isFY && (form === "10-Q" || form === "6-K")) return 0;
+    return 1;
+  };
+  let best: { c: AccessionCandidate; diff: number; rank: number } | null = null;
+  for (const c of candidates) {
+    const diffDays =
+      Math.abs(new Date(c.filingDate).getTime() - anchor) / 86_400_000;
+    if (diffDays > 14) continue;
+    const rank = preferForm(c.form);
+    const score = { c, diff: diffDays, rank };
+    if (
+      !best ||
+      score.rank < best.rank ||
+      (score.rank === best.rank && score.diff < best.diff)
+    ) {
+      best = score;
+    }
+  }
+  return best?.c ?? null;
+}
+
+// Build the canonical /Archives/edgar/data/<cik>/<accessionNoDashes>/<primary>
+// URL. `cikNoLeading` drops leading zeros — required by the archive layout.
+export function buildAccessionUrl(
+  paddedCik: string,
+  accessionNumber: string,
+  primaryDocument: string,
+): string {
+  const cikNoLeading = String(Number(paddedCik));
+  const accNoDashes = accessionNumber.replace(/-/g, "");
+  return `https://www.sec.gov/Archives/edgar/data/${cikNoLeading}/${accNoDashes}/${primaryDocument}`;
+}
+
+export function computeSourceLink(
+  event: EventRecord,
+  entity: Entity | undefined,
+  // Optional pre-resolved lookup, keyed by padded CIK. When present we
+  // upgrade sec-xbrl-companyfacts / sec-submissions events to direct
+  // filing URLs. Absent → existing fallback behavior (no vendor calls
+  // from inside this function — cron pre-fetches submissions per run).
+  accessionLookup?: AccessionLookup,
+): SourceLink | null {
+  const prov = event.provenance;
+  const symbol = entity?.yahooSymbol ?? event.ticker.split(/\s+/)[0];
+
+  if (prov === "sec-submissions") {
+    // Filing URL already lives on the filing_reference metric's actual.source.url.
+    const fr = (event.metrics ?? []).find(
+      (m) => m.key === "filing_reference",
+    );
+    const url = fr?.actual?.source?.url ?? null;
+    if (url) return { url, kind: "filing" };
+    // Fall through — try the accession lookup if we have it.
+    if (accessionLookup && entity?.edgarCik) {
+      const match = matchAccession(event, entity, accessionLookup);
+      if (match) {
+        const padded = String(entity.edgarCik).padStart(10, "0");
+        return {
+          url: buildAccessionUrl(padded, match.accessionNumber, match.primaryDocument),
+          kind: "filing",
+        };
+      }
+    }
+    // Fall through to xbrl fallback branch below if still unresolved.
+  }
+
+  if (prov === "sec-xbrl-companyfacts" || prov === "sec-submissions") {
+    if (!entity?.edgarCik) return null;
+    const paddedCik = String(entity.edgarCik).padStart(10, "0");
+
+    // Direct filing URL when the lookup carries the accession.
+    const match = matchAccession(event, entity, accessionLookup);
+    if (match) {
+      return {
+        url: buildAccessionUrl(paddedCik, match.accessionNumber, match.primaryDocument),
+        kind: "filing",
+      };
+    }
+
+    // Prefer 10-K for FY-only events (period ends with "FY" and has no Q slot).
+    const isFiscalYear = /^FY\d{4}$/.test((event.period ?? "").trim());
+    const type = isFiscalYear ? "10-K" : "10-Q";
+    const url = `https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=${paddedCik}&type=${encodeURIComponent(type)}&dateb=&owner=include&count=40`;
+    return { url, kind: "fallback" };
+  }
+
+  if (prov === "yahoo-timeseries" || prov === "yahoo-earnings-chart") {
+    if (!symbol) return null;
+    return {
+      url: `https://finance.yahoo.com/quote/${encodeURIComponent(symbol)}/financials`,
+      kind: "fallback",
+    };
+  }
+
+  if (prov === "fmp") {
+    if (!symbol) return null;
+    return {
+      url: `https://financialmodelingprep.com/financial-statements/${encodeURIComponent(symbol)}`,
+      kind: "fallback",
+    };
+  }
+
+  // estimator-median-gap / manual-entry / fixture / undefined → null
+  return null;
+}
+
+// Extract the per-CIK candidate list from a raw SEC submissions JSON.
+// Callers fetch once per CIK per run and pass the body here.
+export function candidatesFromSubmissions(sub: unknown): AccessionCandidate[] {
+  const s = sub as {
+    filings?: {
+      recent?: {
+        form?: string[];
+        filingDate?: string[];
+        accessionNumber?: string[];
+        primaryDocument?: string[];
+      };
+    };
+  };
+  const recent = s?.filings?.recent ?? {};
+  const forms = recent.form ?? [];
+  const dates = recent.filingDate ?? [];
+  const accs = recent.accessionNumber ?? [];
+  const docs = recent.primaryDocument ?? [];
+  const out: AccessionCandidate[] = [];
+  const allowed = new Set<string>(PREFERRED_FORMS);
+  for (let i = 0; i < forms.length; i++) {
+    if (!allowed.has(forms[i])) continue;
+    const acc = accs[i];
+    const doc = docs[i];
+    const date = dates[i];
+    if (!acc || !doc || !date) continue;
+    out.push({
+      form: forms[i],
+      filingDate: date,
+      accessionNumber: acc,
+      primaryDocument: doc,
+    });
+  }
+  return out;
+}
 
 // Provenance rank — higher wins on conflict. Mirrors scripts/dedupe-events.mjs
 // so cron merges use the same ordering as the offline dedup pass. See audit

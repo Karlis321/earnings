@@ -3,7 +3,13 @@
  * Local runner for the median-gap next-event estimator. Mirrors what
  * cron step 3c does. For each operating entity without a next-event
  * shell, projects a shell forward from the median gap between past
- * event dates. Writes into data/earnings.json.
+ * event dates.
+ *
+ * Shard-first: when data/earnings.json is absent (canonical case per
+ * CLAUDE.md) the runner reconstitutes past events from data/events/*.json
+ * shards and writes new shells straight back into the per-ticker shard
+ * (creating the shard file if missing). The monolith is only written when
+ * it already exists.
  *
  *   node scripts/run-estimator.mjs         # write
  *   node scripts/run-estimator.mjs --dry
@@ -17,7 +23,36 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT = path.resolve(__dirname, "..");
 const EARNINGS = path.join(ROOT, "data", "earnings.json");
+const EVENTS_DIR = path.join(ROOT, "data", "events");
 const REGISTRY = path.join(ROOT, "data", "entity-registry.json");
+
+// Same slug rule as scripts/shard-earnings.mjs — must stay in sync so
+// shard reads/writes hit the same file.
+function tickerSlug(ticker) {
+  return ticker.replace(/\s+/g, "_").replace(/[^A-Z0-9_.-]/gi, "_");
+}
+
+async function loadSnapshot() {
+  try {
+    const raw = await fs.readFile(EARNINGS, "utf-8");
+    return { snap: JSON.parse(raw), fromMonolith: true };
+  } catch {
+    // Reconstitute from shards.
+    let files;
+    try {
+      files = (await fs.readdir(EVENTS_DIR)).filter((f) => f.endsWith(".json"));
+    } catch {
+      return { snap: { events: [] }, fromMonolith: false };
+    }
+    const events = [];
+    for (const f of files) {
+      const j = JSON.parse(await fs.readFile(path.join(EVENTS_DIR, f), "utf-8"));
+      const evs = Array.isArray(j) ? j : j.events ?? [];
+      for (const ev of evs) events.push(ev);
+    }
+    return { snap: { schema: "earnings/v1", events }, fromMonolith: false };
+  }
+}
 
 const args = new Map(
   process.argv.slice(2).map((a) => {
@@ -111,7 +146,8 @@ function estimate(pastDates, now) {
 
 async function main() {
   console.log(`run-estimator · dry=${DRY}`);
-  const snap = JSON.parse(await fs.readFile(EARNINGS, "utf-8"));
+  const { snap, fromMonolith } = await loadSnapshot();
+  console.log(`Source: ${fromMonolith ? "monolith" : "shards"}`);
   const reg = JSON.parse(await fs.readFile(REGISTRY, "utf-8"));
   const byTicker = new Map(reg.entities.map((e) => [e.ticker, e]));
 
@@ -192,8 +228,54 @@ async function main() {
   console.log(`\nTotal events now: ${snap.events.length}`);
 
   if (DRY) { console.log("Dry run — no write."); return; }
-  await fs.writeFile(EARNINGS, JSON.stringify(snap, null, 2));
-  console.log(`✓ wrote ${EARNINGS}`);
+
+  // Write shells into per-ticker shards. This is the shard-first path and
+  // stays correct regardless of whether the monolith exists locally.
+  const shellsByTicker = new Map();
+  for (const ev of snap.events) {
+    if (ev.provenance !== "estimator-median-gap") continue;
+    if (!shellsByTicker.has(ev.ticker)) shellsByTicker.set(ev.ticker, []);
+    shellsByTicker.get(ev.ticker).push(ev);
+  }
+  await fs.mkdir(EVENTS_DIR, { recursive: true });
+  let shardsWritten = 0;
+  for (const [ticker, allShellsForTicker] of shellsByTicker) {
+    // Only touch shards where we just added a shell. Detect via id + freshness.
+    const slug = tickerSlug(ticker);
+    const shardPath = path.join(EVENTS_DIR, `${slug}.json`);
+    let existing;
+    try {
+      const raw = await fs.readFile(shardPath, "utf-8");
+      existing = JSON.parse(raw);
+    } catch {
+      existing = { schema: "events-shard/v1", ticker, events: [] };
+    }
+    const shardEvents = Array.isArray(existing) ? existing : existing.events ?? [];
+    const existingIds = new Set(shardEvents.map((e) => e.id));
+    let dirty = false;
+    for (const shell of allShellsForTicker) {
+      if (!existingIds.has(shell.id)) {
+        shardEvents.push(shell);
+        dirty = true;
+      }
+    }
+    if (dirty) {
+      const body = Array.isArray(existing)
+        ? shardEvents
+        : { ...existing, ticker, events: shardEvents };
+      await fs.writeFile(shardPath, JSON.stringify(body, null, 2));
+      shardsWritten++;
+    }
+  }
+  console.log(`✓ wrote ${shardsWritten} shard(s) with new estimator shells`);
+
+  if (fromMonolith) {
+    await fs.writeFile(EARNINGS, JSON.stringify(snap, null, 2));
+    console.log(`✓ also updated ${EARNINGS}`);
+  } else {
+    console.log("(earnings.json absent — shards are canonical, skipping.)");
+    console.log("Re-run scripts/shard-earnings.mjs to refresh events-index.json.");
+  }
 }
 
 main().catch((e) => { console.error(e); process.exit(1); });

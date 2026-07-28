@@ -7,6 +7,7 @@ import {
   buildEventShell,
   buildPastEvent,
   buildTimeseriesEvent,
+  computeSourceLink,
   detectRestatements,
   findMatchingEvent,
   findShellForPeriod,
@@ -194,7 +195,16 @@ export async function POST(req: NextRequest) {
     // so the caller can decide whether to push a "newEvents" summary entry.
     const routeCreatedEvent = (
       ev: EventRecord,
+      entity?: (typeof registry)[number],
     ): { merged: true; into: string } | { merged: false; id: string } => {
+      // Stamp sourceLink at creation time so every new/created event has
+      // a click-through by the time it lands in the snapshot. Uses the
+      // supplied entity when available (loop caller passes it in);
+      // otherwise falls back to a registry lookup by ticker.
+      const ent = entity ?? registry.find((e) => e.ticker === ev.ticker);
+      if (ev.sourceLink === undefined) {
+        ev.sourceLink = computeSourceLink(ev, ent);
+      }
       const combined: EventRecord[] = [
         ...snap.events.map((e) => pendingEvents.get(e.id) ?? e),
         ...newlyCreated,
@@ -206,7 +216,13 @@ export async function POST(req: NextRequest) {
         ev.eventDate ?? ev.scheduledDate ?? null,
       );
       if (match) {
-        pendingEvents.set(match.id, mergeMetricsInto(match, ev));
+        const merged = mergeMetricsInto(match, ev);
+        // Adopt an incoming sourceLink when the target lacked one so the
+        // merge doesn't strip a click-through added by a higher-quality feed.
+        if (!match.sourceLink && ev.sourceLink) {
+          (merged as EventRecord).sourceLink = ev.sourceLink;
+        }
+        pendingEvents.set(match.id, merged);
         return { merged: true, into: match.id };
       }
       newlyCreated.push(ev);
@@ -272,6 +288,16 @@ export async function POST(req: NextRequest) {
       }
       return r;
     };
+
+    // Group events by ticker up-front so matureEventReaction gets sibling
+    // events (needed for contamination detection). Uses snap.events (pre-run)
+    // since we're only checking whether *newer* events overlap this event's
+    // horizon — additions in this run don't retroactively contaminate.
+    const eventsByTicker = new Map<string, EventRecord[]>();
+    for (const ev of snap.events) {
+      if (!eventsByTicker.has(ev.ticker)) eventsByTicker.set(ev.ticker, []);
+      eventsByTicker.get(ev.ticker)!.push(ev);
+    }
 
     for (const original of snap.events) {
       const entity = registry.find((e) => e.ticker === original.ticker);
@@ -399,7 +425,8 @@ export async function POST(req: NextRequest) {
       current = seedReactionPoints(current);
       let matured: Horizon[] = [];
       try {
-        const m = await matureEventReaction(current, entity);
+        const siblings = eventsByTicker.get(entity.ticker) ?? [];
+        const m = await matureEventReaction(current, entity, siblings);
         current = m.updated;
         matured = m.matured;
         for (const err of m.errors) errors.push(`reaction: ${err}`);
@@ -503,7 +530,7 @@ export async function POST(req: NextRequest) {
       if (effectiveNextDate) {
         const { label } = periodFromReportingDate(effectiveNextDate);
         const shell = buildEventShell(entity, effectiveNextDate, label);
-        const routed = routeCreatedEvent(shell);
+        const routed = routeCreatedEvent(shell, entity);
         if (!routed.merged) {
           newEvents.push({
             eventId: routed.id,
@@ -573,6 +600,9 @@ export async function POST(req: NextRequest) {
             yahooSymbol,
             q._currency,
           );
+          // Refresh sourceLink now that the promoted event has an eventDate
+          // + metrics baked in — promotion may change provenance/period.
+          promoted.sourceLink = computeSourceLink(promoted, entity);
           pendingEvents.set(shell.id, promoted);
           newEvents.push({
             eventId: shell.id,
@@ -587,7 +617,7 @@ export async function POST(req: NextRequest) {
         // rather than shadowed by a duplicate row (audit finding — capability e).
         const past = buildPastEvent(entity, q, yahooSymbol, q._currency);
         if (past) {
-          const routed = routeCreatedEvent(past);
+          const routed = routeCreatedEvent(past, entity);
           if (!routed.merged) {
             newEvents.push({
               eventId: routed.id,
@@ -620,7 +650,7 @@ export async function POST(req: NextRequest) {
         for (const [asOfDate, bucket] of ts.byQuarter) {
           if (bucket.size === 0) continue;
           const tsEvent = buildTimeseriesEvent(entity, yahooSymbol, asOfDate, bucket);
-          const routed = routeCreatedEvent(tsEvent);
+          const routed = routeCreatedEvent(tsEvent, entity);
           if (!routed.merged) {
             newEvents.push({
               eventId: routed.id,
@@ -693,7 +723,7 @@ export async function POST(req: NextRequest) {
           shells = [];
         }
         for (const s of shells) {
-          const routed = routeCreatedEvent(s);
+          const routed = routeCreatedEvent(s, entity);
           if (!routed.merged) {
             newEvents.push({
               eventId: routed.id,
@@ -746,7 +776,7 @@ export async function POST(req: NextRequest) {
       shell.freshness = "stale";
       if (est.cadence) shell.cadence = est.cadence;
       // Route through merge-on-match (audit finding — capability e).
-      const routed = routeCreatedEvent(shell);
+      const routed = routeCreatedEvent(shell, entity);
       if (!routed.merged) {
         newEvents.push({
           eventId: routed.id,
@@ -1034,9 +1064,10 @@ export async function POST(req: NextRequest) {
   // server/lib/pipelineReport.ts. Fail-soft: any error here is logged and
   // does not affect the run response.
   try {
-    const [snapAfter, indexAfter, prevReport] = await Promise.all([
+    const [snapAfter, indexAfter, registryAfter, prevReport] = await Promise.all([
       store.readEarnings(),
       store.readEventsIndex?.() ?? Promise.resolve({ entries: [] } as any),
+      store.readRegistry(),
       store.readPipelineReport?.() ?? Promise.resolve(null),
     ]);
     void prevReport; // reserved for future drift checks
@@ -1051,6 +1082,7 @@ export async function POST(req: NextRequest) {
     const raw = computePipelineReport({
       snap: snapAfter,
       index: indexAfter,
+      entities: registryAfter,
       shardFileCount,
       eventsAddedToday,
       perVendor,

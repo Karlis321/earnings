@@ -1,18 +1,18 @@
 #!/usr/bin/env node
 /**
- * Shard data/earnings.json (10+ MB monolith) into per-ticker shards:
+ * Rebuild data/events/<TICKER_SLUG>.json shards + data/events-index.json.
  *
- *   data/events/<TICKER_SLUG>.json   — {schema, ticker, events: EventRecord[]}
- *   data/events-index.json           — {schema, updatedAt, entries: [...]}
+ * Sources of truth (in order):
+ *   1. data/earnings.json monolith if present (legacy path)
+ *   2. Existing data/events/*.json shards (canonical since shards-first
+ *      refactor; monolith is .gitignored per CLAUDE.md)
  *
- * Grid pages read only the ~100 KB index; detail pages read one shard.
+ * When run without the monolith, the script reconstitutes the corpus
+ * from the shards themselves, rebuilds every shard body (schema-fresh),
+ * and rewrites the index. Idempotent on a shards-only checkout.
  *
  *   node scripts/shard-earnings.mjs
  *   node scripts/shard-earnings.mjs --dry
- *
- * The monolithic earnings.json stays in place as a backwards-compat
- * fallback so anything still calling store.readEarnings() gets the
- * whole snapshot. Cron writes to both.
  */
 
 import fs from "node:fs/promises";
@@ -73,15 +73,41 @@ function buildIndexEntry(ticker, events, entity) {
   };
 }
 
+async function readSnapshotFromShards() {
+  // Walk data/events/*.json — each shard is either {schema, ticker, events}
+  // or a bare array (older writes). Reconstitute a snapshot in memory.
+  let files;
+  try {
+    files = (await fs.readdir(EVENTS_DIR)).filter((f) => f.endsWith(".json"));
+  } catch {
+    return { events: [] };
+  }
+  const events = [];
+  for (const f of files) {
+    const body = await fs.readFile(path.join(EVENTS_DIR, f), "utf-8");
+    const parsed = JSON.parse(body);
+    const evs = Array.isArray(parsed) ? parsed : parsed.events ?? [];
+    for (const ev of evs) events.push(ev);
+  }
+  return { schema: "earnings/v1", events };
+}
+
 async function main() {
   console.log(`shard-earnings · dry=${DRY}`);
-  const [snapRaw, regRaw] = await Promise.all([
-    fs.readFile(EARNINGS, "utf-8"),
-    fs.readFile(REGISTRY, "utf-8"),
-  ]);
-  const snap = JSON.parse(snapRaw);
-  const reg = JSON.parse(regRaw);
+  let snap;
+  let source;
+  try {
+    const snapRaw = await fs.readFile(EARNINGS, "utf-8");
+    snap = JSON.parse(snapRaw);
+    source = "monolith";
+  } catch {
+    console.log("data/earnings.json absent — reconstituting from shards.");
+    snap = await readSnapshotFromShards();
+    source = "shards";
+  }
+  const reg = JSON.parse(await fs.readFile(REGISTRY, "utf-8"));
   const entityByTicker = new Map(reg.entities.map((e) => [e.ticker, e]));
+  console.log(`Source: ${source}`);
 
   // Group events by ticker
   const byTicker = new Map();
@@ -154,9 +180,15 @@ async function main() {
   await fs.writeFile(INDEX_PATH, indexBody);
   console.log(`\n✓ wrote ${shards.length} shards to ${EVENTS_DIR}`);
   console.log(`✓ wrote ${INDEX_PATH}`);
-  console.log(
-    `\nNote: data/earnings.json is left in place as a backwards-compat fallback.`,
-  );
+  if (source === "monolith") {
+    console.log(
+      `\nNote: data/earnings.json is the input; per CLAUDE.md it is not committed. Shards + index are canonical.`,
+    );
+  } else {
+    console.log(
+      `\nNote: rebuilt from shards. earnings.json is not touched (gitignored).`,
+    );
+  }
 }
 
 main().catch((e) => {

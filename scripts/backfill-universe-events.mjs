@@ -1,5 +1,10 @@
 #!/usr/bin/env node
 /**
+ * DEPRECATED (shard-first): reads + writes data/earnings.json (gitignored).
+ * Kept for the original bulk backfill that produced the monolith; new
+ * events land in shards via cron. Re-run only against a reconstituted
+ * monolith.
+ *
  * Backfill past-4Q events for every operating universe ticker that has
  * zero events. Fetches yahooEarnings.earnings.{earningsChart,financialsChart}
  * per ticker (concurrency 6), constructs event records with EPS + revenue

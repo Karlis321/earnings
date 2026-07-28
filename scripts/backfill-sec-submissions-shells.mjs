@@ -1,5 +1,8 @@
 #!/usr/bin/env node
 /**
+ * DEPRECATED (shard-first): reads + writes data/earnings.json (gitignored).
+ * Retained for archival re-runs against a reconstituted monolith.
+ *
  * For entities with edgarCik but STILL no past events after all other
  * backfills (Yahoo earningsChart, Yahoo timeseries, SEC XBRL), use SEC
  * submissions to get real filing dates. Even if XBRL companyfacts

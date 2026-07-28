@@ -12,7 +12,7 @@
 //   - data/pipeline-history.jsonl — append-only, one entry per day, used
 //     by the health page sparkline
 
-import type { EarningsSnapshot, EventsIndex } from "@/lib/types";
+import type { EarningsSnapshot, Entity, EventsIndex } from "@/lib/types";
 
 export interface VendorStats {
   attempted: number;
@@ -22,7 +22,7 @@ export interface VendorStats {
 }
 
 export interface PipelineReport {
-  schema: "pipeline-report/v1";
+  schema: "pipeline-report/v2";
   date: string; // ISO YYYY-MM-DD
   finishedAt: string; // ISO datetime
   status: "ok" | "degraded";
@@ -49,6 +49,25 @@ export interface PipelineReport {
   events_missing_provenance: number;
   metrics_missing_currency: number;
   shard_index_mismatches: number;
+  // Reaction maturation counters (schema v2). Sum across every event's
+  // reaction.points[]. `computed` = points where absReturn !== null (matured
+  // or clipped). `pending` = points where absReturn === null AND populatesOn
+  // has already elapsed (should be small — a large number here means
+  // matureEventReaction is failing quietly).
+  reactions_computed: number;
+  reactions_pending: number;
+  // Terminal decay counter (Part 6 of entity-dedup work). Points that
+  // will never mature — flipped to status:"unavailable" by
+  // scripts/apply-reaction-decay.mjs or the cron maturation step when
+  // the event is >60 trading days past and bars still don't exist.
+  reactions_unavailable: number;
+  // Company grouping counters (Part 4 of entity-dedup work).
+  // `companies_total` = distinct companyId count. `entities_unassigned`
+  // = entities missing a companyId (should be 0 after the Part-2 apply
+  // + Part-4 cron wiring; a non-zero here means a new entity slipped
+  // in without going through the assignment step).
+  companies_total: number;
+  entities_unassigned: number;
   // Per-vendor call counters. Increment during the cron run; drives the
   // >20% error-rate regression rule.
   per_vendor: {
@@ -71,6 +90,10 @@ export interface PipelineHistoryEntry {
   forward_dates_estimated: number;
   duplicates_detected: number;
   status: "ok" | "degraded";
+  // Included for the Part-6 "reactions_pending growing without new events"
+  // regression check. Optional so older history entries (pre-decay work)
+  // parse cleanly — the growth rule skips when either side is undefined.
+  reactions_pending?: number;
 }
 
 const CLOSE_DAYS = 45;
@@ -209,6 +232,10 @@ export function bucketForwardCoverage(
 export interface ComputeReportInput {
   snap: EarningsSnapshot;
   index: EventsIndex;
+  // Registry — used to derive companies_total + entities_unassigned.
+  // Optional so older cron callers that don't pass it still work; they
+  // get 0 for both fields (would flag as degraded once we add rules).
+  entities?: Entity[];
   shardFileCount: number;
   eventsAddedToday: number;
   perVendor: PipelineReport["per_vendor"];
@@ -221,6 +248,7 @@ export function computePipelineReport(input: ComputeReportInput): PipelineReport
   const {
     snap,
     index,
+    entities,
     shardFileCount,
     eventsAddedToday,
     perVendor,
@@ -233,8 +261,38 @@ export function computePipelineReport(input: ComputeReportInput): PipelineReport
   const quality = countCorpusQualityGaps(snap);
   const dupes = countDuplicates(snap);
   const mism = countIndexMismatches(index, snap);
+  // Reaction maturation counters — sum across all events' reaction.points.
+  let reactionsComputed = 0;
+  let reactionsPending = 0;
+  let reactionsUnavailable = 0;
+  const todayIso = finishedAt.toISOString().slice(0, 10);
+  for (const ev of snap.events) {
+    for (const p of ev.reaction?.points ?? []) {
+      if (p.status === "unavailable") {
+        reactionsUnavailable++;
+      } else if (p.absReturn !== null && p.absReturn !== undefined) {
+        reactionsComputed++;
+      } else if (
+        p.populatesOn &&
+        p.populatesOn <= todayIso
+      ) {
+        reactionsPending++;
+      }
+    }
+  }
+  // Company grouping (Part 4). Distinct companyId across the registry.
+  // entities_unassigned = entities missing a companyId (invariant: 0 after
+  // Part 2's apply + Part 4's cron wiring).
+  const companyIds = new Set<string>();
+  let entitiesUnassigned = 0;
+  if (entities) {
+    for (const e of entities) {
+      if (e.companyId) companyIds.add(e.companyId);
+      else entitiesUnassigned++;
+    }
+  }
   return {
-    schema: "pipeline-report/v1",
+    schema: "pipeline-report/v2",
     date: finishedAt.toISOString().slice(0, 10),
     finishedAt: finishedAt.toISOString(),
     status: "ok", // updated by checkRegressions
@@ -248,6 +306,11 @@ export function computePipelineReport(input: ComputeReportInput): PipelineReport
     events_missing_provenance: quality.events_missing_provenance,
     metrics_missing_currency: quality.metrics_missing_currency,
     shard_index_mismatches: mism,
+    reactions_computed: reactionsComputed,
+    reactions_pending: reactionsPending,
+    reactions_unavailable: reactionsUnavailable,
+    companies_total: companyIds.size,
+    entities_unassigned: entitiesUnassigned,
     per_vendor: perVendor,
     cron_duration_ms: cronDurationMs,
   };
@@ -297,6 +360,28 @@ export function checkRegressions(
   if (current.shard_index_mismatches > 0) {
     reasons.push(`shard_index_mismatches=${current.shard_index_mismatches}`);
   }
+  if (current.entities_unassigned > 0) {
+    reasons.push(
+      `entities_unassigned=${current.entities_unassigned} — companyId assignment leaked`,
+    );
+  }
+
+  // Part 6: reactions_pending growing without new events. If yesterday
+  // had a pending count and today's is strictly higher, but events_total
+  // did not grow, the decay job is falling behind (or matureEventReaction
+  // is failing quietly on live tickers). Only fire when both sides carry
+  // the field — older history entries have it undefined.
+  if (
+    prev &&
+    typeof prev.reactions_pending === "number" &&
+    typeof current.reactions_pending === "number" &&
+    current.reactions_pending > prev.reactions_pending &&
+    current.events_total <= prev.events_total
+  ) {
+    reasons.push(
+      `reactions_pending growing without new events (${prev.reactions_pending}→${current.reactions_pending})`,
+    );
+  }
 
   // Vendor error rates >20% on non-empty attempt counts
   for (const [name, v] of Object.entries(current.per_vendor)) {
@@ -323,6 +408,7 @@ export function toHistoryEntry(report: PipelineReport): PipelineHistoryEntry {
     forward_dates_estimated: report.forward_dates_estimated,
     duplicates_detected: report.duplicates_detected,
     status: report.status,
+    reactions_pending: report.reactions_pending,
   };
 }
 
