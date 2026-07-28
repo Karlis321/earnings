@@ -70,6 +70,50 @@ export async function GET() {
     registryReadError = (e as Error).message;
   }
 
+  // Direct GitHub API probe — reveals the actual HTTP status of the read
+  // that store.readRegistry silently swallows. This is what tells us
+  // WHY the store is falling back to the fixture.
+  let ghProbe: {
+    status: number | null;
+    statusText: string | null;
+    contentLength: number | null;
+    bodyPreview: string | null;
+    error: string | null;
+  } = {
+    status: null,
+    statusText: null,
+    contentLength: null,
+    bodyPreview: null,
+    error: null,
+  };
+  const pat = process.env.GH_PAT;
+  const owner = process.env.GH_REPO_OWNER;
+  const repo = process.env.GH_REPO_NAME;
+  const branch = process.env.GH_BRANCH ?? "main";
+  if (pat && owner && repo) {
+    try {
+      const url = `https://api.github.com/repos/${owner}/${repo}/contents/${encodeURIComponent("data/entity-registry.json")}?ref=${encodeURIComponent(branch)}`;
+      const r = await fetch(url, {
+        headers: {
+          Authorization: `Bearer ${pat}`,
+          Accept: "application/vnd.github+json",
+          "X-GitHub-Api-Version": "2022-11-28",
+          "User-Agent": "EarningsDashboard/1.0",
+        },
+        cache: "no-store",
+      });
+      ghProbe.status = r.status;
+      ghProbe.statusText = r.statusText;
+      const text = await r.text();
+      ghProbe.contentLength = text.length;
+      // First 300 chars only — enough to see error messages without
+      // leaking a full 500KB registry file.
+      ghProbe.bodyPreview = text.slice(0, 300);
+    } catch (e) {
+      ghProbe.error = (e as Error).message;
+    }
+  }
+
   return NextResponse.json(
     {
       env,
@@ -77,6 +121,7 @@ export async function GET() {
       storeMode: store.mode(),
       registryReadCount,
       registryReadError,
+      ghProbe,
       note:
         registryReadCount === 17
           ? "Only 17 entities returned = git-snapshot store is falling back to fixture. Check that all three matches.* are true."
