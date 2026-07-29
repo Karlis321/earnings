@@ -1,0 +1,28 @@
+name: standing-tests
+
+# Runs the invariant suite (pipeline-report + cross-listing corruption
+# test) on every push to main and every PR. Under 15s wall time — no
+# network I/O, all shard reads are local.
+#
+# The tests catch:
+#   - status: degraded on any of the quality gates
+#   - cross-listing revenue inconsistency (Alphabet-style multi-listing
+#     drift that surfaced in the July-2026 financials audit)
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  standing:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Run standing tests
+        run: node scripts/test-standing.mjs

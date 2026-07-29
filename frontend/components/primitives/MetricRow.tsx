@@ -22,12 +22,28 @@ function renderValue(fact: MetricEntry["actual"], key: string) {
   return fmtNumber(fact.value, 2);
 }
 
-export function MetricRow({ metric }: { metric: MetricEntry }) {
+export function MetricRow({
+  metric,
+  derived = false,
+}: {
+  metric: MetricEntry;
+  derived?: boolean;
+}) {
   const actualFresh = computeFreshness(metric.actual?.asOf ?? null);
   return (
-    <div className="grid grid-cols-[1.3fr_1fr_1fr_0.9fr_auto] items-center gap-3 border-b border-bd px-[18px] py-[13px] last:border-b-0">
+    <div
+      className={
+        "grid grid-cols-[1.3fr_1fr_1fr_0.9fr_auto] items-center gap-3 border-b border-bd px-[18px] py-[13px] last:border-b-0" +
+        (derived ? " opacity-70" : "")
+      }
+    >
       <div className="flex items-center gap-2 text-[13.5px] text-tx">
         {metric.displayLabel}
+        {derived ? (
+          <span className="rounded-[4px] bg-s3 px-[6px] py-[1px] font-mono text-[9.5px] uppercase tracking-[0.08em] text-tx-mid">
+            derived
+          </span>
+        ) : null}
       </div>
 
       <FactPopover

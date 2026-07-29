@@ -45,7 +45,7 @@ const args = new Map(
 );
 const DRY = args.get("dry") === true;
 const LIMIT = args.get("limit") ? parseInt(args.get("limit"), 10) : 250;
-const INTERVAL_MS = 2500;
+const INTERVAL_MS = 3000;
 const UA = "Mozilla/5.0 (add-us-primaries-v2)";
 
 let CRUMB = null;
@@ -144,6 +144,18 @@ async function main() {
     byCompany.get(e.companyId).push(e);
   }
 
+  // Manual overrides for companies where guessUsPrimarySymbol picks the
+  // wrong base (BDR digits, numeric foreign tickers, share-class
+  // hyphens like BRK-B). Keyed by any member ticker. If a company has
+  // an override, we use that symbol instead of the heuristic guess.
+  let overrideMap = {};
+  try {
+    const ov = JSON.parse(
+      await fs.readFile(path.join(ROOT, "scripts", "config", "us-primary-overrides.json"), "utf-8"),
+    );
+    overrideMap = ov.overrides ?? {};
+  } catch { /* file optional */ }
+
   const targets = [];
   for (const [cid, members] of byCompany) {
     if (!members.some((m) => m.edgarCik)) continue;
@@ -156,7 +168,12 @@ async function main() {
     });
     if (hasUsPrimary) continue;
     const canonical = members.find((m) => m.isCanonical) ?? members[0];
-    const symbol = guessUsPrimarySymbol(members);
+    // Override wins over guess; try every member ticker's override key.
+    let symbol = null;
+    for (const m of members) {
+      if (overrideMap[m.ticker]) { symbol = overrideMap[m.ticker]; break; }
+    }
+    if (!symbol) symbol = guessUsPrimarySymbol(members);
     if (!symbol) continue;
     targets.push({
       companyId: cid,
@@ -260,6 +277,25 @@ async function main() {
     for (const a of added.slice(0, 15)) {
       console.log(`  ${a.ticker.padEnd(12)} ${a.name.slice(0, 24).padEnd(24)} cap=${((a.cap ?? 0) / 1e9).toFixed(1)}B ind=${a.industry ?? "-"}`);
     }
+  }
+
+  // Persist a failures audit so future runs can target the remaining set.
+  if (failures.length > 0) {
+    const OUT = path.join(ROOT, "scripts", "audits", "add-us-primaries-failures.json");
+    await fs.mkdir(path.dirname(OUT), { recursive: true });
+    await fs.writeFile(
+      OUT,
+      JSON.stringify(
+        {
+          schema: "add-us-primaries-failures/v1",
+          generatedAt: new Date().toISOString(),
+          failures,
+        },
+        null,
+        2,
+      ),
+    );
+    console.log(`  audit → ${OUT}`);
   }
 
   if (DRY) {

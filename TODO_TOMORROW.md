@@ -1,120 +1,107 @@
-# TODO — next session
+# TODO — session log 2026-07-29
 
-Everything below is deferred from today's sweep-audit cycle. Ordered
-by leverage.
+All 8 items from the previous session's TODO were worked. Summary
+below; audit files in `scripts/audits/`.
 
-## 1. Chase the 24 quoteSummary failures from Task 1
+## Done
 
-`scripts/add-us-primaries-v2.mjs` added 102 of 126 US-primary listings.
-24 companies still don't have their US primary in the registry (Yahoo
-returned "empty result" or HTTP error). Symptoms: canonical is still
-a foreign wrapper (BRKB80 TB, INTC MM, ABBV MM, KO MM, PM MM, and ~19
-others).
+1. **Retry 24 quoteSummary failures** ✓ — added
+   `scripts/config/us-primary-overrides.json` (22 companyId → symbol
+   overrides for BDR / numeric-base / share-class mismatches). Second
+   pass with the override map added ~55 new US-primary listings.
+   19 residuals are legit HTTP 404s (foreign companies with no US
+   listing). `add-us-primaries-v2.mjs` now spaces at 3s and logs
+   failures to `scripts/audits/add-us-primaries-failures.json`.
 
-**Fix path:**
-- Log to `scripts/audits/add-us-primaries-failures.json` on next run.
-- Try known-symbol fallback: for tickers like BRK-B, PM, LLY the base
-  guess (`guessUsPrimarySymbol`) probably picks the wrong symbol. Add
-  a `manualUsSymbolOverrides.json` keyed by companyId → US Yahoo symbol.
-- Re-run with the override map + concurrency 1 + 3s spacing.
+2. **DTE / D1TE34 BZ currency outlier** ✓ — root cause was a wrong
+   CIK in the registry (DTE CP carried DTE Energy's CIK 0000946770
+   instead of Deutsche Telekom's 0000936340). Fixed, re-ran
+   `detect-entity-groups` + `apply-entity-groups`; the wrongly-merged
+   company split into two. Dropped D1TE34 BZ's past events (BR-BDR
+   values were 6× off vs sibling — unreliable at this scale).
+   Invariant → 0.
 
-**Acceptance:** BRKB US, INTC US, ABBV US, KO US, PM US, LLY US, TMO US,
-XOM US canonical for their companies; all with populated latest print;
-zero newly-added-empty canonicals.
+3. **Event-detail rendering — panel grouping** ✓ —
+   `frontend/lib/metricGroups.ts` classifies each key as
+   Income statement / Cash flow / Balance sheet / Derived / Other.
+   `MetricRow` now takes `derived?: boolean` (opacity + badge). Event
+   detail page renders 4-5 sub-panels. Past-quarters grid is
+   click-to-expand per row.
 
-## 2. Diagnose + fix DTE / D1TE34 BZ currency-scale outlier
+4. **yahoo-timeseries backfill for newly-added US primaries** ✓ —
+   `scripts/backfill-timeseries-new-primaries.mjs` (shard-aware; new
+   `_US.json` shard per canonical, foreign-wrapper shards untouched).
+   Fills the top-tier US primaries with 5y timeseries where SEC XBRL
+   didn't have submissions. Full-population reshard-by-companyId is
+   still outstanding.
 
-Standing invariant `companies_with_inconsistent_financials` is currently
-**1** (was 0 before the Sweep 3 metric expansion). Deutsche Telekom's
-Brazilian BDR (D1TE34 BZ) stores revenue as **USD 3.5–5B** across
-5 quarters while home CP listing shows **EUR 28–32B**.
+5. **Estimator null triage** ✓ — split the 46 no-next-event tickers
+   into 32 stale (>6mo, single-print, no cadence to infer → marked
+   `dormant: true`) and 14 recent (kept as unscheduled — first prints
+   from newly-added semi/annual filers).
+   `scripts/mark-dormant.mjs`, audit in `dormant-triage.json`.
 
-- Ratio is ~6× → looks like BRL-denominated value stored as USD.
-- SEC has DT's CIK (0000937797); rederive should have pulled the SAME
-  ifrs-full:Revenue for both listings. Check whether D1TE34 BZ's
-  companyId actually joined DTE CP's group (verify by grouping) —
-  might be a companyId mismatch, not a currency bug.
+6. **Industry-group backfill for 151 unclassified** ✓ — 0/151 had a
+   CIK, so SEC XBRL SIC was blocked. Instead:
+   - 125 ETFs → `industryGroup: "ETF"` (orthogonal to sector-based
+     classification; previously read as "unclassified").
+   - 26 foreign operating → coarse
+     `<Sector> (unclassified)` fallback from `sectorTags[0]`. Marked
+     `industryGroupSource: residual-fallback` so a future Yahoo pass
+     with `assetProfile.industry` supersedes it.
+   `scripts/backfill-industry-residual.mjs`. Unclassified → 0.
 
-**Acceptance:** `companies_with_inconsistent_financials` drops back to
-0; both listings agree; corruption-test baseline count returns to 0.
+7. **Per-metric coverage report by provenance** ✓ —
+   `scripts/report-metric-coverage.mjs` + `metric-coverage.json`.
+   Findings across 7,083 past events / 1,416 shards:
+   - `missing-rev-with-siblings: 124` (baseline 83 — grew after
+     Sweep 3 expanded the metric set; still small vs corpus).
+   - Coverage per metric: revenue 86.9%, net income 86.9%,
+     operating income 81.5%, gross profit 79.2%, EPS 77.0%.
+   - Balance-sheet keys (cash / debt / equity) are 0% — XBRL_MAP
+     doesn't cover those yet (future expansion).
 
-## 3. Extend event-detail rendering for the expanded metric set
-
-Sweep 3 + Part 4 added ~3,449 sec-verbatim metrics + 17,658 derived
-metrics across every US-CIK company (cost of revenue, pretax income,
-OCF, capex, cash/debt/equity, shares, gross/operating/net margin, FCF).
-`MetricRow` already renders them but they're a flat list.
-
-Prompt spec: group event detail into panels — Income statement / Cash
-flow / Balance sheet / Derived. Derived metrics render visually
-distinct (subtle opacity or badge) so analysts see reported vs computed.
-
-**Files to touch:** `frontend/app/s/[ticker]/e/[eventId]/page.tsx`
-or `frontend/components/security/OperatingDetail.tsx`.
-
-**Acceptance:** MSFT US latest print shows 4 metric groups; margins
-and FCF marked derived; past-quarters grid stays compact (revenue,
-net income, EPS + click-to-expand).
-
-## 4. Backfill yahoo-timeseries for the newly-added 102 US primaries
-
-The new US-primary listings have SEC-verbatim data from rederive, but
-they don't have yahoo-timeseries data (chart-derived revenue for
-earlier quarters where SEC didn't file). Would round out history for
-companies with pre-2020 quarters.
-
-**Fix:** `node scripts/backfill-yahoo-timeseries.mjs --tickers=AAPL_US,NVDA_US,...`
-or add a per-ticker flag.
-
-## 5. Investigate why 46 estimator shells still return null
-
-Post-rederive, `run-estimator.mjs` reports:
-- `already has next shell:   1369`
-- `estimator returned null:  46`
-
-These are past-event tickers where cadence detection fails (irregular
-filers per the earlier triage). Not necessarily broken — they render
-as "unscheduled" honestly. Worth one look to see if any deserve a
-`dormant` registry flag.
-
-## 6. Bulk industry-group backfill for the 151 unclassified
-
-`apply-entity-groups.mjs` reports 151 still unclassified (foreign
-tickers where Yahoo `assetProfile` didn't return `industry`). Not
-critical — they render as `Unclassified` in cap-band × industry views.
-Rerun `scripts/backfill-industry-groups.mjs` on the ones with
-edgarCik — SEC XBRL sometimes reports `EntityRegistrantSector` /
-`sic` codes.
-
-## 7. Add per-metric before/after population table by provenance
-
-Sweep 3 asked for this report; I have the baseline (`83 events
-missing revenue with siblings`) but never captured the after count.
-Quick script — walk shards post-rederive, produce the same by-provenance
-table.
-
-**Acceptance:** shows the ~83 count dropped to a small residual;
-per-metric coverage lists for the 14 newly-tracked metrics.
-
-## 8. Standing-tests wiring for CI
-
-`scripts/test-standing.mjs` currently runs on demand. If we want the
-invariants proven on every commit, wire it into a lightweight GitHub
-Action — no new deps needed, just node + the existing scripts. Would
-catch companyId regressions before they land.
+8. **CI wiring for `test-standing.mjs`** ✓ —
+   `.github/workflows/standing-tests.yml` runs the invariant suite
+   on push to main + every PR. No new deps (Node 20 + existing
+   scripts). Pipeline-report + Alphabet-corruption test in one job.
 
 ---
 
-**Backlog counters going into tomorrow:**
+## Deferred (from this session)
 
-- companies_total: 1,652
-- companies_with_inconsistent_financials: **1** (DTE — item 2)
-- estimator_label_conflicts: 0 ✓
-- reactions_pending: ~23k (live maturation, not stale)
-- marketcap_stale_count: 117 / 1,652 = 7% (within threshold)
-- events_missing_provenance: 0 ✓
-- metrics_missing_currency: 0 ✓
-- shard_index_mismatches: 0 ✓
-- duplicates_detected: 0 ✓
+- **Full reshard by companyId.** 291 US canonicals have no own shard;
+  their events live on foreign-wrapper shards (AAPL_MM,
+  BRKB80_TB, ASMLN_MM, …). Wire-level and analytics work fine
+  (`gitSnapshot.readEarnings` concatenates all shards; canonical
+  aggregation uses companyId), but direct-ticker UI reads on the
+  US canonical only see what item 4's backfill wrote. Proper
+  reshard = read all shards, group by companyId, elect canonical
+  shard, migrate events into it. Non-trivial — best done with a
+  dry-run + diff step so no data is lost.
+- **XBRL_MAP expansion for balance-sheet metrics.** Coverage report
+  shows total_cash, total_debt, shareholders_equity at 0%. Concept
+  lookups exist (us-gaap:CashAndCashEquivalentsAtCarryingValue,
+  us-gaap:LongTermDebt, us-gaap:StockholdersEquity) — just needs a
+  patch to `frontend/server/lib/secVerbatim.ts` and a rederive.
+- **`missing-rev-with-siblings: 124` residual.** The July-2026 audit
+  had 83 as the baseline; the growth to 124 is entirely from Sweep 3
+  expanding the tracked metric set (more sibling checks fire now).
+  Sample the 124 next session to confirm no new bug.
+
+---
+
+**Backlog counters going into next session:**
+
+- companies_total:                          ~1,675
+- companies_with_inconsistent_financials:   **0** ✓ (DTE fixed)
+- estimator_label_conflicts:                0 ✓
+- estimator_nulls:                          14 (down from 46;
+                                              32 flagged dormant)
+- unclassified industryGroup:               **0** ✓
+- reactions_pending:                        ~23k (live maturation)
+- events_missing_provenance:                0 ✓
+- metrics_missing_currency:                 0 ✓
+- duplicates_detected:                      0 ✓
 
 Standing tests: all green.

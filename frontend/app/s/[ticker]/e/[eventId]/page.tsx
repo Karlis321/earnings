@@ -20,6 +20,14 @@ import { SourcesPanel } from "@/components/event/SourcesPanel";
 import { VerdictNote } from "@/components/event/VerdictNote";
 import { computeFreshness } from "@/lib/freshness";
 import { fmtDate } from "@/lib/format";
+import {
+  groupOf,
+  isDerivedMetric,
+  metricGroupLabel,
+  METRIC_GROUP_ORDER,
+  type MetricGroup,
+} from "@/lib/metricGroups";
+import type { MetricEntry } from "@/lib/types";
 
 interface Props {
   params: Promise<{ ticker: string; eventId: string }>;
@@ -157,12 +165,44 @@ export default async function EventDetailPage({ params }: Props) {
             )}
           </Panel>
         ) : (
-          <Card eyebrow={`Numbers · ${event.period}`}>
-            <MetricRowHeader />
-            {event.metrics.map((m) => (
-              <MetricRow key={m.key} metric={m} />
-            ))}
-          </Card>
+          <div className="flex flex-col gap-4">
+            {(() => {
+              const buckets = new Map<MetricGroup, MetricEntry[]>();
+              for (const m of event.metrics) {
+                const isDerivedFact =
+                  (m.actual as { derived?: boolean } | null)?.derived === true;
+                const g = groupOf(m.key, isDerivedFact);
+                const arr = buckets.get(g) ?? [];
+                arr.push(m);
+                buckets.set(g, arr);
+              }
+              return METRIC_GROUP_ORDER.filter(
+                (g) => (buckets.get(g)?.length ?? 0) > 0,
+              ).map((g) => {
+                const rows = buckets.get(g)!;
+                const isDerivedPanel = g === "derived";
+                return (
+                  <Card
+                    key={g}
+                    eyebrow={`${metricGroupLabel(g)} · ${event.period}`}
+                  >
+                    <MetricRowHeader />
+                    {rows.map((m) => {
+                      const isDerivedFact =
+                        (m.actual as { derived?: boolean } | null)?.derived ===
+                        true;
+                      const derived =
+                        isDerivedPanel ||
+                        isDerivedMetric(m.key, isDerivedFact);
+                      return (
+                        <MetricRow key={m.key} metric={m} derived={derived} />
+                      );
+                    })}
+                  </Card>
+                );
+              });
+            })()}
+          </div>
         )}
 
         <Panel eyebrow="Reaction">
