@@ -50,9 +50,17 @@ c. **Guard: already done?** If
 
 d. **Read the shard's `sourceLink`.** Every event carries
    `{url, kind}`. If `kind === "filing"`, that URL IS the
-   primary document — skip the search step and WebFetch it
+   primary document — skip the search step and fetch it
    directly (counts as 1/3 fetches). Otherwise
    (`kind === "fallback"` or missing) fall through to Step 1.
+
+   **For any `sec.gov` URL**, use
+   `Bash: node scripts/fetch-edgar.mjs <url> <outfile>` and
+   then `Read` the outfile. WebFetch anonymous datacenter
+   requests to SEC come back 403; the script sends the
+   contact-bearing User-Agent SEC requires and respects
+   the ≤1 req/sec cap across invocations via a lockfile.
+   WebFetch is still the right tool for non-SEC URLs.
 
 e. **Read the reported metrics from the shard.** These already
    carry SEC-verbatim values (revenue, net income, EPS, gross/
@@ -72,9 +80,14 @@ e. **Read the reported metrics from the shard.** These already
   Fool, Benzinga.
 - Prefer EDGAR/SEC URLs over corporate IR pages when both are
   in the search hits. **IR sites often block datacenter IPs;
-  EDGAR does not.**
-- WebFetch the chosen URL (2/3 fetches).
-- **If a WebFetch fails twice, DO NOT retry it.** Go straight
+  EDGAR does not** (as long as you use `scripts/fetch-edgar.mjs`
+  for the actual fetch — anonymous requests to sec.gov 403).
+- For `sec.gov` URLs use
+  `Bash: node scripts/fetch-edgar.mjs <url> <outfile>` +
+  `Read`. For any other URL use WebFetch. Each fetch —
+  whether via the script or WebFetch — counts one against
+  the 3-fetch budget.
+- **If a fetch fails twice, DO NOT retry it.** Go straight
   to the EDGAR filings index for the CIK
   (`https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=<edgarCik>&type=&dateb=&owner=include&count=10`)
   as fetch #3, find the 10-Q / 10-K / 6-K covering the period,
