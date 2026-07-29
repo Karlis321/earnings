@@ -185,7 +185,12 @@ async function writeFile<T>(
 // stale data long. Writes invalidate the entry immediately so the next
 // read sees the new content, and RSC pages that render across a write
 // boundary get the latest.
-const READ_CACHE_MS = 60_000;
+// Bumped from 60s to 5min so a slice-partitioned cron (which POSTs
+// the same endpoint 5 times over ~8 min) doesn't re-read the full
+// ~1,500-shard snapshot on every slice. Cache hit rate matters more
+// than freshness here — the GitHub PAT rate limit (5k API req/hr)
+// caps at exactly one full snapshot read per hour otherwise.
+const READ_CACHE_MS = 300_000;
 interface CacheEntry<T> {
   content: T;
   sha: string;
@@ -427,7 +432,11 @@ function unwrapShard(content: unknown): EventRecord[] {
 // RECONSTITUTE_CACHE_MS so downstream RSC pages that call readEarnings
 // multiple times per request only pay the fan-out once.
 const SHARD_READ_CONCURRENCY = 20;
-const RECONSTITUTE_CACHE_MS = 60_000;
+// Reconstituted-snapshot cache — same rationale as READ_CACHE_MS.
+// A slice-partitioned cron does 5 sequential POSTs; without a
+// multi-minute cache the reconstitution reruns every time and each
+// rerun reads all ~1,500 shard files.
+const RECONSTITUTE_CACHE_MS = 300_000;
 interface ReconstituteCache {
   snapshot: EarningsSnapshot;
   expiresAt: number;
