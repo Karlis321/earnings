@@ -101,6 +101,22 @@ function validateAgainst(schema, value, pathParts, errors) {
   }
 }
 
+// Longest verbatim quoted phrase length — for the driver 15-word rule.
+// Extract every "..." or "..." span (ASCII + curly), count words per span,
+// return the max. Reflowing the run keeps this simple: we don't try to
+// distinguish grammatical quotes from the release's own — a 15+-word
+// quote is a copy-paste no matter which.
+function longestQuotedRun(s) {
+  let max = 0;
+  const re = /["“]([^"”]{2,})["”]/g;
+  let m;
+  while ((m = re.exec(s)) !== null) {
+    const w = m[1].trim().split(/\s+/).filter(Boolean).length;
+    if (w > max) max = w;
+  }
+  return max;
+}
+
 // summary_short MUST contain at least one number — enforce here since
 // JSON Schema's pattern is awkward for "contains a digit anywhere".
 function extraChecks(body, errors) {
@@ -119,6 +135,29 @@ function extraChecks(body, errors) {
     const bad = ["yahoo.com", "finance.yahoo.com", "reuters.com/markets", "seekingalpha.com", "marketwatch.com", "cnbc.com", "bloomberg.com", "investing.com", "zacks.com", "fool.com", "benzinga.com"];
     const hit = bad.find((d) => body.source_url.includes(d));
     if (hit) errors.push(`source_url: aggregator "${hit}" not allowed — use the company release or EDGAR`);
+  }
+  // v2 drivers rules — 50-word explanation cap + no verbatim quote >15 words.
+  // The metric label should point at an existing KPI or the literal
+  // 'overall'; we let unknown labels through with a warning-shaped
+  // notice, not an error (KPI-label drift shouldn't block a summary).
+  if (Array.isArray(body.drivers)) {
+    const kpiLabels = new Set((body.kpis ?? []).map((k) => k?.label).filter((x) => typeof x === "string"));
+    for (let i = 0; i < body.drivers.length; i++) {
+      const d = body.drivers[i];
+      const pfx = `drivers[${i}]`;
+      if (!d || typeof d !== "object") continue;
+      if (typeof d.explanation === "string") {
+        const w = d.explanation.trim().split(/\s+/).filter(Boolean).length;
+        if (w > 50) errors.push(`${pfx}.explanation: ${w} words > 50`);
+        const longest = longestQuotedRun(d.explanation);
+        if (longest > 15) errors.push(`${pfx}.explanation: verbatim quoted run of ${longest} words > 15`);
+      }
+      if (typeof d.metric === "string" && d.metric !== "overall" && !kpiLabels.has(d.metric)) {
+        // Non-fatal: log to stderr context but keep validating so a
+        // driver referencing a renamed KPI doesn't block the commit.
+        errors.push(`${pfx}.metric: "${d.metric}" does not match any kpi.label and is not "overall"`);
+      }
+    }
   }
 }
 

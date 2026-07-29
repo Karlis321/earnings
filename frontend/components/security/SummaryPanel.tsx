@@ -1,7 +1,6 @@
-import Link from "next/link";
 import clsx from "clsx";
 import { ArrowUpRight, AlertTriangle, ArrowUp, ArrowDown, Minus } from "lucide-react";
-import type { Summary, SummaryDirection } from "@/lib/types";
+import type { Summary, SummaryDirection, SummaryDriver, SummaryDriverBasis } from "@/lib/types";
 import { OlderSummaries } from "./OlderSummaries";
 
 interface Props {
@@ -84,6 +83,10 @@ export function SummaryCard({
         </p>
       ) : null}
 
+      {!compact && Array.isArray(summary.drivers) && summary.drivers.length > 0 ? (
+        <DriversList drivers={summary.drivers} />
+      ) : null}
+
       {summary.confidence_notes && summary.confidence_notes.trim().length > 0 ? (
         <div
           role="note"
@@ -146,6 +149,76 @@ function KpiChip({ kpi }: { kpi: import("@/lib/types").SummaryKpi }) {
           <span className="text-tx3">· {kpi.delta_basis}</span>
         </span>
       ) : null}
+    </span>
+  );
+}
+
+// v2 drivers — a "Why" section between summary_long and the footer.
+// One line per driver: metric name, direction arrow, explanation,
+// and a subtle basis tag ("Company" for company-disclosed,
+// "Derived" for arithmetic). The "not explained in the release"
+// case is styled muted so its ABSENCE-of-explanation reads as a
+// deliberate honest note rather than laziness.
+function DriversList({ drivers }: { drivers: SummaryDriver[] }) {
+  return (
+    <section
+      aria-label="Why the numbers moved"
+      className="mt-4 rounded-[8px] border border-bd bg-panel2/60"
+    >
+      <p className="border-b border-bd px-3 py-1.5 font-mono text-[10.5px] uppercase tracking-[0.08em] text-tx3">
+        Why the numbers moved
+      </p>
+      <ul className="divide-y divide-bd">
+        {drivers.map((d, i) => {
+          const notExplained = /^not explained in the release$/i.test(d.explanation.trim());
+          const Icon = directionIcon(d.direction);
+          const dirClass =
+            d.direction === "up"
+              ? "text-success-fg"
+              : d.direction === "down"
+              ? "text-danger"
+              : "text-tx-mid";
+          return (
+            <li
+              key={`${d.metric}-${i}`}
+              className={clsx(
+                "flex items-start gap-3 px-3 py-2 text-[13px] leading-[1.55]",
+                notExplained && "opacity-70",
+              )}
+            >
+              <Icon aria-hidden className={clsx("mt-[3px] h-[13px] w-[13px] shrink-0", dirClass)} />
+              <div className="min-w-[8rem] shrink-0 font-mono text-[11.5px] uppercase tracking-[0.04em] text-tx-mid">
+                {d.metric}
+              </div>
+              <div className={clsx("flex-1", notExplained ? "text-tx3 italic" : "text-tx")}>
+                {d.explanation}
+              </div>
+              <DriverBasisTag basis={d.basis} />
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  );
+}
+
+function DriverBasisTag({ basis }: { basis: SummaryDriverBasis }) {
+  const isCompany = basis === "company-disclosed";
+  return (
+    <span
+      title={
+        isCompany
+          ? "Cause is explicitly stated in the filing / MD&A"
+          : "Cause is a mechanical decomposition of our own KPI data — arithmetic only, not speculation"
+      }
+      className={clsx(
+        "ml-2 shrink-0 rounded-[4px] border px-[6px] py-[1px] font-mono text-[9.5px] uppercase tracking-[0.08em]",
+        isCompany
+          ? "border-bd bg-s2 text-tx-mid"
+          : "border-[rgba(140,140,140,0.35)] bg-transparent text-tx3",
+      )}
+    >
+      {isCompany ? "Company" : "Derived"}
     </span>
   );
 }

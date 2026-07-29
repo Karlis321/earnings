@@ -6,9 +6,32 @@ import { OperatingDetail } from "@/components/security/OperatingDetail";
 import { DeveloperDetail } from "@/components/security/DeveloperDetail";
 import { EtfDetail } from "@/components/security/EtfDetail";
 import { SummaryPanel } from "@/components/security/SummaryPanel";
+import { SummarizeButton } from "@/components/security/SummarizeButton";
 import { EmptyState } from "@/components/primitives";
 import { computeFreshness, todayIso } from "@/lib/freshness";
+import { readFile } from "node:fs/promises";
+import path from "node:path";
 import type { EventRecord } from "@/lib/types";
+
+// Covered-tier tickers from data/covered.json — the Summarize button is
+// gated on this list per Part 4c (mechanical/KPI-only mode for the tail
+// is a later step). Read once per RSC render; the file changes rarely.
+async function readCoveredTickers(): Promise<Set<string>> {
+  const candidates = [
+    path.join(process.cwd(), "..", "data", "covered.json"),
+    path.join(process.cwd(), "data", "covered.json"),
+  ];
+  for (const p of candidates) {
+    try {
+      const raw = await readFile(p, "utf-8");
+      const parsed = JSON.parse(raw) as { tickers?: string[] };
+      if (Array.isArray(parsed.tickers)) return new Set(parsed.tickers);
+    } catch {
+      /* try next */
+    }
+  }
+  return new Set();
+}
 
 // Security Detail — three variants per FE PRD §7.3–7.5.
 
@@ -59,6 +82,18 @@ export default async function SecurityDetailPage({ params }: Props) {
     ? await store.readSummariesForTicker(ticker)
     : [];
 
+  // Summarize button gate: covered-tier only, operating security, and
+  // no summary yet for the latest reported period. All three must be
+  // true for the button to render.
+  const covered = await readCoveredTickers();
+  const hasSummaryForLatest =
+    latestPast?.period != null && summaries.some((s) => s.period === latestPast.period);
+  const showSummarizeButton =
+    entity.securityType === "operating" &&
+    !!latestPast &&
+    !hasSummaryForLatest &&
+    (covered.has(ticker) || covered.has(entity.ticker));
+
   return (
     <div className="mx-auto max-w-[1800px] px-10 py-8">
       <SecurityHeader
@@ -78,6 +113,13 @@ export default async function SecurityDetailPage({ params }: Props) {
           summaries={summaries}
           latestReportedPeriod={latestPast?.period ?? null}
         />
+      )}
+
+      {/* Summarize button — where the SummaryPanel would render but
+          doesn't. Covered-tier only for now; the wider universe gets
+          a mechanical/KPI-only mode later. */}
+      {showSummarizeButton && (
+        <SummarizeButton ticker={ticker} period={latestPast?.period ?? null} />
       )}
 
       {entity.securityType === "operating" && (

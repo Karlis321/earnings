@@ -430,6 +430,21 @@ export interface SummaryKpi {
   direction: SummaryDirection;
 }
 
+// v2 addition — per-KPI (or overall) cause explanation grounded in
+// the primary document. See data/summaries-schema.json for the full
+// contract; the essential invariant is that `explanation` is either
+// a company-disclosed cause (majority) or a mechanical arithmetic
+// decomposition — never analyst theorising, never a macro narrative.
+// "not explained in the release" is a valid explanation and gets
+// muted styling in the UI so its absence is visible.
+export type SummaryDriverBasis = "company-disclosed" | "derived-arithmetic";
+export interface SummaryDriver {
+  metric: string; // matches a kpi.label or the literal "overall"
+  direction: Exclude<SummaryDirection, "n/a">;
+  explanation: string; // ≤50 words, no verbatim >15 words
+  basis: SummaryDriverBasis;
+}
+
 export interface Summary {
   ticker: string;
   period: string;
@@ -441,6 +456,10 @@ export interface Summary {
   summary_long: string;
   source_url: string;
   confidence_notes: string;
+  // Optional — absent in v1 files, present in v2. Backward-compat
+  // logic: any consumer must render nothing when the field is
+  // missing rather than fall over.
+  drivers?: SummaryDriver[];
 }
 
 export interface MetricDictionary {

@@ -151,6 +151,56 @@ Miner-specific rules (Hudbay, Capstone, Taseko, Century, etc.):
 - Streaming / royalty distortions — split streamed vs
   non-streamed if the release provides it.
 
+### Drivers — why the numbers moved (v2)
+
+After the KPI section, populate the summary's `drivers` array. This
+is the "why" that turns a KPI dump into a research note. Rules:
+
+**HARD RULE** — no macro narratives, no analyst-style theorizing,
+no causes the document doesn't state. Every entry is either
+`company-disclosed` (the filing/MD&A explicitly states this cause)
+or `derived-arithmetic` (pure decomposition from our own data,
+e.g. "margin expansion is fully explained by revenue +8% against
+flat operating costs"). If the release gives no reason for a
+move, the honest driver is `"not explained in the release"` —
+write that, mark basis `company-disclosed`, don't fill the gap.
+
+**Extraction procedure.** Locate the MD&A's own explanations via
+`Bash: node scripts/extract-doc-text.mjs fetched/<file>
+--grep "due to|driven by|partially offset|compared to|as a result
+of|attributable to|reflecting"` and map each hit to the KPI it
+concerns. Prefer the operations-level pass through Peru / Manitoba
+/ British Columbia (miners) or per-segment (non-miners) sections
+— those carry the specific causes.
+
+**Miner-specific driver categories** — when the release discloses
+any of these for a metric, they belong in `drivers`:
+
+- Head grade changes (Cu / Au / Zn / Mo / Ag %), throughput
+  (mill tonnes), and recovery (%). These are almost always the
+  first-order drivers of production and unit-cost moves.
+- Realized price vs benchmark (e.g. LME copper realized
+  $X.XX vs $Y.YY average). If the release breaks out realized
+  vs benchmark deltas, capture that as its own driver line for
+  revenue.
+- By-product credit swings — when the release attributes a C1
+  or AISC move to gold / silver / molybdenum credits, that IS
+  the driver line for that cost metric.
+- Capitalized-vs-expensed stripping — a common cause of
+  quarter-over-quarter cost swings that's rarely intuitive
+  from the top line. If disclosed, capture as its own driver.
+
+**Length & fidelity.** Each `explanation` ≤ 50 words. Quote nothing
+verbatim over 15 words (the validator enforces both). Paraphrase
+faithfully — don't compress a cause out of existence. Prefer
+short lines over one omnibus paragraph — one driver per metric,
+plus one `metric: "overall"` line summarising the release-level
+narrative if the CEO/CFO quotes stand alone.
+
+**Metric field.** Must match a `kpi.label` from the same summary,
+or the literal string `"overall"` for release-level narrative.
+The validator warns on unknown labels — check spelling.
+
 Write the JSON to
 `data/summaries/<TICKER_slug>_<PERIOD_slug>.json` — the resolver's
 `summaryPath` field is that exact target path. Schema in

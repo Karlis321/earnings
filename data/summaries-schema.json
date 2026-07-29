@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "summaries/v1",
-  "description": "Post-earnings summary written by /earnings + /sweep slash commands. One file per ticker+period at data/summaries/<TICKER>_<PERIOD>.json. Ticker uses '_' for Bloomberg space (e.g. HBM_US); period uses '_' for space (e.g. FY2026_Q2).",
+  "$id": "summaries/v2",
+  "description": "Post-earnings summary written by /earnings + /sweep slash commands. One file per ticker+period at data/summaries/<TICKER>_<PERIOD>.json. Ticker uses '_' for Bloomberg space (e.g. HBM_US); period uses '_' for space (e.g. FY2026_Q2). v2 adds an optional `drivers` array — absent means v1 (KPIs only); present means v2 (per-KPI cause explanations from the primary document). v1 files still validate.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -78,6 +78,34 @@
     "confidence_notes": {
       "type": "string",
       "description": "Restatements, C1-vs-AISC quirks, by-product netting, streaming distortions, one-offs. Empty string if none."
+    },
+    "drivers": {
+      "type": "array",
+      "description": "Optional (v2). Per-KPI cause explanations. Each entry maps a metric (matching a kpi label, or the special value 'overall') to a direction + short explanation grounded in the primary document. HARD RULE — no macro narratives, no analyst-style theorizing, no causes the release doesn't state. If the release gives no reason for a move, write 'not explained in the release' and mark basis 'company-disclosed' (that's an honest read of what the document contains, not a fabrication).",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["metric", "direction", "explanation", "basis"],
+        "properties": {
+          "metric": {
+            "type": "string",
+            "minLength": 2,
+            "description": "Matches a kpi.label from the same summary, or the literal 'overall' for release-level narrative."
+          },
+          "direction": { "type": "string", "enum": ["up", "down", "flat"] },
+          "explanation": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 400,
+            "description": "<=50 words. Quotes no verbatim string longer than 15 words. 'not explained in the release' is a legitimate value."
+          },
+          "basis": {
+            "type": "string",
+            "enum": ["company-disclosed", "derived-arithmetic"],
+            "description": "company-disclosed: filing/MD&A explicitly states this cause (the overwhelming majority). derived-arithmetic: pure decomposition from our own data (e.g. 'margin expansion is fully explained by revenue +8% against flat operating costs')."
+          }
+        }
+      }
     }
   }
 }
