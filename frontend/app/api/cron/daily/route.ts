@@ -163,16 +163,37 @@ export async function POST(req: NextRequest) {
       { status: 400 },
     );
   }
+  // Two orthogonal gates, both default to their old behaviour:
+  //   refreshSectors=1  → run step 6a sector-universe refresh.
+  //                        Default: 1 when sliceCount===1 (full-universe
+  //                        legacy call: Vercel Cron with no query params
+  //                        keeps the original behaviour), else 0. The
+  //                        workflow's slice loop passes 0 for all 4
+  //                        slices and calls sectorsOnly=1 as a 5th
+  //                        dedicated slot so sector refresh gets its
+  //                        own 300s budget.
+  //   sectorsOnly=1     → skip all per-entity work; only run the sector
+  //                        refresh + persist newly-added entities to
+  //                        registry. Fast finalization (~150s vs the
+  //                        full ~500s of a legacy full run).
+  const sectorsOnly = url.searchParams.get("sectorsOnly") === "1";
+  const refreshSectorsParam = url.searchParams.get("refreshSectors");
+  const refreshSectors =
+    refreshSectorsParam === "1"
+      ? true
+      : refreshSectorsParam === "0"
+      ? false
+      : sliceCount === 1;
   // Deterministic hash-based partitioning across ticker string. Keeps
   // the same entity in the same slice across days so retries hit the
   // same subset. sum-of-charcodes is enough; the registry is small.
   const shouldProcess = (ticker: string): boolean => {
+    if (sectorsOnly) return false;
     if (sliceCount === 1) return true;
     let h = 0;
     for (let i = 0; i < ticker.length; i++) h = (h + ticker.charCodeAt(i)) | 0;
     return Math.abs(h) % sliceCount === slice;
   };
-  const isFirstSlice = slice === 0;
   const isLastSlice = slice === sliceCount - 1;
 
   const startedAt = new Date();
@@ -985,11 +1006,12 @@ export async function POST(req: NextRequest) {
     // entities also get their caps refreshed in the same commit.
     //
     // Sliced-run behaviour: this is a global operation (screens the
-    // whole Yahoo universe, not per-entity). Runs only on the FIRST
-    // slice; subsequent slices skip it. Newly-added entities from
-    // slice 0 land in the registry commit and are visible to later
-    // slices reading readRegistry() fresh.
-    const sectorResult = isFirstSlice
+    // whole Yahoo universe, not per-entity), ~150s of Yahoo screening
+    // that busts the 300s slice budget when bundled with per-entity
+    // work. Runs only when refreshSectors=1 (default: true for legacy
+    // full-run compat, false for the slice-partitioned workflow which
+    // schedules sector refresh as a separate sectorsOnly=1 call).
+    const sectorResult = refreshSectors
       ? await refreshSectorUniverse(registry, 60)
       : { newEntities: [] as (typeof registry) };
     const registryWithNew = [...registry, ...sectorResult.newEntities];
@@ -1195,14 +1217,21 @@ export async function POST(req: NextRequest) {
   // server/lib/pipelineReport.ts. Fail-soft: any error here is logged and
   // does not affect the run response.
   //
-  // Sliced-run behaviour: skip on non-last slices — the report reflects
-  // the whole snap, which only settles into its final state after every
-  // slice has committed. Running per-slice would repeatedly overwrite
-  // the report with intermediate values. The last slice sees all prior
-  // slices' commits and reports the true daily state.
-  if (!isLastSlice) {
+  // Sliced-run behaviour: skip on non-last slices AND on sectorsOnly
+  // calls — the report reflects the whole snap, which only settles
+  // into its final state after every slice has committed. Running
+  // per-slice would repeatedly overwrite with intermediate values.
+  // sectorsOnly doesn't touch events at all, so its snap read is
+  // identical to what the last slice already wrote.
+  if (!isLastSlice || sectorsOnly) {
     return NextResponse.json(
-      { ok, summary: status, slice: { n: slice, of: sliceCount, isLast: false } },
+      {
+        ok,
+        summary: status,
+        slice: { n: slice, of: sliceCount, isLast: false },
+        sectorsOnly,
+        refreshSectors,
+      },
       { status: ok ? 200 : 500, headers: { "Cache-Control": "no-store" } },
     );
   }

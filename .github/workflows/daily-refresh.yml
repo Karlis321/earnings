@@ -39,35 +39,33 @@ jobs:
             echo "::error::CRON_SECRET repo secret not set — add it in Settings → Secrets and variables → Actions"
             exit 1
           fi
-          # Vercel Hobby caps function timeout at 300s. A full-universe
-          # cron run occasionally exceeds that on slow-Yahoo mornings
-          # (yesterday: 209s ok; today: 504 timeout). Partition the
-          # ticker universe into 4 slices — each call processes ~1/4
-          # of tickers and finishes well under 300s.
-          #
-          # Slice 0 also runs the global sector-universe refresh.
-          # Slice 3 (last) runs the pipeline self-check + writes the
-          # pipeline-report. All slices commit their own event
-          # mutations + cron-status via mutateEarnings.
+          # Vercel Hobby caps function timeout at 300s. Bundling the
+          # global sector-universe refresh (~150s) with per-entity work
+          # (~150s) in slice 0 busts the cap. Split into two phases:
+          #   Phase A: 4 slices of per-entity work (each ~75s).
+          #   Phase B: dedicated sectorsOnly=1 call (~150s) that
+          #            only screens Yahoo for sector top-N and commits
+          #            newly-added entities to the registry.
+          # Both phases inside 300s each. If either fails, the workflow
+          # goes red at the end but successful phases still committed.
           SLICES=4
           FAILED=0
+
+          # Phase A — per-entity work (sector refresh disabled).
           for ((n=0; n<SLICES; n++)); do
-            echo "== slice $n/$SLICES ($(date -u +%H:%M:%SZ)) =="
+            echo "== phase A · slice $n/$SLICES ($(date -u +%H:%M:%SZ)) =="
             HTTP_STATUS=$(curl -s -o /tmp/cron-response.json -w '%{http_code}' \
               --max-time 320 \
               -X POST \
               -H "Authorization: Bearer $CRON_SECRET" \
               -H "Content-Type: application/json" \
-              "https://earnings-karlis123.vercel.app/api/cron/daily?slice=$n&sliceCount=$SLICES")
+              "https://earnings-karlis123.vercel.app/api/cron/daily?slice=$n&sliceCount=$SLICES&refreshSectors=0")
             echo "  HTTP $HTTP_STATUS"
             if [ "$HTTP_STATUS" -ne 200 ]; then
               echo "::error::slice $n returned HTTP $HTTP_STATUS"
               head -c 1000 /tmp/cron-response.json || true
               echo
               FAILED=$((FAILED+1))
-              # Continue to the next slice — a slice failure shouldn't
-              # cancel the remaining work. The verify step below fails
-              # the whole workflow if any slice erred.
               continue
             fi
             node -e "
@@ -78,8 +76,27 @@ jobs:
               console.log('  slice-ok · appended=' + app + ' · matured=' + mat + ' · engines[' + eng + ']');
             "
           done
-          echo "== done · $((SLICES-FAILED))/$SLICES slices succeeded =="
+
+          # Phase B — sector-universe refresh (no per-entity work).
+          echo "== phase B · sectors-only ($(date -u +%H:%M:%SZ)) =="
+          HTTP_STATUS=$(curl -s -o /tmp/cron-response.json -w '%{http_code}' \
+            --max-time 320 \
+            -X POST \
+            -H "Authorization: Bearer $CRON_SECRET" \
+            -H "Content-Type: application/json" \
+            "https://earnings-karlis123.vercel.app/api/cron/daily?sectorsOnly=1&refreshSectors=1")
+          echo "  HTTP $HTTP_STATUS"
+          if [ "$HTTP_STATUS" -ne 200 ]; then
+            echo "::error::sectors-only phase returned HTTP $HTTP_STATUS"
+            head -c 1000 /tmp/cron-response.json || true
+            echo
+            FAILED=$((FAILED+1))
+          else
+            echo "  phase-B-ok"
+          fi
+
+          echo "== done · $((SLICES+1-FAILED))/$((SLICES+1)) phases succeeded =="
           if [ "$FAILED" -gt 0 ]; then
-            echo "::error::$FAILED of $SLICES slices failed"
+            echo "::error::$FAILED phase(s) failed"
             exit 1
           fi
