@@ -21,6 +21,22 @@ on:
   schedule:
     - cron: "0 6 * * 1-5"
   workflow_dispatch:
+    inputs:
+      note:
+        description: "Trigger source label (e.g. 'claude', 'manual test', 'rate-limit retry'). Shown in the run title."
+        required: false
+        default: ""
+
+# run-name — what appears in the Actions tab list. Distinguishes
+# scheduled runs from manual triggers and tags manual triggers with
+# the reason so `claude ...`, `manual test`, etc. are readable at a
+# glance. See github.com/actions/runner/issues/2033 for run-name syntax.
+run-name: >-
+  daily-refresh · ${{
+    github.event_name == 'schedule' && 'scheduled (06:00 UTC)'
+    || (github.event.inputs.note != '' && format('manual · {0}', github.event.inputs.note))
+    || 'manual'
+  }}
 
 concurrency:
   group: daily-refresh

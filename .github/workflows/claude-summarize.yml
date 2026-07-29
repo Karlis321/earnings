@@ -9,6 +9,24 @@ on:
       ticker:
         description: "Ticker to summarize (blank = sweep)"
         required: false
+      note:
+        description: "Trigger source label (e.g. 'claude', 'karlis test'). Shown in the run title."
+        required: false
+        default: ""
+
+# run-name — the Actions-tab title per run. Shows /earnings vs /sweep,
+# trigger source, and any note so a scan of the tab reads at a glance.
+run-name: >-
+  claude-summarize · ${{
+    (github.event.inputs.ticker != '' && format('/earnings {0}', github.event.inputs.ticker))
+    || (github.event.client_payload.ticker != null && format('/earnings {0} (button)', github.event.client_payload.ticker))
+    || '/sweep'
+  }} · ${{
+    github.event_name == 'schedule' && 'scheduled (06:30 UTC)'
+    || github.event_name == 'repository_dispatch' && 'button'
+    || (github.event.inputs.note != '' && format('manual · {0}', github.event.inputs.note))
+    || 'manual'
+  }}
 
 concurrency:
   group: claude-summarize
