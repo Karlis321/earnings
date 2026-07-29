@@ -1,6 +1,5 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "$note-crons-removed": "Vercel Hobby cron sends no query params → hits the legacy full-universe path, which reliably 504s on slow-Yahoo mornings (300s Vercel function cap vs ~400s work). The daily refresh runs from GitHub Actions instead (.github/workflows/daily-refresh.yml), which slices the work into 4 per-entity phases + 1 sectors-only phase, each well under 300s per Vercel invocation. Actions cron has ~5-min drift but guaranteed execution. If you ever need a Vercel-side cron back, re-add the crons array but include ?slice=0&sliceCount=1 semantics or a similar sliced path.",
   "functions": {
     "app/api/cron/daily/route.ts": {
       "maxDuration": 300
