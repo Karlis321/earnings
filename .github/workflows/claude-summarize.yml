@@ -45,6 +45,7 @@ jobs:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           prompt: ${{ steps.prompt.outputs.text }}
           show_full_output: true
+          max_turns: 25
           claude_args: >-
             --allowedTools "Bash(node scripts/validate.js)" "Bash(git *)" Read Write Edit WebSearch WebFetch
 
