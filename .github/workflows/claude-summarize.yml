@@ -30,11 +30,12 @@ jobs:
       - name: Build prompt
         id: prompt
         run: |
+          NARRATION="Narrate as you work: before every tool call, print one line stating what you are about to do and why (e.g. 'Searching for Hudbay Q1 2026 press release', 'Running validator', 'Committing HBM_US_FY2026_Q1'). After each numbered step of the procedure, print STEP <n> DONE: <one-line result>. Never work silently for more than one tool call."
           TICKER="${{ github.event.client_payload.ticker || github.event.inputs.ticker }}"
           if [ -n "$TICKER" ]; then
-            echo "text=Run the /earnings procedure in .claude/commands/earnings.md for ticker $TICKER. Follow it exactly, including validation. Commit and push the result." >> "$GITHUB_OUTPUT"
+            echo "text=Run the /earnings procedure in .claude/commands/earnings.md for ticker $TICKER. Follow it exactly, including validation. Commit and push the result. $NARRATION" >> "$GITHUB_OUTPUT"
           else
-            echo "text=Run the /sweep procedure in .claude/commands/sweep.md. Follow it exactly, including validation. Commit and push the result." >> "$GITHUB_OUTPUT"
+            echo "text=Run the /sweep procedure in .claude/commands/sweep.md. Follow it exactly, including validation. Commit and push the result. $NARRATION" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Run Claude Code
@@ -42,5 +43,6 @@ jobs:
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           prompt: ${{ steps.prompt.outputs.text }}
+          show_full_output: true
           claude_args: >-
             --allowedTools "Bash(node scripts/validate.js)" "Bash(git *)" Read Write Edit WebSearch WebFetch
