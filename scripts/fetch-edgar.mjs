@@ -26,8 +26,14 @@ import fs from "node:fs/promises";
 import fssync from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { fileURLToPath, URL as NodeURL } from "node:url";
 import zlib from "node:zlib";
 import { promisify } from "node:util";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const REPO_ROOT = path.resolve(__dirname, "..");
+const FETCHED_DIR = path.join(REPO_ROOT, "fetched");
 
 const gunzip = promisify(zlib.gunzip);
 const inflate = promisify(zlib.inflate);
@@ -62,9 +68,23 @@ async function respectRateLimit() {
   await fs.writeFile(LOCK_PATH, String(Date.now()));
 }
 
+// Derive a safe filename from a URL. Path basename with a fallback to
+// the URL host when the path ends in "/". Non-safe characters
+// collapse to "_" so the write can never escape ./fetched/.
+function defaultOutfileFor(rawUrl) {
+  let u;
+  try { u = new NodeURL(rawUrl); }
+  catch { return path.join(FETCHED_DIR, "download"); }
+  let base = path.basename(u.pathname);
+  if (!base) base = u.hostname + ".html";
+  base = base.replace(/[^A-Za-z0-9._-]/g, "_");
+  if (!/\.[A-Za-z0-9]{1,6}$/.test(base)) base += ".html";
+  return path.join(FETCHED_DIR, base);
+}
+
 async function main() {
   const url = process.argv[2];
-  const outfile = process.argv[3];
+  let outfile = process.argv[3];
   if (!url) usage("missing <url>");
   if (!/^https:\/\/(www\.)?sec\.gov\//.test(url)) {
     usage(`url must be on sec.gov (got: ${url})`);
@@ -128,12 +148,19 @@ async function main() {
     process.exit(code);
   }
 
-  if (outfile) {
-    fssync.writeFileSync(outfile, body);
-    process.stderr.write(`fetch-edgar: wrote ${body.length} bytes → ${outfile}\n`);
-  } else {
-    process.stdout.write(body);
+  // Default target is ./fetched/<basename> inside the repo. The old
+  // default was /tmp — but the CI sandbox blocks reads outside the
+  // working tree, so a subsequent `Read` on the file failed. Keeping
+  // fetched documents in-repo (and .gitignored) is what actually
+  // works in the runner.
+  if (!outfile) {
+    outfile = defaultOutfileFor(url);
   }
+  await fs.mkdir(path.dirname(outfile), { recursive: true });
+  fssync.writeFileSync(outfile, body);
+  const rel = path.relative(process.cwd(), outfile).split(path.sep).join("/");
+  process.stdout.write(`${rel} · ${body.length} bytes\n`);
+  process.stderr.write(`fetch-edgar: wrote ${body.length} bytes → ${rel}\n`);
 }
 
 main().catch((e) => {
