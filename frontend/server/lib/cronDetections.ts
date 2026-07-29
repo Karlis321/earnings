@@ -207,7 +207,7 @@ export function candidatesFromSubmissions(sub: unknown): AccessionCandidate[] {
   return out;
 }
 
-// Provenance rank — higher wins on conflict. Mirrors scripts/dedupe-events.mjs
+// Provenance rank — higher wins on conflict. Mirrors scripts/backfills/dedupe-events.mjs
 // so cron merges use the same ordering as the offline dedup pass. See audit
 // finding (capability e — merge-on-incoming).
 export const PROVENANCE_RANK: Record<string, number> = {

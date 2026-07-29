@@ -1,61 +1,83 @@
-Check-then-implement: the Summarize button + drivers feature. Parts of
-this MAY already exist from prior sessions — verify each on disk before
-building anything. State from disk first, per CLAUDE.md.
+Repository reorganization + full audit. This repo has accumulated a
+month of scripts, audits, checkpoints, and scratch files. Goal: clean
+structure, no dead files, a CLAUDE.md that maps everything, and an
+inconsistency audit. DANGER: paths are load-bearing (cron imports,
+workflow allowlist "Bash(node scripts/*)", gitSnapshotStore paths,
+slash-command script references, Vercel build). Work in three phases
+with a STOP between each.
 
-VERIFICATION PASS — report a table (component | exists? | evidence):
-  a. data/summaries-schema.json: is there a v2 with a "drivers" array
-     (metric, direction, explanation, basis: company-disclosed |
-     derived-arithmetic)? Or v1 only?
-  b. .claude/commands/earnings.md Step 2: does it extract drivers
-     (causal-language grep: "due to", "driven by", "partially
-     offset")? (Note: guidance extraction WAS added in 4fb41ee — that
-     is a different subsection; check for drivers specifically.)
-  c. SummaryPanel.tsx: does it render a "Why"/drivers section between
-     summary_long and the footer?
-  d. frontend/app/api/summarize/route.ts: does it exist, with Bearer
-     CRON_SECRET gating, registry validation, 409-if-summary-exists,
-     429-if-recent-dispatch, repository_dispatch type "summarize" via
-     GH_PAT?
-  e. Ticker-page UI: is there a Summarize button rendered where
-     SummaryPanel would appear but no summary exists, with a pending
-     state + 60s poll?
-Print the table, then implement ONLY the missing rows:
+PHASE 1 — INVENTORY AND PLAN (read-only, then STOP for approval).
+1. Walk the repo (excluding node_modules, .next, .git, fetched/).
+   Classify every file: ACTIVE (imported/invoked by cron, workflow,
+   commands, frontend, or standing tests — verify by grepping for
+   references, not by guessing), ONE-SHOT DONE (backfill/repair
+   scripts that ran once and won't run again), AUDIT ARTIFACT
+   (scripts/audits/*.json outputs), CHECKPOINT/SCRATCH (resumption
+   files, dry-run outputs, stray HTML), ORPHAN (nothing references
+   it), UNCLEAR.
+2. Propose the target structure. Suggested shape — adjust to reality:
+     scripts/            active pipeline + validators only
+     scripts/backfills/  one-shot scripts, KEPT (they document how
+                         data was built and encode hard-won fixes —
+                         archive, don't delete)
+     scripts/audits/     audit outputs (keep: they're evidence)
+     scripts/lib/        shared helpers if any exist
+     data/               UNTOUCHED — every path here is read by the
+                         store and the runner; do not move anything
+     .claude/commands/   untouched
+     docs/               viability audit, disposition summaries, any
+                         floating .md that isn't CLAUDE.md/README
+3. Deletion candidates: list ONLY true scratch (checkpoints of
+   completed runs, stray fetched HTML, duplicate/superseded script
+   versions, empty dirs). For each: path, why safe, what referenced
+   it (must be nothing). NO deletions of backfill scripts, audit
+   JSONs, or anything UNCLEAR.
+4. For every proposed move, list the references that must be updated
+   (imports, workflow yml, command .md files, package.json scripts,
+   CI yml). If a file is referenced by the WORKFLOW or COMMANDS,
+   moving it changes CI behavior — flag those loudly.
+Print the full plan as tables (moves | reference updates | deletions |
+untouched). STOP. Wait for my approval before Phase 2.
 
-[IF MISSING] PART 1 — SCHEMA v2: extend data/summaries-schema.json
-($id summaries/v2, v1 files stay valid): "drivers": array of
-{ metric (matches a kpi label or "overall"), direction: up|down|flat,
-explanation (<=50 words, no verbatim quotes over 15 words),
-basis: "company-disclosed" | "derived-arithmetic" }.
-company-disclosed = the filing/MD&A explicitly states the cause;
-derived-arithmetic = pure decomposition from our own numbers. HARD
-RULE for the command: no macro narratives, no invented causes; if the
-filing gives no reason, the driver is "not explained in the release".
+PHASE 2 — EXECUTE (after approval).
+- git mv only (history preserved); update every reference listed;
+  deletions per the approved list only.
+- Rewrite CLAUDE.md top section as the repo map: directory tree with
+  one-line purpose per area, the load-bearing invariants (keep all
+  existing invariant blocks — reorganize, don't drop), where
+  summaries/events/registry live, how the cron/workflow/commands
+  connect, and a "where do I find X" table (validators, backfills,
+  audit evidence, schemas, the sweep dry-run).
+- Verify after: standing tests green, npx tsc clean, a local
+  sweep-dry-run still executes, node scripts/validate.js and
+  resolve-earnings-target.mjs run from their (possibly new) paths,
+  and grep the workflow + command files for any stale path. If
+  scripts/ paths changed at all, confirm the workflow allowlist
+  pattern still covers them.
 
-[IF MISSING] PART 2 — COMMAND: earnings.md Step 2 gains a drivers
-subsection: extract-doc-text.mjs --grep on causal language, map each
-disclosed cause to its metric, mark basis. Miner rules extend here
-(grades/throughput/recovery, realized vs benchmark price, by-product
-credit swings, capitalized-vs-expensed stripping — when disclosed).
+PHASE 3 — CONSISTENCY AUDIT (read-only report, fix nothing yet).
+Sweep for inconsistencies across the whole repo:
+  a. Path drift: any file referencing a path that no longer exists
+     (imports, .md docs, workflow, package.json).
+  b. Schema drift: do TypeScript types, JSON schemas, and the .mjs
+     mirror scripts agree? (pipelineReport TS vs run-pipeline-check
+     mirror; estimateNextEvent TS vs run-estimator mirror; summaries
+     schema vs SummaryPanel's expectations; GuidanceEntry shape vs
+     what earnings.md tells Claude to write.)
+  c. Convention drift: naming (kebab vs camel in scripts/), date
+     handling (all UTC?), provenance enum used consistently, env var
+     names consistent between .env.example, route.ts, workflow, and
+     fetch-edgar.
+  d. Doc drift: does CLAUDE.md (post-rewrite) match reality? Any
+     invariant documented but not enforced by a standing test, or
+     enforced but undocumented?
+  e. Dead exports / unused deps: quick pass, report only.
+Output: docs/consistency-audit.md with findings ranked
+critical / should-fix / cosmetic, each with file+line evidence.
+Fix NOTHING from phase 3 without a separate go-ahead.
 
-[IF MISSING] PART 3 — PANEL: "Why" section in SummaryPanel.tsx —
-one line per driver: metric, direction arrow, explanation, subtle
-basis tag (analysts must see company-stated vs computed).
-"not explained in the release" renders muted.
-
-[IF MISSING] PART 4 — BUTTON + ROUTE:
-  a. /api/summarize route per spec in (d) above, reusing existing
-     GH_PAT / GH_REPO_* / CRON_SECRET env vars.
-  b. Summarize button on covered-tier ticker pages (data/covered.json
-     gate) where no summary exists for the latest reported period;
-     click → POST → "Summary in progress — ready in a few minutes"
-     disabled state, 60s store poll swapping in SummaryPanel when the
-     file lands.
-
-TEST: whichever parts were built — run local /earnings on a covered
-ticker WITHOUT an existing summary (check data/summaries/ first,
-pick accordingly) to produce one v2 file with drivers; confirm any
-existing v1 summaries still validate and render; button POST path
-tested with curl (expect 202-style accept on a valid covered ticker,
-409 on one with an existing summary, 401 without the bearer).
-Standing tests green, push, report hash + the verification table +
-which parts were newly built vs already present.
+Timing note: tonight is the first unattended 06:30 UTC sweep. If this
+session runs late, Phase 2's push must either land WELL before 06:30
+UTC with the sweep dry-run re-verified, or wait until after tomorrow's
+run — do not push a reorganization in the window right before the
+first unattended execution. Say which you're doing.

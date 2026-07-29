@@ -1,6 +1,6 @@
 // SEC-verbatim reconciliation.
 //
-// Rule (established by scripts/rederive-sec-xbrl.mjs): for any listing
+// Rule (established by scripts/backfills/rederive-sec-xbrl.mjs): for any listing
 // of a company where ANY sibling has an edgarCik, financial metrics
 // come from SEC XBRL VERBATIM — per-company fetch, actual unitKey from
 // the response (not a hardcoded USD), latest-filed wins, distributed
@@ -16,7 +16,7 @@
 
 import type { EventRecord, MetricEntry } from "@/lib/types";
 
-// Same XBRL_MAP as scripts/backfill-sec-events.mjs + scripts/rederive-sec-xbrl.mjs.
+// Same XBRL_MAP as scripts/backfills/backfill-sec-events.mjs + scripts/backfills/rederive-sec-xbrl.mjs.
 // Kept in sync manually. Order matters: higher-priority spec (us-gaap
 // first for a given metric key) wins when both taxonomies have the
 // same measure.

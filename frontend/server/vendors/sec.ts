@@ -1,6 +1,6 @@
 // SEC EDGAR — server-side wrappers.
 //
-// Ported from scripts/backfill-sec-submissions-shells.mjs. Uses SEC's
+// Ported from scripts/backfills/backfill-sec-submissions-shells.mjs. Uses SEC's
 // submissions/CIK{n}.json endpoint to build past-event shells for foreign
 // filers (20-F/40-F/6-K) and US filers (10-Q/10-K) where Yahoo returned
 // nothing. These shells carry no metric values (only a filing_reference

@@ -139,7 +139,7 @@ async function compute() {
   const dupes = countDuplicates(snap.events);
   const mism = countIndexMismatches(index, snap.events);
   // Reaction counters (schema v2). `unavailable` is a terminal state
-  // stamped by matureEventReaction / scripts/apply-reaction-decay.mjs
+  // stamped by matureEventReaction / scripts/backfills/apply-reaction-decay.mjs
   // for events >60 trading days old whose baseline bars never fetched.
   const now = new Date();
   const todayIso = now.toISOString().slice(0, 10);

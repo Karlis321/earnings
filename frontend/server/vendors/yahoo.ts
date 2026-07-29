@@ -874,7 +874,7 @@ export async function yahooScreener(
 
 // ---------- Yahoo fundamentals-timeseries ----------
 //
-// Ported from scripts/backfill-yahoo-timeseries.mjs. Distinct from
+// Ported from scripts/backfills/backfill-yahoo-timeseries.mjs. Distinct from
 // earningsChart/financialsChart: returns real per-quarter Revenue / EBIT /
 // EBITDA / OperatingIncome / GrossProfit / NetIncome / Basic + Diluted EPS
 // for issuers whose earningsChart returns empty (BN, Canadian 40-F filers,

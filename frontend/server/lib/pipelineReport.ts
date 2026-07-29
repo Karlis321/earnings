@@ -58,7 +58,7 @@ export interface PipelineReport {
   reactions_pending: number;
   // Terminal decay counter (Part 6 of entity-dedup work). Points that
   // will never mature — flipped to status:"unavailable" by
-  // scripts/apply-reaction-decay.mjs or the cron maturation step when
+  // scripts/backfills/apply-reaction-decay.mjs or the cron maturation step when
   // the event is >60 trading days past and bars still don't exist.
   reactions_unavailable: number;
   // Company grouping counters (Part 4 of entity-dedup work).
@@ -122,7 +122,7 @@ function daysBetween(a: string, b: string): number {
   return Math.abs((new Date(a).getTime() - new Date(b).getTime()) / 86_400_000);
 }
 
-// Count duplicates using the same rules as scripts/detect-duplicate-events.mjs:
+// Count duplicates using the same rules as scripts/backfills/detect-duplicate-events.mjs:
 // (1) two events sharing a fiscal period, (2) two events with report dates
 // <=45d apart on the same ticker with the same fiscal year. Same-year check
 // avoids flagging real quarterly boundaries (Q4/Q1 in adjacent months).
@@ -197,7 +197,7 @@ export function countCorpusQualityGaps(snap: EarningsSnapshot): {
 // with any inconsistency + a sample of up to 5 for reasons[].
 //
 // Tolerance is 0.5% — same threshold as the "match" bucket in
-// scripts/verify-financials.mjs. Prevents false positives from
+// scripts/backfills/verify-financials.mjs. Prevents false positives from
 // currency rounding across ADR mirror listings.
 export function checkCrossListingConsistency(
   snap: EarningsSnapshot,

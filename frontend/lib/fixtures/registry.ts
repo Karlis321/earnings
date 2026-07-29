@@ -1,7 +1,7 @@
 import type { Entity } from "@/lib/types";
 
 // 17 covered securities across operating / developer / etf.
-// Source of truth is scripts/rewrite-registry.mjs — keep this file mirrored to
+// Source of truth is scripts/backfills/rewrite-registry.mjs — keep this file mirrored to
 // its PORTFOLIO array so the no-GH_PAT dev fallback + gallery match prod.
 export const ENTITY_REGISTRY: Entity[] = [
   {

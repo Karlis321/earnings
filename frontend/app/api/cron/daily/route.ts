@@ -817,7 +817,7 @@ export async function POST(req: NextRequest) {
     }
 
     // ---- 3d. SEC-verbatim reconciliation ----
-    // Rule (established by scripts/rederive-sec-xbrl.mjs and its
+    // Rule (established by scripts/backfills/rederive-sec-xbrl.mjs and its
     // July-2026 residual pass): for any listing of a company where any
     // sibling has an edgarCik, financial metrics come from SEC XBRL
     // verbatim. Per-company fetch (one call per companyId across the

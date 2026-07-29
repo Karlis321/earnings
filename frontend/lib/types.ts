@@ -136,7 +136,7 @@ export interface Entity {
   // belongs to exactly one company; the group can have any number of
   // listings. `isCanonical` marks the one listing UI aggregations count
   // (search results, cap-band × industry views, sector aggregates).
-  // Populated by scripts/apply-entity-groups.mjs. Singletons get their
+  // Populated by scripts/backfills/apply-entity-groups.mjs. Singletons get their
   // own companyId so this field is never absent after backfill.
   companyId?: string;
   isCanonical?: boolean;
@@ -243,10 +243,10 @@ export interface CatalystDetail {
 // glance at an EventRecord tells you where the shell came from.
 export type EventProvenance =
   | "yahoo-earnings-chart" // buildPastEvent / buildEventShell
-  | "yahoo-timeseries" // scripts/backfill-yahoo-timeseries.mjs
-  | "sec-xbrl-companyfacts" // scripts/backfill-sec-events.mjs
-  | "sec-submissions" // scripts/backfill-sec-submissions-shells.mjs
-  | "fmp" // scripts/backfill-fmp.mjs
+  | "yahoo-timeseries" // scripts/backfills/backfill-yahoo-timeseries.mjs
+  | "sec-xbrl-companyfacts" // scripts/backfills/backfill-sec-events.mjs
+  | "sec-submissions" // scripts/backfills/backfill-sec-submissions-shells.mjs
+  | "fmp" // scripts/backfills/backfill-fmp.mjs
   | "estimator-median-gap" // scripts/run-estimator.mjs
   | "manual-entry" // ManualEntryForm
   | "fixture";

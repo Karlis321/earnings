@@ -1,6 +1,6 @@
 // Sector-universe expansion — runs in the daily cron. Screens Yahoo for
 // the top N by market cap per sector and adds any new tickers to the
-// entity registry. Ported from scripts/expand-sectors.mjs into a
+// entity registry. Ported from scripts/backfills/expand-sectors.mjs into a
 // server-side helper so the cron can call it inline.
 //
 // Add-only by design: entities that drop out of a sector's top-N in
@@ -380,7 +380,7 @@ export async function refreshSectorUniverse(
       }
       if (!assigned) {
         // Singleton company — same SHA-1(ticker) recipe as
-        // scripts/apply-entity-groups.mjs. Import lazily to avoid a
+        // scripts/backfills/apply-entity-groups.mjs. Import lazily to avoid a
         // top-level crypto pull for the (rare) code path here.
         const { createHash } = await import("node:crypto");
         const h = createHash("sha1")

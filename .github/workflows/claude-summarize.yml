@@ -48,7 +48,7 @@ jobs:
           prompt: ${{ steps.prompt.outputs.text }}
           show_full_output: true
           claude_args: >-
-            --max-turns 30 --allowedTools "Bash(node scripts/*)" "Bash(git *)" "Bash(ls *)" "Bash(grep *)" Read Write Edit WebSearch WebFetch
+            --max-turns 30 --allowedTools "Bash(node scripts/*)" "Bash(node scripts/backfills/*)" "Bash(node scripts/dev-tests/*)" "Bash(git *)" "Bash(ls *)" "Bash(grep *)" Read Write Edit WebSearch WebFetch
 
       - name: Verify a summary was produced or explicitly skipped
         env:
