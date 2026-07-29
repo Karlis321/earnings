@@ -1,0 +1,83 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "summaries/v1",
+  "description": "Post-earnings summary written by /earnings + /sweep slash commands. One file per ticker+period at data/summaries/<TICKER>_<PERIOD>.json. Ticker uses '_' for Bloomberg space (e.g. HBM_US); period uses '_' for space (e.g. FY2026_Q2).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "ticker",
+    "period",
+    "reported_at",
+    "generated_at",
+    "headline",
+    "kpis",
+    "summary_short",
+    "summary_long",
+    "source_url",
+    "confidence_notes"
+  ],
+  "properties": {
+    "ticker": {
+      "type": "string",
+      "description": "Bloomberg-style canonical ticker (e.g. 'HBM US'). Must match the entity registry canonical for the companyId.",
+      "pattern": "^[A-Z0-9.-]+ [A-Z]{2}$"
+    },
+    "period": {
+      "type": "string",
+      "description": "Fiscal period label matching event.period (e.g. 'FY2026 Q2').",
+      "pattern": "^FY\\d{4} Q[1-4]$"
+    },
+    "reported_at": {
+      "type": "string",
+      "format": "date",
+      "description": "Report date in YYYY-MM-DD. Must equal the event's eventDate for that period."
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO-8601 timestamp when this summary was written."
+    },
+    "headline": {
+      "type": "string",
+      "description": "Verdict-style, plain-English, no numbers. Copy the FactPopover pattern.",
+      "maxLength": 60
+    },
+    "kpis": {
+      "type": "array",
+      "description": "Ledger-discipline KPI rows. Each MUST cite delta_basis; 'none' allowed only when the metric has no comparable predecessor.",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["label", "value", "delta", "delta_basis", "direction"],
+        "properties": {
+          "label": { "type": "string", "minLength": 2 },
+          "value": { "type": "string", "minLength": 1, "description": "Formatted with unit (e.g. '$412M', '11.4koz', '$2.34/lb C1')" },
+          "delta": { "type": ["string", "null"], "description": "Formatted delta (e.g. '+8.4%', '-$180M', '−12ppt'). null when delta_basis='none'." },
+          "delta_basis": { "type": "string", "enum": ["q/q", "y/y", "vs guidance", "none"] },
+          "direction": { "type": "string", "enum": ["up", "down", "flat", "n/a"] }
+        }
+      }
+    },
+    "summary_short": {
+      "type": "string",
+      "description": "1-2 sentences, MUST contain at least one numeric figure.",
+      "minLength": 30,
+      "maxLength": 320
+    },
+    "summary_long": {
+      "type": "string",
+      "description": "<=120 words. Drivers + guidance change + balance sheet. No filler. No forward-looking speculation.",
+      "maxLength": 900
+    },
+    "source_url": {
+      "type": "string",
+      "format": "uri",
+      "description": "Direct link to the company release or EDGAR filing. NEVER an aggregator."
+    },
+    "confidence_notes": {
+      "type": "string",
+      "description": "Restatements, C1-vs-AISC quirks, by-product netting, streaming distortions, one-offs. Empty string if none."
+    }
+  }
+}

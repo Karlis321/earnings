@@ -1,13 +1,17 @@
 #!/usr/bin/env node
 /**
- * Standing invariant tests. Runs on demand (and could be wired into
- * CI later). Composes:
+ * Standing invariant tests. Runs on demand + on every push to main
+ * via .github/workflows/standing-tests.yml. Composes:
  *
  *   1. scripts/run-pipeline-check.mjs — computes pipeline-report from
  *      the current shards; must report status="ok".
  *   2. scripts/corrupt-invariant-test.mjs — plants a divergent value on
  *      one listing, confirms the cross-listing consistency invariant
  *      fires with the company id, restores, re-verifies ok.
+ *   3. scripts/validate.js — schema-checks every data/summaries/*.json
+ *      against data/summaries-schema.json + enforces filename<->body
+ *      consistency + the aggregator blocklist on source_url. Cheap
+ *      (no network); catches malformed summaries before they ship.
  *
  * Exit 0 on all pass, 1 on any failure. Prints a one-line summary at
  * the bottom so the harness reads at a glance:
@@ -43,6 +47,10 @@ results.push({
 results.push({
   label: "cross-listing invariant fires + clears",
   ok: run("Corruption test", "corrupt-invariant-test.mjs"),
+});
+results.push({
+  label: "summaries validate against schema",
+  ok: run("Summary validator", "validate.js"),
 });
 
 const durationMs = Date.now() - t0;

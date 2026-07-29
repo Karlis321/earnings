@@ -1,0 +1,44 @@
+name: claude-summarize
+on:
+  repository_dispatch:
+    types: [summarize]
+  schedule:
+    - cron: "30 6 * * 1-5"
+  workflow_dispatch:
+    inputs:
+      ticker:
+        description: "Ticker to summarize (blank = sweep)"
+        required: false
+
+concurrency:
+  group: claude-summarize
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  summarize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Build prompt
+        id: prompt
+        run: |
+          TICKER="${{ github.event.client_payload.ticker || github.event.inputs.ticker }}"
+          if [ -n "$TICKER" ]; then
+            echo "text=Run the /earnings procedure in .claude/commands/earnings.md for ticker $TICKER. Follow it exactly, including validation. Commit and push the result." >> "$GITHUB_OUTPUT"
+          else
+            echo "text=Run the /sweep procedure in .claude/commands/sweep.md. Follow it exactly, including validation. Commit and push the result." >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run Claude Code
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: ${{ steps.prompt.outputs.text }}
+          claude_args: "--allowedTools Bash(node scripts/validate.js),Bash(git *),Read,Write,Edit,WebSearch,WebFetch"
