@@ -84,6 +84,25 @@ These are the rules that come from reading multiple sections together:
   ~6k events/year at current JSON density. Revisit only if the plan
   becomes to store per-ticker full-text summaries for the ~1,500-name
   universe — until then, no action.
+- **US-primary disposition is reconciled — don't re-derive it.** The
+  July-2026 audit found 199 CIK-bearing companyIds with no US
+  canonical. Across two sessions of promotion work
+  (`scripts/build-us-primary-disposition.mjs` writes the full table to
+  `scripts/audits/us-primary-disposition.json`) the population resolves
+  to: **21 promoted-via-override** (BDR / share-class / numeric-base
+  cases in `scripts/config/us-primary-overrides.json`), **111
+  promoted-via-guess** (`guessUsPrimarySymbol` mechanical derivation),
+  **14 foreign-only-confirmed** (US probe returned HTTP 404,
+  `add-us-primaries-failures.json`), **55 still-open needing manual
+  override** (Korean / Japanese OTC-ADR names like SK Hynix, POSCO,
+  Hitachi, ITOCHU, Shin-Etsu, KDDI, KEPCO — their US pink-sheet
+  symbols HXSCL / PKX / HTHIY / ITOCY / SHECY don't map
+  mechanically from the foreign base), and **80 already-had-US**
+  (never in the 199 baseline). **Verified false**: the "ETFs
+  misdiagnosed as operating" theory — 0 CIK-bearing companyIds have
+  `securityType=etf`. ETFs don't file with SEC via ticker, so they
+  weren't ever in the audit population. Adding the 55 remaining
+  requires a per-ADR override entry, not another script.
 - **Residual coverage gap (~14% ≈ 235 foreign tickers) is a deferred
   purchase decision, not a bug.** Yahoo timeseries + SEC XBRL closed the
   US path; FMP's free tier is US-primary-only (foreign symbols return

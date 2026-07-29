@@ -58,6 +58,27 @@ const DERIVED_SPECS = [
     compute: (n, r) => (r === 0 ? null : n / r),
     unitFrom: () => "%",
   },
+  // Total debt = long-term + short-term components. SEC-verbatim stores the
+  // pieces separately (long_term_debt_usd_m + short_term_debt_usd_m); this
+  // derived roll-up avoids "silent sum" of components under a single
+  // long_term_debt label. CLAUDE.md rule: never invented, never presented
+  // as reported — the derived badge makes it explicit.
+  {
+    key: "total_debt_usd_m",
+    displayLabel: "Total debt (M)",
+    inputs: ["long_term_debt_usd_m", "short_term_debt_usd_m"],
+    compute: (l, s) => l + s,
+    unitFrom: (l) => l.unit ?? "USD",
+  },
+  // Net debt = total debt - total cash. Only computed when BOTH sides
+  // present (no fallback to gross debt).
+  {
+    key: "net_debt_usd_m",
+    displayLabel: "Net debt (M)",
+    inputs: ["long_term_debt_usd_m", "short_term_debt_usd_m", "total_cash_usd_m"],
+    compute: (l, s, c) => l + s - c,
+    unitFrom: (l) => l.unit ?? "USD",
+  },
 ];
 
 async function main() {
@@ -83,12 +104,12 @@ async function main() {
           (ev.metrics ?? []).find((m) => m.key === k)?.actual,
         );
         if (inputs.some((i) => !i || i.value == null)) continue;
-        // Currency-consistency check: for cross-currency derived metrics
-        // (like margins), the ratio is unit-free, but the FCF input
-        // requires OCF and capex to share a unit.
-        if (spec.key === "fcf_usd_m") {
-          const [ocf, cap] = inputs;
-          if (ocf.unit !== cap.unit) continue;
+        // Currency-consistency check: ratios (margins) are unit-free but
+        // any sum/difference requires all inputs to share a unit — an
+        // Enbridge-CAD + Yahoo-USD mix would produce garbage.
+        if (spec.key === "fcf_usd_m" || spec.key === "total_debt_usd_m" || spec.key === "net_debt_usd_m") {
+          const units = new Set(inputs.map((i) => i.unit));
+          if (units.size > 1) continue;
         }
         const val = spec.compute(...inputs.map((i) => i.value));
         if (val == null || !Number.isFinite(val)) continue;

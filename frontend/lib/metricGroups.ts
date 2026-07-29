@@ -35,18 +35,24 @@ const CASHFLOW_KEYS = new Set<string>([
 
 const BALANCE_KEYS = new Set<string>([
   "total_cash_usd_m",
-  "total_debt_usd_m",
+  "short_term_investments_usd_m",
+  "long_term_debt_usd_m",
+  "short_term_debt_usd_m",
   "shareholders_equity_usd_m",
   "weighted_diluted_shares_m",
 ]);
 
-// Keys that are always derived (margins + FCF) — routed to Derived panel
-// regardless of the Fact.derived flag.
+// Keys that are always derived (margins + FCF + total_debt sum) —
+// routed to Derived panel regardless of the Fact.derived flag.
+// total_debt_usd_m is derived when computed as long+short components;
+// it appears on the derived panel with the "derived" badge.
 const DERIVED_KEYS = new Set<string>([
   "gross_margin_pct",
   "operating_margin_pct",
   "net_margin_pct",
   "fcf_usd_m",
+  "total_debt_usd_m",
+  "net_debt_usd_m",
 ]);
 
 export function isDerivedMetric(metricKey: string, isDerived: boolean): boolean {

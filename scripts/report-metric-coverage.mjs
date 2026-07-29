@@ -34,14 +34,20 @@ const TRACKED_KEYS = [
   "eps_diluted_usd",
   "operating_cash_flow_usd_m",
   "capex_usd_m",
+  // Balance-sheet — populated by Task 3's XBRL_MAP expansion (INSTANT facts).
   "total_cash_usd_m",
-  "total_debt_usd_m",
+  "short_term_investments_usd_m",
+  "long_term_debt_usd_m",
+  "short_term_debt_usd_m",
   "shareholders_equity_usd_m",
   "weighted_diluted_shares_m",
+  // Derived
   "gross_margin_pct",
   "operating_margin_pct",
   "net_margin_pct",
   "fcf_usd_m",
+  "total_debt_usd_m",
+  "net_debt_usd_m",
 ];
 
 async function main() {

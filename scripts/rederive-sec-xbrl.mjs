@@ -53,35 +53,44 @@ const SEC_UA = "Earnings Tracker (contact@example.com)";
 
 // XBRL concept priority list — expanded for Task 2 (Sweep 3 + Part 4).
 // Kept in sync with frontend/server/lib/secVerbatim.ts XBRL_MAP.
+// `type: "instant"` marks balance-sheet snapshots (cash/debt/equity/shares
+// outstanding); they carry only an `end`, not a span. `type: "duration"`
+// is the standard income-statement / cashflow shape (start+end, 80–100d
+// span). Splitting these was the fix for the balance-sheet-coverage 0%.
 const XBRL_MAP = [
-  { keys: ["Revenues", "RevenueFromContractWithCustomerExcludingAssessedTax", "RevenueFromContractWithCustomerIncludingAssessedTax", "SalesRevenueNet"], taxo: "us-gaap", metricKey: "revenue_usd_m", unit: "USD", scale: 1e6 },
-  { keys: ["Revenue", "RevenueFromContractsWithCustomers"], taxo: "ifrs-full", metricKey: "revenue_usd_m", unit: "USD", scale: 1e6 },
-  { keys: ["CostOfRevenue", "CostOfGoodsAndServicesSold", "CostOfGoodsSold"], taxo: "us-gaap", metricKey: "cost_of_revenue_usd_m", unit: "USD", scale: 1e6 },
-  { keys: ["CostOfSales"], taxo: "ifrs-full", metricKey: "cost_of_revenue_usd_m", unit: "USD", scale: 1e6 },
-  { keys: ["GrossProfit"], taxo: "us-gaap", metricKey: "gross_profit_usd_m", unit: "USD", scale: 1e6 },
-  { keys: ["GrossProfit"], taxo: "ifrs-full", metricKey: "gross_profit_usd_m", unit: "USD", scale: 1e6 },
-  { keys: ["OperatingIncomeLoss"], taxo: "us-gaap", metricKey: "operating_income_usd_m", unit: "USD", scale: 1e6 },
-  { keys: ["ProfitLossFromOperatingActivities"], taxo: "ifrs-full", metricKey: "operating_income_usd_m", unit: "USD", scale: 1e6 },
-  { keys: ["IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest", "IncomeLossFromContinuingOperationsBeforeIncomeTaxesMinorityInterestAndIncomeLossFromEquityMethodInvestments", "IncomeLossBeforeIncomeTaxes"], taxo: "us-gaap", metricKey: "pretax_income_usd_m", unit: "USD", scale: 1e6 },
-  { keys: ["ProfitLossBeforeTax"], taxo: "ifrs-full", metricKey: "pretax_income_usd_m", unit: "USD", scale: 1e6 },
-  { keys: ["NetIncomeLoss"], taxo: "us-gaap", metricKey: "net_income_usd_m", unit: "USD", scale: 1e6 },
-  { keys: ["ProfitLoss", "ProfitLossAttributableToOwnersOfParent"], taxo: "ifrs-full", metricKey: "net_income_usd_m", unit: "USD", scale: 1e6 },
-  { keys: ["EarningsPerShareBasic"], taxo: "us-gaap", metricKey: "eps_usd", unit: "USD", scale: 1 },
-  { keys: ["BasicEarningsLossPerShare"], taxo: "ifrs-full", metricKey: "eps_usd", unit: "USD", scale: 1 },
-  { keys: ["EarningsPerShareDiluted"], taxo: "us-gaap", metricKey: "eps_diluted_usd", unit: "USD", scale: 1 },
-  { keys: ["DilutedEarningsLossPerShare"], taxo: "ifrs-full", metricKey: "eps_diluted_usd", unit: "USD", scale: 1 },
-  { keys: ["NetCashProvidedByUsedInOperatingActivities", "NetCashProvidedByUsedInOperatingActivitiesContinuingOperations"], taxo: "us-gaap", metricKey: "operating_cash_flow_usd_m", unit: "USD", scale: 1e6 },
-  { keys: ["CashFlowsFromUsedInOperatingActivities"], taxo: "ifrs-full", metricKey: "operating_cash_flow_usd_m", unit: "USD", scale: 1e6 },
-  { keys: ["PaymentsToAcquirePropertyPlantAndEquipment", "PaymentsToAcquireProductiveAssets"], taxo: "us-gaap", metricKey: "capex_usd_m", unit: "USD", scale: 1e6 },
-  { keys: ["PurchaseOfPropertyPlantAndEquipment"], taxo: "ifrs-full", metricKey: "capex_usd_m", unit: "USD", scale: 1e6 },
-  { keys: ["CashAndCashEquivalentsAtCarryingValue", "CashCashEquivalentsRestrictedCashAndRestrictedCashEquivalents"], taxo: "us-gaap", metricKey: "total_cash_usd_m", unit: "USD", scale: 1e6 },
-  { keys: ["CashAndCashEquivalents"], taxo: "ifrs-full", metricKey: "total_cash_usd_m", unit: "USD", scale: 1e6 },
-  { keys: ["LongTermDebt", "LongTermDebtNoncurrent"], taxo: "us-gaap", metricKey: "total_debt_usd_m", unit: "USD", scale: 1e6 },
-  { keys: ["Borrowings", "NoncurrentBorrowings"], taxo: "ifrs-full", metricKey: "total_debt_usd_m", unit: "USD", scale: 1e6 },
-  { keys: ["StockholdersEquity", "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"], taxo: "us-gaap", metricKey: "shareholders_equity_usd_m", unit: "USD", scale: 1e6 },
-  { keys: ["Equity"], taxo: "ifrs-full", metricKey: "shareholders_equity_usd_m", unit: "USD", scale: 1e6 },
-  { keys: ["WeightedAverageNumberOfDilutedSharesOutstanding"], taxo: "us-gaap", metricKey: "weighted_diluted_shares_m", unit: "shares", scale: 1e6 },
-  { keys: ["WeightedAverageDilutedSharesOutstanding"], taxo: "ifrs-full", metricKey: "weighted_diluted_shares_m", unit: "shares", scale: 1e6 },
+  { keys: ["Revenues", "RevenueFromContractWithCustomerExcludingAssessedTax", "RevenueFromContractWithCustomerIncludingAssessedTax", "SalesRevenueNet"], taxo: "us-gaap", metricKey: "revenue_usd_m", unit: "USD", scale: 1e6, type: "duration" },
+  { keys: ["Revenue", "RevenueFromContractsWithCustomers"], taxo: "ifrs-full", metricKey: "revenue_usd_m", unit: "USD", scale: 1e6, type: "duration" },
+  { keys: ["CostOfRevenue", "CostOfGoodsAndServicesSold", "CostOfGoodsSold"], taxo: "us-gaap", metricKey: "cost_of_revenue_usd_m", unit: "USD", scale: 1e6, type: "duration" },
+  { keys: ["CostOfSales"], taxo: "ifrs-full", metricKey: "cost_of_revenue_usd_m", unit: "USD", scale: 1e6, type: "duration" },
+  { keys: ["GrossProfit"], taxo: "us-gaap", metricKey: "gross_profit_usd_m", unit: "USD", scale: 1e6, type: "duration" },
+  { keys: ["GrossProfit"], taxo: "ifrs-full", metricKey: "gross_profit_usd_m", unit: "USD", scale: 1e6, type: "duration" },
+  { keys: ["OperatingIncomeLoss"], taxo: "us-gaap", metricKey: "operating_income_usd_m", unit: "USD", scale: 1e6, type: "duration" },
+  { keys: ["ProfitLossFromOperatingActivities"], taxo: "ifrs-full", metricKey: "operating_income_usd_m", unit: "USD", scale: 1e6, type: "duration" },
+  { keys: ["IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest", "IncomeLossFromContinuingOperationsBeforeIncomeTaxesMinorityInterestAndIncomeLossFromEquityMethodInvestments", "IncomeLossBeforeIncomeTaxes"], taxo: "us-gaap", metricKey: "pretax_income_usd_m", unit: "USD", scale: 1e6, type: "duration" },
+  { keys: ["ProfitLossBeforeTax"], taxo: "ifrs-full", metricKey: "pretax_income_usd_m", unit: "USD", scale: 1e6, type: "duration" },
+  { keys: ["NetIncomeLoss"], taxo: "us-gaap", metricKey: "net_income_usd_m", unit: "USD", scale: 1e6, type: "duration" },
+  { keys: ["ProfitLoss", "ProfitLossAttributableToOwnersOfParent"], taxo: "ifrs-full", metricKey: "net_income_usd_m", unit: "USD", scale: 1e6, type: "duration" },
+  { keys: ["EarningsPerShareBasic"], taxo: "us-gaap", metricKey: "eps_usd", unit: "USD", scale: 1, type: "duration" },
+  { keys: ["BasicEarningsLossPerShare"], taxo: "ifrs-full", metricKey: "eps_usd", unit: "USD", scale: 1, type: "duration" },
+  { keys: ["EarningsPerShareDiluted"], taxo: "us-gaap", metricKey: "eps_diluted_usd", unit: "USD", scale: 1, type: "duration" },
+  { keys: ["DilutedEarningsLossPerShare"], taxo: "ifrs-full", metricKey: "eps_diluted_usd", unit: "USD", scale: 1, type: "duration" },
+  { keys: ["NetCashProvidedByUsedInOperatingActivities", "NetCashProvidedByUsedInOperatingActivitiesContinuingOperations"], taxo: "us-gaap", metricKey: "operating_cash_flow_usd_m", unit: "USD", scale: 1e6, type: "duration" },
+  { keys: ["CashFlowsFromUsedInOperatingActivities"], taxo: "ifrs-full", metricKey: "operating_cash_flow_usd_m", unit: "USD", scale: 1e6, type: "duration" },
+  { keys: ["PaymentsToAcquirePropertyPlantAndEquipment", "PaymentsToAcquireProductiveAssets"], taxo: "us-gaap", metricKey: "capex_usd_m", unit: "USD", scale: 1e6, type: "duration" },
+  { keys: ["PurchaseOfPropertyPlantAndEquipment"], taxo: "ifrs-full", metricKey: "capex_usd_m", unit: "USD", scale: 1e6, type: "duration" },
+  // ─── Balance sheet (INSTANT) ─────────────────────────────────────
+  { keys: ["CashAndCashEquivalentsAtCarryingValue", "CashCashEquivalentsRestrictedCashAndRestrictedCashEquivalents"], taxo: "us-gaap", metricKey: "total_cash_usd_m", unit: "USD", scale: 1e6, type: "instant" },
+  { keys: ["CashAndCashEquivalents"], taxo: "ifrs-full", metricKey: "total_cash_usd_m", unit: "USD", scale: 1e6, type: "instant" },
+  { keys: ["ShortTermInvestments", "AvailableForSaleSecuritiesCurrent"], taxo: "us-gaap", metricKey: "short_term_investments_usd_m", unit: "USD", scale: 1e6, type: "instant" },
+  { keys: ["ShorttermInvestments", "CurrentInvestments"], taxo: "ifrs-full", metricKey: "short_term_investments_usd_m", unit: "USD", scale: 1e6, type: "instant" },
+  { keys: ["LongTermDebt", "LongTermDebtNoncurrent"], taxo: "us-gaap", metricKey: "long_term_debt_usd_m", unit: "USD", scale: 1e6, type: "instant" },
+  { keys: ["NoncurrentBorrowings", "Borrowings"], taxo: "ifrs-full", metricKey: "long_term_debt_usd_m", unit: "USD", scale: 1e6, type: "instant" },
+  { keys: ["LongTermDebtCurrent", "DebtCurrent", "ShortTermBorrowings"], taxo: "us-gaap", metricKey: "short_term_debt_usd_m", unit: "USD", scale: 1e6, type: "instant" },
+  { keys: ["CurrentBorrowings"], taxo: "ifrs-full", metricKey: "short_term_debt_usd_m", unit: "USD", scale: 1e6, type: "instant" },
+  { keys: ["StockholdersEquity", "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"], taxo: "us-gaap", metricKey: "shareholders_equity_usd_m", unit: "USD", scale: 1e6, type: "instant" },
+  { keys: ["EquityAttributableToOwnersOfParent", "Equity"], taxo: "ifrs-full", metricKey: "shareholders_equity_usd_m", unit: "USD", scale: 1e6, type: "instant" },
+  { keys: ["WeightedAverageNumberOfDilutedSharesOutstanding", "WeightedAverageNumberOfSharesOutstandingBasic"], taxo: "us-gaap", metricKey: "weighted_diluted_shares_m", unit: "shares", scale: 1e6, type: "duration" },
+  { keys: ["WeightedAverageDilutedSharesOutstanding", "WeightedAverageBasicSharesOutstanding"], taxo: "ifrs-full", metricKey: "weighted_diluted_shares_m", unit: "shares", scale: 1e6, type: "duration" },
 ];
 
 // "FY2026 Q2" → "2026-06-30" (calendar quarter end). Fiscal-calendar
@@ -108,6 +117,9 @@ function isPureQuarter(v) {
   const end = new Date(v.end).getTime();
   const spanDays = (end - start) / 86_400_000;
   return spanDays >= 80 && spanDays <= 100;
+}
+function isInstant(v) {
+  return !v.start && !!v.end;
 }
 
 class RateLimiter {
@@ -145,10 +157,12 @@ async function fetchCompanyFacts(cik, limiter, cache) {
 // each XBRL_MAP metric family. Returns a Map<metricKey, {value, unit, source}>.
 function extractQuarterValues(facts, periodEnd) {
   const out = new Map();
+  const periodEndMs = new Date(periodEnd).getTime();
   for (const spec of XBRL_MAP) {
     if (out.has(spec.metricKey)) continue; // higher-priority spec already won
     const taxo = facts?.[spec.taxo];
     if (!taxo) continue;
+    const maxDeltaDays = spec.type === "instant" ? 7 : 31;
     for (const k of spec.keys) {
       const item = taxo[k];
       if (!item) continue;
@@ -160,10 +174,9 @@ function extractQuarterValues(facts, periodEnd) {
       let bestDelta = Infinity;
       let bestFiled = "";
       for (const v of values) {
-        if (!isPureQuarter(v)) continue;
-        const d = Math.abs(
-          (new Date(v.end).getTime() - new Date(periodEnd).getTime()) / 86_400_000,
-        );
+        const ok = spec.type === "instant" ? isInstant(v) : isPureQuarter(v);
+        if (!ok) continue;
+        const d = Math.abs((new Date(v.end).getTime() - periodEndMs) / 86_400_000);
         // Prefer closer period-end match; on ties, prefer LATER filing
         // date (10-Q/A amendments supersede the original 10-Q).
         if (d < bestDelta || (d === bestDelta && (v.filed ?? "") > bestFiled)) {
@@ -172,7 +185,7 @@ function extractQuarterValues(facts, periodEnd) {
           bestFiled = v.filed ?? "";
         }
       }
-      if (best && bestDelta <= 31) {
+      if (best && bestDelta <= maxDeltaDays) {
         // Inherit SEC's actual reported unit — never assume USD. The
         // XBRL_MAP's `spec.unit` is only the DEFAULT (used when SEC
         // has USD available); foreign filers like Enbridge report only
