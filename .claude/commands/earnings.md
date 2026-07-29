@@ -201,6 +201,64 @@ narrative if the CEO/CFO quotes stand alone.
 or the literal string `"overall"` for release-level narrative.
 The validator warns on unknown labels — check spelling.
 
+### Guidance — company-issued forward statements
+
+Guidance is what the company *itself* states about the future in
+the release / MD&A: production ranges, cost ranges, capex plans,
+revenue outlooks. It is never analyst expectations, never derived,
+never inferred. It goes on the event's `guidance` array (see
+`GuidanceEntry` in `frontend/lib/types.ts` — the shape already
+exists). The UI panel only renders when the array is non-empty,
+so writing nothing when the release gives no guidance is the
+correct behaviour, not an omission.
+
+**Extraction procedure.** Use
+`Bash: node scripts/extract-doc-text.mjs fetched/<file>
+--grep "guidance|outlook|reaffirm|forecast|expect|target|range"` to
+locate the guidance section. For each explicit numeric range or
+value the company states as its own forward guidance, capture:
+
+| field | value |
+|-------|-------|
+| `key` | our internal metric key when known (`revenue_usd_m`, `capex_usd_m`, `production_cu_kt`, `c1_usd_lb`, …) OR a descriptive slug for line items that don't map to an existing metric (e.g. `sustaining_capex_usd_m`) |
+| `displayLabel` | human-readable label as the release uses it (e.g. "Copper production", "C1 cash cost") |
+| `period` | fiscal period covered (`FY2026`, `H1 2026`, `Q3 2026`) |
+| `basis` | short note on scope (`consolidated`, `full-year`, `sustaining-only`) |
+| `low` / `high` / `midpoint` | Fact objects with `value`, `unit`, `source: {url: source_url, label: "release · guidance", provenance: "regulatory", locator: <section name>}`, `asOf: reported_at`, `method: "filing_manual"`, `confidence: 0.95` |
+| `move` | `"raised"` \| `"lowered"` \| `"held"` \| `"initiated"` \| `"withdrawn"` — only when the release EXPLICITLY says so. Silence about prior guidance is NOT reaffirmation; if the release doesn't state it either way, set `move: null` (schema allows). "Reaffirmed 2026 guidance" → `"held"`. |
+| `version` | `1` for a fresh capture (bump on subsequent restatements) |
+| `supersededById` | `null` at capture time |
+
+For a single-point value (not a range), set `low === high ===
+midpoint`. For a range, populate all three.
+
+**HARD RULES.**
+
+1. Only what the document EXPLICITLY states as company guidance.
+   Never analyst expectations. Never inferred trajectories.
+2. Ranges verbatim as numbers, in the release's own units. Do
+   not compute midpoints if the release gives only endpoints;
+   set `midpoint` to null and let the UI compute it if needed
+   for display.
+3. If the release gives NO guidance for a period, write NOTHING
+   into `guidance[]`. Do not populate empty entries. The panel's
+   conditional-render logic depends on this.
+4. **"Reaffirmed" requires the document to say so.** Silence
+   about a prior range is not reaffirmation. If the CEO/CFO
+   quote uses "unchanged", "reaffirmed", "on track for" —
+   `move: "held"`. Otherwise omit `move`.
+5. Where the release explicitly changes a prior range (e.g.
+   "raising 2026 capex guidance to $220-240M from $200-220M"),
+   set `move: "raised"` (or lowered) and note the prior range
+   in the source's `locator` field.
+
+The guidance array lives on the same event JSON as KPIs and
+drivers — no separate file. Because the schema for
+`data/summaries-schema.json` doesn't currently cover guidance
+(summaries are the /earnings artefact; guidance is a shard-side
+artefact), you write guidance INTO the event's shard via the
+usual `git add data/events/` after summary compose.
+
 Write the JSON to
 `data/summaries/<TICKER_slug>_<PERIOD_slug>.json` — the resolver's
 `summaryPath` field is that exact target path. Schema in
@@ -211,8 +269,12 @@ Write the JSON to
 1. `Bash: node scripts/validate.js data/summaries/<file>.json` —
    fix reported errors and re-run. Then `node scripts/test-standing.mjs`.
    Both must be green before commit.
-2. `git add data/summaries/`,
-   commit `earnings: <TICKER> <PERIOD>`, push.
+2. Stage everything the run touched:
+   - `git add data/summaries/` (the summary JSON — always).
+   - `git add data/events/` (only if you populated the target event's
+     `guidance` array in Step 3 — otherwise no changes to stage here).
+   Commit message: `earnings: <TICKER> <PERIOD>` (with a
+   `(+guidance)` suffix if the event shard was modified). Push.
 3. Print exactly one of:
    - `RESULT: committed <filename>`
    - `RESULT: skipped — <reason>`

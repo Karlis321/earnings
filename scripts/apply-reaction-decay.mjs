@@ -29,6 +29,16 @@ const args = new Set(process.argv.slice(2));
 const DRY = args.has("--dry");
 const CONCURRENCY = 20;
 const CALENDAR_DAY_THRESHOLD = 90; // ≈ 60 trading days
+// The nightly cron's matureEventReaction only runs against events within
+// a narrow window; anything older than STALE_DAY_THRESHOLD that STILL
+// has all-null reaction points was never processed and never will be
+// (baselines require bars in a narrow window that has since scrolled
+// past). Flip those terminal-unavailable without a Yahoo bar probe —
+// the "bars might still arrive" concern doesn't apply this far past
+// the m1 horizon (~30d). Opt-in via --include-stale so the default
+// behaviour is unchanged.
+const INCLUDE_STALE = args.has("--include-stale");
+const STALE_DAY_THRESHOLD = 180;
 
 function daysBetween(a, b) {
   return Math.abs((new Date(a).getTime() - new Date(b).getTime()) / 86_400_000);
@@ -150,9 +160,19 @@ async function main() {
   const nowIso = new Date().toISOString();
   const shardsToWrite = new Map();
   let movedPoints = 0;
+  let staleMoved = 0;
   for (const [ticker, ctx] of candidatesByTicker) {
-    if (!unavailableByTicker.get(ticker)) continue;
+    const tickerTerminal = unavailableByTicker.get(ticker) === true;
     for (const ev of ctx.hits) {
+      // Age-based stale flip: only fires with --include-stale AND the
+      // event is past STALE_DAY_THRESHOLD. This catches events that
+      // never went through matureEventReaction (cron only touches
+      // events near their scheduledDate; anything older is orphaned).
+      const anchor = ev.eventDate ?? ev.scheduledDate;
+      const ageDays = anchor ? daysBetween(anchor, today) : 0;
+      const staleEligible =
+        INCLUDE_STALE && ageDays >= STALE_DAY_THRESHOLD;
+      if (!tickerTerminal && !staleEligible) continue;
       for (const pt of ev.reaction?.points ?? []) {
         if (
           (pt.absReturn === null || pt.absReturn === undefined) &&
@@ -161,6 +181,7 @@ async function main() {
           pt.status = "unavailable";
           pt.computedAt = nowIso;
           movedPoints++;
+          if (!tickerTerminal && staleEligible) staleMoved++;
         }
       }
     }
@@ -171,6 +192,9 @@ async function main() {
   console.log(`\n=== Decay applied ===`);
   console.log(`Pending points before:    ${pendingBefore}`);
   console.log(`Moved to unavailable:     ${movedPoints}`);
+  if (INCLUDE_STALE) {
+    console.log(`  ...via age-based (--include-stale, > ${STALE_DAY_THRESHOLD}d): ${staleMoved}`);
+  }
   console.log(`Pending points after:     ${pendingAfter}`);
   console.log(`Shards updated:           ${shardsToWrite.size}`);
 
