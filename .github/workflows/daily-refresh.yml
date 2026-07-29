@@ -1,0 +1,67 @@
+name: daily-refresh
+
+# Vercel Hobby-tier cron is best-effort — it can skip runs under
+# load or plan-based rate limits with no retry. This workflow pings
+# /api/cron/daily from GitHub Actions instead, which has a much
+# tighter reliability profile (~5 min drift, guaranteed execution
+# for public + private repos on free-tier).
+#
+# Schedule: 06:00 UTC Mon-Fri (same slot as the Vercel Cron config
+# in frontend/vercel.json). Vercel Cron stays enabled as a
+# secondary trigger — the daily route is idempotent (if it fires
+# twice in a short window the second run finds no new work and
+# writes an empty cron-status).
+#
+# Also triggerable manually via workflow_dispatch when the banner
+# says "Daily refresh hasn't run in over 24 hours".
+#
+# Requires repo secret CRON_SECRET (same value as Vercel env var).
+
+on:
+  schedule:
+    - cron: "0 6 * * 1-5"
+  workflow_dispatch:
+
+concurrency:
+  group: daily-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Ping /api/cron/daily
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          if [ -z "$CRON_SECRET" ]; then
+            echo "::error::CRON_SECRET repo secret not set — add it in Settings → Secrets and variables → Actions"
+            exit 1
+          fi
+          echo "Triggering daily refresh at $(date -u +%Y-%m-%dT%H:%M:%SZ)…"
+          # The daily route can take up to 300s (per vercel.json
+          # functions.maxDuration). Give curl a generous timeout
+          # plus a small buffer so a warm-cold Vercel start doesn't
+          # trip us.
+          HTTP_STATUS=$(curl -s -o /tmp/cron-response.json -w '%{http_code}' \
+            --max-time 320 \
+            -X POST \
+            -H "Authorization: Bearer $CRON_SECRET" \
+            -H "Content-Type: application/json" \
+            https://earnings-karlis123.vercel.app/api/cron/daily)
+          echo "HTTP $HTTP_STATUS"
+          if [ "$HTTP_STATUS" -ne 200 ]; then
+            echo "::error::daily cron returned HTTP $HTTP_STATUS"
+            head -c 2000 /tmp/cron-response.json
+            exit 1
+          fi
+          # Show a compact success summary — engine counts + event
+          # mutations, no full body dump.
+          node -e "
+            const j = JSON.parse(require('fs').readFileSync('/tmp/cron-response.json','utf8'));
+            const eng = (j.engines ?? []).map(e => e.engine + ':' + e.itemsFound).join(' ');
+            console.log('ok=' + j.ok + ' · appended=' + (j.totalAppended ?? 0) +
+                        ' · matured=' + (j.totalMatured ?? 0) +
+                        ' · engines[' + eng + ']');
+          "
