@@ -45,7 +45,10 @@ concurrency:
 jobs:
   refresh:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    # 15 min = enough for 5 phases + one retry on a single failing phase.
+    # Previously 8 min was too tight when a phase 504'd (each 504 burns
+    # 300s = 5 min alone; two failures would run out of budget).
+    timeout-minutes: 15
     steps:
       - name: Ping /api/cron/daily (4 slices sequentially)
         env:
@@ -67,48 +70,65 @@ jobs:
           SLICES=4
           FAILED=0
 
-          # Phase A — per-entity work (sector refresh disabled).
-          for ((n=0; n<SLICES; n++)); do
-            echo "== phase A · slice $n/$SLICES ($(date -u +%H:%M:%SZ)) =="
-            HTTP_STATUS=$(curl -s -o /tmp/cron-response.json -w '%{http_code}' \
-              --max-time 310 \
-              -X POST \
-              -H "Authorization: Bearer $CRON_SECRET" \
-              -H "Content-Type: application/json" \
-              "https://earnings-karlis123.vercel.app/api/cron/daily?slice=$n&sliceCount=$SLICES&refreshSectors=0")
-            echo "  HTTP $HTTP_STATUS"
-            if [ "$HTTP_STATUS" -ne 200 ]; then
-              echo "::error::slice $n returned HTTP $HTTP_STATUS"
-              head -c 1000 /tmp/cron-response.json || true
+          # One-shot retry on 5xx: transient Vercel cold-starts or Yahoo
+          # slowdowns cause occasional single-attempt failures that a
+          # 10s-later retry clears (function is warm, Yahoo is a moving
+          # target). 4xx errors (401/400/etc.) don't retry — those are
+          # config problems a retry won't fix.
+          run_with_retry() {
+            local url="$1"
+            local label="$2"
+            local attempt
+            for attempt in 1 2; do
+              echo "  attempt $attempt ($(date -u +%H:%M:%SZ))"
+              HTTP_STATUS=$(curl -s -o /tmp/cron-response.json -w '%{http_code}' \
+                --max-time 310 \
+                -X POST \
+                -H "Authorization: Bearer $CRON_SECRET" \
+                -H "Content-Type: application/json" \
+                "$url")
+              echo "    HTTP $HTTP_STATUS"
+              if [ "$HTTP_STATUS" -eq 200 ]; then
+                node -e "
+                  const j = JSON.parse(require('fs').readFileSync('/tmp/cron-response.json','utf8'));
+                  const eng = (j.summary?.engines ?? j.engines ?? []).map(e => e.engine + ':' + e.itemsFound).join(' ');
+                  const app = j.summary?.totalAppended ?? j.totalAppended ?? 0;
+                  const mat = j.summary?.totalMatured ?? j.totalMatured ?? 0;
+                  console.log('    ok · appended=' + app + ' · matured=' + mat + ' · engines[' + eng + ']');
+                "
+                return 0
+              fi
+              head -c 400 /tmp/cron-response.json || true
               echo
+              # 4xx = config error (401/400/etc.) — retry won't help.
+              if [ "$HTTP_STATUS" -lt 500 ]; then return 1; fi
+              sleep 10
+            done
+            return 1
+          }
+
+          # Phase A — per-entity work in 4 slices, sector refresh
+          # disabled. Each slice processes ~1/4 of the ticker universe
+          # (~375 tickers) and finishes in ~60-90s.
+          for ((n=0; n<SLICES; n++)); do
+            echo "== phase A · slice $n/$SLICES =="
+            if ! run_with_retry \
+              "https://earnings-karlis123.vercel.app/api/cron/daily?slice=$n&sliceCount=$SLICES&refreshSectors=0" \
+              "phase A slice $n"; then
+              echo "::error::phase A slice $n failed after retry (final HTTP $HTTP_STATUS)"
               FAILED=$((FAILED+1))
-              continue
             fi
-            node -e "
-              const j = JSON.parse(require('fs').readFileSync('/tmp/cron-response.json','utf8'));
-              const eng = (j.summary?.engines ?? j.engines ?? []).map(e => e.engine + ':' + e.itemsFound).join(' ');
-              const app = j.summary?.totalAppended ?? j.totalAppended ?? 0;
-              const mat = j.summary?.totalMatured ?? j.totalMatured ?? 0;
-              console.log('  slice-ok · appended=' + app + ' · matured=' + mat + ' · engines[' + eng + ']');
-            "
           done
 
-          # Phase B — sector-universe refresh (no per-entity work).
-          echo "== phase B · sectors-only ($(date -u +%H:%M:%SZ)) =="
-          HTTP_STATUS=$(curl -s -o /tmp/cron-response.json -w '%{http_code}' \
-            --max-time 320 \
-            -X POST \
-            -H "Authorization: Bearer $CRON_SECRET" \
-            -H "Content-Type: application/json" \
-            "https://earnings-karlis123.vercel.app/api/cron/daily?sectorsOnly=1&refreshSectors=1")
-          echo "  HTTP $HTTP_STATUS"
-          if [ "$HTTP_STATUS" -ne 200 ]; then
-            echo "::error::sectors-only phase returned HTTP $HTTP_STATUS"
-            head -c 1000 /tmp/cron-response.json || true
-            echo
+          # Phase B — sector-universe refresh (screens Yahoo for top-N
+          # per sector, ~150s). No per-entity work, so it fits in one
+          # 300s Vercel invocation.
+          echo "== phase B · sectors-only =="
+          if ! run_with_retry \
+            "https://earnings-karlis123.vercel.app/api/cron/daily?sectorsOnly=1&refreshSectors=1" \
+            "phase B"; then
+            echo "::error::sectors-only phase failed after retry (final HTTP $HTTP_STATUS)"
             FAILED=$((FAILED+1))
-          else
-            echo "  phase-B-ok"
           fi
 
           echo "== done · $((SLICES+1-FAILED))/$((SLICES+1)) phases succeeded =="
