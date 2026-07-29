@@ -173,6 +173,11 @@ These are the rules that come from reading multiple sections together:
   (`GH_PAT`, `ANTHROPIC_API_KEY`, `TWITTERAPI_IO_KEY`, `FMP_API_KEY`,
   `CRON_SECRET`) live only in server env vars. Frontend reads the committed
   snapshot / API routes; it never fetches vendors directly.
+- **Batch-script concurrency default.** Any script making >100 external
+  API calls defaults to concurrency 4-8 with disk checkpointing and
+  per-request timeouts ≤8s; crumb/auth-based sources need periodic
+  re-prime mid-run. Serial-with-fair-access is for SEC only (their
+  policy), not a general default.
 - **Vercel-only, no Cloudflare (DC15).** X posts via Nitter are dropped for
   v1 (Nitter is blocked from Vercel egress and we're not deploying a
   Cloudflare Worker). TwitterAPI.io stays as an *optional* paid path.
