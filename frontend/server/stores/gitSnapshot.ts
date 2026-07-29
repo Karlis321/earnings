@@ -431,7 +431,12 @@ function unwrapShard(content: unknown): EventRecord[] {
 // with ~1500 shards. The result is cached in-process for
 // RECONSTITUTE_CACHE_MS so downstream RSC pages that call readEarnings
 // multiple times per request only pay the fan-out once.
-const SHARD_READ_CONCURRENCY = 20;
+// Bumped 20 → 60. GitHub Contents API easily handles the burst
+// (5k/hr = 83/sec average). Cuts cold-cache reconstitute from
+// ~20-30s down to ~5-8s — critical for slice-0 of the sliced
+// daily cron, which was hitting Vercel's 300s function timeout
+// when reconstitute stacked on top of per-entity Yahoo work.
+const SHARD_READ_CONCURRENCY = 60;
 // Reconstituted-snapshot cache — same rationale as READ_CACHE_MS.
 // A slice-partitioned cron does 5 sequential POSTs; without a
 // multi-minute cache the reconstitution reruns every time and each

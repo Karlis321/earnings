@@ -55,7 +55,7 @@ jobs:
           for ((n=0; n<SLICES; n++)); do
             echo "== phase A · slice $n/$SLICES ($(date -u +%H:%M:%SZ)) =="
             HTTP_STATUS=$(curl -s -o /tmp/cron-response.json -w '%{http_code}' \
-              --max-time 320 \
+              --max-time 310 \
               -X POST \
               -H "Authorization: Bearer $CRON_SECRET" \
               -H "Content-Type: application/json" \
