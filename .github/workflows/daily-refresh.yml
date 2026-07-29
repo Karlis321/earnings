@@ -31,7 +31,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 8
     steps:
-      - name: Ping /api/cron/daily
+      - name: Ping /api/cron/daily (4 slices sequentially)
         env:
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
         run: |
@@ -39,29 +39,47 @@ jobs:
             echo "::error::CRON_SECRET repo secret not set — add it in Settings → Secrets and variables → Actions"
             exit 1
           fi
-          echo "Triggering daily refresh at $(date -u +%Y-%m-%dT%H:%M:%SZ)…"
-          # The daily route can take up to 300s (per vercel.json
-          # functions.maxDuration). Give curl a generous timeout
-          # plus a small buffer so a warm-cold Vercel start doesn't
-          # trip us.
-          HTTP_STATUS=$(curl -s -o /tmp/cron-response.json -w '%{http_code}' \
-            --max-time 320 \
-            -X POST \
-            -H "Authorization: Bearer $CRON_SECRET" \
-            -H "Content-Type: application/json" \
-            https://earnings-karlis123.vercel.app/api/cron/daily)
-          echo "HTTP $HTTP_STATUS"
-          if [ "$HTTP_STATUS" -ne 200 ]; then
-            echo "::error::daily cron returned HTTP $HTTP_STATUS"
-            head -c 2000 /tmp/cron-response.json
+          # Vercel Hobby caps function timeout at 300s. A full-universe
+          # cron run occasionally exceeds that on slow-Yahoo mornings
+          # (yesterday: 209s ok; today: 504 timeout). Partition the
+          # ticker universe into 4 slices — each call processes ~1/4
+          # of tickers and finishes well under 300s.
+          #
+          # Slice 0 also runs the global sector-universe refresh.
+          # Slice 3 (last) runs the pipeline self-check + writes the
+          # pipeline-report. All slices commit their own event
+          # mutations + cron-status via mutateEarnings.
+          SLICES=4
+          FAILED=0
+          for ((n=0; n<SLICES; n++)); do
+            echo "== slice $n/$SLICES ($(date -u +%H:%M:%SZ)) =="
+            HTTP_STATUS=$(curl -s -o /tmp/cron-response.json -w '%{http_code}' \
+              --max-time 320 \
+              -X POST \
+              -H "Authorization: Bearer $CRON_SECRET" \
+              -H "Content-Type: application/json" \
+              "https://earnings-karlis123.vercel.app/api/cron/daily?slice=$n&sliceCount=$SLICES")
+            echo "  HTTP $HTTP_STATUS"
+            if [ "$HTTP_STATUS" -ne 200 ]; then
+              echo "::error::slice $n returned HTTP $HTTP_STATUS"
+              head -c 1000 /tmp/cron-response.json || true
+              echo
+              FAILED=$((FAILED+1))
+              # Continue to the next slice — a slice failure shouldn't
+              # cancel the remaining work. The verify step below fails
+              # the whole workflow if any slice erred.
+              continue
+            fi
+            node -e "
+              const j = JSON.parse(require('fs').readFileSync('/tmp/cron-response.json','utf8'));
+              const eng = (j.summary?.engines ?? j.engines ?? []).map(e => e.engine + ':' + e.itemsFound).join(' ');
+              const app = j.summary?.totalAppended ?? j.totalAppended ?? 0;
+              const mat = j.summary?.totalMatured ?? j.totalMatured ?? 0;
+              console.log('  slice-ok · appended=' + app + ' · matured=' + mat + ' · engines[' + eng + ']');
+            "
+          done
+          echo "== done · $((SLICES-FAILED))/$SLICES slices succeeded =="
+          if [ "$FAILED" -gt 0 ]; then
+            echo "::error::$FAILED of $SLICES slices failed"
             exit 1
           fi
-          # Show a compact success summary — engine counts + event
-          # mutations, no full body dump.
-          node -e "
-            const j = JSON.parse(require('fs').readFileSync('/tmp/cron-response.json','utf8'));
-            const eng = (j.engines ?? []).map(e => e.engine + ':' + e.itemsFound).join(' ');
-            console.log('ok=' + j.ok + ' · appended=' + (j.totalAppended ?? 0) +
-                        ' · matured=' + (j.totalMatured ?? 0) +
-                        ' · engines[' + eng + ']');
-          "

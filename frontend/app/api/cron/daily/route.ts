@@ -137,6 +137,44 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // Slice partitioning — Vercel Hobby has a 300s function timeout. A
+  // full-universe run (~1,500 tickers × 3 vendor calls per) exceeds
+  // that on slow-Yahoo mornings. Query params `?slice=n&sliceCount=k`
+  // let the caller partition the registry into k roughly-equal
+  // subsets and process only subset n per invocation. The daily-
+  // refresh.yml workflow calls the endpoint k=4 times sequentially,
+  // each call under 300s.
+  //
+  // Defaults: slice=0, sliceCount=1 → full universe (backwards compat
+  // with Vercel Cron in vercel.json which sends no query params).
+  //
+  // Global steps that must run once per day (sector universe refresh,
+  // pipeline-report write) are gated on `slice === 0`. Per-entity
+  // steps use `shouldProcess(entity)` to filter.
+  const url = new URL(req.url);
+  const slice = Math.max(0, Number(url.searchParams.get("slice") ?? 0));
+  const sliceCount = Math.max(1, Number(url.searchParams.get("sliceCount") ?? 1));
+  if (slice >= sliceCount) {
+    return NextResponse.json(
+      {
+        error: "bad-request",
+        message: `slice=${slice} out of range for sliceCount=${sliceCount}`,
+      },
+      { status: 400 },
+    );
+  }
+  // Deterministic hash-based partitioning across ticker string. Keeps
+  // the same entity in the same slice across days so retries hit the
+  // same subset. sum-of-charcodes is enough; the registry is small.
+  const shouldProcess = (ticker: string): boolean => {
+    if (sliceCount === 1) return true;
+    let h = 0;
+    for (let i = 0; i < ticker.length; i++) h = (h + ticker.charCodeAt(i)) | 0;
+    return Math.abs(h) % sliceCount === slice;
+  };
+  const isFirstSlice = slice === 0;
+  const isLastSlice = slice === sliceCount - 1;
+
   const startedAt = new Date();
   const engineAgg = new Map<string, EngineStatus>();
   const eventSummaries: CronRunSummary["events"] = [];
@@ -463,6 +501,7 @@ export async function POST(req: NextRequest) {
     // Uses the possibly-mutated current event for restatement comparison.
     for (const entity of registry) {
       if (entity.securityType !== "operating") continue;
+      if (!shouldProcess(entity.ticker)) continue;
       let yahooSymbol: string | null = entity.yahooSymbol ?? null;
       if (!yahooSymbol) {
         try {
@@ -712,6 +751,7 @@ export async function POST(req: NextRequest) {
       for (const entity of registry) {
         if (!entity.edgarCik) continue;
         if (entity.securityType !== "operating") continue;
+        if (!shouldProcess(entity.ticker)) continue;
         if ((countPastByTicker.get(entity.ticker) ?? 0) >= 2) continue;
         perVendor.sec.attempted++;
         let shells: Awaited<ReturnType<typeof secSubmissionsShells>> = [];
@@ -770,6 +810,7 @@ export async function POST(req: NextRequest) {
     let estimated = 0;
     for (const entity of registry) {
       if (entity.securityType !== "operating") continue;
+      if (!shouldProcess(entity.ticker)) continue;
       // Skip if we already have a next-event shell (real or estimated)
       if (shellByTicker.has(entity.ticker)) continue;
       const past = pastByTicker.get(entity.ticker);
@@ -942,7 +983,15 @@ export async function POST(req: NextRequest) {
     // the registry (add-only — an entity dropping out of a sector's
     // top-N stays put). Runs BEFORE market-cap refresh so newly-added
     // entities also get their caps refreshed in the same commit.
-    const sectorResult = await refreshSectorUniverse(registry, 60);
+    //
+    // Sliced-run behaviour: this is a global operation (screens the
+    // whole Yahoo universe, not per-entity). Runs only on the FIRST
+    // slice; subsequent slices skip it. Newly-added entities from
+    // slice 0 land in the registry commit and are visible to later
+    // slices reading readRegistry() fresh.
+    const sectorResult = isFirstSlice
+      ? await refreshSectorUniverse(registry, 60)
+      : { newEntities: [] as (typeof registry) };
     const registryWithNew = [...registry, ...sectorResult.newEntities];
     for (const n of sectorResult.newEntities) {
       newEvents.push({
@@ -967,6 +1016,7 @@ export async function POST(req: NextRequest) {
       yahooSymbol: string | null;
     }> = [];
     for (const entity of registryWithNew) {
+      if (!shouldProcess(entity.ticker)) continue;
       // Prefer the persisted yahooSymbol — search-based lookup is ambiguous
       // for symbols shared across listings (VLE, RIO on Paris, etc.).
       if (entity.yahooSymbol) {
@@ -1144,6 +1194,18 @@ export async function POST(req: NextRequest) {
   // history append). That's an accepted trade-off — see file header of
   // server/lib/pipelineReport.ts. Fail-soft: any error here is logged and
   // does not affect the run response.
+  //
+  // Sliced-run behaviour: skip on non-last slices — the report reflects
+  // the whole snap, which only settles into its final state after every
+  // slice has committed. Running per-slice would repeatedly overwrite
+  // the report with intermediate values. The last slice sees all prior
+  // slices' commits and reports the true daily state.
+  if (!isLastSlice) {
+    return NextResponse.json(
+      { ok, summary: status, slice: { n: slice, of: sliceCount, isLast: false } },
+      { status: ok ? 200 : 500, headers: { "Cache-Control": "no-store" } },
+    );
+  }
   try {
     const [snapAfter, indexAfter, registryAfter, prevReport] = await Promise.all([
       store.readEarnings(),
@@ -1183,7 +1245,7 @@ export async function POST(req: NextRequest) {
   }
 
   return NextResponse.json(
-    { ok, summary: status },
+    { ok, summary: status, slice: { n: slice, of: sliceCount, isLast: true } },
     { status: ok ? 200 : 500, headers: { "Cache-Control": "no-store" } },
   );
 }
