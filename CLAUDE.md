@@ -62,9 +62,7 @@ earnings_dashboard/
 │   └── reference_mockup.png
 ├── backend/                   Placeholder (backend not yet implemented)
 ├── design/                    Signal design system export (Figma HTML)
-├── fetched/                   .gitignored working dir for scripts/fetch-edgar.mjs
-├── answer.txt                 historical design-phase Q&A
-└── technical.md               historical technical notes
+└── fetched/                   .gitignored working dir for scripts/fetch-edgar.mjs
 ```
 
 ### Where do I find X

@@ -14,8 +14,7 @@ earnings_dashboard/
 ├── README.md              You are here
 ├── CLAUDE.md              Agent guide for future Claude Code sessions
 ├── DEPLOY.md              Vercel deployment runbook
-├── answer.txt             Karlis's answers to the design-decision Q&A
-├── prompt1.txt            Original wire-up/deploy prompt
+├── TODO_TOMORROW.md       Session log — carries pending backfills + audit deltas
 │
 ├── frontend/              Next.js 15 App Router — the app
 │   ├── app/               Routes
