@@ -810,7 +810,7 @@ concurrency).
 
 ## 9 · Backfill & seeding
 
-`scripts/backfill.mjs` — run once, locally, from a residential IP (Yahoo
+`scripts/backfills/backfill.mjs` — run once, locally, from a residential IP (Yahoo
 blocks Vercel datacenter IP for the historical-bars endpoint).
 
 **Scope (DC13, pending confirmation):**

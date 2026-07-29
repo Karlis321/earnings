@@ -11,7 +11,7 @@ acceptance checkpoint — build out:
 - `server/store.ts` — repository interface.
 - `server/stores/gitSnapshot.ts` — GitHub Contents API commit-pipe (v1 store).
 - `data/*.json` — versioned JSON files that ARE the store for v1.
-- `scripts/backfill.mjs` — local one-time seeding.
+- `scripts/backfills/backfill.mjs` — local one-time seeding.
 - `vercel.json` cron config for the daily orchestration.
 
 Since Next.js App Router puts API routes under `app/api/*`, backend code

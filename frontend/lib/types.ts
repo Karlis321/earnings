@@ -28,6 +28,25 @@ export type FactMethod =
   | "bloomberg_manual"
   | "filing_manual"
   | "llm_extracted";
+// Provenance vs EventProvenance — two distinct enums, one per level:
+//
+// `Provenance` here (fact-level) classifies WHERE A SINGLE
+// `FactSource` came from — the primary-source category
+// (regulatory filing vs company IR page vs newswire vs press vs
+// social vs independent research). Used inside every `Fact.source`.
+//
+// `EventProvenance` further below (event-level) classifies HOW A
+// WHOLE EventRecord was created — the specific ingest lane that
+// birthed the record (yahoo-earnings-chart vs yahoo-timeseries vs
+// sec-xbrl-companyfacts vs sec-submissions vs fmp vs
+// llm_extracted). Used for merge-precedence in mergeMetricsInto
+// and for the pipeline-report's per-provenance counters.
+//
+// Not interchangeable. A FactSource whose provenance is
+// "regulatory" can live on an event whose EventProvenance is
+// "sec-xbrl-companyfacts" — those are consistent — but the two
+// fields describe different things and neither can be inferred
+// from the other in general.
 export type Provenance =
   | "regulatory"
   | "ir-page"

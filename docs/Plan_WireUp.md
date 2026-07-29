@@ -540,7 +540,7 @@ FE changes:
 **Goal:** replace fixtures with real history. Go live.
 
 Scope:
-- `scripts/backfill.mjs` (local, residential IP).
+- `scripts/backfills/backfill.mjs` (local, residential IP).
 - ~3 years of daily bars per ticker (Q13 default; confirm with analyst).
 - ~8 quarters of past events per operating/developer name, keyed on
   `(ticker, period)`.
