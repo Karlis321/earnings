@@ -122,6 +122,33 @@ async function readFile<T>(
   return { sha: j.sha, content: JSON.parse(raw) as T };
 }
 
+// List entries in a directory via the Contents API. Returns null when
+// the directory doesn't exist (404) — the summaries directory starts
+// empty on a fresh repo and RSC callers should render nothing rather
+// than blow up. Each entry carries a `name` (the basename) and a
+// `type` ("file" | "dir"); the caller filters as needed.
+interface GhDirEntry {
+  name: string;
+  path: string;
+  sha: string;
+  type: "file" | "dir" | "symlink" | "submodule";
+}
+async function listDir(
+  cfg: GhConfig,
+  path: string,
+): Promise<GhDirEntry[] | null> {
+  const url =
+    `${GH_API}/repos/${cfg.owner}/${cfg.repo}/contents/${encodeURIComponent(path)}` +
+    `?ref=${encodeURIComponent(cfg.branch)}`;
+  const r = await fetch(url, { headers: headers(cfg), cache: "no-store" });
+  if (r.status === 404) return null;
+  if (!r.ok) throw new Error(`GH listDir ${path} → ${r.status}`);
+  const j = (await r.json()) as GhDirEntry[] | GhDirEntry;
+  // Contents API returns an object when path is a file, an array when
+  // path is a directory. Callers of this function always pass a dir.
+  return Array.isArray(j) ? j : null;
+}
+
 async function writeFile<T>(
   cfg: GhConfig,
   path: string,
@@ -247,6 +274,8 @@ const P = {
   // consumes it programmatically so the exact file suffix is cosmetic.
   pipelineHistory: "data/pipeline-history.json",
   document: (id: string) => `data/documents/${id}.json`,
+  summariesDir: "data/summaries",
+  summary: (slug: string) => `data/summaries/${slug}.json`,
 };
 
 // "HBM US" → "HBM_US"; "AAPL34 BZ" → "AAPL34_BZ" — must match
@@ -879,6 +908,54 @@ export function gitSnapshotStore(cfg: GhConfig): Store {
       } catch {
         return null;
       }
+    },
+
+    async readSummariesForTicker(ticker: string) {
+      // Resolve to canonical: a call with a non-canonical member ticker
+      // (e.g. HBM CN vs the canonical HBM US) still finds the company's
+      // summaries. Every summary file's `body.ticker` is the canonical
+      // form, and filenames encode that same canonical.
+      const entities = await this.readRegistry();
+      const input = entities.find((e) => e.ticker === ticker);
+      if (!input) return [];
+      let canonical = input;
+      if (input.isCanonical === false && input.companyId) {
+        const canon = entities.find(
+          (e) => e.companyId === input.companyId && e.isCanonical !== false,
+        );
+        if (canon) canonical = canon;
+      }
+      const slug = tickerSlug(canonical.ticker);
+      const prefix = `${slug}_`;
+
+      let dir: GhDirEntry[] | null;
+      try {
+        dir = await listDir(cfg, P.summariesDir);
+      } catch {
+        return [];
+      }
+      if (!dir) return [];
+      const matches = dir.filter(
+        (e) => e.type === "file" && e.name.endsWith(".json") && e.name.startsWith(prefix),
+      );
+      if (matches.length === 0) return [];
+
+      const summaries: import("@/lib/types").Summary[] = [];
+      for (const entry of matches) {
+        try {
+          const r = await readCached<import("@/lib/types").Summary>(
+            cfg,
+            entry.path,
+          );
+          if (r?.content) summaries.push(r.content);
+        } catch {
+          // Skip a single malformed summary rather than blow up the panel.
+        }
+      }
+      // Sort by period desc via reported_at (both fields are populated
+      // and validated; reported_at gives us date arithmetic for free).
+      summaries.sort((a, b) => (b.reported_at ?? "").localeCompare(a.reported_at ?? ""));
+      return summaries;
     },
     async writeDocument(doc: Document) {
       await commit(

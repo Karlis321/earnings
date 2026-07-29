@@ -413,6 +413,36 @@ export interface SharedState {
   lastCommit: string;
 }
 
+// Post-earnings summary written by the /earnings + /sweep slash
+// commands. One file per ticker+period at
+// data/summaries/<TICKER>_<PERIOD>.json. Ledger discipline: every
+// figure comes from the primary document or our SEC-verbatim shard
+// metrics — never aggregators, never "vs consensus". Schema is
+// mirrored in data/summaries-schema.json (validator enforces).
+export type SummaryDeltaBasis = "q/q" | "y/y" | "vs guidance" | "none";
+export type SummaryDirection = "up" | "down" | "flat" | "n/a";
+
+export interface SummaryKpi {
+  label: string;
+  value: string; // formatted with unit ("$757.3M", "US$2.63/lb")
+  delta: string | null; // null iff delta_basis === "none"
+  delta_basis: SummaryDeltaBasis;
+  direction: SummaryDirection;
+}
+
+export interface Summary {
+  ticker: string;
+  period: string;
+  reported_at: string; // YYYY-MM-DD
+  generated_at: string; // ISO-8601
+  headline: string;
+  kpis: SummaryKpi[];
+  summary_short: string;
+  summary_long: string;
+  source_url: string;
+  confidence_notes: string;
+}
+
 export interface MetricDictionary {
   schema: "metric-dictionary/v1";
   metrics: Record<

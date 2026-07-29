@@ -14,6 +14,7 @@ import type {
   SharedState,
   MetricDictionary,
   EngineStatus,
+  Summary,
 } from "@/lib/types";
 import type {
   PipelineHistoryEntry,
@@ -73,6 +74,14 @@ export interface Store {
 
   readDocument(id: string): Promise<Document | null>;
   writeDocument(doc: Document): Promise<void>;
+
+  // Post-earnings summaries written by the /earnings command. Resolves
+  // the input ticker to its canonical listing (so any member ticker
+  // finds the company's summaries) and returns every summary file
+  // for that canonical, sorted latest-period first. Optional so the
+  // in-memory store can stub-implement while gitSnapshot has the real
+  // directory read.
+  readSummariesForTicker?(ticker: string): Promise<Summary[]>;
 
   snapshotAt(): Promise<string>;
   ghPatPresent(): boolean;

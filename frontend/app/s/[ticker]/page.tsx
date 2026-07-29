@@ -5,6 +5,7 @@ import { SecurityHeader } from "@/components/security/SecurityHeader";
 import { OperatingDetail } from "@/components/security/OperatingDetail";
 import { DeveloperDetail } from "@/components/security/DeveloperDetail";
 import { EtfDetail } from "@/components/security/EtfDetail";
+import { SummaryPanel } from "@/components/security/SummaryPanel";
 import { EmptyState } from "@/components/primitives";
 import { computeFreshness, todayIso } from "@/lib/freshness";
 import type { EventRecord } from "@/lib/types";
@@ -49,6 +50,15 @@ export default async function SecurityDetailPage({ params }: Props) {
     latest?.sources.capturedAt ?? latest?.eventDate ?? latest?.scheduledDate ?? null,
   );
 
+  // Post-earnings summaries (data/summaries/) — the store resolves any
+  // member ticker to its canonical, so this call is safe from any
+  // registered listing. Returns [] when the summaries dir is empty or
+  // this canonical has no summary yet, which SummaryPanel renders as
+  // nothing (no empty-state box, per spec).
+  const summaries = store.readSummariesForTicker
+    ? await store.readSummariesForTicker(ticker)
+    : [];
+
   return (
     <div className="mx-auto max-w-[1800px] px-10 py-8">
       <SecurityHeader
@@ -57,6 +67,18 @@ export default async function SecurityDetailPage({ params }: Props) {
         nextEvent={nextEvent}
         freshness={freshness}
       />
+
+      {/* Summary panel renders above the past-quarters grid only when
+          a summary exists for the latest reported period; otherwise
+          nothing (no empty-state box). Non-operating types skip the
+          panel entirely — /earnings only writes summaries for
+          operating names. */}
+      {entity.securityType === "operating" && summaries.length > 0 && (
+        <SummaryPanel
+          summaries={summaries}
+          latestReportedPeriod={latestPast?.period ?? null}
+        />
+      )}
 
       {entity.securityType === "operating" && (
         <OperatingDetail entity={entity} events={events} />

@@ -175,6 +175,13 @@ export const inMemoryStore: Store = {
     notImplemented("writeDocument");
   },
 
+  // The in-memory store is fixture-only — no summaries corpus is
+  // baked in. Return empty so RSC callers render nothing (correct
+  // per spec: no summary → no panel).
+  async readSummariesForTicker(_ticker: string) {
+    return [];
+  },
+
   async snapshotAt(): Promise<string> {
     return snapshotWithEtf.lastUpdated;
   },
