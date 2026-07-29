@@ -178,6 +178,21 @@ These are the rules that come from reading multiple sections together:
   per-request timeouts ≤8s; crumb/auth-based sources need periodic
   re-prime mid-run. Serial-with-fair-access is for SEC only (their
   policy), not a general default.
+- **Fiscal-offset issuers ≠ calendar quarters.** Some issuers publish
+  earnings labeled by their FISCAL quarter, which doesn't line up with
+  the calendar quarter derivable from a report date. Known-affected
+  set: **Japanese banks (8306/8316/8411 JP, Apr-Mar fiscal year), SAP,
+  STX, ABI (ANH SJ), TGB, PSN/PSNY, KARO**. This mismatch has broken
+  at least three separate features so far — estimator labels (Sweep 1
+  fixed via `incrementPeriod(label, cadence)` instead of
+  `periodFromDate(iso)`), sec-xbrl period matching (the July-2026
+  rederive audit), and eventDate repair (the fix-fiscal-offset commit
+  after `repair-shell-eventdates`). **Rule: ANY logic mapping
+  dates↔periods must resolve through the entity's fiscal calendar,
+  never calendar-quarter arithmetic on a report-end date.**
+  `countDuplicates` in `pipelineReport.ts` already covers the failure
+  mode (close-date events on the same FY label flag as dupes), so
+  documentation here is the standing check — no new invariant needed.
 - **Vercel-only, no Cloudflare (DC15).** X posts via Nitter are dropped for
   v1 (Nitter is blocked from Vercel egress and we're not deploying a
   Cloudflare Worker). TwitterAPI.io stays as an *optional* paid path.
