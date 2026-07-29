@@ -1,74 +1,61 @@
-Three follow-ups from the last session's deferred list, in strict order.
-Print a one-line status after each numbered step. Session-closing report
-in the Done / Deferred / Acceptance format per CLAUDE.md.
+Check-then-implement: the Summarize button + drivers feature. Parts of
+this MAY already exist from prior sessions — verify each on disk before
+building anything. State from disk first, per CLAUDE.md.
 
-TASK 1 — BULK US-PRIMARY POPULATION (199 remaining companies).
-Context: scripts/add-missing-us-primaries.mjs succeeded for MSFT US then
-got throttled on Yahoo v7/quote. That endpoint now requires auth anyway.
-  1. Switch the lookup to crumb-authed quoteSummary (same handshake the
-     registry ingest already uses), concurrency 1, 2–3s spacing between
-     calls. ~199 lookups ≈ 10 min — print a counter every 20.
-  2. For each company with a US CIK but no US-primary listing: resolve
-     the US symbol, add the entity to the registry, set it canonical for
-     its companyId per the existing selection rule.
-  3. CRITICAL — no canonical-but-empty listings: every newly added US
-     entity must immediately get the standard ingest — yahoo-timeseries
-     history + SEC-verbatim financials (per-company CIK fetch, actual
-     unitKey, distribute to listings) + estimator shell with correct
-     incremented period label. A canonical listing with zero events is
-     worse than the foreign line it replaced. Verify: zero newly-added
-     entities with empty shards.
-  4. Re-run detect + apply for company grouping so the new listings join
-     their groups. Expect coverage counters and marketcap_stale_count to
-     shift — report before/after, that's the counters working.
-  5. Acceptance: AAPL US, NVDA US, WMT US, MU US canonical for their
-     companies, each with populated latest print; the 100-largest-
-     companies canonical table from Sweep 2 re-printed for eyeball
-     review; companies_with_inconsistent_financials still 0.
+VERIFICATION PASS — report a table (component | exists? | evidence):
+  a. data/summaries-schema.json: is there a v2 with a "drivers" array
+     (metric, direction, explanation, basis: company-disclosed |
+     derived-arithmetic)? Or v1 only?
+  b. .claude/commands/earnings.md Step 2: does it extract drivers
+     (causal-language grep: "due to", "driven by", "partially
+     offset")? (Note: guidance extraction WAS added in 4fb41ee — that
+     is a different subsection; check for drivers specifically.)
+  c. SummaryPanel.tsx: does it render a "Why"/drivers section between
+     summary_long and the footer?
+  d. frontend/app/api/summarize/route.ts: does it exist, with Bearer
+     CRON_SECRET gating, registry validation, 409-if-summary-exists,
+     429-if-recent-dispatch, repository_dispatch type "summarize" via
+     GH_PAT?
+  e. Ticker-page UI: is there a Summarize button rendered where
+     SummaryPanel would appear but no summary exists, with a pending
+     state + 60s poll?
+Print the table, then implement ONLY the missing rows:
 
-TASK 2 — EXTRACTOR REWRITE + METRIC EXPANSION (deferred Sweep 3 + Part 4).
-Run this FIRST thing after Task 1 while SEC quota is fresh; ~10–15 min
-of SEC calls at 1 req/sec.
-  1. Sweep: count past events having gross profit OR operating income OR
-     net income but NO revenue, grouped by provenance — baseline table.
-  2. Rewrite the extractor concept mapping with a full priority list per
-     metric. Revenue: us-gaap Revenues >
-     RevenueFromContractWithCustomerExcludingAssessedTax >
-     RevenueFromContractWithCustomerIncludingAssessedTax >
-     SalesRevenueNet; ifrs-full:Revenue. Build equivalent priority lists
-     for: cost of revenue, gross profit, operating income, EBIT, pretax
-     income, net income, EPS basic/diluted, operating cash flow, capex,
-     total cash, total debt, shareholders' equity, weighted diluted
-     shares. EBITDA only if source-reported — never computed silently.
-  3. Derived metrics: FCF (OCF − capex, only when both source-present),
-     gross/operating/net margins — all carry derived:true and render
-     visually distinct from reported figures.
-  4. Backfill across all past events of CIK-bearing companies (SEC
-     verbatim rule applies — per-company fetch, distribute to listings,
-     old values to superseded[]). Quarter-span filter and latest-filed
-     rules from rederive-sec-xbrl.mjs apply — reuse that code, don't
-     reimplement.
-  5. UI: event detail shows the full set grouped (income statement /
-     cash flow / balance sheet / derived); past-quarters grid stays
-     compact (revenue, net income, EPS + expand).
-  6. Acceptance: missing-revenue-with-siblings count → ~0 for
-     CIK-bearing companies; MSFT US latest print shows the expanded set
-     with margins marked derived; per-metric before/after population
-     table by provenance; verification sample re-run stays at 0% error;
-     shard/index consistency clean.
+[IF MISSING] PART 1 — SCHEMA v2: extend data/summaries-schema.json
+($id summaries/v2, v1 files stay valid): "drivers": array of
+{ metric (matches a kpi label or "overall"), direction: up|down|flat,
+explanation (<=50 words, no verbatim quotes over 15 words),
+basis: "company-disclosed" | "derived-arithmetic" }.
+company-disclosed = the filing/MD&A explicitly states the cause;
+derived-arithmetic = pure decomposition from our own numbers. HARD
+RULE for the command: no macro narratives, no invented causes; if the
+filing gives no reason, the driver is "not explained in the release".
 
-TASK 3 — UI: SORT CONTROL + REACTION ROW EVERYWHERE (deferred 5a + 6).
-  1. Extract ReactionRow from OperatingDetail.tsx into
-     frontend/components/primitives/ReactionRow.tsx, then render it on:
-     sector view expanded rows, watchlist expanded rows, event detail
-     header. Same compact format, clipped/contaminated semantics
-     preserved, "—" for pending/unavailable, never blank.
-  2. Add the sort dropdown to SectorMemberRows: Market cap ↓ (default),
-     Market cap ↑, Name A-Z, Next report date. Cap-band × industry
-     grouping keeps the chosen ordering inside each group.
-  3. Acceptance: Technology sector view — mega-caps first, dropdown
-     works, expanded rows show reaction rows; watchlist expanded row for
-     a covered ticker shows its reaction row.
+[IF MISSING] PART 2 — COMMAND: earnings.md Step 2 gains a drivers
+subsection: extract-doc-text.mjs --grep on causal language, map each
+disclosed cause to its metric, mark basis. Miner rules extend here
+(grades/throughput/recovery, realized vs benchmark price, by-product
+credit swings, capitalized-vs-expensed stripping — when disclosed).
 
-Consistency check after each task. Nothing pushed; per-task report:
-what existed | what changed | counts | acceptance result.
+[IF MISSING] PART 3 — PANEL: "Why" section in SummaryPanel.tsx —
+one line per driver: metric, direction arrow, explanation, subtle
+basis tag (analysts must see company-stated vs computed).
+"not explained in the release" renders muted.
+
+[IF MISSING] PART 4 — BUTTON + ROUTE:
+  a. /api/summarize route per spec in (d) above, reusing existing
+     GH_PAT / GH_REPO_* / CRON_SECRET env vars.
+  b. Summarize button on covered-tier ticker pages (data/covered.json
+     gate) where no summary exists for the latest reported period;
+     click → POST → "Summary in progress — ready in a few minutes"
+     disabled state, 60s store poll swapping in SummaryPanel when the
+     file lands.
+
+TEST: whichever parts were built — run local /earnings on a covered
+ticker WITHOUT an existing summary (check data/summaries/ first,
+pick accordingly) to produce one v2 file with drivers; confirm any
+existing v1 summaries still validate and render; button POST path
+tested with curl (expect 202-style accept on a valid covered ticker,
+409 on one with an existing summary, 401 without the bearer).
+Standing tests green, push, report hash + the verification table +
+which parts were newly built vs already present.
