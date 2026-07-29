@@ -70,13 +70,12 @@ Prereqs:
 
 Steps:
 
-1. Ship the wire-up phases in order (`docs/Plan_WireUp.md`). Each phase has
-   a checkpoint; don't advance until it passes.
-2. Add env vars from `frontend/.env.example` as each phase demands them.
-3. `frontend/vercel.json` cron runs Mon–Fri 06:00 UTC. Verify the first cron
+1. Add env vars from `frontend/.env.example` — the wire-up is inline
+   in the daily cron now; no phased rollout needed for a fresh deploy.
+2. `frontend/vercel.json` cron runs Mon–Fri 06:00 UTC. Verify the first cron
    run produces one git commit and populates the Data Status panel.
-4. Adjust `frontend/lib/fixtures/registry.ts` to your actual watchlist
-   tickers before backfill.
+3. Adjust the entity registry in `data/entity-registry.json` to your
+   actual watchlist tickers before backfill.
 
 **Rollback:** Vercel promotes the previous deployment in one click. Because
 writes go through git-commit, no state is lost between deploys.

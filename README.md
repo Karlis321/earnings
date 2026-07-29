@@ -14,7 +14,7 @@ earnings_dashboard/
 ├── README.md              You are here
 ├── CLAUDE.md              Agent guide for future Claude Code sessions
 ├── DEPLOY.md              Vercel deployment runbook
-├── TODO_TOMORROW.md       Session log — carries pending backfills + audit deltas
+├── prompt1.txt            Working prompt (rewritten each session)
 │
 ├── frontend/              Next.js 15 App Router — the app
 │   ├── app/               Routes
@@ -29,7 +29,7 @@ earnings_dashboard/
 │   └── .env.example
 │
 ├── backend/               Placeholder — backend not implemented yet.
-│   └── README.md          Points to docs/PRD_Backend.md + docs/Plan_WireUp.md
+│   └── README.md          Placeholder — points to docs/PRD_Backend.md
 │
 ├── design/                Signal design system export (tokens, screenshots)
 │   ├── Signal Design System.dc.html
@@ -37,12 +37,11 @@ earnings_dashboard/
 │   ├── image-slot.js
 │   └── screenshots/
 │
-└── docs/                  All specs
+└── docs/                  All specs + audits
     ├── PRD_Project.md     Master product PRD
     ├── PRD_Frontend.md    Front-end spec (views, components, journeys)
     ├── PRD_Backend.md     Backend spec (endpoints, schema, integrations)
-    ├── Plan_Frontend_Build.md   Phased FE build plan (P0–P12)
-    ├── Plan_WireUp.md     Phased FE↔BE integration plan (W0–W8)
+    ├── consistency-audit.md   Post-reorg findings snapshot
     └── reference_mockup.png     Original design reference
 ```
 

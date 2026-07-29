@@ -13,7 +13,7 @@ data ingested is publicly available (Yahoo, EDGAR, Google News, IR RSS, etc.)
 
 ```
 earnings_dashboard/
-├── README.md, CLAUDE.md, DEPLOY.md, TODO_TOMORROW.md          top-level docs
+├── README.md, CLAUDE.md, DEPLOY.md                            top-level docs
 ├── prompt1.txt                                                 working prompt (rewritten each session)
 ├── .claude/commands/                                          slash-command playbooks (/earnings, /sweep)
 │   ├── earnings.md            single-ticker post-earnings summary procedure
@@ -56,9 +56,9 @@ earnings_dashboard/
 │   ├── dev-tests/             2 dev-time smoke tests (test-mentions-holding, …)
 │   ├── config/                us-primary-overrides.json (used by add-us-primaries-v2)
 │   └── audits/                18 audit JSONs — evidence of hard-won fixes
-├── docs/                      PRDs + plans (authoritative reads)
+├── docs/                      PRDs + audit reports (authoritative reads)
 │   ├── PRD_Project.md, PRD_Frontend.md, PRD_Backend.md
-│   ├── Plan_Frontend_Build.md, Plan_WireUp.md
+│   ├── consistency-audit.md
 │   └── reference_mockup.png
 ├── backend/                   Placeholder (backend not yet implemented)
 ├── design/                    Signal design system export (Figma HTML)
@@ -141,9 +141,7 @@ X get this value" or "what was the state before Y ran".
 3. `docs/PRD_Backend.md` — the concrete spec for the backend to build.
    Includes the wire shapes, endpoint list, no-auth model, and edge-case
    handling.
-4. `docs/Plan_WireUp.md` — the ordered W0–W8 phased plan for wiring the
-   frontend to the backend. Every phase has an acceptance checkpoint.
-5. `docs/PRD_Frontend.md` §6 (component library) and §7 (per-view specs)
+4. `docs/PRD_Frontend.md` §6 (component library) and §7 (per-view specs)
    before touching UI.
 
 ## Load-bearing invariants (non-obvious, easy to violate)
@@ -321,9 +319,10 @@ These are the rules that come from reading multiple sections together:
 - **No auth (DC6).** Public URL by design. No `/login`, no `RoleProvider`,
   no `AdminGuard` — all removed. If access needs restricting later, enable
   Vercel Deployment Protection (dashboard toggle, zero code).
-- **Fixtures-first front end.** The whole app runs on fixtures today. Wire
-  it up via `docs/Plan_WireUp.md` phase-by-phase; the seam is
-  `frontend/lib/apiClient.ts` gated by `FEATURE_FLAGS.liveMode` per method.
+- **Fixtures-first front end.** The whole app runs on fixtures today.
+  The seam is `frontend/lib/apiClient.ts` gated by
+  `FEATURE_FLAGS.liveMode` per method — every live-mode branch throws
+  a specific error naming the endpoint that's still stubbed.
 - **Plain English UI copy.** No jargon. Short sentences, verdict-style
   phrasing. Every headline number must have a working click-through to its
   primary source.

@@ -2,9 +2,9 @@
 
 **Not implemented yet.**
 
-The backend spec lives in `../docs/PRD_Backend.md`. The phased implementation
-plan lives in `../docs/Plan_WireUp.md`. Nine phases (W0 → W8) — each with an
-acceptance checkpoint — build out:
+The backend spec lives in `../docs/PRD_Backend.md`. Historical W-phase
+plans were removed after most of the wire-up work landed inline; consult
+git history if the phased narrative is useful. Build-out surfaces:
 
 - `app/api/*` Next.js Route Handlers (co-located with the frontend, but
   logically the backend surface).
