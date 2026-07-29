@@ -993,6 +993,22 @@ export function mergeMetricsInto(
   if (incoming.provenance) provs.add(incoming.provenance);
   const provenanceMerged = [...provs].sort();
 
+  // EventDate refresh: when the target carries a shell-placeholder
+  // date (mid-month 15th, from the estimator's projection) and the
+  // incoming has a real report date (quarter-end or filed date), the
+  // incoming's date is more truthful. Adopt it. Never overwrites a
+  // real date with a shell — this is one-directional. The July-2026
+  // audit found 1,765 events stuck with 15th placeholders because the
+  // old merge kept the target's date unconditionally.
+  const targetIs15 = /-15$/.test(target.eventDate ?? "");
+  const incomingHasDate = !!incoming.eventDate;
+  const incomingIsNot15 = !/-15$/.test(incoming.eventDate ?? "");
+  if (targetIs15 && incomingHasDate && incomingIsNot15) {
+    (merged as MergedEventRecord).eventDate = incoming.eventDate!;
+    (merged as unknown as { eventDateSource: string }).eventDateSource =
+      `merged-from-${incoming.provenance ?? "unknown"}`;
+  }
+
   merged.metrics = [...byKey.values()];
   if (superseded.length > 0) merged.superseded = superseded;
   if (provenanceMerged.length > 0) merged.provenance_merged = provenanceMerged;

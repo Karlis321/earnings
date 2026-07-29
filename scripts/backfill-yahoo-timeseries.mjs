@@ -298,6 +298,18 @@ async function main() {
           return Math.abs(evTs - targetTs) / 86_400_000 <= 45;
         });
       if (matchingEvent) {
+        // Refresh eventDate when it's a shell placeholder (mid-month
+        // 15th from the estimator) and the timeseries asOfDate is a
+        // real quarter-end. Same rule as mergeMetricsInto in the cron
+        // — the July-2026 audit found 1,765 events stuck with the
+        // 15th because this enrichment step never touched eventDate.
+        if (
+          /-15$/.test(matchingEvent.eventDate ?? "") &&
+          !/-15$/.test(asOfDate)
+        ) {
+          matchingEvent.eventDate = asOfDate;
+          matchingEvent.eventDateSource = "yahoo-timeseries-asOfDate";
+        }
         // Enrich existing event's metrics — fill actuals where null.
         if (!Array.isArray(matchingEvent.metrics)) matchingEvent.metrics = [];
         for (const [metricKey, data] of bucket) {
