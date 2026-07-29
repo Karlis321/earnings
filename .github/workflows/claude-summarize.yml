@@ -50,10 +50,12 @@ jobs:
             --allowedTools "Bash(node scripts/validate.js)" "Bash(git *)" Read Write Edit WebSearch WebFetch
 
       - name: Verify a summary was produced or explicitly skipped
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          git fetch origin main
-          NEW=$(git log origin/main --author="claude" --since="30 minutes ago" --oneline -- data/summaries/ | wc -l)
+          NEW=$(gh api "repos/${{ github.repository }}/commits?path=data/summaries&since=$(date -u -d '30 minutes ago' +%Y-%m-%dT%H:%M:%SZ)" --jq 'length')
           if [ "$NEW" -eq 0 ]; then
-            echo "::error::Run completed but no summary commit landed and no skip was justified"
+            echo "::error::Run completed but no summary commit landed in data/summaries/"
             exit 1
           fi
+          echo "Verified: $NEW summary commit(s) in the last 30 minutes."
