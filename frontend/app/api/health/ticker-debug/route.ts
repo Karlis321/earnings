@@ -33,6 +33,18 @@ export async function GET(req: Request) {
       eventDate: e.eventDate,
       metricCount: e.metrics?.length ?? 0,
     }));
+    // Repro the exact ticker page pipeline that immediately follows the store read.
+    try {
+      const sorted = evs.slice().sort((a, b) => b.scheduledDate.localeCompare(a.scheduledDate));
+      out.sortOk = true;
+      out.sortedFirstScheduled = sorted[0]?.scheduledDate ?? null;
+      out.eventScheduledTypes = sorted.slice(0, 6).map((e) => typeof e.scheduledDate);
+      out.eventPeriodTypes = sorted.slice(0, 6).map((e) => typeof e.period);
+      const latestPast = sorted.find((e) => e.eventDate);
+      out.latestPastId = latestPast?.id ?? null;
+    } catch (e) {
+      out.sortError = (e as Error).message;
+    }
   } catch (e) {
     out.eventsError = (e as Error).message;
   }
