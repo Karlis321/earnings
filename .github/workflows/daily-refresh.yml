@@ -67,15 +67,19 @@ jobs:
           #            newly-added entities to the registry.
           # Both phases inside 300s each. If either fails, the workflow
           # goes red at the end but successful phases still committed.
-          # Bumped 4 → 8 after slice 0 kept 504-ing on the 300s Vercel
-          # cap. Slice 0's dominant cost is the SEC-submissions loop
-          # (rate-limited to 1 req/sec × ~100 CIK-bearing tickers per
-          # 4-way slice = 100s minimum) plus Yahoo per-entity work
-          # + reconstitute-from-shards. With 8-way slicing each slice
-          # handles ~50 CIK tickers (~50s SEC) plus ~180 Yahoo pass
-          # tickers (~15-25s), well under 300s even on slow-Yahoo
-          # mornings.
-          SLICES=8
+          # Iteration history: 4 → 8 → 16. SLICES=8 was still tight
+          # against the 300s Vercel cap when Yahoo latency spiked.
+          # Slice 0 workload at SLICES=16:
+          #   reconstitute-from-shards      ~15s (cold; cache-hit is 0)
+          #   news fanout                    ~10s
+          #   per-entity Yahoo (~90 tickers) ~40s (serial, ~450ms each)
+          #   SEC-submissions loop           ~15s
+          #   SEC-verbatim reconciliation    ~10s
+          #   mutateEarnings commit          ~10s
+          #   Total                          ~100s (66% headroom under 300s)
+          # Trade-off: 17 sequential phases at ~60s avg = ~17 min wall
+          # time, inside the 25-min Actions job budget with retry slack.
+          SLICES=16
           FAILED=0
 
           # One-shot retry on 5xx: transient Vercel cold-starts or Yahoo
