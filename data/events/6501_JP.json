@@ -8,7 +8,7 @@
       "kind": "earnings",
       "period": "FY2025 Q2",
       "scheduledDate": "2025-07-15",
-      "eventDate": "2025-07-15",
+      "eventDate": "2025-06-30",
       "timing": null,
       "expectation": "unset",
       "guidanceMove": null,
@@ -44,19 +44,27 @@
           },
           "actual": {
             "value": 42.01,
-            "unit": "USD",
+            "unit": "JPY",
             "source": {
-              "url": "https://finance.yahoo.com/quote/6501.T/earnings",
-              "label": "Yahoo Finance · earnings",
+              "url": "https://finance.yahoo.com/quote/6501.T/financials",
+              "label": "Yahoo · fundamentals-timeseries",
               "provenance": "wire",
               "locator": null
             },
-            "asOf": "2026-07-28",
-            "fetchedAt": "2026-07-28T06:07:16.421Z",
+            "asOf": "2025-06-30",
+            "fetchedAt": "2026-07-30T07:03:24.022Z",
             "method": "yahoo",
             "confidence": 0.85
           },
-          "prior": null
+          "prior": null,
+          "superseded": [
+            {
+              "value": 42.01,
+              "unit": "USD",
+              "source": "Yahoo Finance · earnings",
+              "from_provenance": "unknown"
+            }
+          ]
         },
         {
           "key": "eps_diluted_usd",
@@ -142,7 +150,8 @@
         "url": "https://finance.yahoo.com/quote/6501.T/financials",
         "kind": "fallback"
       },
-      "eventDateEstimated": true
+      "eventDateEstimated": true,
+      "eventDateSource": "yahoo-timeseries-asOfDate"
     },
     {
       "id": "evt-5vhjfk",
@@ -557,6 +566,80 @@
       },
       "provenance": "estimator-median-gap",
       "provenanceAsOf": "2026-07-28T08:51:36.151Z"
+    },
+    {
+      "id": "evt-n4ayn5",
+      "ticker": "6501 JP",
+      "kind": "earnings",
+      "period": "FY2026 Q2",
+      "scheduledDate": "2026-06-30",
+      "eventDate": "2026-06-30",
+      "timing": null,
+      "expectation": "unset",
+      "guidanceMove": null,
+      "freshness": "fresh",
+      "provenance": "yahoo-timeseries",
+      "provenanceAsOf": "2026-07-30T07:03:24.022Z",
+      "metrics": [
+        {
+          "key": "eps_diluted_usd",
+          "displayLabel": "EPS diluted",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 42.21,
+            "unit": "JPY",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/6501.T/financials",
+              "label": "Yahoo · fundamentals-timeseries",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-06-30",
+            "fetchedAt": "2026-07-30T07:03:24.022Z",
+            "method": "yahoo",
+            "confidence": 0.85
+          },
+          "prior": null
+        },
+        {
+          "key": "eps_usd",
+          "displayLabel": "EPS",
+          "isHeadline": true,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 42.24,
+            "unit": "JPY",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/6501.T/financials",
+              "label": "Yahoo · fundamentals-timeseries",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-06-30",
+            "fetchedAt": "2026-07-30T07:03:24.022Z",
+            "method": "yahoo",
+            "confidence": 0.85
+          },
+          "prior": null
+        }
+      ],
+      "guidance": [],
+      "reaction": {
+        "benchmark": "SPX",
+        "baselineDate": null,
+        "baselineClose": null,
+        "points": []
+      },
+      "sources": {
+        "windowStart": null,
+        "windowEnd": null,
+        "capturedAt": null,
+        "items": [],
+        "engineStatus": []
+      }
     }
   ]
 }
