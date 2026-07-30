@@ -54,6 +54,14 @@ export default async function EventDetailPage({ params }: Props) {
   const freshness = computeFreshness(event.sources.capturedAt ?? event.eventDate);
   const isCatalyst = event.kind === "catalyst";
   const headline = event.metrics.find((m) => m.isHeadline);
+  // "Surprise" at the top of the card is the market's reaction — the
+  // 3-day post-earnings absolute return, expressed as a percentage.
+  // Per-metric fundamental beat/miss lives in the MetricRow below.
+  const d3 = event.reaction?.points?.find((p) => p.horizon === "d3");
+  const reactionPct =
+    d3 && d3.absReturn != null && (d3.status === "matured" || d3.status === "clipped")
+      ? d3.absReturn * 100
+      : null;
 
   return (
     <div className="mx-auto max-w-[1800px] px-10 py-8">
@@ -103,11 +111,14 @@ export default async function EventDetailPage({ params }: Props) {
           </div>
           <h1 className="text-[32px] font-semibold leading-tight tracking-[-0.02em]">
             {event.period}
-            {headline ? (
-              <span className="ml-3 align-middle text-[16px] font-normal">
+            {event.eventDate ? (
+              <span
+                className="ml-3 align-middle text-[16px] font-normal"
+                title="3-day post-earnings stock reaction (absolute return)"
+              >
                 <SurprisePill
-                  surprisePct={headline.surprisePct}
-                  hasActual={headline.actual?.value != null}
+                  surprisePct={reactionPct}
+                  hasActual={reactionPct != null ? true : null}
                 />
               </span>
             ) : null}
