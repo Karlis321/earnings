@@ -3,6 +3,7 @@ import { store } from "@/server/store";
 import { fanoutNews, fetchEntityNews } from "@/server/vendors/news";
 import { fetchPressReleases } from "@/server/vendors/pressReleases";
 import { matureEventReaction } from "@/server/lib/reactionMaturation";
+import { sanitizeSnapshot } from "@/server/lib/sanitizeInvariants";
 import {
   buildEventShell,
   buildPastEvent,
@@ -942,16 +943,27 @@ export async function POST(req: NextRequest) {
     }
 
     // ---- 4. Single commit for all earnings.json mutations ----
+    // Apply the continuous-integrity sanitizer BEFORE commit so the
+    // three write-time invariants never require a follow-up sweep:
+    //   - currency-unit correction (Yahoo mislabels non-USD entities)
+    //   - cross-basis surprise clearing (SEC actual vs Yahoo estimate)
+    //   - absurd-surprise floor (|value|>500% presumed corrupt data)
+    // See frontend/server/lib/sanitizeInvariants.ts + CLAUDE.md.
+    const entityByTicker = new Map(registry.map((e) => [e.ticker, e]));
     const totalMutations = pendingEvents.size + newlyCreated.length;
     if (totalMutations > 0) {
       await store.mutateEarnings(
-        (s: EarningsSnapshot) => ({
-          ...s,
-          events: [
+        (s: EarningsSnapshot) => {
+          const events = [
             ...s.events.map((e) => pendingEvents.get(e.id) ?? e),
             ...newlyCreated,
-          ],
-        }),
+          ];
+          const { touched } = sanitizeSnapshot(events, entityByTicker);
+          if (touched > 0) {
+            console.log(`[cron sanitize] scrubbed invariants on ${touched} event(s)`);
+          }
+          return { ...s, events };
+        },
         `cron: ${totalMutations} event mutation(s) (${
           eventSummaries.reduce((a, e) => a + e.appended, 0)
         } sources, ${
