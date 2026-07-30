@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { store } from "@/server/store";
 import { findEntity } from "@/server/lib/registryHelpers";
+import { normalizeEvent, normalizeEntity } from "@/lib/normalize";
 import { Breadcrumb } from "@/components/shell/Breadcrumb";
 import {
   Card,
@@ -47,9 +48,13 @@ export default async function EventDetailPage({ params }: Props) {
       ? store.readEventsForTicker(ticker)
       : Promise.resolve([]),
   ]);
-  const entity = findEntity(entities, ticker);
-  const event = tickerEvents.find((e) => e.id === eventId);
-  if (!entity || !event) notFound();
+  const rawEntity = findEntity(entities, ticker);
+  const rawEvent = tickerEvents.find((e) => e.id === eventId);
+  if (!rawEntity || !rawEvent) notFound();
+  // Every render below reads through the normalized shape — components
+  // never see undefined/null arrays or containers.
+  const entity = normalizeEntity(rawEntity)!;
+  const event = normalizeEvent(rawEvent, entity);
 
   const freshness = computeFreshness(event.sources.capturedAt ?? event.eventDate);
   const isCatalyst = event.kind === "catalyst";

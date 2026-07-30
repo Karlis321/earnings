@@ -1,6 +1,11 @@
 import { notFound } from "next/navigation";
 import { store } from "@/server/store";
 import { findEntity } from "@/server/lib/registryHelpers";
+import {
+  normalizeEvents,
+  normalizeEntity,
+  normalizeSummaries,
+} from "@/lib/normalize";
 import { SecurityHeader } from "@/components/security/SecurityHeader";
 import { OperatingDetail } from "@/components/security/OperatingDetail";
 import { DeveloperDetail } from "@/components/security/DeveloperDetail";
@@ -45,16 +50,20 @@ export default async function SecurityDetailPage({ params }: Props) {
   const { ticker: raw } = await params;
   const ticker = decodeURIComponent(raw);
   const entities = await store.readRegistry();
-  const entity = findEntity(entities, ticker);
-  if (!entity) notFound();
+  const rawEntity = findEntity(entities, ticker);
+  if (!rawEntity) notFound();
+  const entity = normalizeEntity(rawEntity)!;
 
   // Per-ticker shard read replaces filtering the whole monolith.
-  const tickerEvents = store.readEventsForTicker
+  const rawTickerEvents = store.readEventsForTicker
     ? await store.readEventsForTicker(ticker)
     : [];
-  const events: EventRecord[] = tickerEvents
-    .slice()
-    .sort((a, b) => b.scheduledDate.localeCompare(a.scheduledDate));
+  // Every render below reads through the normalized shape — components
+  // never see undefined arrays for sources.items, reaction.points,
+  // metrics, or guidance.
+  const events: EventRecord[] = normalizeEvents(rawTickerEvents, entity).sort(
+    (a, b) => b.scheduledDate.localeCompare(a.scheduledDate),
+  );
 
   // ETF details still live inside the earnings snapshot — only pay the
   // monolith-read cost when the entity actually needs it.
@@ -78,9 +87,12 @@ export default async function SecurityDetailPage({ params }: Props) {
   // registered listing. Returns [] when the summaries dir is empty or
   // this canonical has no summary yet, which SummaryPanel renders as
   // nothing (no empty-state box, per spec).
-  const summaries = store.readSummariesForTicker
+  const rawSummaries = store.readSummariesForTicker
     ? await store.readSummariesForTicker(ticker)
     : [];
+  // v1 summaries lack `kpis` / `drivers`; normalizer fills them with []
+  // so SummaryPanel's `.kpis.length` / `.map` never see undefined.
+  const summaries = normalizeSummaries(rawSummaries);
 
   // Summarize button gate: covered-tier only, operating security, and
   // no summary yet for the latest reported period. All three must be
