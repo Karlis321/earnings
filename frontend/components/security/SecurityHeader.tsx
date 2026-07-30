@@ -7,6 +7,7 @@ import { FreshnessDot, Button } from "@/components/primitives";
 import { TickerLogo } from "@/components/primitives/TickerLogo";
 import Link from "next/link";
 import { fmtDaysUntil, fmtDateShort } from "@/lib/format";
+import { daysUntil } from "@/lib/freshness";
 import { Pencil, FileText, ExternalLink } from "lucide-react";
 
 interface Props {
@@ -78,13 +79,10 @@ export function SecurityHeader({ entity, latest, nextEvent, freshness }: Props) 
                   </span>{" "}
                   <span className="text-tx-mid">
                     ·{" "}
-                    {fmtDaysUntil(
-                      Math.round(
-                        (new Date(nextEvent.scheduledDate).getTime() -
-                          Date.now()) /
-                          86_400_000,
-                      ),
-                    )}
+                    {/* Use date-only diff (both sides anchored at UTC
+                        midnight via ISO parsing) so a same-day
+                        scheduled event reads "today", not "1d ago". */}
+                    {fmtDaysUntil(daysUntil(nextEvent.scheduledDate))}
                   </span>
                 </span>
               ) : null}

@@ -20,6 +20,7 @@ import {
   PriceDeltaLabel,
 } from "./RealPriceSparkline";
 import { fmtDaysUntil, fmtDateShort } from "@/lib/format";
+import { daysUntil as daysUntilFn } from "@/lib/freshness";
 import { AlertTriangle, ChevronDown, ChevronRight } from "lucide-react";
 import clsx from "clsx";
 
@@ -481,22 +482,9 @@ function Row({
   // Fixture value wins; fall back to Yahoo when fixture is empty.
   const surprise = r.lastSurprisePct ?? yahoo?.lastQuarter?.surprisePct ?? null;
   const nextIso = r.nextEvent.date ?? yahoo?.nextEarningsDate ?? null;
-  // Same-day comparison must be date-only, not instant-based. Both
-  // `nextIso` and today collapse to midnight UTC before diffing so
-  // an afternoon-UTC render doesn't turn a today-scheduled event into
-  // "1d ago" (rounding -0.5 → -1).
-  const daysUntil = nextIso
-    ? (() => {
-        const target = Date.parse(nextIso + "T00:00:00Z");
-        const now = new Date();
-        const todayUtcMidnight = Date.UTC(
-          now.getUTCFullYear(),
-          now.getUTCMonth(),
-          now.getUTCDate(),
-        );
-        return Math.round((target - todayUtcMidnight) / 86_400_000);
-      })()
-    : null;
+  // Date-only diff (via daysUntil helper) — both sides anchor at UTC
+  // midnight so a same-day scheduled event reads "today", not "1d ago".
+  const daysUntil = nextIso ? daysUntilFn(nextIso) : null;
   const [expanded, setExpanded] = useState(false);
   return (
     <div
