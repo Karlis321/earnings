@@ -42,6 +42,49 @@ export async function GET(req: Request) {
       out.eventPeriodTypes = sorted.slice(0, 6).map((e) => typeof e.period);
       const latestPast = sorted.find((e) => e.eventDate);
       out.latestPastId = latestPast?.id ?? null;
+      // Mimic SecurityHeader's releaseUrl computation
+      try {
+        const latest = latestPast ?? sorted[0];
+        const releaseUrl = latest?.metrics
+          .find((m: any) => m.actual?.source?.url)
+          ?.actual?.source?.url;
+        out.releaseUrlOk = true;
+        out.releaseUrlSample = releaseUrl?.slice(0, 60) ?? null;
+      } catch (e) {
+        out.releaseUrlError = (e as Error).message;
+      }
+      // Mimic OperatingDetail's initial split
+      try {
+        const upcoming = sorted.find((e) => !e.eventDate);
+        const pastEvents = sorted.filter((e) => e.eventDate);
+        const latestPastFilt = pastEvents[0];
+        out.opDetailOk = true;
+        out.opDetail = {
+          upcoming: !!upcoming,
+          pastCount: pastEvents.length,
+          latestPastPeriod: latestPastFilt?.period ?? null,
+        };
+      } catch (e) {
+        out.opDetailError = (e as Error).message;
+      }
+      // Mimic MetricRow rendering — iterate metrics and see if any throws
+      try {
+        const latest = latestPast ?? sorted[0];
+        let iter = 0;
+        for (const m of (latest?.metrics ?? [])) {
+          iter++;
+          void m.key;
+          void m.displayLabel;
+          void m.actual?.value;
+          void m.actual?.unit;
+          void m.actual?.source?.url;
+          void m.estimate?.value;
+          void m.surprisePct;
+        }
+        out.metricsIterated = iter;
+      } catch (e) {
+        out.metricsError = (e as Error).message;
+      }
     } catch (e) {
       out.sortError = (e as Error).message;
     }
