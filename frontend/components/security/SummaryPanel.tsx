@@ -3,6 +3,32 @@ import { ArrowUpRight, AlertTriangle, ArrowUp, ArrowDown, Minus } from "lucide-r
 import type { Summary, SummaryDirection, SummaryDriver, SummaryDriverBasis } from "@/lib/types";
 import { OlderSummaries } from "./OlderSummaries";
 
+// Depth badge — signals whether the reader is looking at a full-fidelity
+// summary (release / 10-Q read, drivers + guidance assessed) or a
+// KPI-only fast path (shard KPIs + deltas only, no filing read).
+// Rendering next to the "AI summary" eyebrow so the depth is obvious
+// before the reader starts trusting the narrative.
+function DepthBadge({ depth }: { depth: "filing" | "kpi-only" }) {
+  const isFiling = depth === "filing";
+  return (
+    <span
+      className={clsx(
+        "inline-flex items-center rounded-[4px] border px-[6px] py-[1px] font-mono text-[9.5px] tracking-[0.06em] normal-case",
+        isFiling
+          ? "border-[rgba(18,183,106,0.32)] bg-[rgba(18,183,106,0.10)] text-success-fg"
+          : "border-bd bg-s2 text-tx-mid",
+      )}
+      title={
+        isFiling
+          ? "Filing-based: primary release / 10-Q was read; drivers and guidance assessed."
+          : "KPI-only: composed from verified shard metrics + deltas only. No filing was read; drivers and guidance not assessed."
+      }
+    >
+      {isFiling ? "Filing-based" : "KPI-only"}
+    </span>
+  );
+}
+
 interface Props {
   summaries: Summary[]; // sorted latest-first
   latestReportedPeriod?: string | null;
@@ -46,8 +72,9 @@ export function SummaryCard({
     >
       <header className="flex items-start justify-between gap-4">
         <div>
-          <p className="font-mono text-[10.5px] uppercase tracking-[0.08em] text-tx3">
-            AI summary · {summary.period} · reported {summary.reported_at}
+          <p className="font-mono text-[10.5px] uppercase tracking-[0.08em] text-tx3 flex items-center gap-2 flex-wrap">
+            <span>AI summary · {summary.period} · reported {summary.reported_at}</span>
+            <DepthBadge depth={summary.depth ?? "filing"} />
           </p>
           <h2
             id={compact ? undefined : "summary-panel-headline"}

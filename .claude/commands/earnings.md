@@ -76,6 +76,29 @@ If the resolver exits 2, its stderr line explains why (unknown
 ticker, period missing from shard, etc.). Print
 `RESULT: skipped — <exact resolver message>` and STOP.
 
+## Step 0.5 — Depth decision (filing vs kpi-only)
+
+Every click gets the **filing** path first — a click is deliberate
+interest, give the real answer. Auto-fall-back to **kpi-only** ONLY
+when filing depth can't be done honestly:
+
+- No `edgarCik` on the resolver output AND no `sourceLink.kind ===
+  "filing"`  → the search+fetch budget is likely to burn out on
+  unreachable IR pages. Skip Step 1/2 and jump to Step 1B.
+- Step 1's search/fetch budget got fully consumed without landing a
+  parseable primary. Downgrade to kpi-only rather than
+  `RESULT: skipped`.
+- The fetched document exists but isn't parseable (extract-doc-text
+  produces nothing usable). Downgrade.
+
+In any downgrade path, `confidence_notes` MUST begin with:
+`"primary filing unreachable — KPI-only summary from verified shard
+data."` — readers must know why filing depth wasn't possible.
+
+If `kpis` is empty AND no filing can be reached, print
+`RESULT: skipped — insufficient data` and STOP. Depth doesn't
+matter if there's nothing to summarize.
+
 ## Step 1 — Fetch the primary (only when needed)
 
 If `sourceLink.kind === "filing"`, use `sourceLink.url` directly.
@@ -105,6 +128,41 @@ fetch that via `fetch-edgar` (3rd/final fetch), pick the 10-Q /
 fetches is the total budget — after that,
 `RESULT: skipped — source unreachable, <detail>`.
 
+## Step 1B — KPI-only compose (fallback path)
+
+Triggered by Step 0.5's downgrade rules. NO web search, NO document
+fetch. The entire summary is composed from `resolve-earnings-target`'s
+`kpis` object.
+
+Fields to write:
+
+- `depth: "kpi-only"` (required — see schema).
+- `headline` — verdict-style, from the deltas alone. E.g. "Revenue
+  growth accelerates, margins compress" (Q1 rev y/y +18% + gross
+  margin -140bp). No digits (validator enforces).
+- `kpis` — the resolver's `kpis` values, mapped to schema shape.
+- `summary_short` — 1–2 sentences, ≥1 number. Every sentence
+  traceable to a shard KPI + delta. E.g. "Revenue $2.4B was
+  +18% y/y and +6% q/q; net margin fell 240bp y/y."
+- `summary_long` — ≤80 words of pure number narrative. Cover:
+  top-line delta, margin move (if computable), EPS move,
+  cash-position delta if `total_cash_usd_m` is on the shard. No
+  drivers, no guidance, no cause reasoning.
+- `drivers` — OMIT the field entirely (drivers require reading a
+  release; kpi-only forbids that).
+- `confidence_notes` — MUST start with the mandatory disclaimer:
+  `"KPI-only summary — no filing was read; drivers and guidance not
+  assessed."` If downgraded from filing depth, prepend
+  `"primary filing unreachable — "` before that sentence.
+- `source_url` — the event's `sourceLink.url` when
+  `sourceLink.kind === "filing"`, otherwise a Google search URL for
+  the ticker + period (the same fallback the frontend uses for
+  non-filing events). NEVER an aggregator.
+
+RESULT line: `RESULT: <TICKER> <PERIOD> depth=kpi-only`.
+
+Then jump to Step 4 (validate + commit + push).
+
 ## Step 2 — Read the document
 
 Fetched HTML files are typically 200KB-1MB — larger than the Read
@@ -125,6 +183,8 @@ tool's 256KB limit. Two options:
 You already have the KPI values from Step 0's `kpis` object. The
 document supplies:
 
+- `depth: "filing"` (required for filing-depth summaries — see
+  schema; distinguishes from the Step 1B kpi-only fallback path).
 - `headline` — verdict-style, from the release's tone.
   **No digits** (validator enforces this).
 - `summary_short` — 1–2 sentences, MUST contain ≥1 number.

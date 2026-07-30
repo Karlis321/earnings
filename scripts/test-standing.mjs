@@ -53,6 +53,10 @@ results.push({
   ok: run("Surprise corruption test", "corrupt-surprise-test.mjs"),
 });
 results.push({
+  label: "every index event id resolves in its shard",
+  ok: run("Event id integrity", "audit-event-ids.mjs"),
+});
+results.push({
   label: "summaries validate against schema",
   ok: run("Summary validator", "validate.js"),
 });

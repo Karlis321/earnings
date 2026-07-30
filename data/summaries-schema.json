@@ -77,7 +77,12 @@
     },
     "confidence_notes": {
       "type": "string",
-      "description": "Restatements, C1-vs-AISC quirks, by-product netting, streaming distortions, one-offs. Empty string if none."
+      "description": "Restatements, C1-vs-AISC quirks, by-product netting, streaming distortions, one-offs. Empty string if none. For kpi-only summaries this field MUST contain the disclaimer 'KPI-only summary — no filing was read; drivers and guidance not assessed.' (or, when auto-downgraded from filing: 'primary filing unreachable — KPI-only summary from verified shard data')."
+    },
+    "depth": {
+      "type": "string",
+      "enum": ["filing", "kpi-only"],
+      "description": "Summary depth. 'filing' = full treatment with the release / 10-Q / press-release read; drivers and guidance assessed. 'kpi-only' = fast path composed purely from resolve-earnings-target.mjs output (SEC-verbatim shard KPIs + q/q + y/y deltas) with NO web search, NO document fetch, NO drivers, NO guidance. v2 files without this field default to 'filing' for backward compat."
     },
     "drivers": {
       "type": "array",

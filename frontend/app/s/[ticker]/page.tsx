@@ -14,29 +14,13 @@ import { SummaryPanel } from "@/components/security/SummaryPanel";
 import { SummarizeButton } from "@/components/security/SummarizeButton";
 import { EmptyState } from "@/components/primitives";
 import { computeFreshness, todayIso } from "@/lib/freshness";
-import { readFile } from "node:fs/promises";
-import path from "node:path";
 import type { EventRecord } from "@/lib/types";
 
-// Covered-tier tickers from data/covered.json — the Summarize button is
-// gated on this list per Part 4c (mechanical/KPI-only mode for the tail
-// is a later step). Read once per RSC render; the file changes rarely.
-async function readCoveredTickers(): Promise<Set<string>> {
-  const candidates = [
-    path.join(process.cwd(), "..", "data", "covered.json"),
-    path.join(process.cwd(), "data", "covered.json"),
-  ];
-  for (const p of candidates) {
-    try {
-      const raw = await readFile(p, "utf-8");
-      const parsed = JSON.parse(raw) as { tickers?: string[] };
-      if (Array.isArray(parsed.tickers)) return new Set(parsed.tickers);
-    } catch {
-      /* try next */
-    }
-  }
-  return new Set();
-}
+// Summarize button gate widened per Task 2 (prompt1): the on-demand
+// /earnings path is now available to any ticker with shard metrics.
+// covered.json's remaining role is the nightly /sweep scope, which
+// stays as-is — not consulted here. The command itself auto-downgrades
+// to KPI-only when the primary filing can't be reached honestly.
 
 // Security Detail — three variants per FE PRD §7.3–7.5.
 
@@ -94,17 +78,22 @@ export default async function SecurityDetailPage({ params }: Props) {
   // so SummaryPanel's `.kpis.length` / `.map` never see undefined.
   const summaries = normalizeSummaries(rawSummaries);
 
-  // Summarize button gate: covered-tier only, operating security, and
-  // no summary yet for the latest reported period. All three must be
-  // true for the button to render.
-  const covered = await readCoveredTickers();
+  // Summarize button gate: has-shard-metrics (not covered-tier). Any
+  // click is deliberate interest → give the reader the best summary the
+  // data allows, labeled honestly. covered.json's remaining role is
+  // the nightly /sweep scope, not the on-demand path (see Task 2
+  // routing rules in prompt1). The /earnings command auto-downgrades
+  // to KPI-only when the primary filing can't be reached honestly;
+  // it refuses when there are no shard metrics either.
   const hasSummaryForLatest =
     latestPast?.period != null && summaries.some((s) => s.period === latestPast.period);
+  const latestHasShardMetrics =
+    latestPast?.metrics?.some((m) => m.actual?.value != null) ?? false;
   const showSummarizeButton =
     entity.securityType === "operating" &&
     !!latestPast &&
     !hasSummaryForLatest &&
-    (covered.has(ticker) || covered.has(entity.ticker));
+    latestHasShardMetrics;
 
   return (
     <div className="mx-auto max-w-[1800px] px-10 py-8">

@@ -479,6 +479,12 @@ export interface Summary {
   // logic: any consumer must render nothing when the field is
   // missing rather than fall over.
   drivers?: SummaryDriver[];
+  // Summary depth. "filing" = full treatment (release / 10-Q read,
+  // drivers + guidance assessed). "kpi-only" = fast path composed
+  // purely from resolve-earnings-target.mjs output (SEC-verbatim
+  // shard KPIs + deltas; no web/doc fetch). Absent → default "filing"
+  // for backward compat with v1 + early-v2 files.
+  depth?: "filing" | "kpi-only";
 }
 
 export interface MetricDictionary {
