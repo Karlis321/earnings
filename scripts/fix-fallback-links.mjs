@@ -29,13 +29,30 @@ const OUT_DIR = path.join(ROOT, "scripts", "audits");
 
 const DRY = process.argv.includes("--dry");
 
+// Convert "FY2026 Q1" → "Q1 2026" — Google searches for the natural
+// journalism phrasing ("Company Q1 2026 earnings") return actual
+// hits; the raw fiscal-year label ("FY2026 Q1" in quotes) is a
+// pattern nobody in the press uses. If period isn't quarterly (e.g.
+// FY2025 full-year) just drop it from the query.
+function humanQuarter(period) {
+  const m = /^FY(\d{4})\s*Q([1-4])$/.exec(period ?? "");
+  if (!m) return null;
+  return `Q${m[2]} ${m[1]}`;
+}
+
 function buildGoogleQuery(entity, event) {
+  // No quoted-token constraints — Google treats quoted "TNZ CN" as
+  // an exact match, and nobody writes Bloomberg codes in article
+  // text. Prefer the human company name + human-readable quarter +
+  // year alongside 'earnings' + 'results' so Google matches press
+  // release language.
   const parts = [];
-  parts.push(`"${entity.ticker}"`);
-  if (event.period) parts.push(`"${event.period}"`);
-  else if (event.eventDate) parts.push(event.eventDate.slice(0, 7));
-  parts.push("earnings");
   if (entity.displayName) parts.push(entity.displayName);
+  else parts.push(entity.ticker); // fallback if displayName missing
+  const hq = humanQuarter(event.period);
+  if (hq) parts.push(hq);
+  else if (event.eventDate) parts.push(event.eventDate.slice(0, 4)); // year only
+  parts.push("earnings results");
   const q = parts.join(" ").trim();
   return `https://www.google.com/search?q=${encodeURIComponent(q)}`;
 }
@@ -84,10 +101,15 @@ async function main() {
       const entity = byTicker.get(e.ticker);
       if (!entity) { rollup.totals.skippedNoEntity++; continue; }
 
-      // Only rewrite Yahoo fallback URLs (that's where the breakage is).
-      // If the fallback URL is already a non-Yahoo link (some other
-      // aggregator or IR page), leave it alone — it may still resolve.
-      if (!/finance\.yahoo\.com/i.test(link.url)) continue;
+      // Rewrite Yahoo fallback URLs (dead) AND older Google URLs that
+      // used quoted Bloomberg-code tokens (empty search results). Skip
+      // non-Yahoo, non-Google fallback links — those may still resolve
+      // (IR pages, EDGAR fallbacks etc.).
+      const isYahoo = /finance\.yahoo\.com/i.test(link.url);
+      const isOldGoogle =
+        /google\.com\/search/i.test(link.url) &&
+        /%22[A-Z0-9]{1,6}%20[A-Z]{2}%22/.test(link.url); // "TICKER CC" quoted
+      if (!isYahoo && !isOldGoogle) continue;
 
       e.sourceLink = {
         url: buildGoogleQuery(entity, e),

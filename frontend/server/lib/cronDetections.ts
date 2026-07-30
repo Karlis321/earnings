@@ -153,8 +153,21 @@ export function computeSourceLink(
 
   if (prov === "yahoo-timeseries" || prov === "yahoo-earnings-chart") {
     if (!symbol) return null;
+    // Yahoo dropped /quote/{sym}/financials for most foreign listings
+    // (verified 30/30 sampled 2026-07-30). Route the fallback to a
+    // Google search with journalism-style phrasing so users always
+    // land on real results, not a dead Yahoo page or an empty
+    // quoted-token search ('TNZ CN FY2026 Q1' → 0 Google hits).
+    const humanQ = /^FY(\d{4})\s*Q([1-4])$/.exec(event.period ?? "");
+    const parts: string[] = [];
+    if (entity?.displayName) parts.push(entity.displayName);
+    else parts.push(event.ticker);
+    if (humanQ) parts.push(`Q${humanQ[2]} ${humanQ[1]}`);
+    else if (event.eventDate) parts.push(event.eventDate.slice(0, 4));
+    parts.push("earnings results");
+    const q = parts.join(" ").trim();
     return {
-      url: `https://finance.yahoo.com/quote/${encodeURIComponent(symbol)}/financials`,
+      url: `https://www.google.com/search?q=${encodeURIComponent(q)}`,
       kind: "fallback",
     };
   }
