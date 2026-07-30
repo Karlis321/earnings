@@ -64,18 +64,38 @@ function countDuplicates(events) {
 
 function countCorpusQualityGaps(events) {
   let missingProv = 0, missingCurrency = 0;
+  let surpriseInconsistent = 0, metricsDupedInEvent = 0;
   for (const ev of events) {
     if (!ev.provenance) missingProv++;
+    const keyCounts = new Map();
     for (const m of ev.metrics ?? []) {
+      keyCounts.set(m.key, (keyCounts.get(m.key) ?? 0) + 1);
       if (m.actual?.value == null) continue;
       const isCurrencyMetric = /^(revenue_|eps_|ebitda_|adj_ebitda_|net_income_|gross_profit_|operating_income_|dr_eps_)/.test(m.key);
       const isValidCurrencyUnit =
         /^[A-Z]{3}(_m)?$/.test(m.actual.unit ?? "") ||
         /^[A-Z]{3}\/shares$/.test(m.actual.unit ?? "");
       if (isCurrencyMetric && !isValidCurrencyUnit) missingCurrency++;
+      // Stage 1B/e: surprise-triple invariant.
+      // If a metric stores a surprisePct and both actual + estimate
+      // are present, recompute and flag mismatches >1pp. This catches
+      // the cross-basis / stale-actual bugs at pipeline-report time.
+      const est = m.estimate?.value;
+      if (m.surprisePct != null && est != null && Math.abs(est) > 1e-9) {
+        const expected = ((m.actual.value - est) / Math.abs(est)) * 100;
+        if (Math.abs(m.surprisePct - expected) > 1.0) surpriseInconsistent++;
+      }
     }
+    // metrics duplicated in one event's array (countDuplicates only
+    // catches event-level dupes).
+    for (const [, n] of keyCounts) if (n > 1) metricsDupedInEvent += n - 1;
   }
-  return { events_missing_provenance: missingProv, metrics_missing_currency: missingCurrency };
+  return {
+    events_missing_provenance: missingProv,
+    metrics_missing_currency: missingCurrency,
+    metrics_surprise_inconsistent: surpriseInconsistent,
+    metrics_duplicated_in_event: metricsDupedInEvent,
+  };
 }
 
 function countIndexMismatches(index, events) {
@@ -242,6 +262,8 @@ async function compute() {
     duplicates_detected: dupes,
     events_missing_provenance: quality.events_missing_provenance,
     metrics_missing_currency: quality.metrics_missing_currency,
+    metrics_surprise_inconsistent: quality.metrics_surprise_inconsistent,
+    metrics_duplicated_in_event: quality.metrics_duplicated_in_event,
     shard_index_mismatches: mism,
     reactions_computed: reactionsComputed,
     reactions_pending: reactionsPending,
@@ -261,6 +283,14 @@ async function compute() {
   if (report.duplicates_detected > 0) reasons.push(`duplicates_detected=${report.duplicates_detected} — dedup rule leaked`);
   if (report.events_missing_provenance > 0) reasons.push(`events_missing_provenance=${report.events_missing_provenance}`);
   if (report.metrics_missing_currency > 0) reasons.push(`metrics_missing_currency=${report.metrics_missing_currency}`);
+  if (report.metrics_surprise_inconsistent > 0)
+    reasons.push(
+      `metrics_surprise_inconsistent=${report.metrics_surprise_inconsistent} — surprisePct doesn't reconcile with actual/estimate on shard`,
+    );
+  if (report.metrics_duplicated_in_event > 0)
+    reasons.push(
+      `metrics_duplicated_in_event=${report.metrics_duplicated_in_event} — same metric.key appears >1 time in one event`,
+    );
   if (report.shard_index_mismatches > 0) reasons.push(`shard_index_mismatches=${report.shard_index_mismatches}`);
   if (report.companies_with_inconsistent_financials > 0)
     reasons.push(

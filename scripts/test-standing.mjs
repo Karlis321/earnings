@@ -49,6 +49,10 @@ results.push({
   ok: run("Corruption test", "corrupt-invariant-test.mjs"),
 });
 results.push({
+  label: "surprise-inconsistency invariant fires + clears",
+  ok: run("Surprise corruption test", "corrupt-surprise-test.mjs"),
+});
+results.push({
   label: "summaries validate against schema",
   ok: run("Summary validator", "validate.js"),
 });

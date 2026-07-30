@@ -439,7 +439,8 @@ export function buildPastEvent(
     let estimateVal: number | null = null;
     let actualVal: number | null = null;
     let sourceUrlActual = yahooEarningsUrl;
-    let sourceLabelActual = "Yahoo Finance · earnings";
+    // Stage 1B gate: label as earningsChart so isSameBasis can match.
+    let sourceLabelActual = "Yahoo · earningsChart";
 
     if (isEps) {
       estimateVal = quarter.estimate;
@@ -452,7 +453,12 @@ export function buildPastEvent(
     // Non-EPS non-revenue metrics stay null (need manual entry or filing
     // ingest). displayLabel still resolves to the readable form.
 
+    // Only compute surprise for EPS — actual + estimate come from the
+    // same earningsChart quarterly entry (matched basis). Revenue's
+    // estimate isn't in this endpoint's pair, so no surprise stored
+    // here (a wrong surprise is worse than none — see Stage 1B fix).
     const surprisePct =
+      isEps &&
       estimateVal !== null &&
       actualVal !== null &&
       Math.abs(estimateVal) > 1e-9
@@ -602,7 +608,11 @@ export function promoteShellToPast(
     let estimateVal: number | null = null;
     let actualVal: number | null = null;
     let srcUrl = earningsUrl;
-    let srcLabel = "Yahoo Finance · earnings";
+    // Stage 1B gate: label the source accurately so isSameBasis can
+    // detect that actual + estimate come from the earningsChart pair
+    // (a matched analyst-consensus sample). Without this the surprise%
+    // gets suppressed at render as cross-basis, even though it's fine.
+    let srcLabel = "Yahoo · earningsChart";
     if (isEps) {
       estimateVal = quarter.estimate;
       actualVal = quarter.actual;
@@ -611,7 +621,10 @@ export function promoteShellToPast(
       srcUrl = financialsUrl;
       srcLabel = "Yahoo Finance · financials";
     }
+    // Surprise safe here — both sides come from the same earningsChart
+    // quarterly entry (matched actual + estimate on the same basis).
     const surprisePct =
+      isEps &&
       estimateVal !== null &&
       actualVal !== null &&
       Math.abs(estimateVal) > 1e-9
@@ -627,7 +640,7 @@ export function promoteShellToPast(
           ? {
               value: estimateVal,
               unit: effectiveUnit,
-              source: { url: analysisUrl, label: "Yahoo Finance · consensus", provenance: "wire", locator: null },
+              source: { url: analysisUrl, label: "Yahoo · earningsChart (consensus)", provenance: "wire", locator: null },
               asOf,
               fetchedAt: now,
               method: "yahoo",

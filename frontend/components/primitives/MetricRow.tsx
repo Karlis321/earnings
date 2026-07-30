@@ -72,6 +72,16 @@ export function MetricRow({
         <SurprisePill
           surprisePct={metric.surprisePct}
           hasActual={metric.actual?.value != null}
+          crossBasisCleared={
+            metric.surprisePct == null &&
+            metric.actual?.value != null &&
+            metric.estimate?.value != null &&
+            Array.isArray(
+              (metric as { _crossBasisSurprise?: unknown[] })._crossBasisSurprise,
+            ) &&
+            ((metric as { _crossBasisSurprise?: unknown[] })._crossBasisSurprise
+              ?.length ?? 0) > 0
+          }
           compact
         />
       </div>

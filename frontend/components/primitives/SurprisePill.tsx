@@ -8,12 +8,30 @@ export function SurprisePill({
   // where Yahoo timeseries returned filings but no consensus was ever
   // published. Distinguish that from "no actual either" (a blank event).
   hasActual = null,
+  // crossBasisCleared = true means we DID have both sides but they were
+  // from incompatible sources (SEC GAAP EPS Basic actual vs Yahoo
+  // consensus adjusted-EPS estimate). Rendering a cross-basis surprise
+  // is worse than none — apples-to-oranges comparisons mislead more
+  // than they inform. Show a specific label so the reader knows why
+  // there's no number.
+  crossBasisCleared = false,
 }: {
   surprisePct: number | null;
   compact?: boolean;
   hasActual?: boolean | null;
+  crossBasisCleared?: boolean;
 }) {
   if (surprisePct === null) {
+    if (crossBasisCleared) {
+      return (
+        <span
+          className="inline-flex items-center rounded-[6px] border border-bd bg-s2 px-[6px] py-[2px] font-mono text-[10.5px] uppercase tracking-[0.06em] text-tx-mid"
+          title="Actual (GAAP filing) and estimate (analyst-consensus, adjusted basis) come from different accounting bases. Cross-basis surprise% would mislead — suppressed."
+        >
+          reported · basis mismatch
+        </span>
+      );
+    }
     // If we have an actual but no estimate — say so explicitly. Not
     // the same as "no data at all".
     if (hasActual === true) {

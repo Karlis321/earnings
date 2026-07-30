@@ -27,6 +27,32 @@ const OUT_DIR = path.join(ROOT, "scripts", "audits");
 
 const DRY = process.argv.includes("--dry");
 
+// Provenance-family check — mirrors enforce-same-basis-surprise.mjs.
+// A wrong surprise is worse than none: never recompute across bases.
+function provenanceFamily(fact) {
+  const l = fact?.source?.label ?? "";
+  if (/SEC EDGAR|companyfacts|EarningsPerShare|10-Q|10-K|20-F/i.test(l)) return "sec";
+  if (/submissions/i.test(l)) return "sec";
+  if (/earningsChart/i.test(l)) return "yahoo-chart";
+  if (/earningsTrend/i.test(l)) return "yahoo-trend";
+  if (/fundamentals-timeseries/i.test(l)) return "yahoo-timeseries";
+  if (/Yahoo Finance/i.test(l)) return "yahoo-generic";
+  if (/FMP/i.test(l)) return "fmp";
+  return "unknown";
+}
+function isSameBasis(actualFact, estimateFact) {
+  const a = provenanceFamily(actualFact);
+  const e = provenanceFamily(estimateFact);
+  if (a === "unknown" || e === "unknown") return false;
+  if (a === e) return true;
+  const yahooConsensus = new Set(["yahoo-chart", "yahoo-trend"]);
+  if (yahooConsensus.has(a) && yahooConsensus.has(e)) return true;
+  const gaapFiling = new Set(["sec", "yahoo-timeseries"]);
+  if (gaapFiling.has(a) && gaapFiling.has(e)) return true;
+  if ((a === "sec" && e === "fmp") || (a === "fmp" && e === "sec")) return true;
+  return false;
+}
+
 async function main() {
   console.log(`recompute-surprise · dry=${DRY}`);
   const rollup = {
@@ -59,6 +85,17 @@ async function main() {
         const prev = m.surprisePct;
         // If either side is missing, surprisePct must be null.
         if (actual == null || estimate == null || Math.abs(estimate) < 1e-9) {
+          if (prev != null) {
+            m.surprisePct = null;
+            rollup.totals.clearedBecauseMissingSide++;
+          }
+          continue;
+        }
+        // Gate: refuse to compute surprise when actual + estimate come
+        // from different accounting bases (Stage 1B fix). Cross-basis
+        // surprise% misleads more than it informs. If bases differ,
+        // clear the stored value.
+        if (!isSameBasis(m.actual, m.estimate)) {
           if (prev != null) {
             m.surprisePct = null;
             rollup.totals.clearedBecauseMissingSide++;
