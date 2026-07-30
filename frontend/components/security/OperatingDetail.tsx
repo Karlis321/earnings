@@ -37,6 +37,12 @@ import {
 function isEstimatedEventDate(ev: EventRecord): boolean {
   if (!ev.eventDate) return false;
   if (ev.sourceLink?.kind === "filing") return false;
+  // Backfilled real report dates from Yahoo earningsChart.reportedDate
+  // are just as trustworthy as an SEC filing date — they're the
+  // exchange-published release date, not a quarter-end placeholder.
+  const eventDateSource = (ev as EventRecord & { eventDateSource?: string })
+    .eventDateSource;
+  if (eventDateSource === "yahoo-earnings-chart-reportedDate") return false;
   // sec-* provenances that carry a real filed date via the shard's
   // accession/form are trustworthy even without a filing-kind sourceLink.
   const trusted = new Set([
