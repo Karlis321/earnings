@@ -174,7 +174,7 @@ async function main() {
       url: n.link,
       publishedAt: n.providerPublishTime ? new Date(n.providerPublishTime * 1000).toISOString() : nowIso,
       capturedAt: nowIso,
-      provenance: "yahoo-search-news",
+      provenance: "wire",
       articleType: n.type === "STORY" ? "news" : (n.type ?? "news").toLowerCase(),
       language: "en",
     })).filter((it) => it.url && it.title);

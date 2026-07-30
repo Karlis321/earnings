@@ -146,7 +146,7 @@ async function main() {
         url: n.link,
         publishedAt,
         capturedAt: nowIso,
-        provenance: "yahoo-search-news",
+        provenance: "wire",
         articleType: n.type === "STORY" ? "news" : (n.type ?? "news").toLowerCase(),
         language: "en",
       };

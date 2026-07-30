@@ -26,7 +26,11 @@ const STYLE: Record<Provenance, { label: string; cls: string }> = {
 };
 
 export function ProvenanceChip({ provenance }: { provenance: Provenance }) {
-  const s = STYLE[provenance];
+  // Defensive: STYLE is a closed record over Provenance, but data on the
+  // wire can carry historical / mistyped values (e.g. an ingest script
+  // stamped "yahoo-search-news" instead of "wire"). Without this fallback
+  // the whole /s/[ticker] page 500s on the first item with a bad key.
+  const s = STYLE[provenance] ?? STYLE.independent;
   return (
     <span
       className={clsx(
