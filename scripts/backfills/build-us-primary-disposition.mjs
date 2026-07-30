@@ -27,7 +27,7 @@ import { fileURLToPath } from "node:url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const ROOT = path.resolve(__dirname, "..");
+const ROOT = path.resolve(__dirname, "..", "..");
 
 // Mirror of guessUsPrimarySymbol from add-us-primaries-v2.mjs so we can
 // replay each companyId's would-be probe against the failures list.

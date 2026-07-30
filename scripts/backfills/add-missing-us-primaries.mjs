@@ -25,7 +25,7 @@ import { createHash } from "node:crypto";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const ROOT = path.resolve(__dirname, "..");
+const ROOT = path.resolve(__dirname, "..", "..");
 const REGISTRY = path.join(ROOT, "data", "entity-registry.json");
 
 const args = new Map(

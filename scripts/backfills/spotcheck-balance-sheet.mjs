@@ -14,7 +14,7 @@ import { fileURLToPath } from "node:url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const ROOT = path.resolve(__dirname, "..");
+const ROOT = path.resolve(__dirname, "..", "..");
 
 const BS_KEYS = ["total_cash_usd_m", "long_term_debt_usd_m", "shareholders_equity_usd_m", "weighted_diluted_shares_m"];
 const SAMPLE_N = 10;
