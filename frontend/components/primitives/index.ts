@@ -13,6 +13,7 @@ export { Button } from "./Button";
 export { Input, Label, FieldError, FieldHint } from "./Input";
 export { Card, CardBody, Panel } from "./Card";
 export { LoadingSkeleton, EmptyState, ErrorState } from "./States";
+export { LoadingSpinner } from "./LoadingSpinner";
 export { StalenessLegend } from "./StalenessLegend";
 export { ReactionChart } from "./ReactionChart";
 export { ReactionRow } from "./ReactionRow";
