@@ -5,7 +5,8 @@
 
 import { useEffect, useState } from "react";
 import { PriceChart, type PricePoint } from "@/components/charts/PriceChart";
-import { Loader2, AlertTriangle } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
+import { LoadingSpinner } from "@/components/primitives/LoadingSpinner";
 import clsx from "clsx";
 
 interface PricesResponse {
@@ -89,9 +90,8 @@ export function MarketPulse() {
       </div>
 
       {loading ? (
-        <div className="flex h-[220px] items-center justify-center gap-2 text-[13px] text-tx-mid">
-          <Loader2 size={14} className="animate-spin" />
-          Fetching {active.label} · 1-month series…
+        <div className="flex h-[220px] items-center justify-center">
+          <LoadingSpinner label={`Fetching ${active.label}…`} />
         </div>
       ) : err ? (
         <div className="flex h-[220px] items-center justify-center gap-2 text-[13px] text-danger">

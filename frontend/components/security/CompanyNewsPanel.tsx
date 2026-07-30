@@ -8,7 +8,8 @@ import { useEffect, useState } from "react";
 import { Panel } from "@/components/primitives";
 import { useSourceViewer } from "@/providers/SourceViewerProvider";
 import { fmtRelative } from "@/lib/format";
-import { Loader2, AlertTriangle, RefreshCw, Newspaper } from "lucide-react";
+import { AlertTriangle, RefreshCw, Newspaper } from "lucide-react";
+import { LoadingSpinner } from "@/components/primitives/LoadingSpinner";
 
 interface NewsItem {
   headline: string;
@@ -83,9 +84,11 @@ export function CompanyNewsPanel({ ticker, displayName, limit = 12 }: Props) {
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center gap-2 px-4 py-8 text-[13px] text-tx-mid">
-          <Loader2 size={13} className="animate-spin" />
-          Searching news for {displayName}…
+        <div className="flex items-center justify-center px-4 py-8">
+          <LoadingSpinner
+            label={`Searching news for ${displayName}…`}
+            size="sm"
+          />
         </div>
       ) : err ? (
         <div className="flex items-center justify-center gap-2 px-4 py-8 text-[13px] text-danger">

@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { PriceChart, type PricePoint } from "@/components/charts/PriceChart";
-import { Loader2, AlertTriangle } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
+import { LoadingSpinner } from "@/components/primitives/LoadingSpinner";
 import clsx from "clsx";
 
 interface Props {
@@ -67,9 +68,8 @@ export function SecurityPriceChart({ ticker, displayName, currency }: Props) {
       </div>
 
       {loading ? (
-        <div className="flex h-[220px] items-center justify-center gap-2 text-[13px] text-tx-mid">
-          <Loader2 size={14} className="animate-spin" />
-          Fetching {displayName} · {range} price series…
+        <div className="flex h-[220px] items-center justify-center">
+          <LoadingSpinner label={`Fetching ${displayName} · ${range}…`} />
         </div>
       ) : err ? (
         <div className="flex h-[220px] items-center justify-center gap-2 rounded-panel border border-[rgba(180,35,24,0.28)] bg-[rgba(180,35,24,0.05)] p-4 text-[13px] text-danger">
