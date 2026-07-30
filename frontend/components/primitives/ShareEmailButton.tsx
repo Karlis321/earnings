@@ -60,10 +60,20 @@ export function ShareEmailButton({
 }
 
 // Convenience helper: build subject + body from a news/source item.
-export function shareArticleProps(headline: string, url: string, source?: string) {
-  const subject = `Look at this: ${headline.slice(0, 100)}`;
+// Defensive against null/undefined headline — a corrupted source item
+// (title-field-instead-of-headline was the bug that crashed the event
+// page) should never take out the whole render.
+export function shareArticleProps(
+  headline: string | null | undefined,
+  url: string,
+  source?: string,
+) {
+  const safeHeadline = (typeof headline === "string" && headline.length > 0)
+    ? headline
+    : "(untitled)";
+  const subject = `Look at this: ${safeHeadline.slice(0, 100)}`;
   const body =
-    `${headline}\n\n${url}\n\n` +
+    `${safeHeadline}\n\n${url}\n\n` +
     (source ? `Source: ${source}\n\n` : "") +
     `— shared from Signal earnings dashboard`;
   return { subject, body };

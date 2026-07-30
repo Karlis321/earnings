@@ -170,6 +170,7 @@ async function main() {
       id: newsId(`${entity.ticker}_${n.link}`),
       kind: "news",
       source: n.publisher ?? "Yahoo News",
+      headline: n.title,
       title: n.title,
       url: n.link,
       publishedAt: n.providerPublishTime ? new Date(n.providerPublishTime * 1000).toISOString() : nowIso,
