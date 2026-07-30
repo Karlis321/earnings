@@ -48,11 +48,26 @@ export function MarketPulse() {
         <div>
           <div className="mono-eyebrow mb-1">Market pulse · 1 month</div>
           <div className="text-[13px] text-tx-mid">
-            Daily closes via Yahoo · last bar ={" "}
-            {data && data.series.length > 0
-              ? data.series[data.series.length - 1].date
-              : "loading…"}{" "}
-            (rolls after US market close, 21:00 UTC)
+            {(() => {
+              const lastBar = data && data.series.length > 0 ? data.series[data.series.length - 1].date : null;
+              const now = new Date();
+              const utcHour = now.getUTCHours();
+              const marketOpen = utcHour >= 13 && utcHour < 20;
+              const beforeOpen = utcHour < 13;
+              const afterClose = utcHour >= 20;
+              let statusNote = "";
+              if (lastBar) {
+                if (marketOpen) statusNote = " · US market open — today's bar finalizes after 20:00 UTC close";
+                else if (beforeOpen) statusNote = " · US market pre-open — today's bar starts trading 13:30 UTC";
+                else if (afterClose) statusNote = " · US market closed — today's bar finalized";
+              }
+              return (
+                <>
+                  Daily closes via Yahoo · last bar = {lastBar ?? "loading…"}
+                  {statusNote}
+                </>
+              );
+            })()}
           </div>
         </div>
         <div className="flex gap-1 rounded-button border border-bd bg-s2 p-[3px]">
