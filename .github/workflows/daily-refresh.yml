@@ -45,10 +45,10 @@ concurrency:
 jobs:
   refresh:
     runs-on: ubuntu-latest
-    # 15 min = enough for 5 phases + one retry on a single failing phase.
-    # Previously 8 min was too tight when a phase 504'd (each 504 burns
-    # 300s = 5 min alone; two failures would run out of budget).
-    timeout-minutes: 15
+    # 25 min = 8 slices × ~60-90s happy path + Phase B ~150s + slack
+    # for one retry on a failing phase (retry costs 300s + 10s sleep).
+    # Previously 15 min was tight after bumping SLICES 4 → 8.
+    timeout-minutes: 25
     steps:
       - name: Ping /api/cron/daily (4 slices sequentially)
         env:
@@ -67,7 +67,15 @@ jobs:
           #            newly-added entities to the registry.
           # Both phases inside 300s each. If either fails, the workflow
           # goes red at the end but successful phases still committed.
-          SLICES=4
+          # Bumped 4 → 8 after slice 0 kept 504-ing on the 300s Vercel
+          # cap. Slice 0's dominant cost is the SEC-submissions loop
+          # (rate-limited to 1 req/sec × ~100 CIK-bearing tickers per
+          # 4-way slice = 100s minimum) plus Yahoo per-entity work
+          # + reconstitute-from-shards. With 8-way slicing each slice
+          # handles ~50 CIK tickers (~50s SEC) plus ~180 Yahoo pass
+          # tickers (~15-25s), well under 300s even on slow-Yahoo
+          # mornings.
+          SLICES=8
           FAILED=0
 
           # One-shot retry on 5xx: transient Vercel cold-starts or Yahoo
