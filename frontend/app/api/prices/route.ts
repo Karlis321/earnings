@@ -51,7 +51,29 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  const series = await yahooSeries(symbol, range, interval);
+  let series = await yahooSeries(symbol, range, interval);
+  let widenedTo: string | null = null;
+  // Auto-widen when Yahoo returns a suspiciously thin series for the
+  // requested range. Some low-volume foreign listings (ABXX.NE on
+  // Canada's NEO, Indonesian .JK small-caps, etc.) return just 1-2
+  // bars at range=1mo but a full history at range=3mo or wider. Rather
+  // than dead-ending with 'No price data' when there IS data, retry
+  // once at a wider range. Threshold: <5 bars for daily interval.
+  if (interval === "1d" && series.length < 5) {
+    const widerMap: Record<string, string> = {
+      "1mo": "3mo",
+      "3mo": "6mo",
+      "6mo": "1y",
+    };
+    const wider = widerMap[range];
+    if (wider) {
+      const retry = await yahooSeries(symbol, wider, interval);
+      if (retry.length > series.length) {
+        series = retry;
+        widenedTo = wider;
+      }
+    }
+  }
   if (series.length === 0) {
     return NextResponse.json(
       { error: `No data for ${symbol}`, symbol, series: [] },
@@ -59,7 +81,7 @@ export async function GET(req: NextRequest) {
     );
   }
   return NextResponse.json(
-    { symbol, range, interval, series, fetchedAt: new Date().toISOString() },
+    { symbol, range: widenedTo ?? range, interval, series, widenedFrom: widenedTo ? range : undefined, fetchedAt: new Date().toISOString() },
     {
       // 5-min edge cache so users always see prices within the last
       // trading interval — bumps intraday freshness while still shielding
