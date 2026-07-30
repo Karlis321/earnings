@@ -103,6 +103,21 @@ async function main() {
           continue;
         }
         const next = ((actual - estimate) / Math.abs(estimate)) * 100;
+        // Gate: never store a surprise whose magnitude implies data
+        // corruption (near-zero estimate, mixed units, mislabeled
+        // currency). Real earnings beats/misses very rarely exceed
+        // 200%; anything above 500% is presumed corrupt (see
+        // suppress-absurd-surprise.mjs invariant). Chain-friendly:
+        // recompute → suppress ordering was requiring a second pass;
+        // now the gate lives here so a single recompute doesn't
+        // recreate absurds we just cleared.
+        if (Math.abs(next) > 500) {
+          if (prev != null) {
+            m.surprisePct = null;
+            rollup.totals.clearedBecauseMissingSide++;
+          }
+          continue;
+        }
         // Tolerance: only mark as changed if the delta > 0.01 percentage
         // point AND the sign or magnitude meaningfully differs from prev.
         if (prev == null || Math.abs(prev - next) > 0.01) {

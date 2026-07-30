@@ -479,8 +479,19 @@ function Row({
   const isDev = r.entity.securityType === "developer";
   const isEtf = r.entity.securityType === "etf";
   const yahoo = earningsEntry?.ok ? earningsEntry.data : null;
-  // Fixture value wins; fall back to Yahoo when fixture is empty.
-  const surprise = r.lastSurprisePct ?? yahoo?.lastQuarter?.surprisePct ?? null;
+  // "Last surprise" reads as the market's reaction to the last report,
+  // not the analyst beat/miss on EPS. The 3-day post-earnings absolute
+  // return is the trader's surprise — SEC-vs-consensus EPS ratios are
+  // often cross-basis (GAAP actual vs adjusted consensus) and mislead.
+  // Fall back to the analyst compare only when we have no reaction bar
+  // (foreign wrappers whose Yahoo v8 chart is empty).
+  const d3 = (r.reactionPoints ?? []).find((p) => p.horizon === "d3");
+  const reactionPct =
+    d3 && d3.absReturn != null && (d3.status === "matured" || d3.status === "clipped")
+      ? d3.absReturn * 100
+      : null;
+  const surprise =
+    reactionPct ?? r.lastSurprisePct ?? yahoo?.lastQuarter?.surprisePct ?? null;
   const nextIso = r.nextEvent.date ?? yahoo?.nextEarningsDate ?? null;
   // Date-only diff (via daysUntil helper) — both sides anchor at UTC
   // midnight so a same-day scheduled event reads "today", not "1d ago".
