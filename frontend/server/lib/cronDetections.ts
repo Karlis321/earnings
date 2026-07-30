@@ -153,8 +153,19 @@ export function computeSourceLink(
 
   if (prov === "yahoo-timeseries" || prov === "yahoo-earnings-chart") {
     if (!symbol) return null;
+    // Yahoo dropped /quote/{sym}/financials for most foreign listings
+    // (Chinese .SZ, Korean .KS/.KQ, Hong Kong .HK all 404 as of
+    // 2026-07-30 — verified 30/30 sampled). US and London still work
+    // but the pattern is unreliable, so route the fallback to a Google
+    // search scoped to ticker + period which resolves for every entity.
+    const q = [
+      `"${event.ticker}"`,
+      event.period ? `"${event.period}"` : (event.eventDate ?? "").slice(0, 7),
+      "earnings",
+      entity?.displayName ?? "",
+    ].filter(Boolean).join(" ").trim();
     return {
-      url: `https://finance.yahoo.com/quote/${encodeURIComponent(symbol)}/financials`,
+      url: `https://www.google.com/search?q=${encodeURIComponent(q)}`,
       kind: "fallback",
     };
   }
