@@ -149,6 +149,66 @@ async function fetchTimeseries(symbol) {
   }
 }
 
+// Yahoo v10 quoteSummary earningsChart fallback for when timeseries
+// returns empty. Different endpoint that sometimes works for foreign
+// wrappers where fundamentals-timeseries doesn't. Returns EPS-only
+// data (past quarters with actual + estimate) but no revenue.
+async function fetchEarningsChart(symbol) {
+  if (!CRUMB || !COOKIE) return { error: "no-crumb" };
+  const url =
+    `https://query2.finance.yahoo.com/v10/finance/quoteSummary/${encodeURIComponent(symbol)}` +
+    `?modules=earnings&crumb=${encodeURIComponent(CRUMB)}`;
+  try {
+    const r = await fetch(url, {
+      headers: { ...YAHOO_HEADERS, Cookie: COOKIE },
+      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+    });
+    if (!r.ok) return { error: `HTTP ${r.status}` };
+    const j = await r.json();
+    const chart = j?.quoteSummary?.result?.[0]?.earnings?.earningsChart;
+    const quarterly = chart?.quarterly ?? [];
+    return { chart, quarterly };
+  } catch (e) {
+    return { error: e.message ?? "network" };
+  }
+}
+
+// Yahoo earningsChart returns entries with `date: "1Q2026"` labels and
+// no asOfDate. Convert to an ISO quarter-end. Chart currency is USD by
+// default per Yahoo's normalization; use entity.currency as label if
+// the entity is non-USD.
+function periodFromEarningsLabel(label) {
+  // Format: "1Q2026" — quarter then year (Yahoo's convention).
+  const m = /^(\d)Q(\d{4})$/.exec(label ?? "");
+  if (!m) return null;
+  const q = Number(m[1]);
+  const year = Number(m[2]);
+  const endMonth = { 1: "03-31", 2: "06-30", 3: "09-30", 4: "12-31" }[q];
+  if (!endMonth) return null;
+  return { year, quarter: q, asOfDate: `${year}-${endMonth}`, label: `FY${year} Q${q}` };
+}
+
+function bucketFromEarningsChart(quarterly, entity) {
+  // For each quarterly entry, build a per-metric bucket. Only EPS is
+  // available. Currency defaults to entity.currency (chart's own
+  // currency isn't reliably reported).
+  const buckets = new Map(); // asOfDate → Map<key, {value,unit,label}>
+  for (const q of quarterly) {
+    const p = periodFromEarningsLabel(q.date);
+    if (!p) continue;
+    const eps = q.actual?.raw;
+    if (eps == null) continue;
+    const bucket = new Map();
+    bucket.set("eps_usd", {
+      value: eps,
+      unit: entity.currency ?? "USD",
+      label: "EPS",
+    });
+    buckets.set(p.asOfDate, bucket);
+  }
+  return buckets;
+}
+
 function collectByQuarter(seriesResults) {
   const byQuarter = new Map();
   for (const r of seriesResults) {
@@ -363,7 +423,16 @@ async function main() {
       }
       return;
     }
-    const byQuarter = collectByQuarter(r.series ?? []);
+    let byQuarter = collectByQuarter(r.series ?? []);
+    let usedFallback = false;
+    if (byQuarter.size === 0) {
+      // Timeseries empty → try v10 earningsChart fallback.
+      const ec = await fetchEarningsChart(entity.yahooSymbol);
+      if (!ec.error && ec.quarterly && ec.quarterly.length > 0) {
+        byQuarter = bucketFromEarningsChart(ec.quarterly, entity);
+        if (byQuarter.size > 0) usedFallback = true;
+      }
+    }
     if (byQuarter.size === 0) {
       rollup.totals.empty++;
       rollup.perEntity.push({ ticker: entity.ticker, status: "empty" });
@@ -374,6 +443,7 @@ async function main() {
       }
       return;
     }
+    if (usedFallback) rollup.totals.fallbackUsed = (rollup.totals.fallbackUsed ?? 0) + 1;
 
     // Read shard.
     const shardPath = path.join(EVENTS_DIR, tickerSlug(entity.ticker) + ".json");
