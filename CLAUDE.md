@@ -42,9 +42,10 @@ earnings_dashboard/
 │   ├── shared-state.json      watchlist + user prefs
 │   └── documents/             cached press-release + filing bodies (by id)
 ├── scripts/                   ACTIVE pipeline + validators only
-│   ├── test-standing.mjs      standing invariant suite (pipeline-check + corruption + validate)
+│   ├── test-standing.mjs      standing invariant suite (pipeline-check + 2 corruption tests + validate)
 │   ├── run-pipeline-check.mjs writes data/pipeline-report.json
-│   ├── corrupt-invariant-test.mjs  plants + restores cross-listing corruption
+│   ├── corrupt-invariant-test.mjs   plants + restores cross-listing corruption
+│   ├── corrupt-surprise-test.mjs    plants + restores a bad surprisePct triple
 │   ├── validate.js            summaries schema + filename + aggregator-URL blocklist
 │   ├── shard-earnings.mjs     rebuild shards + events-index from source
 │   ├── run-estimator.mjs      median-gap next-event estimator
@@ -52,10 +53,40 @@ earnings_dashboard/
 │   ├── fetch-edgar.mjs        SEC-compliant fetcher (compliant UA + rate limit)
 │   ├── extract-doc-text.mjs   HTML→text + --grep for /earnings Step 2
 │   ├── sweep-dry-run.mjs      preview what tonight's /sweep would do
+│   ├── ── universe passes (run outside cron; each writes an audit) ──
+│   ├── refresh-yahoo-shards.mjs        Yahoo fundamentals-timeseries + earningsChart per entity
+│   ├── mature-any-reported.mjs         promote upcoming → past when Yahoo has the actual
+│   ├── mature-stale-upcoming.mjs       promote upcoming shells past their scheduledDate
+│   ├── mature-if-actual-present.mjs    promote upcoming shells that already carry actuals
+│   ├── mature-reactions.mjs            compute d1/d3/w1/m1 for events with pending reactions
+│   ├── roll-stale-shells.mjs           bump scheduledDate forward for stale-scheduled shells
+│   ├── refine-stale-via-calendar.mjs   Yahoo calendarEvents to reclassify STALE
+│   ├── detect-stale-earnings.mjs       classify every entity as FRESH/STALE/SHELL-ONLY/NO-HIST
+│   ├── create-date-only-events.mjs     for reported-but-lack-numbers: seed date-only past event
+│   ├── create-empty-shard-fill.mjs     minimal shard + news for entities Yahoo doesn't cover
+│   ├── attach-yahoo-news.mjs           Yahoo v1 search-news per ticker → event.sources.items
+│   ├── ingest-eps-estimates.mjs        Yahoo earningsChart retroactive EPS estimates
+│   ├── ingest-estimates-universe.mjs   Yahoo earningsTrend rev+eps estimates on upcoming shells
+│   ├── fetch-real-report-dates.mjs     replace quarter-end placeholders with real filing dates
+│   ├── ── data-quality sweeps ──
+│   ├── audit-surprise-triples.mjs      invariant scan on every (actual, estimate, surprisePct)
+│   ├── enforce-same-basis-surprise.mjs clear cross-basis surprises (SEC actual + Yahoo est)
+│   ├── suppress-absurd-surprise.mjs    clear |surprisePct|>500% as presumed corrupt
+│   ├── recompute-surprise.mjs          recompute stale surprisePct where sides match same basis
+│   ├── sweep-metric-duplicates.mjs     metric-level dedup + EPS-label normalization
+│   ├── fix-fallback-links.mjs          Yahoo /financials 404 → Google search URL
+│   ├── fix-empty-graph-symbols.mjs     resolve wrong yahooSymbol via Yahoo search
+│   ├── fix-source-item-headlines.mjs   copy source.item.title → item.headline (contract)
+│   ├── fix-news-provenance.mjs         yahoo-search-news → 'wire' (Provenance union enforcement)
+│   ├── audit-universe.mjs              per-ticker coverage: shard/past/source/est/reaction/news
+│   ├── audit-price-graphs.mjs          verify every yahooSymbol returns ≥1 bar
+│   ├── backfill-source-links.mjs       populate event.sourceLink where missing
+│   ├── inherit-from-siblings.mjs       copy past events from richer sibling in same companyId
+│   ├── fill-sec-empty-shards.mjs       SEC XBRL for empty-shard CIK entities
 │   ├── backfills/             43 one-shot repair scripts (archived — see below)
 │   ├── dev-tests/             2 dev-time smoke tests (test-mentions-holding, …)
 │   ├── config/                us-primary-overrides.json (used by add-us-primaries-v2)
-│   └── audits/                18 audit JSONs — evidence of hard-won fixes
+│   └── audits/                27+ audit JSONs — evidence of hard-won fixes
 ├── docs/                      PRDs + audit reports (authoritative reads)
 │   ├── PRD_Project.md, PRD_Frontend.md, PRD_Backend.md
 │   ├── consistency-audit.md
@@ -75,9 +106,11 @@ earnings_dashboard/
 | Summary schema (v2)               | `data/summaries-schema.json` + validator `scripts/validate.js`       |
 | GuidanceEntry shape               | `frontend/lib/types.ts` (single source of truth)                     |
 | Store interface                   | `frontend/server/store.ts` (inMemory + gitSnapshot impls)            |
-| Pipeline invariants (counters)    | `frontend/server/lib/pipelineReport.ts`                              |
+| Pipeline invariants (counters)    | `frontend/server/lib/pipelineReport.ts` + `scripts/run-pipeline-check.mjs` |
 | SEC-verbatim rule                 | `frontend/server/lib/secVerbatim.ts` (wired into cron daily)         |
 | Reaction maturation               | `frontend/server/lib/reactionMaturation.ts` (called by cron)         |
+| Render-shape normalizers          | `frontend/lib/normalize.ts` (event/entity/summary — the render contract) |
+| Same-basis surprise rule          | `scripts/enforce-same-basis-surprise.mjs` + `SurprisePill.crossBasisCleared` |
 | One-shot repair evidence          | `scripts/audits/<name>.json` + `scripts/backfills/<name>.mjs`        |
 | Sweep dry-run                     | `node scripts/sweep-dry-run.mjs`                                     |
 | Local /earnings step 0            | `node scripts/resolve-earnings-target.mjs "<TICKER>"`                |
@@ -85,6 +118,8 @@ earnings_dashboard/
 | Text of a fetched filing          | `node scripts/extract-doc-text.mjs fetched/<file> [--grep "…"]`      |
 | Force-rebuild shards + index      | `node scripts/shard-earnings.mjs`                                    |
 | Force-rebuild pipeline-report     | `node scripts/run-pipeline-check.mjs`                                |
+| Full-universe freshness detect    | `node scripts/detect-stale-earnings.mjs`                             |
+| Debug a specific ticker + event   | `curl .../api/health/ticker-debug?ticker=AAPL%20US`                  |
 
 ### The backfills archive (`scripts/backfills/`)
 
@@ -326,6 +361,126 @@ These are the rules that come from reading multiple sections together:
 - **Plain English UI copy.** No jargon. Short sentences, verdict-style
   phrasing. Every headline number must have a working click-through to its
   primary source.
+- **Same-basis surprise rule (Stage 1B/July-30 audit).** `surprisePct`
+  MUST be derived from an actual + estimate that share an accounting
+  basis. Cross-basis triples (SEC-XBRL GAAP EPS Basic actual vs Yahoo
+  consensus adjusted EPS estimate) will produce a mathematically-correct
+  but meaningless number — CENX Q1 rendered "-8.2%" (Yahoo's own value
+  from before the SEC-verbatim rederive replaced the actual) even
+  though real math on the stored triple was +92.11%. Rule: at ingest
+  and at render, if `actual` and `estimate` come from different
+  provenance families, clear `surprisePct` and park the value on
+  `metric._crossBasisSurprise[]`. Same-basis families: `sec ↔ sec`,
+  `yahoo-chart ↔ yahoo-trend` (both analyst-consensus), `sec ↔
+  yahoo-timeseries` (both GAAP-from-filing), `sec ↔ fmp`. Enforced by
+  `scripts/enforce-same-basis-surprise.mjs` sweep + `SurprisePill`'s
+  `crossBasisCleared` prop which renders "reported · basis mismatch"
+  instead of a wrong number. Standing test:
+  `scripts/corrupt-surprise-test.mjs` plants a bogus 999.999% surprise
+  on a real metric and asserts `metrics_surprise_inconsistent` counter
+  fires.
+- **Absurd-surprise floor (>500%).** Even after basis-checking, a
+  near-zero estimate paired with any actual produces surrealistic
+  ratios (TNZ CN Q4 was +16700%: actual 3.32 USD vs estimate -0.02
+  USD, math correct but data was USD-labeled on a CAD entity). Rule:
+  any stored `surprisePct` with `|value| > 500%` is presumed corrupt
+  data and gets suppressed by `scripts/suppress-absurd-surprise.mjs`.
+  Real-world beats rarely exceed +200%. Old value parked on
+  `metric._absurdSurprise[]`.
+- **Real report dates, not quarter-end.** Yahoo `fundamentals-timeseries`
+  returns `asOfDate` (quarter-end, e.g. `2026-03-31`) which was
+  historically stamped as `eventDate` — the UI's `isEstimatedEventDate()`
+  then rendered "~Mar 2026 (est.)". Rule: prefer Yahoo
+  `earningsChart.reportedDate` (real filing date) over the quarter-end
+  placeholder. `scripts/fetch-real-report-dates.mjs` backfills 1,009
+  events across 425 shards. Events with `eventDateSource ===
+  "yahoo-earnings-chart-reportedDate"` render as a real date, not
+  "(est.)". Also: `_quarterEndDate` on the event preserves the original
+  quarter-end reference.
+- **Google search as the fallback sourceLink (Yahoo dropped foreign
+  paths).** As of 2026-07-30, Yahoo returns HTTP 404 on
+  `/quote/{sym}/financials`, `/analysis`, `/earnings-history` for
+  Asian and most foreign listings (`.SZ`, `.KS`, `.KQ`, `.HK` verified
+  30/30). Rule: `computeSourceLink` in `cronDetections.ts` and the
+  `scripts/fix-fallback-links.mjs` sweep use a Google search URL
+  (`https://www.google.com/search?q=%22TICKER%22+%22FY202x+Qy%22+earnings`)
+  for `kind: "fallback"` — always resolves, always lands users on
+  live results. SEC filings (~2,039 events) stay as
+  `kind: "filing"` unchanged (100% verified HTTP 200).
+- **Yahoo widening ladder for foreign small-caps.** Yahoo's edge
+  throttles low-volume foreign listings (ABXX.NE on Canada's NEO
+  returned 1 bar at every range from 1mo through 5y but 262 bars at
+  `range=max`). `/api/prices` walks the ladder
+  `1mo → 3mo → 6mo → 1y → 5y → max` and stops once ≥5 bars land,
+  returning `widenedFrom: <origRange>` when it escalated.
+- **/api/prices resolves via `entity.yahooSymbol`, not Bloomberg
+  parsing.** The registry has the canonical Yahoo symbol on every
+  entity. Do not parse `"SHLE CN"` as `symbol=SHLE + exchange=CN` —
+  Yahoo's search treats `CN` as unknown and returns "No tradable SHLE
+  on CN" (CN is Bloomberg's code for Canada/TSX, not a Yahoo
+  suffix). Correct symbol is `SHLE.TO`, which
+  `store.readRegistry().find(e => e.ticker === "SHLE CN").yahooSymbol`
+  already knows. Only fall back to `yahooLookup` search when the
+  entity isn't in the registry.
+- **Render-shape normalizer is the contract, not raw store data.**
+  `frontend/lib/normalize.ts` exports `normalizeEvent`,
+  `normalizeEvents`, `normalizeEntity`, `normalizeSummary`. Every page
+  that renders these types MUST pass raw store data through the
+  normalizer first. Components downstream can dereference optional
+  arrays (`sources.items.filter`, `reaction.points.map`,
+  `metrics.find`, `guidance.length`) without `?.` guards because the
+  normalizer fills every optional list with `[]` and reaction always
+  emits exactly `{d1, d3, w1, m1}` points. Reproducer of what this
+  prevents: date-only past events from the freshness pass had
+  `sources: {items: [], engineStatus: []}` — safe — but old shards
+  with `reaction: null` or missing `guidance` would throw
+  `Cannot read properties of undefined (reading 'X')` on the event
+  page's SSR render.
+- **Source items have `headline`, not `title` (contract).** The
+  `SourceItem` type in `types.ts` uses `headline: string`. Yahoo's
+  news API returns `title`. Ingest scripts (`attach-yahoo-news.mjs`,
+  `create-empty-shard-fill.mjs`) MUST map `n.title → item.headline`
+  when writing to a shard. `shareArticleProps` in `ShareEmailButton`
+  calls `.slice(0, 100)` on `headline` — a missing/undefined headline
+  crashes every event page with a Yahoo news source item attached
+  (~1,500 tickers). Sweep fix: `scripts/fix-source-item-headlines.mjs`
+  copies `title → headline` across the universe. Belt: `shareArticleProps`
+  now falls back to `"(untitled)"` if headline is empty.
+- **Same-day event dates must diff on UTC midnight, not `Date.now()`.**
+  A same-day `nextEvent.scheduledDate` (e.g. today = 2026-07-30)
+  rendered as `"1d ago"` after ~noon UTC because
+  `(new Date(iso).getTime() - Date.now()) / 86_400_000 = -0.5`, and
+  `Math.round(-0.5) = -1`. Use the shared `daysUntil()` helper in
+  `frontend/lib/freshness.ts` which anchors both sides at UTC midnight
+  via ISO parsing. Same-day events correctly render "today".
+- **Route-level error boundaries with copyable diagnostic bundles.**
+  Both `/s/[ticker]/error.tsx` and `/s/[ticker]/e/[eventId]/error.tsx`
+  capture `error.name + message + digest + stack + ticker + eventId`,
+  `console.error` the full object (so Vercel Runtime Logs picks it up),
+  show a "has stack: yes/no" flag on the banner (screenshot-only
+  reports can be triaged), and provide a "Copy report bundle" button
+  that assembles a paste-ready block. Emergent principle: **an error
+  banner that says "no stack captured" is a broken smoke detector** —
+  a report has to arrive diagnosable even if the user only copies the
+  URL and clicks the button.
+- **Cron does not run reliably at 06:00 UTC without our workflow.**
+  Vercel Cron on Hobby tier is best-effort — it can skip runs under
+  load. The single-source cron path is
+  `.github/workflows/daily-refresh.yml` (SLICES=16, per-phase retry,
+  25-min budget). Vercel Cron entry removed from `frontend/vercel.json`
+  in the fix that stopped the 3-day cron gap. When the GitHub Actions
+  workflow fires it calls `/api/cron/daily?slice=n&sliceCount=16` for
+  each slice + one `sectorsOnly=1` pass — 17 sequential Vercel
+  invocations each under 300s.
+- **GH_PAT rate limit is 5,000/hr PER USER ACCOUNT, not per token.**
+  Rotating the PAT does NOT help — the limit lives on the GitHub user
+  (user ID 146458404 for this repo). When the /s/[ticker] page 500s
+  and health/debug reports `ghProbe: 403 · "API rate limit exceeded
+  for user ID ..."`, the ONLY fix is to wait for the hourly reset.
+  Cache TTL on the git-snapshot store is 30 min
+  (`READ_CACHE_MS = 1_800_000` in
+  `frontend/server/stores/gitSnapshot.ts`) precisely to stay under
+  the ceiling during normal browsing.
 
 ## Toolchain
 
