@@ -185,18 +185,12 @@ async function writeFile<T>(
 // stale data long. Writes invalidate the entry immediately so the next
 // read sees the new content, and RSC pages that render across a write
 // boundary get the latest.
-// Bumped from 60s → 5min → 30min. The July-2026 universe expansion
-// pushed the shard count from ~1,500 to ~1,774. At the 5-min TTL,
-// any browsing session that hit even ~30 ticker pages within 5
-// minutes would burn through the entire 5k/hr per-user PAT budget
-// (5k budget / 30-min bucket ≈ 2,500 reads per bucket, but each
-// ticker page reads its shard + registry + summaries index →
-// ~3 reads amplified across the RSC render). 30-min cache brings
-// the amortized rate under the ceiling in normal browsing.
-// Trade-off: writes still invalidate immediately, so freshness on
-// the page you just edited stays instant; only the tickers you're
-// not actively viewing are ≤30 min stale.
-const READ_CACHE_MS = 1_800_000;
+// Bumped from 60s to 5min so a slice-partitioned cron (which POSTs
+// the same endpoint 5 times over ~8 min) doesn't re-read the full
+// ~1,500-shard snapshot on every slice. Cache hit rate matters more
+// than freshness here — the GitHub PAT rate limit (5k API req/hr)
+// caps at exactly one full snapshot read per hour otherwise.
+const READ_CACHE_MS = 300_000;
 interface CacheEntry<T> {
   content: T;
   sha: string;
@@ -447,7 +441,7 @@ const SHARD_READ_CONCURRENCY = 60;
 // A slice-partitioned cron does 5 sequential POSTs; without a
 // multi-minute cache the reconstitution reruns every time and each
 // rerun reads all ~1,500 shard files.
-const RECONSTITUTE_CACHE_MS = 1_800_000;
+const RECONSTITUTE_CACHE_MS = 300_000;
 interface ReconstituteCache {
   snapshot: EarningsSnapshot;
   expiresAt: number;
