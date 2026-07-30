@@ -1771,63 +1771,74 @@
             "confidence": 0.75
           },
           "actual": {
-            "value": 0.97,
+            "value": 1.03,
             "unit": "USD",
             "source": {
-              "url": "https://finance.yahoo.com/quote/KO/earnings-history",
-              "label": "Yahoo · earningsChart",
+              "url": "https://finance.yahoo.com/quote/KO/financials",
+              "label": "Yahoo · fundamentals-timeseries",
               "provenance": "wire",
               "locator": null
             },
             "asOf": "2026-06-30",
-            "fetchedAt": "2026-07-30T10:44:18.382Z",
+            "fetchedAt": "2026-07-30T10:51:13.797Z",
             "method": "yahoo",
-            "confidence": 0.8
+            "confidence": 0.85
           },
-          "prior": null
+          "prior": null,
+          "superseded": [
+            {
+              "value": 0.97,
+              "unit": "USD",
+              "source": "Yahoo · earningsChart",
+              "from_provenance": "yahoo-earnings-chart"
+            }
+          ]
         }
       ],
       "guidance": [],
       "reaction": {
         "benchmark": "SPX",
-        "baselineDate": null,
-        "baselineClose": null,
+        "baselineDate": "2026-07-28",
+        "baselineClose": 88.2699966430664,
         "points": [
           {
             "horizon": "d1",
-            "absReturn": null,
-            "excessReturn": null,
+            "absReturn": 0.009176449742755338,
+            "excessReturn": 0.024337739492863476,
             "benchmark": "SPX",
-            "computedAt": null,
+            "computedAt": "2026-07-30T11:02:04.411Z",
             "populatesOn": null,
-            "status": "pending"
+            "status": "matured"
           },
           {
             "horizon": "d3",
-            "absReturn": null,
-            "excessReturn": null,
+            "absReturn": 0.009176449742755338,
+            "excessReturn": 0.024337739492863476,
             "benchmark": "SPX",
-            "computedAt": null,
+            "computedAt": "2026-07-30T11:02:04.411Z",
             "populatesOn": null,
-            "status": "pending"
+            "status": "clipped",
+            "clipped": true
           },
           {
             "horizon": "w1",
-            "absReturn": null,
-            "excessReturn": null,
+            "absReturn": 0.009176449742755338,
+            "excessReturn": 0.024337739492863476,
             "benchmark": "SPX",
-            "computedAt": null,
+            "computedAt": "2026-07-30T11:02:04.411Z",
             "populatesOn": null,
-            "status": "pending"
+            "status": "clipped",
+            "clipped": true
           },
           {
             "horizon": "m1",
-            "absReturn": null,
-            "excessReturn": null,
+            "absReturn": 0.009176449742755338,
+            "excessReturn": 0.024337739492863476,
             "benchmark": "SPX",
-            "computedAt": null,
+            "computedAt": "2026-07-30T11:02:04.411Z",
             "populatesOn": null,
-            "status": "pending"
+            "status": "clipped",
+            "clipped": true
           }
         ]
       },
@@ -1843,6 +1854,69 @@
         "kind": "fallback"
       },
       "eventDateSource": "yahoo-earnings-chart-reportedDate"
+    },
+    {
+      "id": "evt-v9qs11",
+      "ticker": "KO US",
+      "kind": "earnings",
+      "period": "FY2026 Q3",
+      "scheduledDate": "2026-10-27",
+      "eventDate": null,
+      "timing": null,
+      "expectation": "unset",
+      "guidanceMove": null,
+      "freshness": "stale",
+      "provenance": "estimator-median-gap",
+      "provenanceAsOf": "2026-07-30T11:02:02.541Z",
+      "cadence": "quarterly",
+      "metrics": [],
+      "guidance": [],
+      "reaction": {
+        "benchmark": "SPX",
+        "baselineDate": null,
+        "baselineClose": null,
+        "points": [
+          {
+            "horizon": "d1",
+            "absReturn": null,
+            "excessReturn": null,
+            "benchmark": "SPX",
+            "computedAt": null,
+            "populatesOn": "2026-10-30"
+          },
+          {
+            "horizon": "d3",
+            "absReturn": null,
+            "excessReturn": null,
+            "benchmark": "SPX",
+            "computedAt": null,
+            "populatesOn": "2026-11-01"
+          },
+          {
+            "horizon": "w1",
+            "absReturn": null,
+            "excessReturn": null,
+            "benchmark": "SPX",
+            "computedAt": null,
+            "populatesOn": "2026-11-03"
+          },
+          {
+            "horizon": "m1",
+            "absReturn": null,
+            "excessReturn": null,
+            "benchmark": "SPX",
+            "computedAt": null,
+            "populatesOn": "2026-11-19"
+          }
+        ]
+      },
+      "sources": {
+        "windowStart": "2026-10-24",
+        "windowEnd": "2026-12-01",
+        "capturedAt": null,
+        "items": [],
+        "engineStatus": []
+      }
     }
   ]
 }
