@@ -56,21 +56,23 @@ export async function GET(req: NextRequest) {
   // Auto-widen when Yahoo returns a suspiciously thin series for the
   // requested range. Some low-volume foreign listings (ABXX.NE on
   // Canada's NEO, Indonesian .JK small-caps, etc.) return just 1-2
-  // bars at range=1mo but a full history at range=3mo or wider. Rather
-  // than dead-ending with 'No price data' when there IS data, retry
-  // once at a wider range. Threshold: <5 bars for daily interval.
+  // bars at every range narrower than 'max' from Vercel's IP — Yahoo's
+  // edge appears to throttle by origin. Rather than dead-end with 'No
+  // price data', walk a widening ladder and take whichever step first
+  // returns a usable series. Only 'max' reliably yields history for
+  // these tickers, so it's the last step.
   if (interval === "1d" && series.length < 5) {
-    const widerMap: Record<string, string> = {
-      "1mo": "3mo",
-      "3mo": "6mo",
-      "6mo": "1y",
-    };
-    const wider = widerMap[range];
-    if (wider) {
-      const retry = await yahooSeries(symbol, wider, interval);
-      if (retry.length > series.length) {
-        series = retry;
-        widenedTo = wider;
+    const ladder = ["1mo", "3mo", "6mo", "1y", "5y", "max"];
+    const startIdx = ladder.indexOf(range);
+    if (startIdx >= 0 && startIdx < ladder.length - 1) {
+      for (let i = startIdx + 1; i < ladder.length; i++) {
+        const retry = await yahooSeries(symbol, ladder[i], interval);
+        if (retry.length > series.length) {
+          series = retry;
+          widenedTo = ladder[i];
+        }
+        // Stop once we have enough bars to draw a chart.
+        if (series.length >= 5) break;
       }
     }
   }
