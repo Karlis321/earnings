@@ -22,7 +22,7 @@ export interface VendorStats {
 }
 
 export interface PipelineReport {
-  schema: "pipeline-report/v2";
+  schema: "pipeline-report/v3";
   date: string; // ISO YYYY-MM-DD
   finishedAt: string; // ISO datetime
   status: "ok" | "degraded";
@@ -46,6 +46,14 @@ export interface PipelineReport {
   forward_dates_within_30d: number;
   // Quality gates — non-zero means a rule leaked.
   duplicates_detected: number;
+  // v3: informational sibling of duplicates_detected. Counts events
+  // <=45d apart with DIFFERENT fiscal labels but same FY — the
+  // fiscal-offset canary from CLAUDE.md. NOT degrade-triggering: it
+  // may indicate a labelling bug (fixed on the ticker's shard) or a
+  // legit close-packed filing (10-K + 10-Q dance around fiscal year
+  // end). Surface to eyeball, don't flip status.
+  duplicates_close_date_fiscal_canary: number;
+  duplicates_close_date_samples: string[];
   events_missing_provenance: number;
   metrics_missing_currency: number;
   shard_index_mismatches: number;
@@ -76,6 +84,30 @@ export interface PipelineReport {
   // needing an external source (SEC XBRL); a non-zero value flags
   // degraded and lists a sample of affected companies in reasons[].
   companies_with_inconsistent_financials: number;
+  companies_with_inconsistent_financials_samples: string[];
+  // Companion informational counter (v3): same company, different
+  // reporting currencies across listings. STRUCTURAL, not a bug —
+  // Deutsche Telekom's BR-BDR reports in BRL; Telenor's US ADR
+  // reports in USD; the primary in each pair reports in EUR/NOK.
+  // Not degradation-triggering; visible on the health page so the
+  // condition is auditable, not hidden.
+  companies_with_fx_mismatch: number;
+  companies_with_fx_mismatch_samples: string[];
+  // Freshness classification (v3). Sourced by the standing detector
+  // (detect-stale-earnings logic) folded into every report run. FRESH
+  // means the ticker's latest past event covers the most recent
+  // expected period. STALE means the expected report has come and
+  // gone but no past event exists — this is the decay signal. Rule:
+  // stale > 10 flips status to degraded (a handful of legit same-day
+  // reporters shouldn't; systemic ingest failure will).
+  freshness: {
+    fresh: number;
+    stale: number;
+    shell_only: number;
+    no_history: number;
+    unknown: number;
+    fresh_pct: number;
+  };
   // Sweep 1: estimator label conflict count. A forward-dated shell must
   // carry a period STRICTLY AFTER the ticker's latest reported period,
   // stepped along the entity's own fiscal calendar. Non-zero here
@@ -126,20 +158,43 @@ function daysBetween(a: string, b: string): number {
 // (1) two events sharing a fiscal period, (2) two events with report dates
 // <=45d apart on the same ticker with the same fiscal year. Same-year check
 // avoids flagging real quarterly boundaries (Q4/Q1 in adjacent months).
-export function countDuplicates(snap: EarningsSnapshot): number {
+//
+// Skips dormant tickers — those are frozen registry entries whose historical
+// data doesn't get maintained. Duplicates on them are the state we found
+// them in; counting them just floods the counter with noise (ALD/CXA US
+// dormants were dominating the 2026-07-31 report's 16-count).
+// v3 split: two kinds of "duplicate":
+//   same_period_dupes → same fiscal-period label present >1 time on a
+//     ticker. This is unambiguously a dedup-rule leak; must be zero.
+//     Flips status to degraded.
+//   close_date_fiscal_canary → two events <=45d apart with DIFFERENT
+//     labels but the same FY. This is the CLAUDE.md-documented fiscal-
+//     offset canary: it MAY be a labelling bug or MAY be a legit close-
+//     packed cross-listing filing (e.g. AR annual + Q4). Informational
+//     only — we surface it to eyeball but no longer degrade.
+// The wrapper preserves the old single-number API by returning the sum
+// on `.total`; new callers should read `.same_period` for the degraded
+// flag and `.close_date` for the informational counter.
+export function countDuplicates(
+  snap: EarningsSnapshot,
+  dormant: Set<string> = new Set(),
+): { total: number; same_period: number; close_date: number; close_date_samples: string[] } {
   const byTicker = new Map<string, typeof snap.events>();
   for (const ev of snap.events) {
     if (!ev.eventDate) continue;
+    if (dormant.has(ev.ticker)) continue;
     if (!byTicker.has(ev.ticker)) byTicker.set(ev.ticker, []);
     byTicker.get(ev.ticker)!.push(ev);
   }
-  let dupes = 0;
-  for (const [, past] of byTicker) {
+  let samePeriod = 0;
+  let closeDate = 0;
+  const closeDateSamples: string[] = [];
+  for (const [ticker, past] of byTicker) {
     const byPeriod = new Map<string, number>();
     for (const ev of past) {
       byPeriod.set(ev.period ?? "", (byPeriod.get(ev.period ?? "") ?? 0) + 1);
     }
-    for (const [, n] of byPeriod) if (n > 1) dupes += n - 1;
+    for (const [, n] of byPeriod) if (n > 1) samePeriod += n - 1;
 
     const sorted = past.slice().sort((a, b) =>
       (a.eventDate ?? "").localeCompare(b.eventDate ?? ""),
@@ -152,10 +207,16 @@ export function countDuplicates(snap: EarningsSnapshot): number {
       const yearA = (a.period ?? "").match(/FY(\d{4})/)?.[1];
       const yearB = (b.period ?? "").match(/FY(\d{4})/)?.[1];
       if (yearA && yearB && yearA !== yearB) continue;
-      dupes++;
+      closeDate++;
+      if (closeDateSamples.length < 5) closeDateSamples.push(ticker);
     }
   }
-  return dupes;
+  return {
+    total: samePeriod + closeDate,
+    same_period: samePeriod,
+    close_date: closeDate,
+    close_date_samples: closeDateSamples,
+  };
 }
 
 // Corpus-wide quality counts. Events with no provenance stamp; metric
@@ -179,10 +240,18 @@ export function countCorpusQualityGaps(snap: EarningsSnapshot): {
       // Accept currency-only forms (USD, EUR_m, CAD) AND EPS
       // per-share forms (USD/shares, DKK/shares) — SEC XBRL reports
       // basic/diluted EPS with the /shares suffix and the unit-
-      // inheritance rederive keeps SEC's label verbatim.
+      // inheritance rederive keeps SEC's label verbatim. Also accept
+      // sub-unit codes ZAc (South African cents), GBp (British
+      // pence), ILA (Israeli agora) — Yahoo/SEC report AngloGold
+      // Ashanti in ZAc, UK-listed dual-classes in GBp. These are
+      // valid currency units, just not the strict ISO-3 uppercase
+      // form. Pattern: [Aa-z]{3} with an uppercase-then-lowercase
+      // shape catches the sub-unit codes without matching random
+      // lowercase strings.
       const isValidCurrencyUnit =
         /^[A-Z]{3}(_m)?$/.test(unit ?? "") ||
-        /^[A-Z]{3}\/shares$/.test(unit ?? "");
+        /^[A-Z]{3}\/shares$/.test(unit ?? "") ||
+        /^[A-Z]{2}[a-z]$/.test(unit ?? "");
       if (isCurrencyMetric && !isValidCurrencyUnit) {
         missingCurrency++;
       }
@@ -202,13 +271,21 @@ export function countCorpusQualityGaps(snap: EarningsSnapshot): {
 export function checkCrossListingConsistency(
   snap: EarningsSnapshot,
   entities: Entity[],
-): { count: number; samples: string[] } {
+): {
+  same_currency_count: number;
+  same_currency_samples: string[];
+  fx_mismatch_count: number;
+  fx_mismatch_samples: string[];
+} {
   const companyByTicker = new Map<string, string>();
   for (const e of entities) {
     if (e.companyId) companyByTicker.set(e.ticker, e.companyId);
   }
-  // group[companyId][period] = { tickers: Set<string>, values: number[] }
-  const groups = new Map<string, Map<string, { tickers: Set<string>; values: number[] }>>();
+  // group[companyId][period] = { tickers, values, units }
+  const groups = new Map<
+    string,
+    Map<string, { tickers: string[]; values: number[]; units: string[] }>
+  >();
   for (const ev of snap.events) {
     if (!ev.eventDate) continue;
     const cid = companyByTicker.get(ev.ticker);
@@ -218,13 +295,22 @@ export function checkCrossListingConsistency(
     const key = ev.period ?? "";
     if (!groups.has(cid)) groups.set(cid, new Map());
     const perCo = groups.get(cid)!;
-    if (!perCo.has(key)) perCo.set(key, { tickers: new Set(), values: [] });
+    if (!perCo.has(key)) perCo.set(key, { tickers: [], values: [], units: [] });
     const cell = perCo.get(key)!;
-    cell.tickers.add(ev.ticker);
+    cell.tickers.push(ev.ticker);
     cell.values.push(revenue.value);
+    cell.units.push(revenue.unit ?? "");
   }
-  const bad = new Set<string>();
-  const samples: string[] = [];
+  // Split into two buckets:
+  //   - fx_mismatch = same company, different currency units — structural
+  //     (Deutsche Telekom's BR-BDR in BRL vs primary in EUR; Telenor's NO
+  //     listing in NOK vs US ADR in USD). Not a bug, just FX. Informational.
+  //   - same_currency = same company, SAME currency, values still >0.5%
+  //     apart — a real ingest inconsistency. Actionable/degraded.
+  const fxBad = new Set<string>();
+  const fxSamples: string[] = [];
+  const sameCurBad = new Set<string>();
+  const sameCurSamples: string[] = [];
   for (const [cid, perCo] of groups) {
     for (const [period, cell] of perCo) {
       if (cell.values.length < 2) continue;
@@ -233,15 +319,31 @@ export function checkCrossListingConsistency(
       const denom = Math.max(Math.abs(max), 1e-9);
       const spread = ((max - min) / denom) * 100;
       if (spread <= 0.5) continue;
-      bad.add(cid);
-      if (samples.length < 5) {
-        samples.push(
-          `${cid} · ${period} · ${[...cell.tickers].join("/")} · spread=${spread.toFixed(1)}% (${min.toFixed(1)}–${max.toFixed(1)})`,
-        );
+      const uniqUnits = new Set(cell.units);
+      if (uniqUnits.size > 1) {
+        fxBad.add(cid);
+        if (fxSamples.length < 5) {
+          const pairs = cell.tickers
+            .map((t, i) => `${t}=${cell.values[i].toFixed(0)} ${cell.units[i]}`)
+            .join(", ");
+          fxSamples.push(`${cid} · ${period} · ${pairs}`);
+        }
+      } else {
+        sameCurBad.add(cid);
+        if (sameCurSamples.length < 5) {
+          sameCurSamples.push(
+            `${cid} · ${period} · ${cell.tickers.join("/")} · spread=${spread.toFixed(1)}% (${min.toFixed(1)}–${max.toFixed(1)} ${[...uniqUnits][0]})`,
+          );
+        }
       }
     }
   }
-  return { count: bad.size, samples };
+  return {
+    same_currency_count: sameCurBad.size,
+    same_currency_samples: sameCurSamples,
+    fx_mismatch_count: fxBad.size,
+    fx_mismatch_samples: fxSamples,
+  };
 }
 
 // Cross-check the events-index against the reconstituted snapshot. Any
@@ -309,6 +411,92 @@ export function bucketForwardCoverage(
   };
 }
 
+// Freshness classifier — mirrors the standalone logic in
+// scripts/detect-stale-earnings.mjs so every pipeline-report run
+// emits a current five-class distribution. The detector runs
+// locally, no network, so folding it into the report is cheap.
+// STALE_THRESHOLD_DAYS = 7 keeps parity with the detector.
+function classifyFreshness(
+  snap: EarningsSnapshot,
+  entities: Entity[] | undefined,
+  dormant: Set<string>,
+  now: Date,
+): {
+  fresh: number;
+  stale: number;
+  shell_only: number;
+  no_history: number;
+  unknown: number;
+  fresh_pct: number;
+} {
+  const STALE_THRESHOLD = 7;
+  const operating = (entities ?? []).filter(
+    (e) => e.securityType === "operating" && !dormant.has(e.ticker),
+  );
+  const byTicker = new Map<string, EarningsSnapshot["events"]>();
+  for (const ev of snap.events) {
+    if (!byTicker.has(ev.ticker)) byTicker.set(ev.ticker, []);
+    byTicker.get(ev.ticker)!.push(ev);
+  }
+  function nextQuarter(period: string | null | undefined): string | null {
+    const m = /^FY(\d{4})\s*Q([1-4])$/.exec(period ?? "");
+    if (!m) return null;
+    const y = Number(m[1]);
+    const q = Number(m[2]);
+    return q === 4 ? `FY${y + 1} Q1` : `FY${y} Q${q + 1}`;
+  }
+  function median(nums: number[]): number | null {
+    if (nums.length < 2) return null;
+    const s = nums.slice().sort((a, b) => a - b);
+    const mid = Math.floor(s.length / 2);
+    return s.length % 2 === 0 ? (s[mid - 1] + s[mid]) / 2 : s[mid];
+  }
+  let fresh = 0, stale = 0, shell_only = 0, no_history = 0, unknown = 0;
+  const nowTs = now.getTime();
+  for (const entity of operating) {
+    const evs = byTicker.get(entity.ticker) ?? [];
+    const past = evs
+      .filter((e) => e.eventDate)
+      .sort((a, b) => (b.eventDate ?? "").localeCompare(a.eventDate ?? ""));
+    const upcoming = evs
+      .filter((e) => !e.eventDate)
+      .sort((a, b) => (a.scheduledDate ?? "").localeCompare(b.scheduledDate ?? ""));
+    if (past.length === 0) { no_history++; continue; }
+    const pastReal = past.filter((e) => (e.metrics ?? []).some((m) => m.actual?.value != null));
+    const latestPast = past[0];
+    const shellOnly = !((latestPast.metrics ?? []).some((m) => m.actual?.value != null));
+    if (shellOnly) { shell_only++; continue; }
+    // Cadence-based expected next report; fall back to upcoming shell's
+    // scheduledDate for fiscal-offset issuers whose cadence is uneven.
+    const dates = (pastReal.length >= 2 ? pastReal : past)
+      .map((e) => e.eventDate!)
+      .sort();
+    const gaps: number[] = [];
+    for (let i = 1; i < dates.length; i++) {
+      gaps.push((Date.parse(dates[i]) - Date.parse(dates[i - 1])) / 86_400_000);
+    }
+    const cadence = median(gaps);
+    const anchorPast = pastReal[0]?.eventDate ?? latestPast.eventDate ?? null;
+    if (!cadence || !anchorPast) { unknown++; continue; }
+    const shellIso = upcoming[0]?.scheduledDate ?? null;
+    const cadenceProjectedIso = new Date(
+      Date.parse(anchorPast) + cadence * 86_400_000,
+    ).toISOString().slice(0, 10);
+    const expectedIso = shellIso ?? cadenceProjectedIso;
+    const expectedPeriod = upcoming[0]?.period ?? nextQuarter(latestPast.period);
+    const daysPast = Math.floor(
+      (nowTs - Date.parse(expectedIso)) / 86_400_000,
+    );
+    const alreadyHaveExpected =
+      expectedPeriod && pastReal.some((e) => e.period === expectedPeriod);
+    if (alreadyHaveExpected || daysPast < STALE_THRESHOLD) fresh++;
+    else stale++;
+  }
+  const total = fresh + stale + shell_only + no_history + unknown;
+  const fresh_pct = total > 0 ? Number(((fresh / total) * 100).toFixed(1)) : 0;
+  return { fresh, stale, shell_only, no_history, unknown, fresh_pct };
+}
+
 export interface ComputeReportInput {
   snap: EarningsSnapshot;
   index: EventsIndex;
@@ -339,7 +527,18 @@ export function computePipelineReport(input: ComputeReportInput): PipelineReport
   for (const ev of snap.events) if (ev.eventDate) tickersWithPast.add(ev.ticker);
   const forward = bucketForwardCoverage(snap, finishedAt);
   const quality = countCorpusQualityGaps(snap);
-  const dupes = countDuplicates(snap);
+  // Dormant tickers get excluded from the duplicate count — their
+  // shard data is frozen registry state, not maintained, so any
+  // period-dupes there are the state we found them in, not a fresh
+  // ingest leak. Post-2026-07-31 dormant-flag: 4/5 of 2026-07-31's
+  // duplicates were ALD/CXA US, both marked dormant hours earlier.
+  const dormant = new Set<string>();
+  if (entities) {
+    for (const e of entities) {
+      if ((e as Entity & { dormant?: boolean }).dormant) dormant.add(e.ticker);
+    }
+  }
+  const dupes = countDuplicates(snap, dormant);
   const mism = countIndexMismatches(index, snap);
   // Reaction maturation counters — sum across all events' reaction.points.
   let reactionsComputed = 0;
@@ -377,7 +576,19 @@ export function computePipelineReport(input: ComputeReportInput): PipelineReport
   // runnable when we have the registry (needs companyId lookup).
   const crossListing = entities
     ? checkCrossListingConsistency(snap, entities)
-    : { count: 0, samples: [] };
+    : {
+        same_currency_count: 0,
+        same_currency_samples: [],
+        fx_mismatch_count: 0,
+        fx_mismatch_samples: [],
+      };
+  // Freshness classification (v3). Same shape as
+  // scripts/detect-stale-earnings.mjs' output, kept in sync here so
+  // every pipeline-report run emits current freshness numbers
+  // without a separate script call. FRESH = latest past covers
+  // most-recent expected period. STALE = expected date >7 days past
+  // with no matching event.
+  const freshness = classifyFreshness(snap, entities, dormant, finishedAt);
   // Market-cap staleness (Part 5c). Count canonical entities whose
   // marketCapAsOf is >7 days old. Non-canonicals are omitted — they
   // don't drive the ordering.
@@ -422,7 +633,7 @@ export function computePipelineReport(input: ComputeReportInput): PipelineReport
     if (a != null && b != null && a <= b) estimatorLabelConflicts++;
   }
   return {
-    schema: "pipeline-report/v2",
+    schema: "pipeline-report/v3",
     date: finishedAt.toISOString().slice(0, 10),
     finishedAt: finishedAt.toISOString(),
     status: "ok", // updated by checkRegressions
@@ -432,7 +643,9 @@ export function computePipelineReport(input: ComputeReportInput): PipelineReport
     shard_files: shardFileCount,
     tickers_with_past_events: tickersWithPast.size,
     ...forward,
-    duplicates_detected: dupes,
+    duplicates_detected: dupes.same_period,
+    duplicates_close_date_fiscal_canary: dupes.close_date,
+    duplicates_close_date_samples: dupes.close_date_samples,
     events_missing_provenance: quality.events_missing_provenance,
     metrics_missing_currency: quality.metrics_missing_currency,
     shard_index_mismatches: mism,
@@ -441,7 +654,11 @@ export function computePipelineReport(input: ComputeReportInput): PipelineReport
     reactions_unavailable: reactionsUnavailable,
     companies_total: companyIds.size,
     entities_unassigned: entitiesUnassigned,
-    companies_with_inconsistent_financials: crossListing.count,
+    companies_with_inconsistent_financials: crossListing.same_currency_count,
+    companies_with_inconsistent_financials_samples: crossListing.same_currency_samples,
+    companies_with_fx_mismatch: crossListing.fx_mismatch_count,
+    companies_with_fx_mismatch_samples: crossListing.fx_mismatch_samples,
+    freshness,
     estimator_label_conflicts: estimatorLabelConflicts,
     marketcap_stale_count: marketcapStale,
     per_vendor: perVendor,
@@ -500,7 +717,18 @@ export function checkRegressions(
   }
   if (current.companies_with_inconsistent_financials > 0) {
     reasons.push(
-      `companies_with_inconsistent_financials=${current.companies_with_inconsistent_financials} — same-company listings show different revenue for the same period`,
+      `companies_with_inconsistent_financials=${current.companies_with_inconsistent_financials} — same-company listings show different revenue in the SAME currency for the same period`,
+    );
+  }
+  // companies_with_fx_mismatch (v3) is INFORMATIONAL — cross-listing
+  // currency differences are structural (Deutsche Telekom BRL/EUR,
+  // Telenor NOK/USD). Visible in the report, not degradation-triggering.
+  // Freshness · stale > 10 is the decay canary. Same-day intraday lag
+  // (a handful of legit late-day reporters) shouldn't flip status;
+  // systemic ingest failure across the universe will show >10.
+  if (current.freshness && current.freshness.stale > 10) {
+    reasons.push(
+      `freshness.stale=${current.freshness.stale} — >10 tickers have an expected report >7 days past with no matching event`,
     );
   }
   if (current.estimator_label_conflicts > 0) {

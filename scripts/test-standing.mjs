@@ -53,6 +53,10 @@ results.push({
   ok: run("Surprise corruption test", "corrupt-surprise-test.mjs"),
 });
 results.push({
+  label: "freshness.stale>10 invariant fires + clears",
+  ok: run("Freshness corruption test", "corrupt-freshness-test.mjs"),
+});
+results.push({
   label: "every index event id resolves in its shard",
   ok: run("Event id integrity", "audit-event-ids.mjs"),
 });

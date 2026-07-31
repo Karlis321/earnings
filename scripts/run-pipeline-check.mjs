@@ -36,18 +36,21 @@ function daysBetween(a, b) {
   return Math.abs((new Date(a).getTime() - new Date(b).getTime()) / 86_400_000);
 }
 
-function countDuplicates(events) {
+function countDuplicates(events, dormant = new Set()) {
   const byTicker = new Map();
   for (const ev of events) {
     if (!ev.eventDate) continue;
+    if (dormant.has(ev.ticker)) continue;
     if (!byTicker.has(ev.ticker)) byTicker.set(ev.ticker, []);
     byTicker.get(ev.ticker).push(ev);
   }
-  let d = 0;
-  for (const [, past] of byTicker) {
+  let samePeriod = 0;
+  let closeDate = 0;
+  const closeDateSamples = [];
+  for (const [ticker, past] of byTicker) {
     const byPeriod = new Map();
     for (const ev of past) byPeriod.set(ev.period ?? "", (byPeriod.get(ev.period ?? "") ?? 0) + 1);
-    for (const [, n] of byPeriod) if (n > 1) d += n - 1;
+    for (const [, n] of byPeriod) if (n > 1) samePeriod += n - 1;
     const sorted = past.slice().sort((a, b) => (a.eventDate ?? "").localeCompare(b.eventDate ?? ""));
     for (let i = 1; i < sorted.length; i++) {
       const a = sorted[i - 1], b = sorted[i];
@@ -56,10 +59,11 @@ function countDuplicates(events) {
       const yA = (a.period ?? "").match(/FY(\d{4})/)?.[1];
       const yB = (b.period ?? "").match(/FY(\d{4})/)?.[1];
       if (yA && yB && yA !== yB) continue;
-      d++;
+      closeDate++;
+      if (closeDateSamples.length < 5) closeDateSamples.push(ticker);
     }
   }
-  return d;
+  return { total: samePeriod + closeDate, same_period: samePeriod, close_date: closeDate, close_date_samples: closeDateSamples };
 }
 
 function countCorpusQualityGaps(events) {
@@ -74,7 +78,8 @@ function countCorpusQualityGaps(events) {
       const isCurrencyMetric = /^(revenue_|eps_|ebitda_|adj_ebitda_|net_income_|gross_profit_|operating_income_|dr_eps_)/.test(m.key);
       const isValidCurrencyUnit =
         /^[A-Z]{3}(_m)?$/.test(m.actual.unit ?? "") ||
-        /^[A-Z]{3}\/shares$/.test(m.actual.unit ?? "");
+        /^[A-Z]{3}\/shares$/.test(m.actual.unit ?? "") ||
+        /^[A-Z]{2}[a-z]$/.test(m.actual.unit ?? ""); // sub-unit codes (ZAc, GBp, ILA)
       if (isCurrencyMetric && !isValidCurrencyUnit) missingCurrency++;
       // Stage 1B/e: surprise-triple invariant.
       // If a metric stores a surprisePct and both actual + estimate
@@ -135,6 +140,70 @@ async function readJson(p, fallback) {
   try { return JSON.parse(await fs.readFile(p, "utf-8")); } catch { return fallback; }
 }
 
+// Mirror of scripts/detect-stale-earnings.mjs (STALE_THRESHOLD=7 days).
+// Classifies every canonical operating non-dormant entity into one of
+// five freshness buckets. Pure local, no network.
+const FRESHNESS_STALE_THRESHOLD_DAYS = 7;
+function _fresh_medianGap(sortedTs) {
+  if (sortedTs.length < 2) return null;
+  const gaps = [];
+  for (let i = 1; i < sortedTs.length; i++) gaps.push((sortedTs[i] - sortedTs[i - 1]) / 86_400_000);
+  gaps.sort((a, b) => a - b);
+  const mid = Math.floor(gaps.length / 2);
+  return gaps.length % 2 === 0 ? (gaps[mid - 1] + gaps[mid]) / 2 : gaps[mid];
+}
+function _fresh_nextQuarterLabel(period) {
+  const m = /^FY(\d{4})\s*Q([1-4])$/.exec(period ?? "");
+  if (!m) return null;
+  const y = Number(m[1]);
+  const q = Number(m[2]);
+  return q === 4 ? `FY${y + 1} Q1` : `FY${y} Q${q + 1}`;
+}
+function _fresh_hasActuals(ev) { return (ev.metrics ?? []).some((m) => m.actual?.value != null); }
+export function classifyFreshness(events, entities, now = new Date()) {
+  const todayIso = now.toISOString().slice(0, 10);
+  const universe = (entities ?? []).filter(
+    (e) => e.securityType === "operating" && e.dormant !== true,
+  );
+  const byTicker = new Map();
+  for (const ev of events) {
+    if (!byTicker.has(ev.ticker)) byTicker.set(ev.ticker, []);
+    byTicker.get(ev.ticker).push(ev);
+  }
+  const counts = { fresh: 0, stale: 0, shell_only: 0, no_history: 0, unknown: 0 };
+  for (const entity of universe) {
+    const list = byTicker.get(entity.ticker) ?? [];
+    const past = list
+      .filter((e) => e.eventDate)
+      .sort((a, b) => (b.eventDate ?? "").localeCompare(a.eventDate ?? ""));
+    const upcoming = list
+      .filter((e) => !e.eventDate)
+      .sort((a, b) => (a.scheduledDate ?? "").localeCompare(b.scheduledDate ?? ""));
+    if (past.length === 0) { counts.no_history++; continue; }
+    const pastReal = past.filter(_fresh_hasActuals);
+    const datesReal = pastReal.map((e) => new Date(e.eventDate).getTime()).sort((a, b) => a - b);
+    const datesAny = past.map((e) => new Date(e.eventDate).getTime()).sort((a, b) => a - b);
+    const cadence = _fresh_medianGap(datesReal.length >= 2 ? datesReal : datesAny);
+    const anchor = pastReal[0]?.eventDate ?? past[0].eventDate;
+    if (!cadence || !anchor) { counts.unknown++; continue; }
+    const upcomingIso = upcoming[0]?.scheduledDate ?? null;
+    const projectedIso = new Date(new Date(anchor).getTime() + cadence * 86_400_000)
+      .toISOString().slice(0, 10);
+    const expectedIso = upcomingIso ?? projectedIso;
+    const daysPast = Math.floor((new Date(todayIso).getTime() - new Date(expectedIso).getTime()) / 86_400_000);
+    const expectedPeriod = upcoming[0]?.period ?? _fresh_nextQuarterLabel(past[0].period);
+    if (past[0] && !_fresh_hasActuals(past[0])) { counts.shell_only++; continue; }
+    if (expectedPeriod && pastReal.some((e) => e.period === expectedPeriod)) { counts.fresh++; continue; }
+    if (daysPast < FRESHNESS_STALE_THRESHOLD_DAYS) { counts.fresh++; continue; }
+    counts.stale++;
+  }
+  const total = universe.length;
+  return {
+    ...counts,
+    fresh_pct: total ? Math.round((counts.fresh / total) * 1000) / 10 : 0,
+  };
+}
+
 async function compute() {
   // The monolithic earnings.json is .gitignored (see CLAUDE.md) — reconstitute
   // from shards when it isn't present locally so this script still works.
@@ -156,7 +225,14 @@ async function compute() {
   for (const ev of snap.events) if (ev.eventDate) tickersWithPast.add(ev.ticker);
   const forward = bucketForwardCoverage(snap.events);
   const quality = countCorpusQualityGaps(snap.events);
-  const dupes = countDuplicates(snap.events);
+  // Registry (loaded once here — used by dormant, cross-listing, marketcap).
+  const registryEarly = await readJson(REGISTRY, { entities: [] });
+  const dormantTickers = new Set(
+    (registryEarly.entities ?? [])
+      .filter((e) => e.dormant === true)
+      .map((e) => e.ticker),
+  );
+  const dupes = countDuplicates(snap.events, dormantTickers);
   const mism = countIndexMismatches(index, snap.events);
   // Reaction counters (schema v2). `unavailable` is a terminal state
   // stamped by matureEventReaction / scripts/backfills/apply-reaction-decay.mjs
@@ -176,12 +252,22 @@ async function compute() {
 
   // Cross-listing revenue consistency invariant. Every listing of a
   // single company must show the same headline revenue for the same
-  // fiscal period. Alphabet violated this (4 listings × 4 different
-  // Q2 2026 values) in the July-2026 audit.
-  const registry = await readJson(REGISTRY, { entities: [] });
+  // fiscal period IN THE SAME CURRENCY. Alphabet violated this
+  // (4 listings × 4 different Q2 2026 values) in the July-2026 audit.
+  //
+  // Split into two buckets:
+  //   - same_currency: real bugs (SEC-verbatim rule violated for
+  //     listings that share a reporting currency). Degrades the report.
+  //   - fx_mismatch: structural — a US ADR and a foreign primary will
+  //     always show different numbers because they publish in
+  //     different currencies (DTE GR EUR vs DTG US BRL). Informational
+  //     only; would only produce noise if used as a degraded trigger.
+  const registry = registryEarly;
   const companyByTicker = new Map();
+  const currencyByTicker = new Map();
   for (const e of registry.entities ?? []) {
     if (e.companyId) companyByTicker.set(e.ticker, e.companyId);
+    if (e.currency) currencyByTicker.set(e.ticker, e.currency);
   }
   const groups = new Map();
   for (const ev of snap.events) {
@@ -193,22 +279,52 @@ async function compute() {
     const key = ev.period ?? "";
     if (!groups.has(cid)) groups.set(cid, new Map());
     const perCo = groups.get(cid);
-    if (!perCo.has(key)) perCo.set(key, { values: [], tickers: new Set() });
-    const cell = perCo.get(key);
-    cell.values.push(rev.value);
-    cell.tickers.add(ev.ticker);
+    if (!perCo.has(key)) perCo.set(key, { entries: [] });
+    perCo.get(key).entries.push({
+      ticker: ev.ticker,
+      value: rev.value,
+      unit: rev.unit ?? currencyByTicker.get(ev.ticker) ?? "",
+    });
   }
-  const inconsistent = new Set();
+  const sameCurrencyBad = new Set();
+  const fxMismatch = new Set();
+  const sameCurrencySamples = [];
+  const fxSamples = [];
   for (const [cid, perCo] of groups) {
     for (const [, cell] of perCo) {
-      if (cell.values.length < 2) continue;
-      const min = Math.min(...cell.values);
-      const max = Math.max(...cell.values);
-      const denom = Math.max(Math.abs(max), 1e-9);
-      if (((max - min) / denom) * 100 > 0.5) inconsistent.add(cid);
+      if (cell.entries.length < 2) continue;
+      const byCurrency = new Map();
+      for (const e of cell.entries) {
+        const cur = (e.unit ?? "").replace(/_m$/, "").replace(/\/shares$/, "");
+        if (!byCurrency.has(cur)) byCurrency.set(cur, []);
+        byCurrency.get(cur).push(e);
+      }
+      let flaggedSameCurrency = false;
+      for (const [, sameCurEntries] of byCurrency) {
+        if (sameCurEntries.length < 2) continue;
+        const vals = sameCurEntries.map((e) => e.value);
+        const min = Math.min(...vals);
+        const max = Math.max(...vals);
+        const denom = Math.max(Math.abs(max), 1e-9);
+        if (((max - min) / denom) * 100 > 0.5) {
+          if (!sameCurrencyBad.has(cid)) {
+            sameCurrencyBad.add(cid);
+            if (sameCurrencySamples.length < 5)
+              sameCurrencySamples.push(cid);
+          }
+          flaggedSameCurrency = true;
+        }
+      }
+      if (!flaggedSameCurrency && byCurrency.size > 1) {
+        if (!fxMismatch.has(cid)) {
+          fxMismatch.add(cid);
+          if (fxSamples.length < 5) fxSamples.push(cid);
+        }
+      }
     }
   }
-  const crossListingBad = inconsistent.size;
+  const crossListingBad = sameCurrencyBad.size;
+  const crossListingFxCount = fxMismatch.size;
 
   // Sweep 1: estimator label conflicts. Forward shells must carry a
   // period STRICTLY after the ticker's latest reported period.
@@ -248,8 +364,16 @@ async function compute() {
     const asOf = e.marketCapAsOf ?? "";
     if (!asOf || asOf < staleThresholdIso) marketcapStale++;
   }
+  // v3 freshness table. Mirror of scripts/detect-stale-earnings.mjs
+  // logic, embedded here so the report always emits current freshness.
+  // Classes: FRESH (has an event in the last 400 days OR an upcoming
+  // shell), STALE (canonical + last event >400 days OR overdue upcoming),
+  // SHELL_ONLY (only forward shells, no past events), NO_HISTORY (no
+  // events at all), UNKNOWN (non-canonical listings and dormant entities).
+  const freshness = classifyFreshness(snap.events, registry.entities ?? [], now);
+
   const report = {
-    schema: "pipeline-report/v2",
+    schema: "pipeline-report/v3",
     date: now.toISOString().slice(0, 10),
     finishedAt: now.toISOString(),
     status: "ok",
@@ -259,7 +383,9 @@ async function compute() {
     shard_files: shardFileCount,
     tickers_with_past_events: tickersWithPast.size,
     ...forward,
-    duplicates_detected: dupes,
+    duplicates_detected: dupes.same_period,
+    duplicates_close_date_fiscal_canary: dupes.close_date,
+    duplicates_close_date_samples: dupes.close_date_samples,
     events_missing_provenance: quality.events_missing_provenance,
     metrics_missing_currency: quality.metrics_missing_currency,
     metrics_surprise_inconsistent: quality.metrics_surprise_inconsistent,
@@ -269,6 +395,10 @@ async function compute() {
     reactions_pending: reactionsPending,
     reactions_unavailable: reactionsUnavailable,
     companies_with_inconsistent_financials: crossListingBad,
+    companies_with_inconsistent_financials_samples: sameCurrencySamples,
+    companies_with_fx_mismatch: crossListingFxCount,
+    companies_with_fx_mismatch_samples: fxSamples,
+    freshness,
     estimator_label_conflicts: estimatorLabelConflicts,
     marketcap_stale_count: marketcapStale,
     per_vendor: {
@@ -294,8 +424,16 @@ async function compute() {
   if (report.shard_index_mismatches > 0) reasons.push(`shard_index_mismatches=${report.shard_index_mismatches}`);
   if (report.companies_with_inconsistent_financials > 0)
     reasons.push(
-      `companies_with_inconsistent_financials=${report.companies_with_inconsistent_financials} — same-company listings show different revenue for the same period`,
+      `companies_with_inconsistent_financials=${report.companies_with_inconsistent_financials} — same-company listings show different revenue in the SAME currency for the same period`,
     );
+  // companies_with_fx_mismatch (v3) is INFORMATIONAL — cross-listing
+  // currency differences are structural, not a bug. Visible in the
+  // report but never flips status.
+  if (report.freshness && report.freshness.stale > 10) {
+    reasons.push(
+      `freshness.stale=${report.freshness.stale} — >10 tickers have an expected report >7 days past with no matching event`,
+    );
+  }
   if (report.estimator_label_conflicts > 0)
     reasons.push(
       `estimator_label_conflicts=${report.estimator_label_conflicts} — forward shells labelled at/before latest reported period`,

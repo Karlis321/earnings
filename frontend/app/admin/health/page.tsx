@@ -359,6 +359,59 @@ function PipelineStrip({ report }: { report: PipelineReport | null }) {
           ))}
         </ul>
       ) : null}
+      {report.freshness ? (
+        <FreshnessRow freshness={report.freshness} />
+      ) : null}
+      <InformationalCounters report={report} />
+    </div>
+  );
+}
+
+// Freshness bucket row (v3). fresh_pct is the headline; stale is the
+// loudest number when nonzero (it's the degradation canary at >10).
+function FreshnessRow({
+  freshness,
+}: {
+  freshness: NonNullable<PipelineReport["freshness"]>;
+}) {
+  const staleLoud = freshness.stale > 0;
+  return (
+    <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-bd/40 pt-2 font-mono text-[11.5px] text-tx-mid">
+      <span>
+        freshness · <span className="text-tx">{freshness.fresh_pct}% fresh</span>
+      </span>
+      <span
+        className={clsx(
+          staleLoud ? "font-semibold text-warning" : "text-tx-mid",
+        )}
+      >
+        stale {freshness.stale}
+      </span>
+      <span>shell-only {freshness.shell_only}</span>
+      <span>no-history {freshness.no_history}</span>
+      <span>unknown {freshness.unknown}</span>
+    </div>
+  );
+}
+
+// v3 informational counters — visible so the condition is auditable
+// but never degradation-triggering. See pipelineReport.ts comments.
+function InformationalCounters({ report }: { report: PipelineReport }) {
+  const closeDateCanary =
+    (report as PipelineReport & { duplicates_close_date_fiscal_canary?: number })
+      .duplicates_close_date_fiscal_canary ?? 0;
+  const fxMismatch = (report as PipelineReport & { companies_with_fx_mismatch?: number })
+    .companies_with_fx_mismatch ?? 0;
+  if (closeDateCanary === 0 && fxMismatch === 0) return null;
+  return (
+    <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-[11.5px] text-tx3">
+      <span className="text-tx-mid">informational ·</span>
+      {closeDateCanary > 0 ? (
+        <span>close-date fiscal canary {closeDateCanary}</span>
+      ) : null}
+      {fxMismatch > 0 ? (
+        <span>fx-mismatch companies {fxMismatch}</span>
+      ) : null}
     </div>
   );
 }
