@@ -681,7 +681,13 @@ export function computePipelineReport(input: ComputeReportInput): PipelineReport
       !/google\.com\/search/i.test(link.url);
     if (ok) continue;
     const cik = entityCikByTicker.get(ev.ticker);
-    if (cik) {
+    // "Solvable" = CIK IS on the entity AND the ticker is a US-primary
+    // listing (ends in " US"). Foreign listings that inherit a CIK
+    // from a sibling US-primary are proxies, not SEC filers — the
+    // SEC accession URL is for the US entity, and the foreign ADR /
+    // pink sheet / BDR / GDR doesn't have its own filing to attach.
+    // Those are structural, not pipeline leaks.
+    if (cik && ev.ticker.endsWith(" US")) {
       reportedWithoutDocument++;
       if (reportedWithoutDocumentSamples.length < 8) {
         reportedWithoutDocumentSamples.push(`${ev.ticker} · ${ev.period ?? "?"}`);

@@ -38,8 +38,11 @@ function runCheck(label) {
 }
 
 async function main() {
-  // Find a past event with actuals AND a filing sourceLink to corrupt.
-  const files = (await fs.readdir(EVENTS_DIR)).filter((f) => f.endsWith(".json"));
+  // Find a past event on a US-primary ticker (ends " US") with
+  // actuals AND a valid filing sourceLink. The counter's degrade
+  // path fires only on US-primary CIK-bearing tickers, so a
+  // foreign-listing corruption wouldn't move it (structural bucket).
+  const files = (await fs.readdir(EVENTS_DIR)).filter((f) => f.endsWith(".json") && f.endsWith("_US.json"));
   let target = null;
   for (const f of files) {
     const p = path.join(EVENTS_DIR, f);
@@ -47,6 +50,7 @@ async function main() {
     const events = Array.isArray(j) ? j : j.events ?? [];
     for (const e of events) {
       if (!e.eventDate) continue;
+      if (!e.ticker || !e.ticker.endsWith(" US")) continue;
       const hasActuals = (e.metrics ?? []).some((m) => m.actual?.value != null);
       if (!hasActuals) continue;
       const link = e.sourceLink;

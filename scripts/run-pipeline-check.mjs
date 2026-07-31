@@ -387,7 +387,8 @@ async function compute() {
     const ok = link && link.kind === "filing" && link.url && !/google\.com\/search/i.test(link.url);
     if (ok) continue;
     const cik = entityCikByTicker.get(ev.ticker);
-    if (cik) {
+    // See pipelineReport.ts — US-primary + CIK = solvable via SEC.
+    if (cik && ev.ticker.endsWith(" US")) {
       reportedWithoutDocument++;
       if (reportedWithoutDocumentSamples.length < 8) {
         reportedWithoutDocumentSamples.push(`${ev.ticker} · ${ev.period ?? "?"}`);
