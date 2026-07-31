@@ -661,8 +661,15 @@ export function computePipelineReport(input: ComputeReportInput): PipelineReport
   //                regulator crawl to close, and those aren't a
   //                pipeline bug per se.
   const entityCikByTicker = new Map<string, string | null | undefined>();
+  const entityFilerTypeByTicker = new Map<string, string | undefined>();
   if (entities) {
-    for (const e of entities) entityCikByTicker.set(e.ticker, e.edgarCik ?? null);
+    for (const e of entities) {
+      entityCikByTicker.set(e.ticker, e.edgarCik ?? null);
+      entityFilerTypeByTicker.set(
+        e.ticker,
+        (e as Entity & { secFilerType?: string }).secFilerType,
+      );
+    }
   }
   let reportedWithoutDocument = 0;
   let reportedWithoutDocumentStructural = 0;
@@ -681,13 +688,18 @@ export function computePipelineReport(input: ComputeReportInput): PipelineReport
       !/google\.com\/search/i.test(link.url);
     if (ok) continue;
     const cik = entityCikByTicker.get(ev.ticker);
+    const filerType = entityFilerTypeByTicker.get(ev.ticker);
     // "Solvable" = CIK IS on the entity AND the ticker is a US-primary
-    // listing (ends in " US"). Foreign listings that inherit a CIK
-    // from a sibling US-primary are proxies, not SEC filers — the
-    // SEC accession URL is for the US entity, and the foreign ADR /
-    // pink sheet / BDR / GDR doesn't have its own filing to attach.
-    // Those are structural, not pipeline leaks.
-    if (cik && ev.ticker.endsWith(" US")) {
+    // listing AND the entity is NOT flagged as a foreign filer.
+    // Foreign filers (secFilerType === "foreign") have a CIK but file
+    // via 20-F/40-F/6-K only — their document rule follows the home
+    // venue (irSources), not SEC 10-Q. Marked by
+    // scripts/apply-sec-filer-type.mjs from the triage classifier.
+    if (
+      cik &&
+      ev.ticker.endsWith(" US") &&
+      filerType !== "foreign"
+    ) {
       reportedWithoutDocument++;
       if (reportedWithoutDocumentSamples.length < 8) {
         reportedWithoutDocumentSamples.push(`${ev.ticker} · ${ev.period ?? "?"}`);

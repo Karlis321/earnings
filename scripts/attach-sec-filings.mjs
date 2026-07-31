@@ -85,6 +85,24 @@ function submissionsUrl(cik) {
   return `https://data.sec.gov/submissions/CIK${String(cik).padStart(10, "0")}.json`;
 }
 
+function olderPageUrl(name) {
+  return `https://data.sec.gov/submissions/${name}`;
+}
+
+// Merge a paginated older-submissions page into the same
+// {form[], filingDate[], accessionNumber[], primaryDocument[],
+//  reportDate[]} shape pickBestFiling expects.
+function mergeSubmissionsPage(recent, pageData) {
+  if (!pageData) return recent;
+  const keys = ["form", "filingDate", "accessionNumber", "primaryDocument", "reportDate"];
+  for (const k of keys) {
+    if (Array.isArray(pageData[k])) {
+      recent[k] = (recent[k] ?? []).concat(pageData[k]);
+    }
+  }
+  return recent;
+}
+
 function accessionUrl(cik, accessionRaw, primaryDoc) {
   const bareCik = String(cik).replace(/^0+/, "");
   const bareAcc = String(accessionRaw).replace(/-/g, "");
@@ -178,7 +196,11 @@ async function main() {
     console.error(`unknown --scope=${SCOPE}`);
     process.exit(1);
   }
-  const historyDepth = SCOPE === "sp500-latest" ? 1 : 5;
+  // sp500-latest: only newest quarter per ticker (fastest verify pass).
+  // sp500-all / all: no depth cap — process every past event on the
+  // shard. The previous 5-event cap missed older events (WMT US
+  // FY2025 Q1/Q2 sat at indices 6-7 and were never touched).
+  const historyDepth = SCOPE === "sp500-latest" ? 1 : Infinity;
   if (LIMIT) candidateTickers = candidateTickers.slice(0, LIMIT);
   console.log(`scope=${SCOPE} · candidates=${candidateTickers.length} · depth=${historyDepth} · checkpoint had ${checkpoint.size} completed`);
 
@@ -226,10 +248,38 @@ async function main() {
       rollup.tickers_processed++;
       continue;
     }
+    // High-volume filers (banks, real estate cos.) can push older
+    // 10-Q filings off the ~1000-entry recent bucket. When we need
+    // to reach for a filing that's older than what recent covers,
+    // walk the pagination pages (filings.files[]) — each covers a
+    // date range so we only fetch pages whose window includes the
+    // ev.eventDate we're trying to match.
+    const combinedFilings = { ...subs.filings.recent };
+    const olderPages = (subs.filings.files ?? []).slice();
+    const oldestRecent = subs.filings.recent.filingDate?.length > 0
+      ? subs.filings.recent.filingDate[subs.filings.recent.filingDate.length - 1]
+      : null;
     let mutated = false;
     for (const ev of violating) {
       rollup.events_examined++;
-      const filing = pickBestFiling(subs.filings.recent, ev.eventDate);
+      let filing = pickBestFiling(combinedFilings, ev.eventDate);
+      // If not found in recent bucket AND the event predates our
+      // deepest recent filing, walk older pages until we find a
+      // window that could contain the event's target filing.
+      if (!filing && oldestRecent && ev.eventDate < oldestRecent) {
+        for (const pageMeta of olderPages) {
+          if (!pageMeta.filingFrom || !pageMeta.filingTo) continue;
+          const eventTs = new Date(ev.eventDate).getTime();
+          const fromTs = new Date(pageMeta.filingFrom).getTime();
+          const toTs = new Date(pageMeta.filingTo).getTime();
+          if (eventTs < fromTs - 60 * 86_400_000) continue;
+          if (eventTs > toTs + 60 * 86_400_000) continue;
+          const pageData = await fetchEdgarJson(olderPageUrl(pageMeta.name));
+          if (pageData) mergeSubmissionsPage(combinedFilings, pageData);
+          filing = pickBestFiling(combinedFilings, ev.eventDate);
+          if (filing) break;
+        }
+      }
       if (!filing) { rollup.events_no_match++; continue; }
       const url = accessionUrl(entity.edgarCik, filing.accession, filing.primaryDoc);
       const probeOk = await probeUrl(url);

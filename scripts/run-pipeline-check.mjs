@@ -375,7 +375,11 @@ async function compute() {
   // Phase 4 · reported_without_document (solvable vs structural split).
   // See pipelineReport.ts for the rationale.
   const entityCikByTicker = new Map();
-  for (const e of registry.entities ?? []) entityCikByTicker.set(e.ticker, e.edgarCik ?? null);
+  const entityFilerTypeByTicker = new Map();
+  for (const e of registry.entities ?? []) {
+    entityCikByTicker.set(e.ticker, e.edgarCik ?? null);
+    entityFilerTypeByTicker.set(e.ticker, e.secFilerType);
+  }
   let reportedWithoutDocument = 0;
   let reportedWithoutDocumentStructural = 0;
   const reportedWithoutDocumentSamples = [];
@@ -387,8 +391,10 @@ async function compute() {
     const ok = link && link.kind === "filing" && link.url && !/google\.com\/search/i.test(link.url);
     if (ok) continue;
     const cik = entityCikByTicker.get(ev.ticker);
-    // See pipelineReport.ts — US-primary + CIK = solvable via SEC.
-    if (cik && ev.ticker.endsWith(" US")) {
+    const filerType = entityFilerTypeByTicker.get(ev.ticker);
+    // See pipelineReport.ts. Foreign filers (secFilerType==="foreign")
+    // route to structural.
+    if (cik && ev.ticker.endsWith(" US") && filerType !== "foreign") {
       reportedWithoutDocument++;
       if (reportedWithoutDocumentSamples.length < 8) {
         reportedWithoutDocumentSamples.push(`${ev.ticker} · ${ev.period ?? "?"}`);
