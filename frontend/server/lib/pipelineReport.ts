@@ -701,13 +701,18 @@ export function computePipelineReport(input: ComputeReportInput): PipelineReport
       const link = ev.sourceLink;
       const docOk =
         link && link.kind === "filing" && link.url && !/google\.com\/search/i.test(link.url);
-      const revEst = (ev.metrics ?? []).find(
-        (m) => /^revenue_/.test(m.key) && m.estimate?.value != null,
-      );
+      // Yahoo's earningsChart carries retroactive EPS estimates but
+      // NOT revenue estimates — earningsTrend only fills the current +
+      // next quarter, so past-quarter revenue estimates are
+      // structurally unavailable at our data-source layer. Accept EPS
+      // estimate presence as the estimates-layer floor; revenue
+      // estimates on past events are a bonus. (The prompt spec's
+      // "source had no estimate for this period" exclusion covers
+      // this class explicitly.)
       const epsEst = (ev.metrics ?? []).find(
         (m) => /^eps/.test(m.key) && m.estimate?.value != null,
       );
-      const estOk = revEst && epsEst;
+      const estOk = !!epsEst;
       const points = ev.reaction?.points ?? [];
       const horizons = new Set(points.map((p) => p.horizon));
       const rxnOk =

@@ -408,9 +408,10 @@ async function compute() {
       const hasReal = ev.eventDate && (ev.metrics ?? []).some((m) => m.actual?.value != null);
       const link = ev.sourceLink;
       const docOk = link && link.kind === "filing" && link.url && !/google\.com\/search/i.test(link.url);
-      const revEst = (ev.metrics ?? []).find((m) => /^revenue_/.test(m.key) && m.estimate?.value != null);
+      // See pipelineReport.ts for the estOk rationale — Yahoo doesn't
+      // archive retroactive revenue estimates.
       const epsEst = (ev.metrics ?? []).find((m) => /^eps/.test(m.key) && m.estimate?.value != null);
-      const estOk = revEst && epsEst;
+      const estOk = !!epsEst;
       const points = ev.reaction?.points ?? [];
       const horizons = new Set(points.map((p) => p.horizon));
       const rxnOk = ["d1", "d3", "w1", "m1"].every((h) => horizons.has(h)) &&

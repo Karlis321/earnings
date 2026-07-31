@@ -164,7 +164,8 @@ async function main() {
       const readyPending = points.filter(
         (p) => p.absReturn == null && (!p.populatesOn || new Date(p.populatesOn) <= now),
       );
-      if (readyPending.length > 0 || (!hasBaseline && new Date(e.eventDate) <= now)) {
+      const needsBootstrap = points.length === 0 && new Date(e.eventDate) <= now;
+      if (readyPending.length > 0 || (!hasBaseline && new Date(e.eventDate) <= now) || needsBootstrap) {
         toMature.push(e);
       }
     }
@@ -238,6 +239,22 @@ async function main() {
       if (secBaseIdx < 0) continue;
       const benchBaseIdx = benchBars.length > 0 ? findBaselineIndex(benchBars, baselineDate) : -1;
 
+      // Seed the horizons array if empty — refresh-yahoo-shards
+      // creates events with `reaction: null` or empty points, and
+      // mature-reactions must be the one to bootstrap the array
+      // (otherwise these events stay uninstrumented forever).
+      if (!e.reaction) e.reaction = { benchmark: t.entity.benchmark ?? "", baselineDate, baselineClose, points: [] };
+      if (!Array.isArray(e.reaction.points) || e.reaction.points.length === 0) {
+        e.reaction.points = ["d1", "d3", "w1", "m1"].map((horizon) => ({
+          horizon,
+          absReturn: null,
+          excessReturn: null,
+          benchmark: t.entity.benchmark ?? "",
+          computedAt: null,
+          populatesOn: null,
+          status: "pending",
+        }));
+      }
       const nextPoints = e.reaction.points.map((p) => {
         if (p.absReturn != null) return p;
         if (p.populatesOn && new Date(p.populatesOn) > now) return p;
