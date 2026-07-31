@@ -958,9 +958,18 @@ export async function POST(req: NextRequest) {
             ...s.events.map((e) => pendingEvents.get(e.id) ?? e),
             ...newlyCreated,
           ];
-          const { touched } = sanitizeSnapshot(events, entityByTicker);
-          if (touched > 0) {
-            console.log(`[cron sanitize] scrubbed invariants on ${touched} event(s)`);
+          // Defensive: sanitize failures must never take down the
+          // whole cron. If a malformed event trips the sanitizer,
+          // log + continue with unsanitized events rather than
+          // 500ing the slice. The stand-alone sweep scripts still
+          // exist as a manual fallback.
+          try {
+            const { touched } = sanitizeSnapshot(events, entityByTicker);
+            if (touched > 0) {
+              console.log(`[cron sanitize] scrubbed invariants on ${touched} event(s)`);
+            }
+          } catch (e) {
+            console.error("[cron sanitize] threw — skipping invariants this slice", e);
           }
           return { ...s, events };
         },
