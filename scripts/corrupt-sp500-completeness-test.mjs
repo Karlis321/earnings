@@ -101,6 +101,24 @@ async function main() {
 
   const baseline = runCheck("BASELINE");
 
+  // If baseline is already above the 98% floor, a single-member
+  // corruption may not push pct below it. Pick additional COMPLETE
+  // members whose doc layer we'll remove alongside the plant, so the
+  // corrupted pct drops meaningfully (5 removals ≈ 1pp drop).
+  const extraCorruptions = [];
+  for (const e of sp500) {
+    if (extraCorruptions.length >= 5) break;
+    if (e.ticker === target.ticker) continue;
+    const shardP = path.join(EVENTS_DIR, tickerSlug(e.ticker) + ".json");
+    let jj;
+    try { jj = JSON.parse(await fs.readFile(shardP, "utf-8")); } catch { continue; }
+    const evs = Array.isArray(jj) ? jj : jj.events ?? [];
+    const p = evs.filter((x) => x.eventDate).sort((a, b) => (b.eventDate ?? "").localeCompare(a.eventDate ?? ""));
+    if (p.length === 0) continue;
+    if (!isComplete(p[0])) continue;
+    extraCorruptions.push({ ticker: e.ticker, path: shardP, wrapped: !Array.isArray(jj), body: jj, event: p[0], originalText: await fs.readFile(shardP, "utf-8") });
+  }
+
   // Plant a synthetic complete event by adding all four layers.
   const originalEvent = JSON.parse(JSON.stringify(targetEv));
   targetEv.sourceLink = {
@@ -132,10 +150,17 @@ async function main() {
   // decreases and rule fires.
   targetEv.sourceLink = { kind: "fallback", url: "https://www.google.com/search?q=x" };
   await fs.writeFile(shardPath, JSON.stringify(j, null, 2));
+  // Also remove documents from the extra corruption set so we push
+  // pct BELOW the 98% floor even when baseline is right at the edge.
+  for (const c of extraCorruptions) {
+    c.event.sourceLink = { kind: "fallback", url: "https://www.google.com/search?q=extra" };
+    await fs.writeFile(c.path, JSON.stringify(c.wrapped ? c.body : (c.body), null, 2));
+  }
 
   const corrupted = runCheck("AFTER CORRUPTION (removed document)");
 
   await fs.writeFile(shardPath, original);
+  for (const c of extraCorruptions) await fs.writeFile(c.path, c.originalText);
   const restored = runCheck("AFTER RESTORE");
 
   console.log(`\n=== RESULT ===`);

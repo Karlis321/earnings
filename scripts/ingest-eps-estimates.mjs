@@ -184,19 +184,50 @@ async function main() {
     const perEntity = { ticker: entity.ticker, attached: 0, surprise: 0, skipped: 0 };
 
     for (const q of quarterly) {
-      const p = periodFromEarningsLabel(q.date);
-      if (!p) { perEntity.skipped++; continue; }
+      // Our shards use inconsistent label styles across tickers:
+      //   ACN US "FY2026 Q2" (calendar-quarter derived) vs
+      //   NVDA US "FY2027 Q1" (fiscal-year derived).
+      // Try MULTIPLE label sources — whichever finds a match wins.
+      const candidateLabels = [
+        periodFromEarningsLabel(q.date),
+        periodFromEarningsLabel(q.calendarQuarter),
+        periodFromEarningsLabel(q.fiscalQuarter),
+      ].filter(Boolean);
+      if (candidateLabels.length === 0) { perEntity.skipped++; continue; }
       const actualRaw = q.actual?.raw;
       const estimateRaw = q.estimate?.raw;
       // Need estimate; actual optional (some upcoming quarters slip in as
       // past on Yahoo's chart before their earnings date).
       if (estimateRaw == null) { perEntity.skipped++; continue; }
 
-      // Find matching past event.
-      const target = events.find((ev) => {
-        if (!ev.eventDate) return false;
-        return ev.period === p.label;
-      });
+      // Find matching past event. Prefer periodEndDate proximity —
+      // it's the authoritative signal from Yahoo (the fiscal
+      // quarter-end this row reports on), and it doesn't suffer
+      // from the label-format inconsistencies our shards accumulated
+      // across different ingest generations. Fall back to label
+      // matching when Yahoo doesn't provide periodEndDate.
+      let target = null;
+      const periodEnd = q.periodEndDate?.fmt;
+      if (periodEnd) {
+        // Pick the event whose eventDate is closest to the fiscal
+        // period end, within a 60-day window (report date typically
+        // 2-8 weeks after quarter end for SEC filers).
+        const candidates = events
+          .filter((ev) => ev.eventDate)
+          .map((ev) => ({
+            ev,
+            gap: Math.abs(new Date(ev.eventDate) - new Date(periodEnd)) / 86_400_000,
+          }))
+          .filter((c) => c.gap <= 60)
+          .sort((a, b) => a.gap - b.gap);
+        target = candidates[0]?.ev ?? null;
+      }
+      if (!target) {
+        for (const p of candidateLabels) {
+          target = events.find((ev) => ev.eventDate && ev.period === p.label);
+          if (target) break;
+        }
+      }
       if (!target) { perEntity.skipped++; continue; }
 
       if (!Array.isArray(target.metrics)) target.metrics = [];
