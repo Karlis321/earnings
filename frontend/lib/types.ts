@@ -174,6 +174,15 @@ export interface Entity {
   // Nulls allowed; a URL is NEVER guessed into a field. Every
   // successful /earnings fetch refreshes this record.
   irSources?: IrSources | null;
+  // Index membership flags. Independent of sectorTags — an entity's
+  // sector doesn't change when it enters/exits the S&P 500, only its
+  // membership set does. Array so future index memberships (NASDAQ-100,
+  // Russell-1000, TSX-60, etc.) can be added without a schema break.
+  // Membership is as_of-dated via the index reference file it came
+  // from (e.g. data/reference/sp500.json). A quarterly re-fetch
+  // reconciles adds/drops: dropped members lose the flag but keep
+  // their historical data + shards.
+  index_membership?: string[];
 }
 
 export interface IrSources {
