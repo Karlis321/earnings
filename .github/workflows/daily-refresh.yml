@@ -82,11 +82,20 @@ jobs:
           SLICES=16
           FAILED=0
 
-          # One-shot retry on 5xx: transient Vercel cold-starts or Yahoo
-          # slowdowns cause occasional single-attempt failures that a
-          # 10s-later retry clears (function is warm, Yahoo is a moving
-          # target). 4xx errors (401/400/etc.) don't retry — those are
-          # config problems a retry won't fix.
+          # Rate-limit-aware retry. Handles three failure modes:
+          #   - 429 (store degraded / GH rate-limited): ABORT THE RUN
+          #     entirely. Retrying while quota is exhausted burns more
+          #     attempts and corrupts fixture-fallback state. Reset is
+          #     ~50 min away — better to fail the whole workflow now,
+          #     let the schedule pick it up tomorrow, or manual re-run.
+          #   - 5xx (transient timeout / cold-start): retry once after
+          #     30s (longer than the 10s of earlier design — a 504 on
+          #     slice 0 needs Vercel to fully release the killed
+          #     function before the retry, which is closer to 30s).
+          #   - 4xx other (401/400): don't retry, config problem.
+          # The wrapper returns a special exit code 42 on 429 so the
+          # outer loop can `exit 1` the whole workflow immediately
+          # rather than plow through slices 1..15 with the same result.
           run_with_retry() {
             local url="$1"
             local label="$2"
@@ -112,9 +121,12 @@ jobs:
               fi
               head -c 400 /tmp/cron-response.json || true
               echo
+              # 429 = the route detected fixture fallback (GH rate limit
+              # exhausted). Abort — retries will only make it worse.
+              if [ "$HTTP_STATUS" -eq 429 ]; then return 42; fi
               # 4xx = config error (401/400/etc.) — retry won't help.
               if [ "$HTTP_STATUS" -lt 500 ]; then return 1; fi
-              sleep 10
+              sleep 30
             done
             return 1
           }
@@ -124,9 +136,23 @@ jobs:
           # (~375 tickers) and finishes in ~60-90s.
           for ((n=0; n<SLICES; n++)); do
             echo "== phase A · slice $n/$SLICES =="
-            if ! run_with_retry \
+            set +e
+            run_with_retry \
               "https://earnings-karlis123.vercel.app/api/cron/daily?slice=$n&sliceCount=$SLICES&refreshSectors=0" \
-              "phase A slice $n"; then
+              "phase A slice $n"
+            rc=$?
+            set -e
+            if [ "$rc" -eq 42 ]; then
+              # 429 from the guardrail — GH_PAT rate limit is exhausted
+              # or Vercel is falling back to fixture data. Bail on the
+              # whole run rather than push slices 1..N against a
+              # degraded store.
+              echo "::error::phase A slice $n aborted the run (429 · store degraded / GH rate-limit)"
+              echo "::error::Not retrying — wait for the hourly reset, then re-trigger the workflow manually."
+              FAILED=$((FAILED+1))
+              exit 1
+            fi
+            if [ "$rc" -ne 0 ]; then
               echo "::error::phase A slice $n failed after retry (final HTTP $HTTP_STATUS)"
               FAILED=$((FAILED+1))
             fi
@@ -136,9 +162,18 @@ jobs:
           # per sector, ~150s). No per-entity work, so it fits in one
           # 300s Vercel invocation.
           echo "== phase B · sectors-only =="
-          if ! run_with_retry \
+          set +e
+          run_with_retry \
             "https://earnings-karlis123.vercel.app/api/cron/daily?sectorsOnly=1&refreshSectors=1" \
-            "phase B"; then
+            "phase B"
+          rc=$?
+          set -e
+          if [ "$rc" -eq 42 ]; then
+            echo "::error::phase B aborted the run (429 · store degraded / GH rate-limit)"
+            FAILED=$((FAILED+1))
+            exit 1
+          fi
+          if [ "$rc" -ne 0 ]; then
             echo "::error::sectors-only phase failed after retry (final HTTP $HTTP_STATUS)"
             FAILED=$((FAILED+1))
           fi

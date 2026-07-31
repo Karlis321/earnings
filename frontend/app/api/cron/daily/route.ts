@@ -246,6 +246,28 @@ export async function POST(req: NextRequest) {
   try {
     snap = await store.readEarnings();
     const registry = await store.readRegistry();
+    // Fail-fast on rate-limit / fixture fallback (registry length <= 20
+    // is the compiled-in 17-entity fixture — every other path returns
+    // 1,900+ entities). When GH_PAT is rate-limited every downstream
+    // step tries to write against fixture events, corrupts state, and
+    // burns the retry budget. Return HTTP 429 immediately so the
+    // workflow's retry loop knows to back off, not push through.
+    if (registry.length <= 20) {
+      const msg =
+        `store degraded — got ${registry.length} entities from readRegistry(). ` +
+        `Likely GH_PAT rate-limit exhaustion → fixture fallback. ` +
+        `Aborting slice before it writes corrupted fixture events.`;
+      console.error("[cron guardrail]", msg);
+      return NextResponse.json(
+        {
+          ok: false,
+          error: "store-degraded-fixture-fallback",
+          message: msg,
+          slice: { n: slice, of: sliceCount },
+        },
+        { status: 429, headers: { "Cache-Control": "no-store", "Retry-After": "1800" } },
+      );
+    }
     const now = new Date();
 
     // Merge-or-push router (audit finding — capability e).
