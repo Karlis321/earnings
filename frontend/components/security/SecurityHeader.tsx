@@ -51,6 +51,15 @@ export function SecurityHeader({ entity, latest, nextEvent, freshness }: Props) 
                 {entity.ticker}
               </span>
               <FreshnessDot state={freshness} />
+              {(entity.index_membership ?? []).includes("SP500") ? (
+                <Link
+                  href="/sectors/sp500"
+                  className="inline-flex h-[20px] items-center rounded-[4px] border border-brand/40 bg-brand/10 px-[7px] font-mono text-[10.5px] font-medium text-brand-fg hover:bg-brand/20"
+                  title="S&P 500 constituent — click for the grouping view"
+                >
+                  S&amp;P 500
+                </Link>
+              ) : null}
             </div>
             <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-[12.5px] text-tx-mid">
               <span>

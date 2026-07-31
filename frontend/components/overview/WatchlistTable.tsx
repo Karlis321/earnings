@@ -104,6 +104,7 @@ const INDUSTRY_GROUPS: Record<string, string[]> = {
 
 type Filter =
   | "portfolio"
+  | "sp500"
   | "technology"
   | "materials"
   | "energy"
@@ -188,6 +189,12 @@ export function WatchlistTable({ rows }: { rows: WatchlistRow[] }) {
       // Sector-universe entities (isCore:false) live under the tab
       // labels below and on /admin.
       list = list.filter((r) => r.entity.isCore);
+    } else if (filter === "sp500") {
+      // Index membership filter — SP500 is NOT a sector, so we can't
+      // use sectorTags here. Constituents keep their real GICS
+      // sectors + industry groups; this filter just narrows the
+      // universe to the 503 flagged in the daily reference file.
+      list = list.filter((r) => (r.entity.index_membership ?? []).includes("SP500"));
     } else {
       const needles = INDUSTRY_GROUPS[filter] ?? [];
       list = list.filter((r) => {
@@ -681,6 +688,7 @@ function FilterBar({
         {(
           [
             { id: "portfolio", label: "Our portfolio" },
+            { id: "sp500", label: "S&P 500" },
             { id: "technology", label: "Technology" },
             { id: "materials", label: "Materials" },
             { id: "energy", label: "Energy" },

@@ -34,6 +34,26 @@ export default async function SectorsPage() {
         </p>
       </div>
 
+      <Panel eyebrow="Index membership" padded={false}>
+        <div className="divide-y divide-bd">
+          <Link
+            href="/sectors/sp500"
+            className="flex items-center justify-between px-5 py-4 hover:bg-hover"
+          >
+            <div>
+              <div className="text-[14px] text-tx">S&amp;P 500</div>
+              <div className="mt-1 font-mono text-[11px] text-tx3">
+                {displayable.filter((e) => (e.index_membership ?? []).includes("SP500")).length}{" "}
+                constituents · grouped by real industry group
+              </div>
+            </div>
+            <span className="text-tx3">→</span>
+          </Link>
+        </div>
+      </Panel>
+
+      <div className="h-4" />
+
       <Panel eyebrow="Sectors · from registry sectorTags" padded={false}>
         <div className="grid grid-cols-1 divide-y divide-bd md:grid-cols-2 md:divide-y-0 md:divide-x">
           {sectors.map((s) => (
