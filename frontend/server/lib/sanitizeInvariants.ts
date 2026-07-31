@@ -43,15 +43,21 @@ function isSameBasis(a: Fact | null | undefined, e: Fact | null | undefined): bo
   return false;
 }
 
-// Per-event sanitization. Mutates the event in place.
-export function sanitizeEvent(event: EventRecord, entity: Entity): void {
-  if (!Array.isArray(event.metrics)) return;
+// Per-event sanitization. Mutates the event in place. Returns true
+// when at least one metric was changed so the caller can count
+// touched events without a stringify-diff (that overhead pushed
+// slice 0 past Vercel's 300s function cap → 504).
+export function sanitizeEvent(event: EventRecord, entity: Entity): boolean {
+  if (!Array.isArray(event.metrics)) return false;
+  let touched = false;
   for (const m of event.metrics) {
-    sanitizeMetric(m as MetricEntry, entity);
+    if (sanitizeMetric(m as MetricEntry, entity)) touched = true;
   }
+  return touched;
 }
 
-function sanitizeMetric(m: MetricEntry, entity: Entity): void {
+function sanitizeMetric(m: MetricEntry, entity: Entity): boolean {
+  let touched = false;
   // 1. Currency-unit correction — Yahoo sometimes stamps 'USD' on
   //    values that are clearly in the entity's reporting currency
   //    (SK Hynix EPS 21,522 KRW labeled as USD). If the entity's
@@ -65,6 +71,7 @@ function sanitizeMetric(m: MetricEntry, entity: Entity): void {
         const fx = f as Fact & { _originalUnit?: string };
         if (!fx._originalUnit) fx._originalUnit = "USD";
         f.unit = entity.currency;
+        touched = true;
       }
     }
   }
@@ -85,6 +92,7 @@ function sanitizeMetric(m: MetricEntry, entity: Entity): void {
         source: "cron-sanitize",
       });
       m.surprisePct = null;
+      touched = true;
     }
   }
 
@@ -103,7 +111,10 @@ function sanitizeMetric(m: MetricEntry, entity: Entity): void {
       reason: "absurd_magnitude",
     });
     m.surprisePct = null;
+    touched = true;
   }
+
+  return touched;
 }
 
 // Whole-snapshot sweep. Call this inside the cron's mutateEarnings
@@ -115,11 +126,9 @@ export function sanitizeSnapshot(
 ): { events: EventRecord[]; touched: number } {
   let touched = 0;
   for (const ev of events) {
-    const before = JSON.stringify(ev.metrics);
     const entity = entityByTicker.get(ev.ticker);
     if (!entity) continue;
-    sanitizeEvent(ev, entity);
-    if (JSON.stringify(ev.metrics) !== before) touched++;
+    if (sanitizeEvent(ev, entity)) touched++;
   }
   return { events, touched };
 }
