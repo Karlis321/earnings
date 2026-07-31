@@ -85,6 +85,17 @@ export interface PipelineReport {
   // degraded and lists a sample of affected companies in reasons[].
   companies_with_inconsistent_financials: number;
   companies_with_inconsistent_financials_samples: string[];
+  // Phase 4 · absolute report-attachment rule (SP500 spec, applies
+  // universe-wide): a past event with real actuals but no filing
+  // sourceLink is a bug by definition. NO GRACE WINDOW. Degrade rule:
+  // reported_without_document > 0.
+  reported_without_document: number;
+  reported_without_document_samples: string[];
+  // Phase 4 · SP500 completeness canary. Percentage of the ~503
+  // members' latest reported quarter that clears all four layers
+  // (results + document + estimates + reaction). Degrade rule:
+  // sp500_complete_pct < 98%.
+  sp500_complete_pct: number;
   // Companion informational counter (v3): same company, different
   // reporting currencies across listings. STRUCTURAL, not a bug —
   // Deutsche Telekom's BR-BDR reports in BRL; Telenor's US ADR
@@ -632,6 +643,86 @@ export function computePipelineReport(input: ComputeReportInput): PipelineReport
     const b = parsePeriod(latest);
     if (a != null && b != null && a <= b) estimatorLabelConflicts++;
   }
+
+  // Phase 4 · reported_without_document. Universe-wide (not just
+  // SP500) — the report-attachment rule applies to every past event
+  // with real actuals. A past event with a metric.actual.value but a
+  // non-filing sourceLink (or none) is a document violation. Only
+  // events with genuine actuals count — a shell that carries no
+  // actuals isn't "reported" in the first place.
+  let reportedWithoutDocument = 0;
+  const reportedWithoutDocumentSamples: string[] = [];
+  for (const ev of snap.events) {
+    if (!ev.eventDate) continue;
+    const hasActuals = (ev.metrics ?? []).some(
+      (m) => m.actual?.value != null,
+    );
+    if (!hasActuals) continue;
+    const link = ev.sourceLink;
+    const ok =
+      link &&
+      link.kind === "filing" &&
+      link.url &&
+      !/google\.com\/search/i.test(link.url);
+    if (!ok) {
+      reportedWithoutDocument++;
+      if (reportedWithoutDocumentSamples.length < 8) {
+        reportedWithoutDocumentSamples.push(`${ev.ticker} · ${ev.period ?? "?"}`);
+      }
+    }
+  }
+
+  // Phase 4 · sp500_complete_pct. Fraction of SP500 members whose
+  // LATEST past event clears all four layers (results with real
+  // date, document filing, estimates + surprise on same basis,
+  // reaction points all populated). No entities → 0.
+  let sp500LatestComplete = 0;
+  let sp500LatestTotal = 0;
+  const sp500Set = new Set<string>();
+  if (entities) {
+    for (const e of entities) {
+      if ((e.index_membership ?? []).includes("SP500")) sp500Set.add(e.ticker);
+    }
+  }
+  if (sp500Set.size > 0) {
+    const latestByTicker = new Map<string, typeof snap.events[number]>();
+    for (const ev of snap.events) {
+      if (!ev.eventDate || !sp500Set.has(ev.ticker)) continue;
+      const cur = latestByTicker.get(ev.ticker);
+      if (!cur || (cur.eventDate ?? "") < (ev.eventDate ?? "")) {
+        latestByTicker.set(ev.ticker, ev);
+      }
+    }
+    for (const ev of latestByTicker.values()) {
+      sp500LatestTotal++;
+      const hasReal =
+        ev.eventDate &&
+        (ev.metrics ?? []).some((m) => m.actual?.value != null);
+      const link = ev.sourceLink;
+      const docOk =
+        link && link.kind === "filing" && link.url && !/google\.com\/search/i.test(link.url);
+      const revEst = (ev.metrics ?? []).find(
+        (m) => /^revenue_/.test(m.key) && m.estimate?.value != null,
+      );
+      const epsEst = (ev.metrics ?? []).find(
+        (m) => /^eps/.test(m.key) && m.estimate?.value != null,
+      );
+      const estOk = revEst && epsEst;
+      const points = ev.reaction?.points ?? [];
+      const horizons = new Set(points.map((p) => p.horizon));
+      const rxnOk =
+        (["d1", "d3", "w1", "m1"] as const).every((h) => horizons.has(h)) &&
+        points.every(
+          (p) => p.status === "clipped" || (p.absReturn != null),
+        );
+      if (hasReal && docOk && estOk && rxnOk) sp500LatestComplete++;
+    }
+  }
+  const sp500CompletePct =
+    sp500LatestTotal > 0
+      ? Math.round((sp500LatestComplete / sp500LatestTotal) * 1000) / 10
+      : 0;
+
   return {
     schema: "pipeline-report/v3",
     date: finishedAt.toISOString().slice(0, 10),
@@ -658,6 +749,9 @@ export function computePipelineReport(input: ComputeReportInput): PipelineReport
     companies_with_inconsistent_financials_samples: crossListing.same_currency_samples,
     companies_with_fx_mismatch: crossListing.fx_mismatch_count,
     companies_with_fx_mismatch_samples: crossListing.fx_mismatch_samples,
+    reported_without_document: reportedWithoutDocument,
+    reported_without_document_samples: reportedWithoutDocumentSamples,
+    sp500_complete_pct: sp500CompletePct,
     freshness,
     estimator_label_conflicts: estimatorLabelConflicts,
     marketcap_stale_count: marketcapStale,
@@ -729,6 +823,28 @@ export function checkRegressions(
   if (current.freshness && current.freshness.stale > 10) {
     reasons.push(
       `freshness.stale=${current.freshness.stale} — >10 tickers have an expected report >7 days past with no matching event`,
+    );
+  }
+  // Phase 4 · report-attachment rule. NO GRACE — the rule is absolute:
+  // reported && !document is invalid. Even a single leak flips status.
+  if (current.reported_without_document > 0) {
+    reasons.push(
+      `reported_without_document=${current.reported_without_document} — past events with actuals but no filing sourceLink violate the report-attachment rule`,
+    );
+  }
+  // Phase 4 · SP500 completeness canary. 98% floor; below that a pipe
+  // has broken (SP500 has no coverage excuses — CIK, analysts, US bars,
+  // EDGAR all guaranteed).
+  // sp500_complete_pct floor. Only fires when the SP500 universe
+  // exists in the registry (sp500_complete_pct === 0 with no members
+  // means the ingest reference hasn't been applied yet — no signal).
+  // With members present, the rule catches decay of the 98% floor.
+  if (
+    typeof current.sp500_complete_pct === "number" &&
+    current.sp500_complete_pct < 98
+  ) {
+    reasons.push(
+      `sp500_complete_pct=${current.sp500_complete_pct}% — SP500 latest-quarter completeness below the 98% floor`,
     );
   }
   if (current.estimator_label_conflicts > 0) {

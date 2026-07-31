@@ -61,6 +61,14 @@ results.push({
   ok: run("News normalizer fixture", "test-news-normalize.mjs"),
 });
 results.push({
+  label: "report-attachment invariant fires + clears",
+  ok: run("Report-attachment corruption test", "corrupt-report-attachment-test.mjs"),
+});
+results.push({
+  label: "sp500_complete_pct floor fires + clears",
+  ok: run("SP500 completeness corruption test", "corrupt-sp500-completeness-test.mjs"),
+});
+results.push({
   label: "every index event id resolves in its shard",
   ok: run("Event id integrity", "audit-event-ids.mjs"),
 });

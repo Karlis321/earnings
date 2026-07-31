@@ -17,6 +17,40 @@ Small named items that need a follow-up, not fresh design work.
   `degraded` — an accurate signal for a real cross-listing bug, not
   a false alarm.
 
+## SP500 completeness (Phase 4) follow-ups
+
+- **`scripts/attach-sec-filings.mjs --scope=sp500-all`** — attaches
+  SEC accession-URL sourceLinks to prior-4-quarter events (this
+  session's run covered latest-only, ~210/458 attached). SEC 1
+  req/s pacing means the full sp500-all sweep is ~40 min;
+  checkpointed to `fetched/attach-sec-filings.checkpoint.json` so
+  resumable across runs. Run in background: current
+  `reported_without_document=8,585` universe-wide (Phase 2 ingest
+  brought +425 shards with Yahoo-timeseries actuals but fallback
+  sourceLinks — the mechanical sweep converts them).
+- **`--scope=all`** — full universe (~2h+). Only worth doing after
+  SP500 close-out.
+- **248 no-match SP500 latest quarters** — pickBestFiling
+  returned nothing within ±14 days of eventDate. Most are
+  fiscal-offset issuers where Yahoo's quarter-end placeholder
+  date is off from the actual filing date. Fix: run
+  `scripts/fetch-real-report-dates.mjs` first (SP500 subset), then
+  re-run attach-sec-filings — the ±14 day window should catch
+  most.
+- **Atomic-promotion rule (going-forward, Phase 4 j)** — modify
+  `scripts/mature-any-reported.mjs` + the cron path so a CIK-
+  bearing promotion also resolves + attaches the SEC document in
+  the same run. Current script writes `sourceLink.kind="fallback"`
+  which the new report-attachment counter catches. Sketch is in
+  place; enforcement stays TODO until the same-run doc resolver
+  code path lands.
+- **`sp500_complete_pct = 0%` today** — even with 210 documents
+  attached, sp500_complete_pct requires all four layers (results
+  with real date + document + estimates + reaction). Estimates
+  are the biggest gap (Yahoo timeseries doesn't carry consensus).
+  Follow-up: run `ingest-estimates-universe.mjs` targeted at
+  SP500, then reactions maturation.
+
 ## IR-source registry follow-ups
 
 - **`scripts/apply-ir-source-discoveries.mjs`** — the merger script

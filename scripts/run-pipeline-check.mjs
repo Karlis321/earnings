@@ -372,6 +372,55 @@ async function compute() {
   // events at all), UNKNOWN (non-canonical listings and dormant entities).
   const freshness = classifyFreshness(snap.events, registry.entities ?? [], now);
 
+  // Phase 4 · reported_without_document + sp500_complete_pct.
+  let reportedWithoutDocument = 0;
+  const reportedWithoutDocumentSamples = [];
+  for (const ev of snap.events) {
+    if (!ev.eventDate) continue;
+    const hasActuals = (ev.metrics ?? []).some((m) => m.actual?.value != null);
+    if (!hasActuals) continue;
+    const link = ev.sourceLink;
+    const ok =
+      link && link.kind === "filing" && link.url && !/google\.com\/search/i.test(link.url);
+    if (!ok) {
+      reportedWithoutDocument++;
+      if (reportedWithoutDocumentSamples.length < 8) {
+        reportedWithoutDocumentSamples.push(`${ev.ticker} · ${ev.period ?? "?"}`);
+      }
+    }
+  }
+  const sp500Set = new Set(
+    (registry.entities ?? [])
+      .filter((e) => (e.index_membership ?? []).includes("SP500"))
+      .map((e) => e.ticker),
+  );
+  let sp500LatestComplete = 0;
+  let sp500LatestTotal = 0;
+  if (sp500Set.size > 0) {
+    const latestByTicker = new Map();
+    for (const ev of snap.events) {
+      if (!ev.eventDate || !sp500Set.has(ev.ticker)) continue;
+      const cur = latestByTicker.get(ev.ticker);
+      if (!cur || (cur.eventDate ?? "") < (ev.eventDate ?? "")) latestByTicker.set(ev.ticker, ev);
+    }
+    for (const ev of latestByTicker.values()) {
+      sp500LatestTotal++;
+      const hasReal = ev.eventDate && (ev.metrics ?? []).some((m) => m.actual?.value != null);
+      const link = ev.sourceLink;
+      const docOk = link && link.kind === "filing" && link.url && !/google\.com\/search/i.test(link.url);
+      const revEst = (ev.metrics ?? []).find((m) => /^revenue_/.test(m.key) && m.estimate?.value != null);
+      const epsEst = (ev.metrics ?? []).find((m) => /^eps/.test(m.key) && m.estimate?.value != null);
+      const estOk = revEst && epsEst;
+      const points = ev.reaction?.points ?? [];
+      const horizons = new Set(points.map((p) => p.horizon));
+      const rxnOk = ["d1", "d3", "w1", "m1"].every((h) => horizons.has(h)) &&
+        points.every((p) => p.status === "clipped" || p.absReturn != null);
+      if (hasReal && docOk && estOk && rxnOk) sp500LatestComplete++;
+    }
+  }
+  const sp500CompletePct = sp500LatestTotal > 0
+    ? Math.round((sp500LatestComplete / sp500LatestTotal) * 1000) / 10 : 0;
+
   const report = {
     schema: "pipeline-report/v3",
     date: now.toISOString().slice(0, 10),
@@ -398,6 +447,9 @@ async function compute() {
     companies_with_inconsistent_financials_samples: sameCurrencySamples,
     companies_with_fx_mismatch: crossListingFxCount,
     companies_with_fx_mismatch_samples: fxSamples,
+    reported_without_document: reportedWithoutDocument,
+    reported_without_document_samples: reportedWithoutDocumentSamples,
+    sp500_complete_pct: sp500CompletePct,
     freshness,
     estimator_label_conflicts: estimatorLabelConflicts,
     marketcap_stale_count: marketcapStale,
@@ -432,6 +484,16 @@ async function compute() {
   if (report.freshness && report.freshness.stale > 10) {
     reasons.push(
       `freshness.stale=${report.freshness.stale} — >10 tickers have an expected report >7 days past with no matching event`,
+    );
+  }
+  if (report.reported_without_document > 0) {
+    reasons.push(
+      `reported_without_document=${report.reported_without_document} — past events with actuals but no filing sourceLink violate the report-attachment rule`,
+    );
+  }
+  if (typeof report.sp500_complete_pct === "number" && report.sp500_complete_pct < 98) {
+    reasons.push(
+      `sp500_complete_pct=${report.sp500_complete_pct}% — SP500 latest-quarter completeness below the 98% floor`,
     );
   }
   if (report.estimator_label_conflicts > 0)
