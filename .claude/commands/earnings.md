@@ -99,15 +99,36 @@ If `kpis` is empty AND no filing can be reached, print
 `RESULT: skipped — insufficient data` and STOP. Depth doesn't
 matter if there's nothing to summarize.
 
-## Step 1 — Fetch the primary (only when needed)
+## Step 1 — Fetch the primary (source ladder)
 
-If `sourceLink.kind === "filing"`, use `sourceLink.url` directly.
-Otherwise **one** WebSearch:
+Consult sources in this order — WebSearch is the LAST resort, not
+the first:
+
+**Rung 1: event-level `sourceLink.kind === "filing"`** — a filing
+URL we already observed on this exact event. Use it directly.
+
+**Rung 2: `irSources.reports_page_url`** — the company's stable
+per-issuer reports/filings-list page (observed or mechanically
+derived). Fetch this page, find the link to the latest quarter's
+document on it, fetch that.
+
+**Rung 3: venue URL** — if `irSources.publication_venue === "EDGAR"`
+and Rung 2 didn't yield a matching document, hit the EDGAR CIK list
+directly and pick the 10-Q / 10-K / 6-K covering the period.
+
+**Rung 4: WebSearch** — final fallback, ONE query:
 `"<displayName> <period> results press release"`. Prefer results
 on `investors.<company>.com`, `<company>.com`, `sec.gov`, or the
 company's IR host. Blocklist (validator will reject the summary):
 Yahoo, Reuters aggregator, SeekingAlpha, MarketWatch, CNBC,
 Bloomberg, Investing.com, Zacks, Motley Fool, Benzinga.
+
+**Write-back on Rung 4 success:** when WebSearch surfaces a document
+we successfully fetched, include an `irSourcesUpdate` field in the
+Step-5 summary output — the follow-up merger
+`scripts/apply-ir-source-discoveries.mjs` (TODO —
+see TODO_TOMORROW.md) will fold these into the registry with
+source "observed" so the ladder self-improves.
 
 **Prefer EDGAR/SEC URLs** when both an IR page and a filing exist.
 IR sites frequently block datacenter IPs; EDGAR is reliable via

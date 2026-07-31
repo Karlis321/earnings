@@ -159,6 +159,32 @@ export interface Entity {
   // own companyId so this field is never absent after backfill.
   companyId?: string;
   isCanonical?: boolean;
+  // IR-source registry (Task 3): WHERE this entity's quarterly
+  // results are actually published — the specific page a document
+  // appears on, not just the IR homepage. Populated by three passes,
+  // strongest-evidence-wins:
+  //   1. OBSERVED — mined from past events' sourceLink where kind
+  //      was "filing". Ground truth: past behavior predicts next
+  //      quarter's location.
+  //   2. DERIVED — mechanical URL construction (EDGAR CIK list,
+  //      SEDAR issuer-search) or probed IR-page candidates
+  //      (<website>/investors/press-releases etc.). Only 200s stored.
+  //   3. RESEARCHED — bounded Claude judgment for covered tier +
+  //      top uncovered when 1+2 still leave reports_page_url null.
+  // Nulls allowed; a URL is NEVER guessed into a field. Every
+  // successful /earnings fetch refreshes this record.
+  irSources?: IrSources | null;
+}
+
+export interface IrSources {
+  publication_venue: "EDGAR" | "SEDAR" | "company-IR" | "regulator-other" | null;
+  reports_page_url: string | null;
+  ir_url: string | null;
+  press_release_url: string | null;
+  rss_feeds: string[];
+  publication_pattern: string | null;
+  verified_at: string | null;
+  source: "observed" | "derived" | "researched";
 }
 
 export interface EntityFundamentals {

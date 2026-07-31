@@ -163,6 +163,11 @@ function main() {
     eventDate: target.eventDate,
     provenance: target.provenance ?? null,
     sourceLink: target.sourceLink ?? null,
+    // Task 3: IR-source ladder input for /earnings Step 1. Populated
+    // by scripts/build-ir-sources.mjs. Nulls allowed; a URL is
+    // never guessed into a field. Successful /earnings fetches
+    // write back here (source "observed") so the ladder self-improves.
+    irSources: canonical.irSources ?? null,
     priorPeriodQq: priorQq?.period ?? null,
     priorPeriodYy: priorYy?.period ?? null,
     summaryPath: path.relative(ROOT, summaryPath).split(path.sep).join("/"),

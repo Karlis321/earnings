@@ -98,28 +98,28 @@ earnings_dashboard/
 
 ### Where do I find X
 
-| Looking for                       | Path                                                                 |
-|-----------------------------------|----------------------------------------------------------------------|
-| Add or edit a slash command       | `.claude/commands/*.md`                                              |
-| Add or edit a workflow            | `.github/workflows/*.yml`                                            |
-| Standing-test invariants          | `scripts/test-standing.mjs` + `scripts/run-pipeline-check.mjs`       |
-| Summary schema (v2)               | `data/summaries-schema.json` + validator `scripts/validate.js`       |
-| GuidanceEntry shape               | `frontend/lib/types.ts` (single source of truth)                     |
-| Store interface                   | `frontend/server/store.ts` (inMemory + gitSnapshot impls)            |
-| Pipeline invariants (counters)    | `frontend/server/lib/pipelineReport.ts` + `scripts/run-pipeline-check.mjs` |
-| SEC-verbatim rule                 | `frontend/server/lib/secVerbatim.ts` (wired into cron daily)         |
-| Reaction maturation               | `frontend/server/lib/reactionMaturation.ts` (called by cron)         |
-| Render-shape normalizers          | `frontend/lib/normalize.ts` (event/entity/summary — the render contract) |
-| Same-basis surprise rule          | `scripts/enforce-same-basis-surprise.mjs` + `SurprisePill.crossBasisCleared` |
-| One-shot repair evidence          | `scripts/audits/<name>.json` + `scripts/backfills/<name>.mjs`        |
-| Sweep dry-run                     | `node scripts/sweep-dry-run.mjs`                                     |
-| Local /earnings step 0            | `node scripts/resolve-earnings-target.mjs "<TICKER>"`                |
-| SEC fetch that works from CI      | `node scripts/fetch-edgar.mjs <sec.gov-url>` (writes to fetched/)   |
-| Text of a fetched filing          | `node scripts/extract-doc-text.mjs fetched/<file> [--grep "…"]`      |
-| Force-rebuild shards + index      | `node scripts/shard-earnings.mjs`                                    |
-| Force-rebuild pipeline-report     | `node scripts/run-pipeline-check.mjs`                                |
-| Full-universe freshness detect    | `node scripts/detect-stale-earnings.mjs`                             |
-| Debug a specific ticker + event   | `curl .../api/health/ticker-debug?ticker=AAPL%20US`                  |
+| Looking for                     | Path                                                                             |
+| ------------------------------- | -------------------------------------------------------------------------------- |
+| Add or edit a slash command     | `.claude/commands/*.md`                                                        |
+| Add or edit a workflow          | `.github/workflows/*.yml`                                                      |
+| Standing-test invariants        | `scripts/test-standing.mjs` + `scripts/run-pipeline-check.mjs`               |
+| Summary schema (v2)             | `data/summaries-schema.json` + validator `scripts/validate.js`               |
+| GuidanceEntry shape             | `frontend/lib/types.ts` (single source of truth)                               |
+| Store interface                 | `frontend/server/store.ts` (inMemory + gitSnapshot impls)                      |
+| Pipeline invariants (counters)  | `frontend/server/lib/pipelineReport.ts` + `scripts/run-pipeline-check.mjs`   |
+| SEC-verbatim rule               | `frontend/server/lib/secVerbatim.ts` (wired into cron daily)                   |
+| Reaction maturation             | `frontend/server/lib/reactionMaturation.ts` (called by cron)                   |
+| Render-shape normalizers        | `frontend/lib/normalize.ts` (event/entity/summary — the render contract)      |
+| Same-basis surprise rule        | `scripts/enforce-same-basis-surprise.mjs` + `SurprisePill.crossBasisCleared` |
+| One-shot repair evidence        | `scripts/audits/<name>.json` + `scripts/backfills/<name>.mjs`                |
+| Sweep dry-run                   | `node scripts/sweep-dry-run.mjs`                                               |
+| Local /earnings step 0          | `node scripts/resolve-earnings-target.mjs "<TICKER>"`                          |
+| SEC fetch that works from CI    | `node scripts/fetch-edgar.mjs <sec.gov-url>` (writes to fetched/)              |
+| Text of a fetched filing        | `node scripts/extract-doc-text.mjs fetched/<file> [--grep "…"]`               |
+| Force-rebuild shards + index    | `node scripts/shard-earnings.mjs`                                              |
+| Force-rebuild pipeline-report   | `node scripts/run-pipeline-check.mjs`                                          |
+| Full-universe freshness detect  | `node scripts/detect-stale-earnings.mjs`                                       |
+| Debug a specific ticker + event | `curl .../api/health/ticker-debug?ticker=AAPL%20US`                            |
 
 ### The backfills archive (`scripts/backfills/`)
 
@@ -127,8 +127,7 @@ earnings_dashboard/
 was assembled and encode hard-won fixes. Never invoked by cron, the
 workflow, or slash commands — they were each run manually, produced
 an audit JSON in `scripts/audits/`, and their behaviour has been
-either ported into the daily cron (e.g. `sec-verbatim`, `sector
-expansion`) or is idempotent for a future re-run. Do not delete;
+either ported into the daily cron (e.g. `sec-verbatim`, `sector expansion`) or is idempotent for a future re-run. Do not delete;
 they're the archaeological record. To re-run one:
 `node scripts/backfills/<name>.mjs --dry` first.
 
@@ -141,8 +140,7 @@ X get this value" or "what was the state before Y ran".
 
 ### How the pieces connect
 
-- **Daily 06:30 UTC** — GitHub Actions runs `.github/workflows/
-  claude-summarize.yml` on cron, which spawns Claude Code with the
+- **Daily 06:30 UTC** — GitHub Actions runs `.github/workflows/ claude-summarize.yml` on cron, which spawns Claude Code with the
   /sweep prompt. Sweep reads `data/covered.json`, resolves each via
   `resolve-earnings-target.mjs`, calls /earnings per due ticker,
   which writes `data/summaries/*.json` + optional `data/events/*.json`
@@ -190,10 +188,7 @@ These are the rules that come from reading multiple sections together:
   `Origin`/`Referer`; Google News redirect URLs must go through the article
   verifier). **Never invent an endpoint, header, or field name. If a spec is
   missing, stop and flag it — do not guess.**
-- **Every sourced number is a `Fact`.** Shape: `{value, unit,
-  source:{url,label,provenance,locator}, asOf, fetchedAt, method,
-  confidence}`. `method ∈ {yahoo, fmp, bloomberg_manual, filing_manual,
-  llm_extracted}`. Derived numbers (reaction returns) store formula inputs +
+- **Every sourced number is a `Fact`.** Shape: `{value, unit, source:{url,label,provenance,locator}, asOf, fetchedAt, method, confidence}`. `method ∈ {yahoo, fmp, bloomberg_manual, filing_manual, llm_extracted}`. Derived numbers (reaction returns) store formula inputs +
   `computedAt` instead of pretending to be Facts. Unavailable data is stored
   as `null` with a staleness flag — never blank, never fabricated.
 - **Type-first rendering.** `securityType` is `operating | developer | etf`.
@@ -279,8 +274,7 @@ These are the rules that come from reading multiple sections together:
 - **SEC-verbatim rule at ingest (kills per-provenance-exclusion bugs).**
   Root cause of the July-2026 residuals (ENB CN unit mismatch, NOV GR
   DKK-vs-USD scale, TTE 44,676-vs-49,627 cluster, WELL FX round-trip):
-  the old rederive only touched events with `provenance:
-  "sec-xbrl-companyfacts"`, so Yahoo-ingested siblings on the same
+  the old rederive only touched events with `provenance: "sec-xbrl-companyfacts"`, so Yahoo-ingested siblings on the same
   company drifted separately. Rule now enforced in the daily cron
   (`frontend/server/lib/secVerbatim.ts` invoked as step 3d in
   `/api/cron/daily`): for any listing of a company where ANY sibling
@@ -371,8 +365,7 @@ These are the rules that come from reading multiple sections together:
   and at render, if `actual` and `estimate` come from different
   provenance families, clear `surprisePct` and park the value on
   `metric._crossBasisSurprise[]`. Same-basis families: `sec ↔ sec`,
-  `yahoo-chart ↔ yahoo-trend` (both analyst-consensus), `sec ↔
-  yahoo-timeseries` (both GAAP-from-filing), `sec ↔ fmp`. Enforced by
+  `yahoo-chart ↔ yahoo-trend` (both analyst-consensus), `sec ↔ yahoo-timeseries` (both GAAP-from-filing), `sec ↔ fmp`. Enforced by
   `scripts/enforce-same-basis-surprise.mjs` sweep + `SurprisePill`'s
   `crossBasisCleared` prop which renders "reported · basis mismatch"
   instead of a wrong number. Standing test:
@@ -393,10 +386,44 @@ These are the rules that come from reading multiple sections together:
   then rendered "~Mar 2026 (est.)". Rule: prefer Yahoo
   `earningsChart.reportedDate` (real filing date) over the quarter-end
   placeholder. `scripts/fetch-real-report-dates.mjs` backfills 1,009
-  events across 425 shards. Events with `eventDateSource ===
-  "yahoo-earnings-chart-reportedDate"` render as a real date, not
+  events across 425 shards. Events with `eventDateSource === "yahoo-earnings-chart-reportedDate"` render as a real date, not
   "(est.)". Also: `_quarterEndDate` on the event preserves the original
   quarter-end reference.
+- **irSources is observed/probed, never guessed.** Each entity's
+  `irSources` record answers "where does this company publish its
+  earnings — the specific page, not just the IR homepage?". Built
+  by `scripts/build-ir-sources.mjs` in three passes,
+  strongest-evidence-wins: OBSERVED (mined from past events'
+  `sourceLink.kind==="filing"` URLs; ground truth), DERIVED (EDGAR
+  CIK list for filers with a CIK; SEDAR venue for Canadian non-CIK
+  with the reports_page_url left null pending a per-issuer
+  probe), RESEARCHED (deferred — see TODO_TOMORROW.md). A URL is
+  NEVER guessed into a field. Every stored URL either came from an
+  observed past event or was mechanically constructed against a
+  guaranteed-valid endpoint (EDGAR CIK list). `/earnings` Step 1 is
+  a source ladder: (1) event-level filing sourceLink; (2)
+  `irSources.reports_page_url`; (3) venue URL; (4) WebSearch. When
+  WebSearch surfaces a document, the summary includes an
+  `irSourcesUpdate` field so the follow-up merger (TODO) writes
+  the discovery back to the registry — the ladder self-improves.
+  Standing check: `pipeline-report` doesn't gate on irSources; it's
+  a coverage-quality metric, not an invariant. Fresh coverage
+  post-first-run: 522/1991 entities (26%) — observed 345, derived
+  CIK 161, derived SEDAR 16, still-null 1344 of which 1 is covered
+  tier (BOLSY US).
+- **ETFs + funds are hidden from the UI, kept in the registry.**
+  `securityType === "etf"` (125 entities) and any future fund type
+  never render on watchlist / sectors / cap-band groupings /
+  global search. `isDisplayable(entity)` in
+  `frontend/lib/displayFilter.ts` is the single predicate — applied
+  at every UI surface. Direct URLs like `/s/GDXJ US` still load
+  (the entity is in the registry). Reason to keep them:
+  `reactionMaturation.ts` resolves benchmark symbols directly via
+  Yahoo, not through the registry, so hiding entity ROWS doesn't
+  affect excess-return computation. True deletion is a separate
+  deliberate task. Freshness denominator already filtered to
+  `securityType === "operating" && !dormant`; unchanged after
+  Task 1.
 - **Google search as the fallback sourceLink (Yahoo dropped foreign
   paths).** As of 2026-07-30, Yahoo returns HTTP 404 on
   `/quote/{sym}/financials`, `/analysis`, `/earnings-history` for
@@ -475,8 +502,7 @@ These are the rules that come from reading multiple sections together:
 - **GH_PAT rate limit is 5,000/hr PER USER ACCOUNT, not per token.**
   Rotating the PAT does NOT help — the limit lives on the GitHub user
   (user ID 146458404 for this repo). When the /s/[ticker] page 500s
-  and health/debug reports `ghProbe: 403 · "API rate limit exceeded
-  for user ID ..."`, the ONLY fix is to wait for the hourly reset.
+  and health/debug reports `ghProbe: 403 · "API rate limit exceeded for user ID ..."`, the ONLY fix is to wait for the hourly reset.
   Cache TTL on the git-snapshot store is 30 min
   (`READ_CACHE_MS = 1_800_000` in
   `frontend/server/stores/gitSnapshot.ts`) precisely to stay under
