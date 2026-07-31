@@ -49,6 +49,12 @@ export async function GET() {
     GH_BRANCH: fingerprint(process.env.GH_BRANCH),
     GH_PAT_present: !!process.env.GH_PAT,
     CRON_SECRET_present: !!process.env.CRON_SECRET,
+    // Non-secret fingerprint of CRON_SECRET so a mismatched paste vs
+    // Vercel-stored value can be diagnosed without echoing either.
+    // Reveals length + first + last char (same shape as GH_REPO_OWNER
+    // above) — enough to catch a stale rotation or a stray trailing
+    // whitespace, not enough to reconstruct the value.
+    CRON_SECRET_fingerprint: fingerprint(process.env.CRON_SECRET),
   };
 
   // Compare against expected values so the user can see mismatches without
