@@ -2,6 +2,7 @@ import Link from "next/link";
 import { store } from "@/server/store";
 import { sectorCounts } from "@/server/lib/registryHelpers";
 import { Panel } from "@/components/primitives";
+import { isDisplayable } from "@/lib/displayFilter";
 
 // force-dynamic + store's 60s read cache = counts stay live within a
 // minute of any registry write (POST /api/entity-registry, DELETE, or
@@ -10,11 +11,13 @@ export const dynamic = "force-dynamic";
 
 export default async function SectorsPage() {
   const entities = await store.readRegistry();
+  // ETF/fund entities live in the registry to power benchmarks but
+  // never render on this surface — see displayFilter.ts.
+  const displayable = entities.filter(isDisplayable);
   const sectors = sectorCounts(entities);
-  const totalCore = entities.filter((e) => e.isCore).length;
-  const totalUniverse = entities.length - totalCore;
-  const totalEquities = entities.filter((e) => e.securityType !== "etf").length;
-  const totalEtfs = entities.length - totalEquities;
+  const totalCore = displayable.filter((e) => e.isCore).length;
+  const totalUniverse = displayable.length - totalCore;
+  const totalEquities = displayable.length;
 
   return (
     <div className="mx-auto max-w-[1800px] px-10 py-8">
@@ -24,8 +27,7 @@ export default async function SectorsPage() {
           Sector view
         </h1>
         <p className="mt-2 max-w-[64ch] text-[13.5px] text-tx2">
-          Thematic grouping across covered names. {entities.length} total
-          entities · {totalEquities} equities · {totalEtfs} ETFs ·{" "}
+          Thematic grouping across covered names. {totalEquities} equities ·{" "}
           {totalCore} portfolio · {totalUniverse} sector universe across{" "}
           {sectors.length} tags. Auto-refreshes on the daily cron (sector
           expansion + market-cap pass).

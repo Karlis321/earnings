@@ -57,6 +57,10 @@ results.push({
   ok: run("Freshness corruption test", "corrupt-freshness-test.mjs"),
 });
 results.push({
+  label: "news normalizer handles malformed fixture",
+  ok: run("News normalizer fixture", "test-news-normalize.mjs"),
+});
+results.push({
   label: "every index event id resolves in its shard",
   ok: run("Event id integrity", "audit-event-ids.mjs"),
 });

@@ -11,6 +11,7 @@ import type {
 import { ENTITY_REGISTRY } from "./fixtures/registry";
 import { EARNINGS_FIXTURE, getLatestEvent } from "./fixtures/earnings";
 import { computeFreshness, todayIso } from "./freshness";
+import { isDisplayable } from "./displayFilter";
 
 const MONTHS = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -48,7 +49,11 @@ export function buildWatchlistRows(
   snapshot: EarningsSnapshot,
   now: string,
 ): WatchlistRow[] {
-  return entities.map((entity) => {
+  // Filter out ETF/fund entities — they stay in the registry to
+  // power benchmarks (reactionMaturation resolves benchmark
+  // symbols directly, not via registry lookup), but they never
+  // render on the watchlist.
+  return entities.filter(isDisplayable).map((entity) => {
     const forTicker = snapshot.events.filter((e) => e.ticker === entity.ticker);
     const latest: EventRecord | undefined = forTicker
       .slice()
@@ -172,7 +177,7 @@ export function buildWatchlistRowsFromIndex(
   now: string,
 ): WatchlistRow[] {
   const byTicker = new Map(indexEntries.map((e) => [e.ticker, e]));
-  return entities.map((entity) => {
+  return entities.filter(isDisplayable).map((entity) => {
     const idx = byTicker.get(entity.ticker);
 
     const nextScheduled = idx?.nextScheduled ?? null;

@@ -5,6 +5,7 @@
 // without hard-linking to fixtures.
 
 import type { EarningsSnapshot, Entity, EventRecord } from "@/lib/types";
+import { isDisplayable } from "@/lib/displayFilter";
 
 export function findEntity(
   entities: Entity[],
@@ -34,18 +35,21 @@ export function sectorCounts(
   equities: number;
   etfs: number;
 }> {
-  const canonicalOnly = entities.filter((e) => e.isCanonical !== false);
+  // ETF/fund entities are hidden from every UI surface — they stay in
+  // the registry to power reactionMaturation benchmarks. Filter here
+  // so sector counts only reflect displayable (operating/developer)
+  // entities. See frontend/lib/displayFilter.ts.
+  const canonicalOnly = entities.filter(
+    (e) => e.isCanonical !== false && isDisplayable(e),
+  );
   const total = new Map<string, number>();
   const core = new Map<string, number>();
   const equities = new Map<string, number>();
-  const etfs = new Map<string, number>();
   for (const e of canonicalOnly) {
-    const isEtf = e.securityType === "etf";
     for (const s of e.sectorTags) {
       total.set(s, (total.get(s) ?? 0) + 1);
       if (e.isCore) core.set(s, (core.get(s) ?? 0) + 1);
-      if (isEtf) etfs.set(s, (etfs.get(s) ?? 0) + 1);
-      else equities.set(s, (equities.get(s) ?? 0) + 1);
+      equities.set(s, (equities.get(s) ?? 0) + 1);
     }
   }
   return Array.from(total, ([id, count]) => ({
@@ -54,7 +58,7 @@ export function sectorCounts(
     portfolio: core.get(id) ?? 0,
     universe: count - (core.get(id) ?? 0),
     equities: equities.get(id) ?? 0,
-    etfs: etfs.get(id) ?? 0,
+    etfs: 0, // structurally always 0 now; kept in shape for callers.
   })).sort((a, b) => b.count - a.count);
 }
 
@@ -65,7 +69,10 @@ export function entitiesInSector(
   sectorId: string,
 ): Entity[] {
   return entities.filter(
-    (e) => e.isCanonical !== false && e.sectorTags.includes(sectorId),
+    (e) =>
+      e.isCanonical !== false &&
+      isDisplayable(e) &&
+      e.sectorTags.includes(sectorId),
   );
 }
 

@@ -99,7 +99,6 @@ const INDUSTRY_GROUPS: Record<string, string[]> = {
   communications: ["communication-services"],
   realestate: ["real-estate"],
   utilities: ["utilities"],
-  etfs: ["etf"],
   developer: ["developer"],
 };
 
@@ -115,7 +114,6 @@ type Filter =
   | "communications"
   | "realestate"
   | "utilities"
-  | "etfs"
   | "developer";
 type SortKey = "next" | "surprise" | "reaction" | "freshness" | "name";
 type Group = "flat" | "type" | "sector" | "industry" | "cap-industry";
@@ -194,7 +192,6 @@ export function WatchlistTable({ rows }: { rows: WatchlistRow[] }) {
       const needles = INDUSTRY_GROUPS[filter] ?? [];
       list = list.filter((r) => {
         if (filter === "developer") return r.entity.securityType === "developer";
-        if (filter === "etfs") return r.entity.securityType === "etf";
         return r.entity.sectorTags.some((t) => needles.includes(t));
       });
     }
@@ -694,7 +691,6 @@ function FilterBar({
             { id: "communications", label: "Communications" },
             { id: "realestate", label: "Real estate" },
             { id: "utilities", label: "Utilities" },
-            { id: "etfs", label: "ETFs" },
             { id: "developer", label: "Developer" },
           ] as { id: Filter; label: string }[]
         ).map((f) => (

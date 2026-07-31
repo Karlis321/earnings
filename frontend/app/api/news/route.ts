@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { fanoutNews, fetchEntityNews, NEWS_CATEGORIES } from "@/server/vendors/news";
 import { store } from "@/server/store";
 import { tickerSearchTokens } from "@/lib/tickerMatch";
+import { normalizeNewsItems } from "@/server/lib/newsNormalize";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
@@ -33,8 +34,11 @@ export async function GET(req: NextRequest) {
     }
     const tokens = tickerSearchTokens(entity);
     const result = await fetchEntityNews(entity.ticker, tokens, days);
+    // Normalize before returning — clean publisher / title split,
+    // dedup, newest-first ordering, guaranteed shape.
+    const items = normalizeNewsItems(result.items ?? []);
     return NextResponse.json(
-      { ...result, categories: NEWS_CATEGORIES, days },
+      { ...result, items, categories: NEWS_CATEGORIES, days },
       {
         headers: { "Cache-Control": "s-maxage=600, stale-while-revalidate=1800" },
       },
@@ -43,8 +47,9 @@ export async function GET(req: NextRequest) {
 
   // Free-text query — old behavior
   const result = await fanoutNews({ query: q, days });
+  const items = normalizeNewsItems(result.items ?? []);
   return NextResponse.json(
-    { ...result, categories: NEWS_CATEGORIES, days },
+    { ...result, items, categories: NEWS_CATEGORIES, days },
     {
       headers: { "Cache-Control": "s-maxage=600, stale-while-revalidate=1800" },
     },

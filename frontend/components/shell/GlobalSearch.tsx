@@ -8,6 +8,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/apiClient";
 import type { Entity } from "@/lib/types";
+import { isDisplayable } from "@/lib/displayFilter";
 import { Search } from "lucide-react";
 import { TypeBadge } from "@/components/primitives";
 
@@ -24,7 +25,10 @@ export function GlobalSearch() {
     api
       .getEntities()
       .then((r) => {
-        if (!cancelled) setEntities(r);
+        // Filter ETF/fund entities out of the search index — they
+        // remain in the registry (benchmarks depend on them) and
+        // direct URLs to /s/<ticker> still resolve. See displayFilter.
+        if (!cancelled) setEntities(r.filter(isDisplayable));
       })
       .catch(() => {
         /* Search stays empty on fetch failure. */

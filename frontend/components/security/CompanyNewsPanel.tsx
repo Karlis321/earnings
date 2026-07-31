@@ -12,9 +12,16 @@ import { AlertTriangle, RefreshCw, Newspaper } from "lucide-react";
 import { LoadingSpinner } from "@/components/primitives/LoadingSpinner";
 
 interface NewsItem {
-  headline: string;
+  // v2 shape (post-normalizer):
+  title?: string;
+  publisher?: string;
+  articleType?: "news" | "opinion";
+  // v1 shape (retained for backward compat with any pre-normalizer
+  // cached responses; normalizer emits `title`/`publisher`, older
+  // fetches emit `headline`/`source`):
+  headline?: string;
+  source?: string;
   url: string;
-  source: string;
   category: string;
   time: string | null;
 }
@@ -117,8 +124,8 @@ export function CompanyNewsPanel({ ticker, displayName, limit = 12 }: Props) {
                   item: {
                     id: `cn-${i}`,
                     url: it.url,
-                    headline: it.headline,
-                    source: it.source,
+                    headline: it.title ?? it.headline ?? "(untitled)",
+                    source: it.publisher ?? it.source ?? "?",
                     provenance:
                       it.category === "wire"
                         ? "wire"
@@ -126,7 +133,7 @@ export function CompanyNewsPanel({ ticker, displayName, limit = 12 }: Props) {
                         ? "regulatory"
                         : "news",
                     time: it.time ?? new Date().toISOString(),
-                    articleType: it.category === "analysis" ? "opinion" : "news",
+                    articleType: it.articleType ?? (it.category === "analysis" ? "opinion" : "news"),
                     engine: "google",
                     language: "en",
                     hosted: false,
@@ -137,12 +144,18 @@ export function CompanyNewsPanel({ ticker, displayName, limit = 12 }: Props) {
               className="cursor-pointer px-4 py-3 transition-colors hover:bg-hover"
             >
               <div className="text-[13.5px] font-medium leading-[1.35] text-tx">
-                {it.headline}
+                {it.title ?? it.headline ?? "(untitled)"}
               </div>
               <div className="mt-1 flex items-center gap-2 text-[11px] text-tx-mid">
-                <span className="font-medium text-brand-fg">{it.source}</span>
-                <span>·</span>
-                <span>{CATEGORY_LABELS[it.category] ?? it.category}</span>
+                <span className="font-medium text-brand-fg">
+                  {it.publisher ?? it.source ?? "?"}
+                </span>
+                {it.articleType === "opinion" ? (
+                  <>
+                    <span>·</span>
+                    <span className="text-tx3">opinion</span>
+                  </>
+                ) : null}
                 <span>·</span>
                 <span>{fmtRelative(it.time)}</span>
               </div>
