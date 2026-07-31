@@ -1,0 +1,118 @@
+name: refresh-data
+
+# Universe-wide daily refresh. The permanent successor to the
+# Vercel-Cron / /api/cron/daily route — invokes the standalone
+# orchestrator at scripts/refresh-universe.mjs which composes today's
+# battle-tested phase scripts (Yahoo timeseries, quoteSummary,
+# earningsChart, mature-*, SEC-verbatim, estimator, reactions,
+# market-cap batch, …). No Vercel 300s function cap; runs inside the
+# job budget below.
+#
+# Scheduling:
+#   06:00 UTC weekdays, 30 min BEFORE the /sweep workflow at 06:30
+#   (which reads the shards this workflow just refreshed).
+#
+# NOTE: The schedule line is COMMENTED OUT for the initial commit —
+# GitHub Actions minutes may still be exhausted from a prior run.
+# Cutover procedure (see TODO_TOMORROW.md):
+#   1. Check Settings → Billing for the minutes-reset date.
+#   2. When minutes are available: uncomment the `- cron: …` line.
+#   3. First run manually via workflow_dispatch to verify.
+#   4. Wait for TWO consecutive scheduled runs to land green.
+#   5. THEN disable the Vercel cron trigger in frontend/vercel.json.
+# The two-successes-before-cutover rule from the migration plan
+# applies — do not shut off the Vercel path until this one has proven
+# itself twice.
+
+on:
+  # schedule:
+  #   - cron: "0 6 * * 1-5"
+  workflow_dispatch:
+    inputs:
+      note:
+        description: "Trigger source label (e.g. 'claude', 'manual test', 'cutover-verify-1'). Shown in the run title."
+        required: false
+        default: ""
+      only:
+        description: "Optional --only=<phase-key> passthrough (yahoo-shards / marketcap / …)."
+        required: false
+        default: ""
+      dry_run:
+        description: "If 'true', pass --dry-run to the orchestrator (no writes, no commit)."
+        required: false
+        default: "false"
+
+run-name: >-
+  refresh-data · ${{
+    github.event_name == 'schedule' && 'scheduled (06:00 UTC)'
+    || (github.event.inputs.note != '' && format('manual · {0}', github.event.inputs.note))
+    || 'manual'
+  }}${{ github.event.inputs.only != '' && format(' · only={0}', github.event.inputs.only) || '' }}${{ github.event.inputs.dry_run == 'true' && ' · dry-run' || '' }}
+
+# cancel-in-progress: false — the phases mutate shards + registry; killing
+# mid-run risks partial writes. Let the previous run finish before a
+# concurrent trigger starts a new one.
+concurrency:
+  group: refresh-data
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    # 120 min = generous headroom for the full-universe path when
+    # Yahoo latency spikes (yahoo-timeseries touches ~1,600 tickers at
+    # concurrency 6, ~40 min on a bad day; earningsTrend adds another
+    # ~15 min; SEC-verbatim per-CIK adds ~10 min at 1 req/s; total
+    # steady-state ~70 min with slack).
+    timeout-minutes: 120
+    permissions:
+      contents: write # required for the orchestrator's git push.
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # Fetch enough history so `git commit` doesn't refuse-shallow.
+          fetch-depth: 2
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Configure git identity for the daily commit
+        run: |
+          git config user.name  "earnings-refresh-bot"
+          git config user.email "earnings-refresh-bot@users.noreply.github.com"
+
+      - name: Run refresh-universe orchestrator
+        env:
+          # Same secrets the Vercel cron route uses. Optional — the
+          # phase scripts fall back cleanly when absent (FMP-optional,
+          # LLM-optional, etc.).
+          FMP_API_KEY: ${{ secrets.FMP_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          TWITTERAPI_IO_KEY: ${{ secrets.TWITTERAPI_IO_KEY }}
+        run: |
+          set -euo pipefail
+          FLAGS=""
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            FLAGS="$FLAGS --dry-run --no-commit"
+          fi
+          if [ -n "${{ github.event.inputs.only }}" ]; then
+            FLAGS="$FLAGS --only=${{ github.event.inputs.only }}"
+          fi
+          echo "orchestrator flags: $FLAGS"
+          node scripts/refresh-universe.mjs $FLAGS
+
+      - name: Push the daily commit
+        if: ${{ github.event.inputs.dry_run != 'true' }}
+        run: |
+          # The orchestrator already created the commit; we push here
+          # so an auth failure is visible as its own workflow step. If
+          # the orchestrator found no changes (weekend + nothing
+          # ingested), `git push` is a no-op.
+          if git log -1 --pretty=%s | grep -q "^daily refresh:"; then
+            git push
+          else
+            echo "no daily-refresh commit to push (nothing changed)"
+          fi
