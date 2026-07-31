@@ -38,6 +38,10 @@ const args = new Map(
 );
 const DRY = args.get("dry") === true;
 const LIMIT = args.get("limit") ? Number(args.get("limit")) : Infinity;
+const ONLY = args.get("only")
+  ? new Set(String(args.get("only")).split(",").map((t) => t.trim()))
+  : null;
+const SP500_ONLY = args.get("sp500-only") === true;
 
 const UA = "Mozilla/5.0 (ingest-eps-estimates)";
 const CONCURRENCY = 6;
@@ -111,7 +115,12 @@ async function main() {
   console.log(`ingest-eps-estimates · dry=${DRY} limit=${LIMIT === Infinity ? "all" : LIMIT} concurrency=${CONCURRENCY}`);
   const reg = JSON.parse(await fs.readFile(REG_PATH, "utf-8"));
   const targets = (reg.entities ?? []).filter(
-    (e) => e.securityType === "operating" && typeof e.yahooSymbol === "string" && e.yahooSymbol.length > 0,
+    (e) =>
+      e.securityType === "operating" &&
+      typeof e.yahooSymbol === "string" &&
+      e.yahooSymbol.length > 0 &&
+      (!ONLY || ONLY.has(e.ticker)) &&
+      (!SP500_ONLY || (e.index_membership ?? []).includes("SP500")),
   ).slice(0, LIMIT);
   console.log(`Targets: ${targets.length} operating entities with Yahoo symbols`);
 

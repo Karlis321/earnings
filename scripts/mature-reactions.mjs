@@ -42,6 +42,10 @@ const args = new Map(
 );
 const DRY = args.get("dry") === true;
 const LIMIT = args.get("limit") ? Number(args.get("limit")) : Infinity;
+const ONLY = args.get("only")
+  ? new Set(String(args.get("only")).split(",").map((t) => t.trim()))
+  : null;
+const SP500_ONLY = args.get("sp500-only") === true;
 
 const UA = "Mozilla/5.0 (mature-reactions)";
 const CONCURRENCY = 8;
@@ -142,6 +146,16 @@ async function main() {
     try { shard = JSON.parse(await fs.readFile(shardPath, "utf-8")); } catch { continue; }
     const wrapped = !Array.isArray(shard);
     const events = wrapped ? shard.events ?? [] : shard;
+    // Filter by ticker or SP500 membership if requested. Peek at the
+    // first event's ticker (all events in a shard share it).
+    const t = events[0]?.ticker;
+    if (t) {
+      if (ONLY && !ONLY.has(t)) continue;
+      if (SP500_ONLY) {
+        const ent = byTicker.get(t);
+        if (!ent || !(ent.index_membership ?? []).includes("SP500")) continue;
+      }
+    }
     const toMature = [];
     for (const e of events) {
       if (!e.eventDate) continue;
