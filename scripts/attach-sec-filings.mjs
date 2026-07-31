@@ -115,10 +115,15 @@ function pickBestFiling(recent, eventDateIso) {
     if (r.form === "10-K") score += 3;
     if (r.form === "20-F" || r.form === "40-F") score += 2;
     if (r.form === "6-K") score += 1;
-    if (gap > 14) score -= 100; // hard penalty — too far away
+    // 30-day window catches fiscal-offset issuers where Yahoo's
+    // quarter-end placeholder can sit ~3-4 weeks before the actual
+    // filing (Accenture Q2 ends Feb but files in March/April, etc.).
+    // Beyond 30 days we're likely picking up an adjacent quarter's
+    // filing — hard penalty.
+    if (gap > 30) score -= 100;
     return { ...r, score, gap };
   }).sort((a, b) => b.score - a.score);
-  return scored[0]?.gap <= 14 ? scored[0] : null;
+  return scored[0]?.gap <= 30 ? scored[0] : null;
 }
 
 async function loadShardObject(ticker) {
