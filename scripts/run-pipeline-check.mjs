@@ -372,21 +372,28 @@ async function compute() {
   // events at all), UNKNOWN (non-canonical listings and dormant entities).
   const freshness = classifyFreshness(snap.events, registry.entities ?? [], now);
 
-  // Phase 4 · reported_without_document + sp500_complete_pct.
+  // Phase 4 · reported_without_document (solvable vs structural split).
+  // See pipelineReport.ts for the rationale.
+  const entityCikByTicker = new Map();
+  for (const e of registry.entities ?? []) entityCikByTicker.set(e.ticker, e.edgarCik ?? null);
   let reportedWithoutDocument = 0;
+  let reportedWithoutDocumentStructural = 0;
   const reportedWithoutDocumentSamples = [];
   for (const ev of snap.events) {
     if (!ev.eventDate) continue;
     const hasActuals = (ev.metrics ?? []).some((m) => m.actual?.value != null);
     if (!hasActuals) continue;
     const link = ev.sourceLink;
-    const ok =
-      link && link.kind === "filing" && link.url && !/google\.com\/search/i.test(link.url);
-    if (!ok) {
+    const ok = link && link.kind === "filing" && link.url && !/google\.com\/search/i.test(link.url);
+    if (ok) continue;
+    const cik = entityCikByTicker.get(ev.ticker);
+    if (cik) {
       reportedWithoutDocument++;
       if (reportedWithoutDocumentSamples.length < 8) {
         reportedWithoutDocumentSamples.push(`${ev.ticker} · ${ev.period ?? "?"}`);
       }
+    } else {
+      reportedWithoutDocumentStructural++;
     }
   }
   const sp500Set = new Set(
@@ -460,6 +467,7 @@ async function compute() {
     companies_with_fx_mismatch_samples: fxSamples,
     reported_without_document: reportedWithoutDocument,
     reported_without_document_samples: reportedWithoutDocumentSamples,
+    reported_without_document_structural: reportedWithoutDocumentStructural,
     sp500_complete_pct: sp500CompletePct,
     freshness,
     estimator_label_conflicts: estimatorLabelConflicts,

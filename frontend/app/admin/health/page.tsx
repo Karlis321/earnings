@@ -402,7 +402,10 @@ function InformationalCounters({ report }: { report: PipelineReport }) {
       .duplicates_close_date_fiscal_canary ?? 0;
   const fxMismatch = (report as PipelineReport & { companies_with_fx_mismatch?: number })
     .companies_with_fx_mismatch ?? 0;
-  if (closeDateCanary === 0 && fxMismatch === 0) return null;
+  const structuralNoDoc =
+    (report as PipelineReport & { reported_without_document_structural?: number })
+      .reported_without_document_structural ?? 0;
+  if (closeDateCanary === 0 && fxMismatch === 0 && structuralNoDoc === 0) return null;
   return (
     <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-[11.5px] text-tx3">
       <span className="text-tx-mid">informational ·</span>
@@ -411,6 +414,9 @@ function InformationalCounters({ report }: { report: PipelineReport }) {
       ) : null}
       {fxMismatch > 0 ? (
         <span>fx-mismatch companies {fxMismatch}</span>
+      ) : null}
+      {structuralNoDoc > 0 ? (
+        <span>no-doc structural (non-SEC filer) {structuralNoDoc}</span>
       ) : null}
     </div>
   );

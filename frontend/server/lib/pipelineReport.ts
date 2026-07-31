@@ -91,6 +91,10 @@ export interface PipelineReport {
   // reported_without_document > 0.
   reported_without_document: number;
   reported_without_document_samples: string[];
+  // v3.1: structural counterpart — CIK-less entities whose actuals
+  // came from Yahoo but where SEC attachment can't apply. Not
+  // degradation-triggering (would need hand-mapped IR PDFs to close).
+  reported_without_document_structural: number;
   // Phase 4 · SP500 completeness canary. Percentage of the ~503
   // members' latest reported quarter that clears all four layers
   // (results + document + estimates + reaction). Degrade rule:
@@ -644,13 +648,24 @@ export function computePipelineReport(input: ComputeReportInput): PipelineReport
     if (a != null && b != null && a <= b) estimatorLabelConflicts++;
   }
 
-  // Phase 4 · reported_without_document. Universe-wide (not just
-  // SP500) — the report-attachment rule applies to every past event
-  // with real actuals. A past event with a metric.actual.value but a
-  // non-filing sourceLink (or none) is a document violation. Only
-  // events with genuine actuals count — a shell that carries no
-  // actuals isn't "reported" in the first place.
+  // Phase 4 · reported_without_document. Split into two buckets so
+  // the counter is honest about which violations are actual bugs
+  // vs structural data-source limits:
+  //   SOLVABLE   — entity has an edgarCik → SEC filing path exists →
+  //                a missing filing sourceLink is our pipe's bug.
+  //                Degradation-triggering.
+  //   STRUCTURAL — entity has no edgarCik (non-SEC filer: foreign
+  //                primary, Canadian-only, pink sheet, etc.) → the
+  //                SEC attachment path can't apply. Informational
+  //                only; would need hand-mapped IR PDF or foreign
+  //                regulator crawl to close, and those aren't a
+  //                pipeline bug per se.
+  const entityCikByTicker = new Map<string, string | null | undefined>();
+  if (entities) {
+    for (const e of entities) entityCikByTicker.set(e.ticker, e.edgarCik ?? null);
+  }
   let reportedWithoutDocument = 0;
+  let reportedWithoutDocumentStructural = 0;
   const reportedWithoutDocumentSamples: string[] = [];
   for (const ev of snap.events) {
     if (!ev.eventDate) continue;
@@ -664,11 +679,15 @@ export function computePipelineReport(input: ComputeReportInput): PipelineReport
       link.kind === "filing" &&
       link.url &&
       !/google\.com\/search/i.test(link.url);
-    if (!ok) {
+    if (ok) continue;
+    const cik = entityCikByTicker.get(ev.ticker);
+    if (cik) {
       reportedWithoutDocument++;
       if (reportedWithoutDocumentSamples.length < 8) {
         reportedWithoutDocumentSamples.push(`${ev.ticker} · ${ev.period ?? "?"}`);
       }
+    } else {
+      reportedWithoutDocumentStructural++;
     }
   }
 
@@ -768,6 +787,7 @@ export function computePipelineReport(input: ComputeReportInput): PipelineReport
     companies_with_fx_mismatch_samples: crossListing.fx_mismatch_samples,
     reported_without_document: reportedWithoutDocument,
     reported_without_document_samples: reportedWithoutDocumentSamples,
+    reported_without_document_structural: reportedWithoutDocumentStructural,
     sp500_complete_pct: sp500CompletePct,
     freshness,
     estimator_label_conflicts: estimatorLabelConflicts,
