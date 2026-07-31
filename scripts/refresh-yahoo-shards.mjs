@@ -47,6 +47,11 @@ const args = new Map(
 );
 const DRY = args.get("dry") === true;
 const LIMIT = args.get("limit") ? Number(args.get("limit")) : Infinity;
+// --only=<ticker> or --only=<t1,t2,...> — targeted refresh for a single
+// ticker or short list. Case-sensitive, use Bloomberg form ("AAPL US").
+const ONLY = args.get("only")
+  ? new Set(String(args.get("only")).split(",").map((t) => t.trim()))
+  : null;
 
 const UA = "Mozilla/5.0 (refresh-yahoo-shards)";
 const YAHOO_HEADERS = { "User-Agent": UA, Accept: "*/*" };
@@ -378,7 +383,8 @@ async function main() {
     (e) =>
       e.securityType === "operating" &&
       typeof e.yahooSymbol === "string" &&
-      e.yahooSymbol.length > 0,
+      e.yahooSymbol.length > 0 &&
+      (!ONLY || ONLY.has(e.ticker)),
   );
   const targets = entities.slice(0, LIMIT);
   console.log(`Targets: ${targets.length} operating entities with Yahoo symbols`);

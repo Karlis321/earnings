@@ -34,6 +34,9 @@ const args = new Map(
 );
 const DRY = args.get("dry") === true;
 const LIMIT = args.get("limit") ? Number(args.get("limit")) : Infinity;
+const ONLY = args.get("only")
+  ? new Set(String(args.get("only")).split(",").map((t) => t.trim()))
+  : null;
 
 const UA = "Mozilla/5.0 (mature-any-reported)";
 const CONCURRENCY = 6;
@@ -83,7 +86,12 @@ async function pool(items, n, fn) {
 async function main() {
   console.log(`mature-any-reported · dry=${DRY} limit=${LIMIT === Infinity ? "all" : LIMIT} concurrency=${CONCURRENCY}`);
   const reg = JSON.parse(await fs.readFile(REG_PATH, "utf-8"));
-  const entities = (reg.entities ?? []).filter((e) => e.securityType === "operating" && typeof e.yahooSymbol === "string" && e.yahooSymbol).slice(0, LIMIT);
+  const entities = (reg.entities ?? []).filter((e) =>
+    e.securityType === "operating" &&
+    typeof e.yahooSymbol === "string" &&
+    e.yahooSymbol &&
+    (!ONLY || ONLY.has(e.ticker))
+  ).slice(0, LIMIT);
 
   await primeCrumb();
   if (!CRUMB) { console.error("crumb prime failed"); process.exit(1); }

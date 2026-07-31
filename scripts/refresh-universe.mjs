@@ -83,9 +83,11 @@ const PHASES = [
   // from route.ts step 5b. When it lands, drop it in here and remove
   // the optional flag.
   { key: "gnews", label: "Google News RSS fanout (50+ feeds)", script: "refresh-google-news.mjs", optional: true, todo: true },
-  // IR press-release RSS ingest — TODO. Standalone script not yet
-  // ported from route.ts step 5c.
-  { key: "ir-rss", label: "IR press-release RSS + doc sanitize", script: "refresh-ir-rss.mjs", optional: true, todo: true },
+  // IR press-release RSS ingest — merges per-ticker OFFICIAL_SOURCES
+  // + auto-CIK EDGAR atom feeds into event.sources.items[] on the
+  // ticker's latest past event + next upcoming shell, gated to the
+  // same [-2,+35] day window as the cron.
+  { key: "ir-rss", label: "IR press-release RSS ingest", script: "refresh-ir-rss.mjs" },
   // Sector screen runs weekly only. Wrapped so the orchestrator can
   // skip it cheaply on non-Monday runs without invoking the script.
   { key: "sector-screen", label: "Sector universe expansion (weekly)", script: "backfills/expand-sectors.mjs", optional: true, weeklyOnly: true },

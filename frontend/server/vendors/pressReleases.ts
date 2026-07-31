@@ -56,6 +56,13 @@ export const OFFICIAL_SOURCES: Record<string, OfficialSource[]> = {
   "VLE CN": [
     { kind: "rss", url: "https://www.valeuraenergy.com/feed/", provenance: "ir-page", label: "Valeura Energy IR" },
   ],
+  // Apple: newsroom.rss carries every earnings press release + product/
+  // corporate news. Layered on top of the auto-CIK EDGAR feed because
+  // Apple files 8-Ks a few hours AFTER the newsroom post (the newsroom
+  // is the primary announcement channel; 8-K is regulatory follow-up).
+  "AAPL US": [
+    { kind: "rss", url: "https://www.apple.com/newsroom/rss-feed.rss", provenance: "ir-page", label: "Apple Newsroom" },
+  ],
 };
 
 const UA_EDGAR = "Earnings Tracker (contact@example.com)";
