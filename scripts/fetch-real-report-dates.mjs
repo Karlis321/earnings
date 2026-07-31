@@ -63,9 +63,22 @@ function periodFromEarningsLabel(label) {
 function isPlaceholder(event) {
   if (!event.eventDate) return false;
   if (event.eventDateSource === "yahoo-earnings-chart-reportedDate") return false;
-  if (event.sourceLink?.kind === "filing") return false;
-  // Quarter-end months: 03-31, 06-30, 09-30, 12-31
-  return /-0[369]-30$|-12-31$|-03-31$/.test(event.eventDate);
+  // Any MONTH-END date is a candidate placeholder — fiscal-offset
+  // issuers land on non-calendar-quarter month-ends (AVGO 04-30/07-31/
+  // 10-31/01-31, NVDA 04-30/07-31/10-31/01-31, WMT 04-30 etc.), so
+  // restricting to calendar-quarter-ends missed the entire fiscal-
+  // offset population. Real filing dates are almost never on the last
+  // day of a month (10-Qs typically file mid-month or later), so this
+  // false-positive risk is bounded.
+  // NB: this fires even when sourceLink.kind === "filing" — since
+  // the eventDate can be stale even after a filing was attached
+  // (attach-sec-filings didn't back-update eventDate).
+  const d = new Date(event.eventDate);
+  const day = d.getUTCDate();
+  // Last day of month test — d.getUTCMonth() returns 0-11 and
+  // (day 28/29/30/31 depending on month + Feb).
+  const daysInMonth = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 0)).getUTCDate();
+  return day === daysInMonth;
 }
 
 let CRUMB = null;
@@ -149,18 +162,34 @@ async function main() {
 
     let mutated = false;
     for (const stale of t.placeholders) {
-      const match = q.find((x) => {
-        const p = periodFromEarningsLabel(x.date);
-        return p && p.label === stale.period;
-      });
+      // The placeholder eventDate IS the fiscal quarter-end that
+      // Yahoo timeseries stamped. Match by periodEndDate ONLY (must
+      // be within 3 days of our stored value) — label matching is
+      // ambiguous for fiscal-offset issuers ("2Q2026" can mean
+      // CRWD's May-Jul 2025 OR our calendar Apr-Jun 2026). Then
+      // require the reportedDate to be within 90 days AFTER the
+      // periodEnd (real filings land 2-8 weeks after quarter close).
+      let match = null;
+      for (const x of q) {
+        if (!x.periodEndDate?.fmt) continue;
+        const periodEndGap = Math.abs(
+          new Date(x.periodEndDate.fmt) - new Date(stale.eventDate),
+        ) / 86_400_000;
+        if (periodEndGap > 3) continue;
+        match = x;
+        break;
+      }
       if (!match || !match.reportedDate?.fmt) continue;
       const newDate = match.reportedDate.fmt;
       if (newDate === stale.eventDate) continue;
-      // Only update forward — never move a real date to an earlier placeholder.
+      // Sanity check: reportedDate should be AFTER quarter end and
+      // within 90 days. If Yahoo returned something wildly off (this
+      // has been observed on foreign tickers), reject.
+      const forwardShift = (new Date(newDate) - new Date(stale.eventDate)) / 86_400_000;
+      if (forwardShift < 0 || forwardShift > 90) continue;
       const prev = stale.eventDate;
       stale.eventDate = newDate;
       stale.eventDateSource = "yahoo-earnings-chart-reportedDate";
-      // Preserve original quarter-end as _quarterEndDate for reference.
       stale._quarterEndDate = prev;
       mutated = true;
       rollup.totals.datesUpdated++;
