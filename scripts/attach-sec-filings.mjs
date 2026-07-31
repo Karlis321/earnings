@@ -106,22 +106,31 @@ function pickBestFiling(recent, eventDateIso) {
     });
   }
   const relevant = rows.filter((r) => /^(8-K|10-Q|10-K|20-F|40-F|6-K)$/.test(r.form));
-  // Score: same-day 8-K > within-3-day 8-K > same-day 10-Q > within-3-day 10-Q > 10-K > 6-K etc.
   const scored = relevant.map((r) => {
-    const gap = daysBetween(r.filingDate, eventDateIso);
+    // TWO gap dimensions:
+    //   - filingGap: SEC filing timestamp vs our event date (Yahoo
+    //     usually stamps this reasonably accurately for calendar-
+    //     quarter issuers).
+    //   - reportGap: SEC's own reportDate (fiscal period end) vs
+    //     our event date. For fiscal-offset issuers (Accenture,
+    //     Applied Materials, etc.), Yahoo stores the fiscal
+    //     quarter-end as eventDate — the SEC reportDate on the
+    //     matching 10-Q will be identical. This dimension nails
+    //     fiscal-offset issuers.
+    // Score off the SMALLER of the two — whichever anchor Yahoo
+    // used to stamp eventDate, one of the two will be near-zero.
+    const filingGap = daysBetween(r.filingDate, eventDateIso);
+    const reportGap = r.reportDate ? daysBetween(r.reportDate, eventDateIso) : filingGap + 1000;
+    const gap = Math.min(filingGap, reportGap);
     let score = 100 - gap;
     if (r.form === "8-K") score += 5;
     if (r.form === "10-Q") score += 3;
     if (r.form === "10-K") score += 3;
     if (r.form === "20-F" || r.form === "40-F") score += 2;
     if (r.form === "6-K") score += 1;
-    // 30-day window catches fiscal-offset issuers where Yahoo's
-    // quarter-end placeholder can sit ~3-4 weeks before the actual
-    // filing (Accenture Q2 ends Feb but files in March/April, etc.).
-    // Beyond 30 days we're likely picking up an adjacent quarter's
-    // filing — hard penalty.
+    // 30-day window on the BEST of the two gap dimensions.
     if (gap > 30) score -= 100;
-    return { ...r, score, gap };
+    return { ...r, score, gap, filingGap, reportGap };
   }).sort((a, b) => b.score - a.score);
   return scored[0]?.gap <= 30 ? scored[0] : null;
 }

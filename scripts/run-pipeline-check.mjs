@@ -414,8 +414,18 @@ async function compute() {
       const estOk = !!epsEst;
       const points = ev.reaction?.points ?? [];
       const horizons = new Set(points.map((p) => p.horizon));
+      // See pipelineReport.ts for the rxnOk pending-pre-elapse rationale.
+      const daysSinceEvent = ev.eventDate
+        ? (Date.now() - new Date(ev.eventDate).getTime()) / 86_400_000
+        : Infinity;
+      const HORIZON_MIN_DAYS = { d1: 2, d3: 5, w1: 8, m1: 30 };
       const rxnOk = ["d1", "d3", "w1", "m1"].every((h) => horizons.has(h)) &&
-        points.every((p) => p.status === "clipped" || p.absReturn != null);
+        points.every((p) => {
+          if (p.absReturn != null) return true;
+          if (p.status === "clipped") return true;
+          const min = HORIZON_MIN_DAYS[p.horizon] ?? 30;
+          return daysSinceEvent < min;
+        });
       if (hasReal && docOk && estOk && rxnOk) sp500LatestComplete++;
     }
   }

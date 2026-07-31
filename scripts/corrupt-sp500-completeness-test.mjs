@@ -41,7 +41,11 @@ function runCheck(label) {
 function tickerSlug(t) { return t.replace(/\s+/g, "_").replace(/[^A-Z0-9_.-]/gi, "_"); }
 
 async function main() {
-  // Find an SP500 member with a shard we can mutate.
+  // Find an SP500 member whose latest event is NOT yet fully
+  // complete — planting all four layers on it will raise the pct.
+  // (Picking a random SP500 US ticker used to work when baseline
+  // was ~0%, but with baseline now ~88% most latest events are
+  // already complete and the plant is a no-op.)
   const reg = JSON.parse(await fs.readFile(REG_PATH, "utf-8"));
   const sp500 = (reg.entities ?? []).filter((e) =>
     (e.index_membership ?? []).includes("SP500") && e.ticker.endsWith(" US"),
@@ -50,7 +54,38 @@ async function main() {
     console.log("no SP500 members registered — rule cannot be tested. SKIPPING.");
     process.exit(0);
   }
-  const target = sp500[0];
+  function isComplete(ev) {
+    if (!ev) return false;
+    const hasReal = ev.eventDate && (ev.metrics ?? []).some((m) => m.actual?.value != null);
+    const link = ev.sourceLink;
+    const docOk = link && link.kind === "filing" && link.url && !/google\.com\/search/i.test(link.url);
+    const eps = (ev.metrics ?? []).find((m) => /^eps/.test(m.key) && m.estimate?.value != null);
+    const estOk = !!eps;
+    const pts = ev.reaction?.points ?? [];
+    const hzs = new Set(pts.map((p) => p.horizon));
+    const daysSince = ev.eventDate ? (Date.now() - new Date(ev.eventDate).getTime()) / 86_400_000 : Infinity;
+    const HORIZON_MIN = { d1: 2, d3: 5, w1: 8, m1: 30 };
+    const rxnOk =
+      ["d1", "d3", "w1", "m1"].every((h) => hzs.has(h)) &&
+      pts.every((p) => p.absReturn != null || p.status === "clipped" || daysSince < (HORIZON_MIN[p.horizon] ?? 30));
+    return hasReal && docOk && estOk && rxnOk;
+  }
+  let target = null;
+  for (const e of sp500) {
+    const shardPath = path.join(EVENTS_DIR, tickerSlug(e.ticker) + ".json");
+    let j;
+    try { j = JSON.parse(await fs.readFile(shardPath, "utf-8")); } catch { continue; }
+    const events = Array.isArray(j) ? j : j.events ?? [];
+    const past = events.filter((x) => x.eventDate).sort((a, b) => (b.eventDate ?? "").localeCompare(a.eventDate ?? ""));
+    if (past.length === 0) continue;
+    if (isComplete(past[0])) continue;
+    target = e;
+    break;
+  }
+  if (!target) {
+    console.log("all SP500 members already complete — nothing to plant against. SKIPPING.");
+    process.exit(0);
+  }
   const shardPath = path.join(EVENTS_DIR, tickerSlug(target.ticker) + ".json");
   const original = await fs.readFile(shardPath, "utf-8");
   const j = JSON.parse(original);

@@ -715,11 +715,23 @@ export function computePipelineReport(input: ComputeReportInput): PipelineReport
       const estOk = !!epsEst;
       const points = ev.reaction?.points ?? [];
       const horizons = new Set(points.map((p) => p.horizon));
+      // Horizon elapsed thresholds (calendar days from eventDate):
+      // d1=2, d3=5, w1=8, m1=30. A pending point on a horizon that
+      // hasn't elapsed yet is legitimate (in-progress, not gap).
+      const daysSinceEvent = ev.eventDate
+        ? (Date.now() - new Date(ev.eventDate).getTime()) / 86_400_000
+        : Infinity;
+      const HORIZON_MIN_DAYS: Record<string, number> = {
+        d1: 2, d3: 5, w1: 8, m1: 30,
+      };
       const rxnOk =
         (["d1", "d3", "w1", "m1"] as const).every((h) => horizons.has(h)) &&
-        points.every(
-          (p) => p.status === "clipped" || (p.absReturn != null),
-        );
+        points.every((p) => {
+          if (p.absReturn != null) return true;
+          if (p.status === "clipped") return true;
+          const min = HORIZON_MIN_DAYS[p.horizon] ?? 30;
+          return daysSinceEvent < min; // pending is legit before elapse
+        });
       if (hasReal && docOk && estOk && rxnOk) sp500LatestComplete++;
     }
   }
