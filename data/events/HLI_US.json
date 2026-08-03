@@ -350,20 +350,32 @@
           "surprisePct": null,
           "estimate": null,
           "actual": {
-            "value": 13.185,
+            "value": 13,
             "unit": "USD",
             "source": {
-              "url": "https://www.sec.gov/Archives/edgar/data/1302215/000130221525000092/",
+              "url": "https://www.sec.gov/Archives/edgar/data/1302215/000130221526000067/",
               "label": "SEC EDGAR · 10-Q · PaymentsToAcquirePropertyPlantAndEquipment",
               "provenance": "regulatory",
               "locator": null
             },
             "asOf": "2025-06-30",
-            "fetchedAt": "2026-07-28T14:28:59.665Z",
+            "fetchedAt": "2026-08-03T07:06:34.124Z",
             "method": "filing_manual",
             "confidence": 0.98
           },
-          "prior": null
+          "prior": null,
+          "superseded": [
+            {
+              "value": 13.185,
+              "unit": "USD",
+              "source": "SEC EDGAR · 10-Q · PaymentsToAcquirePropertyPlantAndEquipment",
+              "asOf": "2025-06-30",
+              "fetchedAt": "2026-07-28T14:28:59.665Z",
+              "replaced_at": "2026-08-03T07:06:34.124Z",
+              "replaced_by": "rederive-sec-xbrl",
+              "pct_delta": 1.423076923076927
+            }
+          ]
         },
         {
           "key": "weighted_diluted_shares_m",
@@ -580,7 +592,7 @@
         "engineStatus": []
       },
       "provenance": "sec-xbrl-companyfacts",
-      "provenanceAsOf": "2026-07-29T07:22:20.648Z",
+      "provenanceAsOf": "2026-08-03T07:06:34.124Z",
       "sourceLink": {
         "kind": "filing",
         "url": "https://www.sec.gov/Archives/edgar/data/1302215/000130221525000092/hli-20250630.htm",
@@ -2517,7 +2529,52 @@
       "provenance": "estimator-median-gap",
       "provenanceAsOf": "2026-07-31T13:45:57.646Z",
       "cadence": "quarterly",
-      "metrics": [],
+      "metrics": [
+        {
+          "key": "eps_diluted_usd",
+          "displayLabel": "EPS diluted",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 1.15,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/HLI/financials",
+              "label": "Yahoo · fundamentals-timeseries",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-06-30",
+            "fetchedAt": "2026-08-03T06:58:26.754Z",
+            "method": "yahoo",
+            "confidence": 0.85
+          },
+          "prior": null
+        },
+        {
+          "key": "eps_usd",
+          "displayLabel": "EPS",
+          "isHeadline": true,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 1.17,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/HLI/financials",
+              "label": "Yahoo · fundamentals-timeseries",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-06-30",
+            "fetchedAt": "2026-08-03T06:58:26.754Z",
+            "method": "yahoo",
+            "confidence": 0.85
+          },
+          "prior": null
+        }
+      ],
       "guidance": [],
       "reaction": {
         "benchmark": "SPX",
