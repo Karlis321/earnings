@@ -123,6 +123,13 @@ const PHASES = [
   { key: "sanitize-currency", label: "Currency-unit mismatch sweep", script: "fix-currency-unit-mismatch.mjs" },
   { key: "sanitize-basis", label: "Same-basis surprise sweep (cross-basis clear)", script: "enforce-same-basis-surprise.mjs" },
   { key: "sanitize-absurd", label: "Absurd-surprise floor sweep (>500%)", script: "suppress-absurd-surprise.mjs" },
+  // Attach real SEC filing sourceLinks to CIK-bearing violations of
+  // the report-attachment rule. Uses the SP500-latest scope (~8-9
+  // min at SEC's 1 req/s) as the daily fast path. A one-off
+  // `--scope=all` catches the tail after big population additions
+  // (like the R1000 batch on 2026-08-03) — resumable via
+  // fetched/attach-sec-filings.checkpoint.json.
+  { key: "attach-sec-filings", label: "Attach SEC 8-K/10-Q sourceLinks (SP500-latest)", script: "attach-sec-filings.mjs", extraArgs: ["--scope=sp500-latest"] },
   { key: "shard-earnings", label: "Rebuild shards + events-index", script: "shard-earnings.mjs" },
   { key: "pipeline-check", label: "Pipeline report + standing invariants", script: "run-pipeline-check.mjs" },
   // Full corruption-test suite — catches invariant regressions before
@@ -229,7 +236,7 @@ async function main() {
       continue;
     }
 
-    const { code, durationMs } = await runNode(phase.script);
+    const { code, durationMs } = await runNode(phase.script, phase.extraArgs ?? []);
     if (code === 0) {
       console.log(`  ok · ${(durationMs / 1000).toFixed(1)}s`);
       results.push({ key: phase.key, status: "ok", durationMs });
