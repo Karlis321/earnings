@@ -12,11 +12,48 @@ interface Props {
 
 export function RealPriceSparkline({ series, loading, err }: Props) {
   if (loading) {
+    // Shimmering placeholder line that hints at "this is a sparkline
+    // loading" — moving gradient plus a subtle stroke path so the row
+    // doesn't look like a broken cell while Yahoo bars are in flight.
     return (
-      <span
+      <svg
+        width={88}
+        height={24}
+        viewBox="0 0 88 24"
+        role="img"
         aria-label="Loading price series"
-        className="inline-block h-[24px] w-[88px] animate-pulse rounded-[4px] bg-s2"
-      />
+        className="overflow-visible"
+      >
+        <defs>
+          <linearGradient id="sparkShimmer" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stopColor="var(--tx3)" stopOpacity="0.15" />
+            <stop offset="50%" stopColor="var(--tx3)" stopOpacity="0.55" />
+            <stop offset="100%" stopColor="var(--tx3)" stopOpacity="0.15" />
+            <animate
+              attributeName="x1"
+              from="-1"
+              to="1"
+              dur="1.4s"
+              repeatCount="indefinite"
+            />
+            <animate
+              attributeName="x2"
+              from="0"
+              to="2"
+              dur="1.4s"
+              repeatCount="indefinite"
+            />
+          </linearGradient>
+        </defs>
+        <polyline
+          points="0,14 12,10 24,15 36,8 48,12 60,6 72,11 88,9"
+          fill="none"
+          stroke="url(#sparkShimmer)"
+          strokeWidth={1.6}
+          strokeLinejoin="round"
+          strokeLinecap="round"
+        />
+      </svg>
     );
   }
   if (err || series.length < 2) {

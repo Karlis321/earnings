@@ -167,18 +167,57 @@ export function WatchlistTable({ rows }: { rows: WatchlistRow[] }) {
   const [earnings, setEarnings] = useState<BulkEarningsResponse | null>(null);
 
   useEffect(() => {
-    const tickers = rows.map((r) => r.ticker).join(",");
-    const encoded = encodeURIComponent(tickers);
-    fetch(`/api/prices/bulk?tickers=${encoded}&range=1mo`, { cache: "no-store" })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((j: BulkPricesResponse | null) => setPrices(j))
-      .catch(() => setPrices(null))
-      .finally(() => setPricesLoading(false));
-
-    fetch(`/api/earnings/yahoo/bulk?tickers=${encoded}`, { cache: "no-store" })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((j: BulkEarningsResponse | null) => setEarnings(j))
-      .catch(() => setEarnings(null));
+    // Chunk the ticker list into batches of 100 so the GET URL stays
+    // under browser + Vercel query-string limits (~8KB) and each Vercel
+    // function invocation completes under the 30s cap (~2s/ticker at
+    // Yahoo concurrency 4 → 50s per batch of 100 max, in practice much
+    // less because most tickers hit Yahoo's cache). Batches run in
+    // parallel; results merge progressively so partial data is visible
+    // before every batch finishes.
+    const BATCH_SIZE = 100;
+    const allTickers = rows.map((r) => r.ticker);
+    const batches: string[][] = [];
+    for (let i = 0; i < allTickers.length; i += BATCH_SIZE) {
+      batches.push(allTickers.slice(i, i + BATCH_SIZE));
+    }
+    let cancelled = false;
+    const merged: BulkPricesResponse = {
+      range: "1mo",
+      fetchedAt: new Date().toISOString(),
+      tickers: {},
+    };
+    const mergedEarnings: BulkEarningsResponse = {
+      fetchedAt: new Date().toISOString(),
+      tickers: {},
+    };
+    let completed = 0;
+    Promise.all(
+      batches.map(async (chunk) => {
+        const q = encodeURIComponent(chunk.join(","));
+        const [pj, ej] = await Promise.all([
+          fetch(`/api/prices/bulk?tickers=${q}&range=1mo`, { cache: "no-store" })
+            .then((r) => (r.ok ? (r.json() as Promise<BulkPricesResponse>) : null))
+            .catch(() => null),
+          fetch(`/api/earnings/yahoo/bulk?tickers=${q}`, { cache: "no-store" })
+            .then((r) => (r.ok ? (r.json() as Promise<BulkEarningsResponse>) : null))
+            .catch(() => null),
+        ]);
+        if (cancelled) return;
+        if (pj?.tickers) {
+          Object.assign(merged.tickers, pj.tickers);
+          setPrices({ ...merged, tickers: { ...merged.tickers } });
+        }
+        if (ej?.tickers) {
+          Object.assign(mergedEarnings.tickers, ej.tickers);
+          setEarnings({ ...mergedEarnings, tickers: { ...mergedEarnings.tickers } });
+        }
+        completed++;
+        if (completed === batches.length) setPricesLoading(false);
+      }),
+    ).catch(() => {
+      if (!cancelled) setPricesLoading(false);
+    });
+    return () => { cancelled = true; };
     // Fetch once on mount — ticker list is stable.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
