@@ -5,9 +5,8 @@
 import { store } from "@/server/store";
 import { buildWatchlistRowsFromIndex } from "@/lib/watchlist";
 import { todayIso } from "@/lib/freshness";
-import { Panel } from "@/components/primitives";
 import { Breadcrumb } from "@/components/shell/Breadcrumb";
-import { SectorMemberRows } from "@/components/sectors/SectorMemberRows";
+import { SectorGroupsFilter } from "@/components/sectors/SectorGroupsFilter";
 import type { EventsIndex } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -87,17 +86,7 @@ export default async function Russell1000Page() {
         </p>
       </div>
 
-      <div className="flex flex-col gap-4">
-        {groups.map((g) => (
-          <Panel
-            key={g.id}
-            eyebrow={`${g.id} · ${g.rows.length} · sorted by market cap`}
-            padded={false}
-          >
-            <SectorMemberRows rows={g.rows} />
-          </Panel>
-        ))}
-      </div>
+      <SectorGroupsFilter groups={groups} totalRows={inIndex.length} />
     </div>
   );
 }
