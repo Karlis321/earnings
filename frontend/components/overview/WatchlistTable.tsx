@@ -143,6 +143,14 @@ export function WatchlistTable({ rows }: { rows: WatchlistRow[] }) {
   const [group, setGroup] = useState<Group>("flat");
   const [selectedIdx, setSelectedIdx] = useState<number>(0);
   const [tier, setTier] = useState<TierFilter>("any");
+
+  // Reset keyboard cursor whenever the visible row set changes. Without
+  // this, applying a filter that shrinks the list can leave selectedIdx
+  // pointing past the new bounds, and switching group modes reorders
+  // rows so the previous selectedIdx highlights the wrong row.
+  useEffect(() => {
+    setSelectedIdx(0);
+  }, [filter, tier, reportingSoon, group, sortKey]);
   // Canonical-listings-only by default — so NVIDIA counts once in
   // large-cap tech instead of four times (once per BDR / MM / TB / CN
   // wrapper listing). Portfolio rows (isCore) always show regardless,
@@ -355,6 +363,16 @@ export function WatchlistTable({ rows }: { rows: WatchlistRow[] }) {
     }));
   }, [filtered, group]);
 
+  // Render-order → row map. `grouped` reshuffles rows across groups —
+  // e.g. sector-grouped Tech rows appear before Finance rows regardless
+  // of original filter order. Keyboard-highlight and arrow-key nav must
+  // use THIS ordering so selectedIdx=N highlights the N-th visible row.
+  const orderedRows = useMemo(() => {
+    const out: WatchlistRow[] = [];
+    for (const g of grouped) out.push(...g.rows);
+    return out;
+  }, [grouped]);
+
   return (
     <div>
       <FilterBar
@@ -431,12 +449,12 @@ export function WatchlistTable({ rows }: { rows: WatchlistRow[] }) {
         onKeyDown={(e) => {
           if (e.key === "ArrowDown") {
             e.preventDefault();
-            setSelectedIdx((i) => Math.min(i + 1, filtered.length - 1));
+            setSelectedIdx((i) => Math.min(i + 1, orderedRows.length - 1));
           } else if (e.key === "ArrowUp") {
             e.preventDefault();
             setSelectedIdx((i) => Math.max(i - 1, 0));
           } else if (e.key === "Enter") {
-            const r = filtered[selectedIdx];
+            const r = orderedRows[selectedIdx];
             if (r) router.push(`/s/${encodeURIComponent(r.ticker)}`);
           }
         }}
@@ -456,7 +474,7 @@ export function WatchlistTable({ rows }: { rows: WatchlistRow[] }) {
                 priceEntry={prices?.tickers[r.ticker]}
                 earningsEntry={earnings?.tickers[r.ticker]}
                 pricesLoading={pricesLoading}
-                selected={filtered.indexOf(r) === selectedIdx}
+                selected={orderedRows.indexOf(r) === selectedIdx}
                 siblingCount={(() => {
                   const cid = r.entity.companyId ?? r.entity.ticker;
                   const list = listingsByCompany.get(cid);

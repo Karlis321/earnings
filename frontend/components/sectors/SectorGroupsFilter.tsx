@@ -11,7 +11,7 @@
 // industryGroup. Case-insensitive. Empty query renders everything
 // unchanged so first paint matches the original page shape.
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { WatchlistRow } from "@/lib/types";
 import { Panel } from "@/components/primitives";
 import { SectorMemberRows } from "./SectorMemberRows";
@@ -33,6 +33,19 @@ export function SectorGroupsFilter({
 }) {
   const [q, setQ] = useState("");
   const [view, setView] = useState<ViewMode>("industry");
+
+  // Persist the view choice so navigating between /sectors/sp500 and
+  // /sectors/russell1000 keeps whichever mode the user picked. Written
+  // to localStorage on change; read on mount. SSR-safe (typeof check).
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const saved = window.localStorage.getItem("sectorGroupsFilterView");
+    if (saved === "industry" || saved === "cap") setView(saved);
+  }, []);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem("sectorGroupsFilterView", view);
+  }, [view]);
 
   const { filteredGroups, matchCount } = useMemo(() => {
     const term = q.trim().toLowerCase();
