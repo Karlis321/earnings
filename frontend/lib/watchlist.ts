@@ -221,12 +221,16 @@ export function buildWatchlistRowsFromIndex(
           86400000,
       ) <= 7;
 
-    // Prefer the entity-level count (rolling 14d news + PR count);
-    // fall back to the index's per-ticker sourceCount.
-    const sourceCount =
-      typeof entity.sourceCount === "number"
-        ? entity.sourceCount
-        : idx?.sourceCount ?? 0;
+    // Prefer whichever is HIGHER: the index-level count (populated
+    // from the shard's latest event on shard-earnings rebuild — always
+    // fresh) or the entity-level rolling counter (occasional pass).
+    // Old code preferred entity first, but entity was usually 0/stale
+    // while the index knew the shard had 10 items — half the universe
+    // rendered "—" for that reason.
+    const idxCount = idx?.sourceCount ?? 0;
+    const entityCount =
+      typeof entity.sourceCount === "number" ? entity.sourceCount : 0;
+    const sourceCount = Math.max(idxCount, entityCount);
 
     const newSinceLastView = idx?.lastPeriod ? Math.min(sourceCount, 2) : 0;
 

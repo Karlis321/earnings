@@ -75,7 +75,21 @@ function buildIndexEntry(ticker, events, entity) {
     // freshness: "stale" is the marker the estimator sets on synthesized shells.
     nextIsEstimated: !!nextEvent && nextEvent.freshness === "stale",
     nextCadence: nextEvent?.cadence,
-    sourceCount: entity?.sourceCount ?? 0,
+    // Prefer the actual count on the latest event's sources.items,
+    // falling back to the sum across all events, then the entity-level
+    // count. The entity-level number is a periodically-refreshed
+    // rolling counter that lags what's actually on the shard, so
+    // reading from the shard directly keeps the SRC column live.
+    sourceCount: (() => {
+      const latestItems = latest?.sources?.items?.length ?? 0;
+      if (latestItems > 0) return latestItems;
+      const summed = events.reduce(
+        (n, e) => n + (e.sources?.items?.length ?? 0),
+        0,
+      );
+      if (summed > 0) return summed;
+      return entity?.sourceCount ?? 0;
+    })(),
     guidanceMove: latest?.guidanceMove ?? null,
     freshness: latest?.freshness ?? "never",
     lastEventReactionPoints,
