@@ -52,25 +52,27 @@ function periodFromEndDate(iso) {
 let CRUMB = null;
 let COOKIE = "";
 async function primeCrumb() {
-  const r1 = await fetch("https://fc.yahoo.com/", {
-    headers: { "User-Agent": UA },
-    redirect: "manual",
-  });
-  const setCookies = typeof r1.headers.getSetCookie === "function" ? r1.headers.getSetCookie() : [];
-  const pairs = new Map();
-  for (const raw of setCookies) {
-    const f = raw.split(";", 1)[0].trim();
-    const eq = f.indexOf("=");
-    if (eq > 0) pairs.set(f.slice(0, eq), f.slice(eq + 1));
+  // Retry with backoff — see mature-any-reported.mjs.
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      const r1 = await fetch("https://fc.yahoo.com/", { headers: { "User-Agent": UA }, redirect: "manual" });
+      const setCookies = typeof r1.headers.getSetCookie === "function" ? r1.headers.getSetCookie() : [];
+      const pairs = new Map();
+      for (const raw of setCookies) {
+        const f = raw.split(";", 1)[0].trim();
+        const eq = f.indexOf("=");
+        if (eq > 0) pairs.set(f.slice(0, eq), f.slice(eq + 1));
+      }
+      const cookie = Array.from(pairs, ([n, v]) => `${n}=${v}`).join("; ");
+      if (!cookie) { if (attempt < 3) await new Promise((r) => setTimeout(r, 2000)); continue; }
+      const r2 = await fetch("https://query2.finance.yahoo.com/v1/test/getcrumb", { headers: { "User-Agent": UA, Cookie: cookie } });
+      if (!r2.ok) { if (attempt < 3) await new Promise((r) => setTimeout(r, 2000)); continue; }
+      const crumb = (await r2.text()).trim();
+      if (!crumb || /Unauthorized|<html/i.test(crumb)) { if (attempt < 3) await new Promise((r) => setTimeout(r, 2000)); continue; }
+      COOKIE = cookie; CRUMB = crumb; return CRUMB;
+    } catch { if (attempt < 3) await new Promise((r) => setTimeout(r, 2000)); }
   }
-  COOKIE = Array.from(pairs, ([n, v]) => `${n}=${v}`).join("; ");
-  if (!COOKIE) return null;
-  const r2 = await fetch("https://query2.finance.yahoo.com/v1/test/getcrumb", {
-    headers: { "User-Agent": UA, Cookie: COOKIE },
-  });
-  if (!r2.ok) return null;
-  CRUMB = (await r2.text()).trim();
-  return CRUMB;
+  return null;
 }
 
 async function fetchEarningsTrend(symbol) {

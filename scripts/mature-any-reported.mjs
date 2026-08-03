@@ -52,16 +52,30 @@ function periodFromEarningsLabel(label) {
 let CRUMB = null;
 let COOKIE = "";
 async function primeCrumb() {
-  const r1 = await fetch("https://fc.yahoo.com/", { headers: { "User-Agent": UA }, redirect: "manual" });
-  const cs = typeof r1.headers.getSetCookie === "function" ? r1.headers.getSetCookie() : [];
-  const pairs = new Map();
-  for (const raw of cs) { const f = raw.split(";", 1)[0].trim(); const eq = f.indexOf("="); if (eq > 0) pairs.set(f.slice(0, eq), f.slice(eq + 1)); }
-  COOKIE = Array.from(pairs, ([n, v]) => `${n}=${v}`).join("; ");
-  if (!COOKIE) return null;
-  const r2 = await fetch("https://query2.finance.yahoo.com/v1/test/getcrumb", { headers: { "User-Agent": UA, Cookie: COOKIE } });
-  if (!r2.ok) return null;
-  CRUMB = (await r2.text()).trim();
-  return CRUMB;
+  // Retry-with-backoff. Yahoo occasionally returns empty Set-Cookie
+  // headers or non-2xx on getcrumb from CI/datacenter IPs — a fresh
+  // handshake usually succeeds seconds later. Was failing hard on
+  // GitHub Actions Ubuntu 2026-08-03. Three attempts × 2s backoff.
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      const r1 = await fetch("https://fc.yahoo.com/", { headers: { "User-Agent": UA }, redirect: "manual" });
+      const cs = typeof r1.headers.getSetCookie === "function" ? r1.headers.getSetCookie() : [];
+      const pairs = new Map();
+      for (const raw of cs) { const f = raw.split(";", 1)[0].trim(); const eq = f.indexOf("="); if (eq > 0) pairs.set(f.slice(0, eq), f.slice(eq + 1)); }
+      const cookie = Array.from(pairs, ([n, v]) => `${n}=${v}`).join("; ");
+      if (!cookie) { if (attempt < 3) await new Promise((r) => setTimeout(r, 2000)); continue; }
+      const r2 = await fetch("https://query2.finance.yahoo.com/v1/test/getcrumb", { headers: { "User-Agent": UA, Cookie: cookie } });
+      if (!r2.ok) { if (attempt < 3) await new Promise((r) => setTimeout(r, 2000)); continue; }
+      const crumb = (await r2.text()).trim();
+      if (!crumb || /Unauthorized|<html/i.test(crumb)) { if (attempt < 3) await new Promise((r) => setTimeout(r, 2000)); continue; }
+      COOKIE = cookie;
+      CRUMB = crumb;
+      return CRUMB;
+    } catch {
+      if (attempt < 3) await new Promise((r) => setTimeout(r, 2000));
+    }
+  }
+  return null;
 }
 
 async function fetchEarnings(symbol) {
