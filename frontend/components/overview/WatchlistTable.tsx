@@ -117,7 +117,7 @@ type Filter =
   | "realestate"
   | "utilities"
   | "developer";
-type SortKey = "next" | "surprise" | "reaction" | "freshness" | "name";
+type SortKey = "next" | "surprise" | "reaction" | "freshness" | "name" | "cap";
 type Group = "flat" | "type" | "sector" | "industry" | "cap-industry";
 const CAP_TIER_ORDER: Array<"mega" | "large" | "mid" | "small" | "unknown"> = [
   "mega",
@@ -241,13 +241,23 @@ export function WatchlistTable({ rows }: { rows: WatchlistRow[] }) {
         }
         case "name":
           return a.entity.displayName.localeCompare(b.entity.displayName);
+        case "cap":
+          return (b.entity.marketCapUsd ?? 0) - (a.entity.marketCapUsd ?? 0);
       }
     });
     return list;
   }, [rows, filter, reportingSoon, sortKey, tier]);
 
   const grouped = useMemo(() => {
-    if (group === "flat") return [{ id: "", label: "", rows: filtered }];
+    if (group === "flat") {
+      // "Group: market cap ↓" mode — one flat panel, largest US caps
+      // first regardless of the sort dropdown. The user's other sort
+      // choices apply inside grouped modes (per-group ordering).
+      const sortedByCap = [...filtered].sort(
+        (a, b) => (b.entity.marketCapUsd ?? 0) - (a.entity.marketCapUsd ?? 0),
+      );
+      return [{ id: "", label: "", rows: sortedByCap }];
+    }
 
     // "cap-industry" mode: two-level grouping — cap tier at the top,
     // industry group underneath. We flatten to a single-level list so
@@ -738,6 +748,7 @@ function FilterBar({
         onChange={(e) => setSortKey(e.target.value as SortKey)}
         className="h-8 rounded-button border border-bd bg-s1 px-2 text-[12.5px] text-tx2"
       >
+        <option value="cap">Sort: Market cap ↓</option>
         <option value="next">Sort: Next event</option>
         <option value="surprise">Sort: Surprise</option>
         <option value="reaction">Sort: Reaction (+1d)</option>
@@ -749,7 +760,7 @@ function FilterBar({
         onChange={(e) => setGroup(e.target.value as Group)}
         className="h-8 rounded-button border border-bd bg-s1 px-2 text-[12.5px] text-tx2"
       >
-        <option value="flat">Group: none</option>
+        <option value="flat">Group: market cap ↓</option>
         <option value="type">Group: type</option>
         <option value="sector">Group: sector</option>
         <option value="industry">Group: industry</option>
