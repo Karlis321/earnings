@@ -45,10 +45,10 @@ concurrency:
 jobs:
   refresh:
     runs-on: ubuntu-latest
-    # 25 min = 8 slices × ~60-90s happy path + Phase B ~150s + slack
+    # 45 min = 25 slices × ~60-90s happy path + Phase B ~150s + slack
     # for one retry on a failing phase (retry costs 300s + 10s sleep).
-    # Previously 15 min was tight after bumping SLICES 4 → 8.
-    timeout-minutes: 25
+    # Bumped from 25 → 45 min after SLICES 16 → 24 (post-SP500 volume).
+    timeout-minutes: 45
     steps:
       - name: Ping /api/cron/daily (4 slices sequentially)
         env:
@@ -67,19 +67,15 @@ jobs:
           #            newly-added entities to the registry.
           # Both phases inside 300s each. If either fails, the workflow
           # goes red at the end but successful phases still committed.
-          # Iteration history: 4 → 8 → 16. SLICES=8 was still tight
-          # against the 300s Vercel cap when Yahoo latency spiked.
-          # Slice 0 workload at SLICES=16:
-          #   reconstitute-from-shards      ~15s (cold; cache-hit is 0)
-          #   news fanout                    ~10s
-          #   per-entity Yahoo (~90 tickers) ~40s (serial, ~450ms each)
-          #   SEC-submissions loop           ~15s
-          #   SEC-verbatim reconciliation    ~10s
-          #   mutateEarnings commit          ~10s
-          #   Total                          ~100s (66% headroom under 300s)
-          # Trade-off: 17 sequential phases at ~60s avg = ~17 min wall
-          # time, inside the 25-min Actions job budget with retry slack.
-          SLICES=16
+          # Iteration history: 4 → 8 → 16 → 24. SLICES=16 was tuned
+          # for ~10,400 events / 1,774 shards. SP500 Phase-2 bumped
+          # totals to ~13,065 events / 2,199 shards (+26% / +24%),
+          # and slice 0 started hitting 504 FUNCTION_INVOCATION_TIMEOUT
+          # on the reconstitute + per-entity Yahoo loop (2026-08-03).
+          # SLICES=24 drops per-slice per-entity work ~33%.
+          # 25 sequential phases at ~60s avg ≈ 25 min wall time, inside
+          # the 45-min Actions job budget after the timeout-minutes bump.
+          SLICES=24
           FAILED=0
 
           # Rate-limit-aware retry. Handles three failure modes:
