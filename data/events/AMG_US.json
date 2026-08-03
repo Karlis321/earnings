@@ -638,6 +638,12 @@
               "actualFamily": "sec",
               "estimateFamily": "yahoo-generic",
               "clearedAt": "2026-08-03T07:43:36.114Z"
+            },
+            {
+              "value": 27.013383163840466,
+              "actualFamily": "sec",
+              "estimateFamily": "yahoo-generic",
+              "clearedAt": "2026-08-03T09:07:07.649Z"
             }
           ]
         },
@@ -1152,6 +1158,12 @@
               "actualFamily": "yahoo-timeseries",
               "estimateFamily": "yahoo-generic",
               "clearedAt": "2026-08-03T07:43:36.114Z"
+            },
+            {
+              "value": 41.79052119615523,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-generic",
+              "clearedAt": "2026-08-03T09:07:07.649Z"
             }
           ]
         },
@@ -1602,6 +1614,12 @@
               "actualFamily": "sec",
               "estimateFamily": "yahoo-generic",
               "clearedAt": "2026-08-03T07:43:36.114Z"
+            },
+            {
+              "value": -48.97295690568047,
+              "actualFamily": "sec",
+              "estimateFamily": "yahoo-generic",
+              "clearedAt": "2026-08-03T09:07:07.649Z"
             }
           ]
         },
@@ -2761,7 +2779,7 @@
           "key": "eps_usd",
           "displayLabel": "EPS",
           "isHeadline": true,
-          "surprisePct": 4.691941751373674,
+          "surprisePct": null,
           "estimate": {
             "value": 7.91847,
             "unit": "USD",
@@ -2777,20 +2795,36 @@
             "confidence": 0.75
           },
           "actual": {
-            "value": 8.29,
+            "value": 7.05,
             "unit": "USD",
             "source": {
-              "url": "https://finance.yahoo.com/quote/AMG/earnings-history",
-              "label": "Yahoo · earningsChart",
+              "url": "https://finance.yahoo.com/quote/AMG/financials",
+              "label": "Yahoo · fundamentals-timeseries",
               "provenance": "wire",
               "locator": null
             },
             "asOf": "2026-06-30",
-            "fetchedAt": "2026-08-03T07:21:15.930Z",
+            "fetchedAt": "2026-08-03T08:50:47.274Z",
             "method": "yahoo",
-            "confidence": 0.8
+            "confidence": 0.85
           },
-          "prior": null
+          "prior": null,
+          "superseded": [
+            {
+              "value": 8.29,
+              "unit": "USD",
+              "source": "Yahoo · earningsChart",
+              "from_provenance": "yahoo-earnings-chart"
+            }
+          ],
+          "_crossBasisSurprise": [
+            {
+              "value": 4.691941751373674,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-08-03T09:07:07.649Z"
+            }
+          ]
         },
         {
           "key": "eps_diluted_usd",
@@ -2876,6 +2910,69 @@
         "form": "8-K",
         "accession": "0001628280-26-050793",
         "filingDate": "2026-07-30"
+      }
+    },
+    {
+      "id": "evt-bc3tck",
+      "ticker": "AMG US",
+      "kind": "earnings",
+      "period": "FY2026 Q3",
+      "scheduledDate": "2026-10-29",
+      "eventDate": null,
+      "timing": null,
+      "expectation": "unset",
+      "guidanceMove": null,
+      "freshness": "stale",
+      "provenance": "estimator-median-gap",
+      "provenanceAsOf": "2026-08-03T09:04:58.379Z",
+      "cadence": "quarterly",
+      "metrics": [],
+      "guidance": [],
+      "reaction": {
+        "benchmark": "SPX",
+        "baselineDate": null,
+        "baselineClose": null,
+        "points": [
+          {
+            "horizon": "d1",
+            "absReturn": null,
+            "excessReturn": null,
+            "benchmark": "SPX",
+            "computedAt": null,
+            "populatesOn": "2026-11-01"
+          },
+          {
+            "horizon": "d3",
+            "absReturn": null,
+            "excessReturn": null,
+            "benchmark": "SPX",
+            "computedAt": null,
+            "populatesOn": "2026-11-03"
+          },
+          {
+            "horizon": "w1",
+            "absReturn": null,
+            "excessReturn": null,
+            "benchmark": "SPX",
+            "computedAt": null,
+            "populatesOn": "2026-11-05"
+          },
+          {
+            "horizon": "m1",
+            "absReturn": null,
+            "excessReturn": null,
+            "benchmark": "SPX",
+            "computedAt": null,
+            "populatesOn": "2026-11-21"
+          }
+        ]
+      },
+      "sources": {
+        "windowStart": "2026-10-27",
+        "windowEnd": "2026-12-03",
+        "capturedAt": null,
+        "items": [],
+        "engineStatus": []
       }
     }
   ]

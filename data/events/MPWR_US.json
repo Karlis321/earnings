@@ -936,6 +936,12 @@
               "actualFamily": "sec",
               "estimateFamily": "yahoo-chart",
               "clearedAt": "2026-08-03T07:43:38.147Z"
+            },
+            {
+              "value": -19.098389302865424,
+              "actualFamily": "sec",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-08-03T09:07:08.716Z"
             }
           ]
         },
@@ -1365,6 +1371,12 @@
               "actualFamily": "yahoo-timeseries",
               "estimateFamily": "yahoo-chart",
               "clearedAt": "2026-08-03T07:43:38.147Z"
+            },
+            {
+              "value": -25.894491490534133,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-08-03T09:07:08.716Z"
             }
           ]
         },
@@ -1716,6 +1728,12 @@
               "actualFamily": "sec",
               "estimateFamily": "yahoo-chart",
               "clearedAt": "2026-08-03T07:43:38.147Z"
+            },
+            {
+              "value": -19.613327865407406,
+              "actualFamily": "sec",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-08-03T09:07:08.716Z"
             }
           ]
         },
@@ -2503,7 +2521,7 @@
           "key": "eps_usd",
           "displayLabel": "EPS",
           "isHeadline": true,
-          "surprisePct": 10.530683317688986,
+          "surprisePct": null,
           "estimate": {
             "value": 5.88072,
             "unit": "USD",
@@ -2519,20 +2537,36 @@
             "confidence": 0.75
           },
           "actual": {
-            "value": 6.5,
+            "value": 5.24,
             "unit": "USD",
             "source": {
-              "url": "https://finance.yahoo.com/quote/MPWR/earnings-history",
-              "label": "Yahoo · earningsChart",
+              "url": "https://finance.yahoo.com/quote/MPWR/financials",
+              "label": "Yahoo · fundamentals-timeseries",
               "provenance": "wire",
               "locator": null
             },
             "asOf": "2026-06-30",
-            "fetchedAt": "2026-08-03T07:21:15.930Z",
+            "fetchedAt": "2026-08-03T08:50:47.274Z",
             "method": "yahoo",
-            "confidence": 0.8
+            "confidence": 0.85
           },
-          "prior": null
+          "prior": null,
+          "superseded": [
+            {
+              "value": 6.5,
+              "unit": "USD",
+              "source": "Yahoo · earningsChart",
+              "from_provenance": "yahoo-earnings-chart"
+            }
+          ],
+          "_crossBasisSurprise": [
+            {
+              "value": 10.530683317688986,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-08-03T09:07:08.716Z"
+            }
+          ]
         },
         {
           "key": "eps_diluted_usd",
@@ -2618,6 +2652,69 @@
         "form": "8-K",
         "accession": "0001628280-26-051029",
         "filingDate": "2026-07-30"
+      }
+    },
+    {
+      "id": "evt-l2pll5",
+      "ticker": "MPWR US",
+      "kind": "earnings",
+      "period": "FY2026 Q3",
+      "scheduledDate": "2026-10-29",
+      "eventDate": null,
+      "timing": null,
+      "expectation": "unset",
+      "guidanceMove": null,
+      "freshness": "stale",
+      "provenance": "estimator-median-gap",
+      "provenanceAsOf": "2026-08-03T09:04:58.381Z",
+      "cadence": "quarterly",
+      "metrics": [],
+      "guidance": [],
+      "reaction": {
+        "benchmark": "SPX",
+        "baselineDate": null,
+        "baselineClose": null,
+        "points": [
+          {
+            "horizon": "d1",
+            "absReturn": null,
+            "excessReturn": null,
+            "benchmark": "SPX",
+            "computedAt": null,
+            "populatesOn": "2026-11-01"
+          },
+          {
+            "horizon": "d3",
+            "absReturn": null,
+            "excessReturn": null,
+            "benchmark": "SPX",
+            "computedAt": null,
+            "populatesOn": "2026-11-03"
+          },
+          {
+            "horizon": "w1",
+            "absReturn": null,
+            "excessReturn": null,
+            "benchmark": "SPX",
+            "computedAt": null,
+            "populatesOn": "2026-11-05"
+          },
+          {
+            "horizon": "m1",
+            "absReturn": null,
+            "excessReturn": null,
+            "benchmark": "SPX",
+            "computedAt": null,
+            "populatesOn": "2026-11-21"
+          }
+        ]
+      },
+      "sources": {
+        "windowStart": "2026-10-27",
+        "windowEnd": "2026-12-03",
+        "capturedAt": null,
+        "items": [],
+        "engineStatus": []
       }
     }
   ]
