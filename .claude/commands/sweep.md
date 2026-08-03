@@ -29,7 +29,7 @@ and continue to the next. Do not improvise.
 
 ## Procedure
 
-1. **List candidates.** TWO tiers, union produced by a single
+1. **List candidates.** THREE tiers, union produced by a single
    script call:
      `Bash: node scripts/sweep-target-list.mjs`
    → prints a JSON array of tickers on stdout. Parse and iterate.
@@ -39,8 +39,14 @@ and continue to the next. Do not improvise.
 
    **Tier B · SP500 fresh-reporters** — SP500 members that are
    US-primary + not foreign-filer (~473 domestic entities).
-   Auto-expanded from Wikipedia's SP500 list — no hand-curation.
-   Typically only 5-30 report per week, so cost stays bounded.
+
+   **Tier C · Russell 1000 fresh-reporters** — R1000 members that
+   are US-primary + not foreign-filer (~1,013 domestic entities;
+   superset of SP500).
+
+   Auto-expanded from Wikipedia — no hand-curation required.
+   Union size ≈ 1,000-1,100. Only ~5-40 report per week, so cost
+   stays bounded regardless of the wider candidate pool.
 
    For each ticker in the union:
    - Run `Bash: node scripts/resolve-earnings-target.mjs "<ticker>"`

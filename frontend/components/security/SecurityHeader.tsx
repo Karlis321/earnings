@@ -60,6 +60,16 @@ export function SecurityHeader({ entity, latest, nextEvent, freshness }: Props) 
                   S&amp;P 500
                 </Link>
               ) : null}
+              {(entity.index_membership ?? []).includes("R1000") &&
+              !(entity.index_membership ?? []).includes("SP500") ? (
+                <Link
+                  href="/sectors/russell1000"
+                  className="inline-flex h-[20px] items-center rounded-[4px] border border-bd2 bg-s3 px-[7px] font-mono text-[10.5px] font-medium text-tx2 hover:bg-s2 hover:text-tx"
+                  title="Russell 1000 constituent (non-SP500) — click for the grouping view"
+                >
+                  R1000
+                </Link>
+              ) : null}
             </div>
             <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-[12.5px] text-tx-mid">
               <span>

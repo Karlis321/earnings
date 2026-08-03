@@ -49,6 +49,19 @@ export default async function SectorsPage() {
             </div>
             <span className="text-tx3">→</span>
           </Link>
+          <Link
+            href="/sectors/russell1000"
+            className="flex items-center justify-between px-5 py-4 hover:bg-hover"
+          >
+            <div>
+              <div className="text-[14px] text-tx">Russell 1000</div>
+              <div className="mt-1 font-mono text-[11px] text-tx3">
+                {displayable.filter((e) => (e.index_membership ?? []).includes("R1000")).length}{" "}
+                constituents · superset of S&amp;P 500, top ~1,000 US caps
+              </div>
+            </div>
+            <span className="text-tx3">→</span>
+          </Link>
         </div>
       </Panel>
 

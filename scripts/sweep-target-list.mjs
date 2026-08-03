@@ -11,6 +11,11 @@
  *           AND ticker.endsWith(" US")
  *           AND secFilerType !== "foreign"
  *         (~473 SP500 US-primary domestic filers)
+ * Tier C: registry entities where
+ *           index_membership.includes("R1000")
+ *           AND ticker.endsWith(" US")
+ *           AND secFilerType !== "foreign"
+ *         (~1,013 Russell 1000 members — superset of SP500)
  *
  * De-duplicates the union. Prints one JSON array:
  *   ["HBM US", "CENX US", ..., "AAPL US", "MSFT US", ...]
@@ -32,13 +37,15 @@ async function main() {
 
   const tierA = new Set(covered.tickers ?? []);
   const tierB = new Set();
+  const tierC = new Set();
   for (const e of reg.entities ?? []) {
-    if (!(e.index_membership ?? []).includes("SP500")) continue;
+    const mem = e.index_membership ?? [];
     if (!e.ticker.endsWith(" US")) continue;
     if (e.secFilerType === "foreign") continue;
-    tierB.add(e.ticker);
+    if (mem.includes("SP500")) tierB.add(e.ticker);
+    if (mem.includes("R1000")) tierC.add(e.ticker);
   }
-  const union = [...new Set([...tierA, ...tierB])].sort();
+  const union = [...new Set([...tierA, ...tierB, ...tierC])].sort();
   process.stdout.write(JSON.stringify(union));
 }
 

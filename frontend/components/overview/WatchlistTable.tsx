@@ -105,6 +105,7 @@ const INDUSTRY_GROUPS: Record<string, string[]> = {
 type Filter =
   | "portfolio"
   | "sp500"
+  | "r1000"
   | "technology"
   | "materials"
   | "energy"
@@ -195,6 +196,10 @@ export function WatchlistTable({ rows }: { rows: WatchlistRow[] }) {
       // sectors + industry groups; this filter just narrows the
       // universe to the 503 flagged in the daily reference file.
       list = list.filter((r) => (r.entity.index_membership ?? []).includes("SP500"));
+    } else if (filter === "r1000") {
+      // Same idea for Russell 1000. Superset of SP500 (about 1,013
+      // constituents); companies keep their real industry group.
+      list = list.filter((r) => (r.entity.index_membership ?? []).includes("R1000"));
     } else {
       const needles = INDUSTRY_GROUPS[filter] ?? [];
       list = list.filter((r) => {
@@ -689,6 +694,7 @@ function FilterBar({
           [
             { id: "portfolio", label: "Our portfolio" },
             { id: "sp500", label: "S&P 500" },
+            { id: "r1000", label: "Russell 1000" },
             { id: "technology", label: "Technology" },
             { id: "materials", label: "Materials" },
             { id: "energy", label: "Energy" },

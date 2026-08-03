@@ -79,6 +79,16 @@ const PHASES = [
   // is confirmed not on SEC so future runs don't re-hit the endpoint.
   // Parity with /api/cron/daily's inline resolveEdgarCik loop.
   { key: "resolve-ciks", label: "Auto-resolve missing edgarCik", script: "resolve-missing-ciks.mjs" },
+  // Index-membership refresh (optional, deferred). If we want to pick
+  // up Wikipedia add/drop revisions automatically each week, the
+  // build-sp500-reference + register-sp500-missing sequence can run
+  // here (same for R1000). Not wired by default — the Wikipedia
+  // reference files are treated as ~quarterly refreshes; running
+  // them daily would create noise. To re-sync manually:
+  //   node scripts/build-sp500-reference.mjs
+  //   node scripts/register-sp500-missing.mjs
+  //   node scripts/build-russell1000-reference.mjs   (needs wikipedia html re-fetch)
+  //   node scripts/register-russell1000-missing.mjs
   { key: "yahoo-shards", label: "Yahoo fundamentals-timeseries refresh", script: "refresh-yahoo-shards.mjs" },
   { key: "eps-estimates", label: "Yahoo earningsChart estimates", script: "ingest-eps-estimates.mjs" },
   { key: "mature-reported", label: "Newly-reported promotion", script: "mature-any-reported.mjs" },
