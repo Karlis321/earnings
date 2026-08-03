@@ -68,6 +68,11 @@ const IS_MONDAY = TODAY.getUTCDay() === 1;
 // the script may be missing (Task 1's not-yet-ported paths); we log and
 // continue rather than fail the run.
 const PHASES = [
+  // Auto-resolve edgarCik for entities where it's still undefined.
+  // Uses SEC's public ticker→CIK JSON; stamps `null` when the ticker
+  // is confirmed not on SEC so future runs don't re-hit the endpoint.
+  // Parity with /api/cron/daily's inline resolveEdgarCik loop.
+  { key: "resolve-ciks", label: "Auto-resolve missing edgarCik", script: "resolve-missing-ciks.mjs" },
   { key: "yahoo-shards", label: "Yahoo fundamentals-timeseries refresh", script: "refresh-yahoo-shards.mjs" },
   { key: "eps-estimates", label: "Yahoo earningsChart estimates", script: "ingest-eps-estimates.mjs" },
   { key: "mature-reported", label: "Newly-reported promotion", script: "mature-any-reported.mjs" },
@@ -104,6 +109,11 @@ const PHASES = [
   { key: "sanitize-absurd", label: "Absurd-surprise floor sweep (>500%)", script: "suppress-absurd-surprise.mjs" },
   { key: "shard-earnings", label: "Rebuild shards + events-index", script: "shard-earnings.mjs" },
   { key: "pipeline-check", label: "Pipeline report + standing invariants", script: "run-pipeline-check.mjs" },
+  // Full corruption-test suite — catches invariant regressions before
+  // the commit. Goes BEYOND /api/cron/daily which never ran these
+  // in-band. If any test fails the run is red but the commit still
+  // happens (with FAILED>0 exit code) so we can see what changed.
+  { key: "standing-tests", label: "Standing invariant tests (corruption + validate)", script: "test-standing.mjs" },
 ];
 
 function runNode(scriptRel, extraArgs = []) {
@@ -241,12 +251,47 @@ async function main() {
 
   // Read the just-written pipeline-report for headline counts.
   let counts = "";
+  let report = null;
   try {
-    const rep = JSON.parse(await fs.readFile(REPORT_PATH, "utf-8"));
-    counts = `events=${rep.events_total} · past=${rep.tickers_with_past_events} · forward=${rep.tickers_with_forward_dates} · fresh=${rep.freshness?.fresh_pct ?? "?"}% · dupes=${rep.duplicates_detected}`;
+    report = JSON.parse(await fs.readFile(REPORT_PATH, "utf-8"));
+    counts = `events=${report.events_total} · past=${report.tickers_with_past_events} · forward=${report.tickers_with_forward_dates} · fresh=${report.freshness?.fresh_pct ?? "?"}% · dupes=${report.duplicates_detected}`;
   } catch {
     counts = "(pipeline-report missing)";
   }
+
+  // Write data/cron-status.json — the same file /admin/health reads
+  // for the "cron ran X ago" banner. Parity with /api/cron/daily's
+  // writeCronStatus. Rich fields include per-phase timings so the
+  // health page can render a run-detail view.
+  const finishedAt = new Date();
+  const cronStatus = {
+    schema: "cron-status/v1",
+    startedAt: new Date(startedAt).toISOString(),
+    finishedAt: finishedAt.toISOString(),
+    durationMs: totalMs,
+    ok: failedCount === 0,
+    engines: [],
+    events: [],
+    totalAppended: 0,
+    totalMatured: results.find((r) => r.key === "mature-reported")?.durationMs ? 1 : 0,
+    // refresh-universe-native fields (extend cron-status/v1):
+    source: "refresh-universe.mjs (GitHub Actions runner)",
+    phasesTotal: results.length,
+    phasesOk: okCount,
+    phasesFailed: failedCount,
+    phasesSkipped: skippedCount,
+    phaseTimings: results.map((r) => ({
+      key: r.key,
+      status: r.status,
+      durationSec: r.durationMs ? Math.round(r.durationMs / 100) / 10 : null,
+    })),
+    marketcapStaleBefore: mcBefore.stale,
+    marketcapStaleAfter: mcAfter.stale,
+    counts,
+  };
+  const CRON_STATUS_PATH = path.join(ROOT, "data", "cron-status.json");
+  await fs.writeFile(CRON_STATUS_PATH, JSON.stringify(cronStatus, null, 2));
+  console.log(`\n  ✓ wrote data/cron-status.json`);
 
   // Commit — only when everything ran and we have changes.
   if (!DRY_RUN && !NO_COMMIT && !ONLY) {
