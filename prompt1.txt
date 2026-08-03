@@ -1,1 +1,132 @@
- {"env":{"GH_REPO_OWNER":{"set":true,"length":9,"first":"K","last":"1","hasLeadingSpace":false,"hasTrailingSpace":false,"containsCapital":true},"GH_REPO_NAME":{"set":true,"length":8,"first":"e","last":"s","hasLeadingSpace":false,"hasTrailingSpace":false,"containsCapital":false},"GH_BRANCH":{"set":false,"length":0,"first":null,"last":null,"hasLeadingSpace":false,"hasTrailingSpace":false,"containsCapital":false},"GH_PAT_present":true,"CRON_SECRET_present":true},"matches":{"GH_REPO_OWNER_equals_Karlis321":true,"GH_REPO_NAME_equals_earnings":true,"GH_BRANCH_equals_main":true},"storeMode":"git-snapshot","registryReadCount":1991,"registryReadError":null,"ghProbe":{"status":200,"statusText":"OK","contentLength":914,"bodyPreview":"{\"name\":\"entity-registry.json\",\"path\":\"data/entity-registry.json\",\"sha\":\"945bca2d57f8c2d0e5ed8a80768eab9ce9aa473a\",\"size\":2778417,\"url\":\"https://api.github.com/repos/Karlis321/earnings/contents/data/entity-registry.json?ref=main\",\"html_url\":\"https://github.com/Karlis321/earnings/blob/main/data/entit","error":null},"note":"Registry >100 entities = git-snapshot store is reading the correct GitHub repo. Env config is good."}
+Run set -euo pipefail
+orchestrator flags: 
+refresh-universe · 2026-08-03 · LIVE
+marketcap_stale_count (before): 14/2077 canonicals
+phase · prime-crumb · Prime Yahoo crumb (shared)
+phase · resolve-ciks · Auto-resolve missing edgarCik
+phase · yahoo-shards · Yahoo fundamentals-timeseries refresh
+phase · eps-estimates · Yahoo earningsChart estimates
+phase · mature-reported · Newly-reported promotion
+phase · mature-stale · Mature stale upcoming shells
+phase · mature-if-actual · Mature upcoming with actuals present
+phase · sec-verbatim · SEC-verbatim rederive (CIK universe)
+  rederive-sec-xbrl · dry=false limit=all
+  eligible events (companies with a CIK on any listing): 5848 across 695 companies
+    processed 20/695 companies · touched=185 · replaced=1448 · shards=45
+    processed 40/695 companies · touched=271 · replaced=2070 · shards=62
+    processed 60/695 companies · touched=338 · replaced=2557 · shards=81
+    processed 80/695 companies · touched=366 · replaced=2768 · shards=89
+    processed 100/695 companies · touched=397 · replaced=2963 · shards=102
+    processed 120/695 companies · touched=410 · replaced=3060 · shards=108
+    processed 140/695 companies · touched=438 · replaced=3217 · shards=122
+    processed 160/695 companies · touched=478 · replaced=3467 · shards=135
+    processed 180/695 companies · touched=498 · replaced=3588 · shards=143
+    processed 200/695 companies · touched=517 · replaced=3722 · shards=150
+    processed 220/695 companies · touched=561 · replaced=4011 · shards=166
+    processed 240/695 companies · touched=576 · replaced=4125 · shards=171
+    processed 260/695 companies · touched=594 · replaced=4205 · shards=177
+    processed 280/695 companies · touched=600 · replaced=4215 · shards=186
+    processed 300/695 companies · touched=620 · replaced=4327 · shards=192
+    processed 320/695 companies · touched=646 · replaced=4443 · shards=200
+    processed 340/695 companies · touched=663 · replaced=4580 · shards=205
+    processed 360/695 companies · touched=687 · replaced=4724 · shards=214
+    processed 380/695 companies · touched=717 · replaced=4942 · shards=224
+    processed 400/695 companies · touched=731 · replaced=5053 · shards=230
+    processed 420/695 companies · touched=763 · replaced=5257 · shards=240
+    processed 440/695 companies · touched=793 · replaced=5439 · shards=250
+    processed 460/695 companies · touched=802 · replaced=5499 · shards=254
+    processed 480/695 companies · touched=840 · replaced=5846 · shards=266
+    processed 500/695 companies · touched=894 · replaced=6246 · shards=283
+    processed 520/695 companies · touched=927 · replaced=6496 · shards=293
+    processed 540/695 companies · touched=939 · replaced=6572 · shards=298
+    processed 560/695 companies · touched=948 · replaced=6636 · shards=302
+    processed 580/695 companies · touched=996 · replaced=6958 · shards=316
+    processed 600/695 companies · touched=1010 · replaced=7049 · shards=321
+    processed 620/695 companies · touched=1052 · replaced=7415 · shards=332
+    processed 640/695 companies · touched=1092 · replaced=7741 · shards=345
+    processed 660/695 companies · touched=1099 · replaced=7797 · shards=348
+    processed 680/695 companies · touched=1125 · replaced=7974 · shards=357
+  === Re-derivation stats ===
+  Events touched:          1139
+  Metrics replaced:        8057
+  Metrics added:           328
+  Metrics unchanged (<0.5%): 37754
+  Events skipped — no CIK:   0
+  Events skipped — no facts: 116
+  Events skipped — no match: 929
+  Shards to write:         363
+  === Sample corrections ===
+  company=co-02d502f77e listings=8
+    002133 C1      FY2025 Q1  old=0.0M  →  new=0.0M  Δ=0.00%
+    002133 C1      FY2024 Q3  old=0.0M  →  new=0.0M  Δ=0.00%
+    002133 C1      FY2024 Q2  old=0.0M  →  new=0.0M  Δ=0.00%
+  company=co-55afe409be listings=5
+    0H5 GR         FY2026 Q1  old=242.9M  →  new=242.9M  Δ=0.00%
+    0H5 GR         FY2025 Q3  old=216.3M  →  new=216.3M  Δ=0.00%
+    0H5 GR         FY2025 Q2  old=221.9M  →  new=221.9M  Δ=0.00%
+  company=co-e8c34fae77 listings=99
+    1GOOGL IM      FY2026 Q2  old=119796.0M  →  new=119796.0M  Δ=0.00%
+    1GOOGL IM      FY2026 Q1  old=109896.0M  →  new=109896.0M  Δ=0.00%
+    1GOOGL IM      FY2025 Q3  old=102346.0M  →  new=102346.0M  Δ=0.00%
+  company=co-f781b406bd listings=18
+    VZ MM          FY2026 Q1  old=34440.0M  →  new=34440.0M  Δ=0.00%
+    VZ MM          FY2025 Q3  old=33821.0M  →  new=33821.0M  Δ=0.00%
+    VZ MM          FY2025 Q2  old=34504.0M  →  new=34504.0M  Δ=0.00%
+  company=co-c739fe3e01 listings=17
+    PEP80 TB       FY2026 Q2  old=24181.0M  →  new=24181.0M  Δ=0.00%
+    PEP80 TB       FY2026 Q1  old=19443.0M  →  new=19443.0M  Δ=0.00%
+    PEP80 TB       FY2025 Q3  old=23937.0M  →  new=23937.0M  Δ=0.00%
+  ✓ updated 363 shards
+    ok · 696.3s
+phase · trend-estimates · Yahoo earningsTrend estimates (upcoming)
+  ingest-estimates-universe · dry=false limit=all concurrency=6
+  Targets: 2501 operating entities with Yahoo symbols
+  crumb=piuzK/…
+    100/2501 · rev=0 · eps=0 · shards=0
+    200/2501 · rev=0 · eps=0 · shards=0
+    300/2501 · rev=0 · eps=0 · shards=0
+    400/2501 · rev=0 · eps=0 · shards=0
+    500/2501 · rev=0 · eps=0 · shards=0
+    600/2501 · rev=0 · eps=0 · shards=0
+    700/2501 · rev=0 · eps=0 · shards=0
+    800/2501 · rev=0 · eps=0 · shards=0
+    900/2501 · rev=0 · eps=0 · shards=0
+    1000/2501 · rev=0 · eps=0 · shards=0
+    1100/2501 · rev=0 · eps=0 · shards=0
+    1200/2501 · rev=0 · eps=0 · shards=0
+    1300/2501 · rev=0 · eps=0 · shards=0
+    1400/2501 · rev=0 · eps=0 · shards=0
+    1500/2501 · rev=0 · eps=0 · shards=0
+    1600/2501 · rev=0 · eps=0 · shards=0
+    1700/2501 · rev=0 · eps=0 · shards=0
+    1800/2501 · rev=0 · eps=0 · shards=0
+    1900/2501 · rev=0 · eps=0 · shards=0
+    2000/2501 · rev=0 · eps=0 · shards=0
+    2100/2501 · rev=0 · eps=0 · shards=0
+    2200/2501 · rev=0 · eps=0 · shards=0
+    2500/2501 · rev=0 · eps=0 · shards=0
+  === ingest-estimates-universe ===
+  Entities scanned:         2501
+  Fetch errors:             58
+  Empty trend:              0
+  Shards written:           0
+  Revenue estimates added:  0
+  EPS estimates added:      0
+  No upcoming match:        1727
+  ✓ audit → scripts/audits/ingest-estimates-universe.json
+    ok · 35.3s
+phase · estimator · Median-gap next-event estimator
+phase · reactions · Reaction maturation + baseline seeding
+phase · marketcap · Market-cap + FX batch (Yahoo v7 quote)
+phase · gnews · Google News + wire RSS fanout (29 feeds)
+  refresh-google-news · dry=false · fetching 29 feeds
+    29/29 feeds succeeded, 351 items in the pool
+  === refresh-google-news ===
+    feeds ok:            29/29
+    news pool:           351 items
+    entities scanned:    2501
+    tickers updated:     7
+    items appended:      8
+    audit → scripts/audits/refresh-google-news.json
+    ok · 3.3s
+phase · ir-rss · IR press-release RSS ingest

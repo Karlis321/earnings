@@ -47,7 +47,13 @@ const ONLY = args.get("only")
   : null;
 const SP500_ONLY = args.get("sp500-only") === true;
 
-const UA = "Mozilla/5.0 (mature-reactions)";
+// Yahoo v8 chart endpoint rejects short UA strings from datacenter
+// IPs (301/656 events errored in the 2026-08-03 GH Actions run,
+// leaving XOM/ABBV/CVX/etc. reactions pending despite fresh event
+// dates). Use a full browser UA + Accept-Language header.
+const UA =
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +
+  "(KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36";
 const CONCURRENCY = 8;
 const REQUEST_TIMEOUT_MS = 15_000;
 
@@ -69,12 +75,23 @@ const barsCache = new Map();
 async function yahooBars(symbol) {
   if (barsCache.has(symbol)) return barsCache.get(symbol);
   const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?range=3mo&interval=1d`;
-  try {
-    const r = await fetch(url, {
-      headers: { "User-Agent": UA },
-      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
-    });
-    if (!r.ok) { barsCache.set(symbol, []); return []; }
+  // 2-attempt retry — Yahoo v8 chart intermittently returns 429/5xx
+  // from datacenter IPs. Real browsers get a full UA + Accept-Language.
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      const r = await fetch(url, {
+        headers: {
+          "User-Agent": UA,
+          Accept: "application/json, text/plain, */*",
+          "Accept-Language": "en-US,en;q=0.9",
+        },
+        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+      });
+      if (!r.ok) {
+        if (attempt < 2) { await new Promise((r) => setTimeout(r, 1500)); continue; }
+        barsCache.set(symbol, []);
+        return [];
+      }
     const j = await r.json();
     const result = j?.chart?.result?.[0];
     if (!result) { barsCache.set(symbol, []); return []; }
@@ -93,10 +110,14 @@ async function yahooBars(symbol) {
     }
     barsCache.set(symbol, bars);
     return bars;
-  } catch {
-    barsCache.set(symbol, []);
-    return [];
+    } catch {
+      if (attempt < 2) { await new Promise((r) => setTimeout(r, 1500)); continue; }
+      barsCache.set(symbol, []);
+      return [];
+    }
   }
+  barsCache.set(symbol, []);
+  return [];
 }
 
 function pickBaselineIdx(bars, anchorDate, timing) {
