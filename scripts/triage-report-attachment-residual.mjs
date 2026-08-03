@@ -135,19 +135,28 @@ async function classifyTicker(entity, entities) {
   }
 
   // Rule 3b: PRE-LISTING TAIL — CIK IS a valid 10-Q filer, but every
-  //         violating event predates the CIK's earliest SEC filing.
-  //         This is the "recent IPO / spin-off with imported Yahoo
-  //         pre-IPO quarters" pattern: MDLN Inc (IPO Sep 2025) has
-  //         Yahoo actuals for FY2025 Q1/Q2 but SEC has nothing under
-  //         its CIK for those dates. Route to structural — no filing
-  //         will ever exist on this CIK for those events.
-  const earliestFiling =
-    filingRows.length > 0
-      ? filingRows.map((r) => r.filingDate).sort()[0]
+  //         violating event predates the CIK's earliest QUARTERLY
+  //         filing (10-Q or 10-K). This is the "recent IPO / spin-off
+  //         with imported Yahoo pre-IPO quarters" pattern: MDLN Inc
+  //         (IPO Sep 2025) has Yahoo actuals for FY2025 Q1/Q2 but
+  //         SEC has nothing under its CIK for those dates. Also
+  //         catches MH US whose CIK existed since 2022 for S-1 /
+  //         registration statements but didn't file 10-Q until
+  //         2025-08 post-IPO.
+  //
+  //         Anchoring on the first 10-Q/10-K (not just any filing)
+  //         is the fix — a company can have S-1 / DRS filings for
+  //         years before going public and starting quarterly reports.
+  const quarterlyFilings = filingRows.filter((r) =>
+    /^(10-Q|10-K)$/.test(r.form),
+  );
+  const earliestQuarterly =
+    quarterlyFilings.length > 0
+      ? quarterlyFilings.map((r) => r.filingDate).sort()[0]
       : null;
-  if (earliestFiling && hasDomesticQuarterlies) {
+  if (earliestQuarterly && hasDomesticQuarterlies) {
     const allPreListing = violations.every(
-      (ev) => ev.eventDate < earliestFiling,
+      (ev) => ev.eventDate < earliestQuarterly,
     );
     if (allPreListing) {
       return {
@@ -156,8 +165,8 @@ async function classifyTicker(entity, entities) {
         violations: violations.length,
         cik: entity.edgarCik,
         formsFound: [...forms],
-        evidence: `every violating event predates CIK's earliest filing ${earliestFiling} — recent IPO or spin-off with imported pre-listing Yahoo quarters`,
-        earliestFiling,
+        evidence: `every violating event predates CIK's earliest 10-Q/10-K ${earliestQuarterly} — recent IPO or spin-off with imported pre-listing Yahoo quarters`,
+        earliestFiling: earliestQuarterly,
       };
     }
   }
