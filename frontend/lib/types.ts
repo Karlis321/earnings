@@ -222,6 +222,30 @@ export interface MetricEntry {
   prior?: Fact | null;
 }
 
+// Extended (LLM-extracted) metric value — a metric Claude pulled
+// directly out of the 10-Q / 8-K / EX-99 filing. Sector-driven by
+// extendedMetricsRegistry.ts. Always cites the exact filing quote
+// so a reader can verify. Confidence 0.9+ = numeric-table hit;
+// 0.7-0.9 = prose extraction; <0.7 dropped before write.
+export interface ExtendedMetricValue {
+  key: string;            // matches ExtendedMetricDef.key
+  label: string;
+  unit: string;
+  // "point" or "range". For range: value=mid, low/high populated.
+  shape: "point" | "range";
+  value: number | null;
+  low?: number | null;
+  high?: number | null;
+  provenance: "llm_extracted";
+  source: {
+    url: string;
+    section: string;    // "Item 2 · MD&A"; "Cash flow statement"; etc.
+    quote: string;      // the exact filing sentence the value was pulled from
+  };
+  extractedAt: string;
+  confidence: number;   // 0-1
+}
+
 export interface GuidanceEntry {
   key: string;
   displayLabel: string;
@@ -336,6 +360,12 @@ export interface EventRecord {
   // estimator-projected shells). "quarterly" | "semiannual" | "annual".
   cadence?: Cadence;
   metrics: MetricEntry[];
+  // Extended metrics extracted by Claude from the filing text — the
+  // non-GAAP + segment + operational KPIs that structured feeds
+  // (Yahoo timeseries, SEC XBRL) don't carry. Sector-scoped by
+  // extendedMetricsRegistry.ts; produced by /earnings step 3b.
+  // Every entry cites an exact quote from the filing.
+  extendedMetrics?: ExtendedMetricValue[];
   guidance: GuidanceEntry[];
   catalysts?: CatalystDetail[];
   // Best-effort click-through to the source document. Computed from

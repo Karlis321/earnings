@@ -16,6 +16,7 @@ import {
 } from "@/components/primitives";
 import { SecurityPriceChart } from "./SecurityPriceChart";
 import { CompanyNewsPanel } from "./CompanyNewsPanel";
+import { ExtendedMetricsPanel } from "./ExtendedMetricsPanel";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { fmtMoney } from "@/lib/format";
 import {
@@ -391,6 +392,7 @@ export function OperatingDetail({ entity, events }: Props) {
       </div>
 
       <div className="flex flex-col gap-4">
+        <ExtendedMetricsPanel event={primary} />
         <CompanyNewsPanel
           ticker={entity.ticker}
           displayName={entity.displayName}

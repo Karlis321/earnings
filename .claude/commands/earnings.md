@@ -345,6 +345,63 @@ Write the JSON to
 `summaryPath` field is that exact target path. Schema in
 `data/summaries-schema.json`.
 
+## Step 3b — Extract extended metrics into the shard
+
+**Only when depth === "filing"**. Skip for kpi-only downgrades.
+
+While the primary document is loaded, extract sector-driven
+extended metrics (non-GAAP + operational KPIs that Yahoo/SEC
+structured feeds don't carry) and write them onto the event's
+`extendedMetrics[]` array.
+
+1. Read the target set:
+   - Import `extendedMetricsForEntity` from
+     `frontend/lib/extendedMetricsRegistry.ts` conceptually — you
+     already know the entity's `sectorTags` from Step 0 output.
+   - Universal set (applies to every ticker): `capex_total`,
+     `capex_adjusted`, `free_cash_flow_mgmt`, `buyback_qtr_usd`,
+     `dividend_per_share`, `sale_of_assets_usd`, `eps_non_gaap`,
+     `guidance_revenue_next_q`, `guidance_eps_next_q`.
+   - Sector-specific set added per sectorTag (mining → C1 cash
+     cost / AISC / production; financials → NIM / CET1 / ROTCE;
+     software → ARR / NDR / cRPO; etc.). Full definitions in
+     `frontend/lib/extendedMetricsRegistry.ts`.
+
+2. For each metric in the set, scan the primary document (already
+   in `./fetched/`) for a labeled value. Rules:
+   - Numeric-table hit → confidence 0.9-1.0
+   - Prose extraction with explicit "$X million" / "N%" callout →
+     confidence 0.7-0.9
+   - Below 0.7 or requires interpretation/computation → SKIP
+   - Guidance metrics (`_next_q`): capture low + high when range;
+     midpoint only if single point given
+   - No hit → omit the entry (do not write `value: null`)
+
+3. Every stored entry MUST carry:
+   ```
+   {
+     key, label, unit, shape ("point"|"range"), value,
+     low?, high?,  // range only
+     provenance: "llm_extracted",
+     source: { url, section, quote },  // exact filing quote
+     extractedAt, confidence
+   }
+   ```
+
+4. Write the extendedMetrics array back to the event on the
+   ticker's shard via a small `node -e` — NO, use the sanctioned
+   pattern: append to `data/events/<TICKER_slug>.json` under the
+   event object matching Step 0's `resolveEarnings-target` id.
+
+   Sanctioned script for this step:
+   `Bash: node scripts/apply-extended-metrics.mjs <TICKER> <PERIOD> <path/to/metrics.json>`
+   The script reads the JSON payload, locates the event, sets
+   `event.extendedMetrics = [...]`, writes the shard.
+
+5. Extraction is BEST-EFFORT. Empty extendedMetrics array is fine
+   if the filing didn't disclose anything from the set. Never
+   invent a value — no hit = omit.
+
 ## Step 4 — Validate + commit + push
 
 1. `Bash: node scripts/validate.js data/summaries/<file>.json` —
