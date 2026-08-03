@@ -29,8 +29,20 @@ and continue to the next. Do not improvise.
 
 ## Procedure
 
-1. **List candidates.** Read `data/covered.json` — the 17-name
-   covered universe. For each ticker:
+1. **List candidates.** TWO tiers, union produced by a single
+   script call:
+     `Bash: node scripts/sweep-target-list.mjs`
+   → prints a JSON array of tickers on stdout. Parse and iterate.
+
+   **Tier A · covered** — `data/covered.json` (17 hand-picked names).
+   Always included when due.
+
+   **Tier B · SP500 fresh-reporters** — SP500 members that are
+   US-primary + not foreign-filer (~473 domestic entities).
+   Auto-expanded from Wikipedia's SP500 list — no hand-curation.
+   Typically only 5-30 report per week, so cost stays bounded.
+
+   For each ticker in the union:
    - Run `Bash: node scripts/resolve-earnings-target.mjs "<ticker>"`
      and parse its JSON. Every gate below reads that JSON — do
      not walk shards manually.

@@ -73,6 +73,7 @@ jobs:
     timeout-minutes: 120
     permissions:
       contents: write # required for the orchestrator's git push.
+      actions: write # required to chain to claude-summarize.yml.
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -122,3 +123,24 @@ jobs:
           else
             echo "no daily-refresh commit to push (nothing changed)"
           fi
+
+      - name: Chain to claude-summarize (fetch fresh Q reports)
+        if: ${{ github.event.inputs.dry_run != 'true' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # After the data pipeline commits, fire the claude-summarize
+          # workflow so Claude runs /sweep against the fresh state.
+          # /sweep now covers Tier A (covered.json) ∪ Tier B (SP500
+          # US-primary domestic) — Claude produces per-ticker earnings
+          # summaries for anything that reported in the last 5 trading
+          # days without a summary yet.
+          #
+          # Uses GITHUB_TOKEN with workflow: write. Fires-and-forgets;
+          # claude-summarize runs to completion in its own workflow
+          # (30-min budget) and posts summaries + push independently.
+          echo "Chaining to claude-summarize.yml for /sweep …"
+          gh workflow run claude-summarize.yml \
+            --repo "${{ github.repository }}" \
+            --field note="chained-from-refresh-data" \
+            || echo "::warning::failed to chain claude-summarize (non-fatal)"
