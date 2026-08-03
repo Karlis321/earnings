@@ -477,7 +477,7 @@
           "key": "eps_usd",
           "displayLabel": "EPS (basic)",
           "isHeadline": false,
-          "surprisePct": null,
+          "surprisePct": 22.22222222222223,
           "estimate": {
             "value": -0.54,
             "unit": "USD",
@@ -2267,13 +2267,13 @@
       "kind": "earnings",
       "period": "FY2026 Q2",
       "scheduledDate": "2026-10-30",
-      "eventDate": null,
+      "eventDate": "2026-07-30",
       "timing": null,
       "expectation": "unset",
       "guidanceMove": null,
-      "freshness": "stale",
-      "provenance": "estimator-median-gap",
-      "provenanceAsOf": "2026-07-31T13:45:57.654Z",
+      "freshness": "fresh",
+      "provenance": "yahoo-earnings-chart",
+      "provenanceAsOf": "2026-08-03T07:21:15.930Z",
       "cadence": "quarterly",
       "metrics": [
         {
@@ -2434,21 +2434,34 @@
           "key": "eps_usd",
           "displayLabel": "EPS",
           "isHeadline": false,
-          "surprisePct": null,
-          "estimate": null,
-          "actual": {
-            "value": -0.25,
+          "surprisePct": -12.319999999999997,
+          "estimate": {
+            "value": -0.5,
             "unit": "USD",
             "source": {
-              "url": "https://finance.yahoo.com/quote/NEXT/financials",
-              "label": "Yahoo · fundamentals-timeseries",
+              "url": "https://finance.yahoo.com/quote/NEXT/analysis",
+              "label": "Yahoo · earningsChart (consensus)",
               "provenance": "wire",
               "locator": null
             },
             "asOf": "2026-06-30",
-            "fetchedAt": "2026-08-03T06:58:26.754Z",
+            "fetchedAt": "2026-08-03T07:21:15.930Z",
             "method": "yahoo",
-            "confidence": 0.85
+            "confidence": 0.75
+          },
+          "actual": {
+            "value": -0.5616,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/NEXT/earnings-history",
+              "label": "Yahoo · earningsChart",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-06-30",
+            "fetchedAt": "2026-08-03T07:21:15.930Z",
+            "method": "yahoo",
+            "confidence": 0.8
           },
           "prior": null
         }
@@ -2456,40 +2469,47 @@
       "guidance": [],
       "reaction": {
         "benchmark": "CL=F",
-        "baselineDate": null,
-        "baselineClose": null,
+        "baselineDate": "2026-07-30",
+        "baselineClose": 6.730000019073486,
         "points": [
           {
             "horizon": "d1",
-            "absReturn": null,
-            "excessReturn": null,
+            "absReturn": -0.0014859181060169835,
+            "excessReturn": -0.014406146343485297,
             "benchmark": "CL=F",
-            "computedAt": null,
-            "populatesOn": "2026-11-02"
+            "computedAt": "2026-08-03T07:30:54.398Z",
+            "populatesOn": null,
+            "status": "matured"
           },
           {
             "horizon": "d3",
-            "absReturn": null,
-            "excessReturn": null,
+            "absReturn": -0.0014859181060169835,
+            "excessReturn": 0.03966726962839136,
             "benchmark": "CL=F",
-            "computedAt": null,
-            "populatesOn": "2026-11-04"
+            "computedAt": "2026-08-03T07:30:54.398Z",
+            "populatesOn": null,
+            "status": "clipped",
+            "clipped": true
           },
           {
             "horizon": "w1",
-            "absReturn": null,
-            "excessReturn": null,
+            "absReturn": -0.0014859181060169835,
+            "excessReturn": 0.03966726962839136,
             "benchmark": "CL=F",
-            "computedAt": null,
-            "populatesOn": "2026-11-06"
+            "computedAt": "2026-08-03T07:30:54.398Z",
+            "populatesOn": null,
+            "status": "clipped",
+            "clipped": true
           },
           {
             "horizon": "m1",
-            "absReturn": null,
-            "excessReturn": null,
+            "absReturn": -0.0014859181060169835,
+            "excessReturn": 0.03966726962839136,
             "benchmark": "CL=F",
-            "computedAt": null,
-            "populatesOn": "2026-11-22"
+            "computedAt": "2026-08-03T07:30:54.398Z",
+            "populatesOn": null,
+            "status": "clipped",
+            "clipped": true
           }
         ]
       },
@@ -2499,6 +2519,14 @@
         "capturedAt": null,
         "items": [],
         "engineStatus": []
+      },
+      "eventDateSource": "yahoo-earnings-chart-reportedDate",
+      "sourceLink": {
+        "kind": "filing",
+        "url": "https://www.sec.gov/Archives/edgar/data/1612720/000161272026000049/next-20260630.htm",
+        "form": "10-Q",
+        "accession": "0001612720-26-000049",
+        "filingDate": "2026-07-30"
       }
     }
   ]

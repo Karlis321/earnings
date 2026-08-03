@@ -74,7 +74,10 @@ const PHASES = [
   { key: "mature-stale", label: "Mature stale upcoming shells", script: "mature-stale-upcoming.mjs" },
   { key: "mature-if-actual", label: "Mature upcoming with actuals present", script: "mature-if-actual-present.mjs" },
   { key: "sec-verbatim", label: "SEC-verbatim rederive (CIK universe)", script: "backfills/rederive-sec-xbrl.mjs", optional: true },
-  { key: "sec-shells", label: "SEC-submissions shells", script: "backfills/backfill-sec-submissions-shells.mjs", optional: true },
+  // sec-shells removed — the backfill script is DEPRECATED (reads/
+  // writes the gitignored data/earnings.json monolith). Its function
+  // is covered by attach-sec-filings.mjs which stores accession URLs
+  // directly on event.sourceLink from SEC submissions endpoint.
   { key: "trend-estimates", label: "Yahoo earningsTrend estimates (upcoming)", script: "ingest-estimates-universe.mjs" },
   { key: "estimator", label: "Median-gap next-event estimator", script: "run-estimator.mjs" },
   { key: "reactions", label: "Reaction maturation + baseline seeding", script: "mature-reactions.mjs" },

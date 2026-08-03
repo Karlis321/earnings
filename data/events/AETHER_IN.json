@@ -412,7 +412,7 @@
           "key": "eps_usd",
           "displayLabel": "EPS (basic)",
           "isHeadline": false,
-          "surprisePct": null,
+          "surprisePct": 10.000000000000002,
           "estimate": {
             "value": 3.7,
             "unit": "INR",
@@ -775,7 +775,7 @@
           "key": "eps_usd",
           "displayLabel": "EPS (basic)",
           "isHeadline": false,
-          "surprisePct": null,
+          "surprisePct": 18.53658536585368,
           "estimate": {
             "value": 4.1,
             "unit": "INR",
@@ -1138,7 +1138,7 @@
           "key": "eps_usd",
           "displayLabel": "EPS (basic)",
           "isHeadline": false,
-          "surprisePct": null,
+          "surprisePct": 13.055555555555562,
           "estimate": {
             "value": 3.6,
             "unit": "INR",
@@ -1916,13 +1916,13 @@
       "kind": "earnings",
       "period": "FY2026 Q2",
       "scheduledDate": "2026-08-14",
-      "eventDate": null,
+      "eventDate": "2026-07-31",
       "timing": null,
       "expectation": "unset",
       "guidanceMove": null,
-      "freshness": "stale",
-      "provenance": "estimator-median-gap",
-      "provenanceAsOf": "2026-07-31T13:45:57.629Z",
+      "freshness": "fresh",
+      "provenance": "yahoo-earnings-chart",
+      "provenanceAsOf": "2026-08-03T07:21:15.930Z",
       "cadence": "quarterly",
       "metrics": [
         {
@@ -2083,21 +2083,34 @@
           "key": "eps_usd",
           "displayLabel": "EPS",
           "isHeadline": false,
-          "surprisePct": null,
-          "estimate": null,
-          "actual": {
-            "value": 4.77,
+          "surprisePct": 8.799999999999995,
+          "estimate": {
+            "value": 4.375,
             "unit": "INR",
             "source": {
-              "url": "https://finance.yahoo.com/quote/AETHER.NS/financials",
-              "label": "Yahoo · fundamentals-timeseries",
+              "url": "https://finance.yahoo.com/quote/AETHER.NS/analysis",
+              "label": "Yahoo · earningsChart (consensus)",
               "provenance": "wire",
               "locator": null
             },
             "asOf": "2026-06-30",
-            "fetchedAt": "2026-08-03T06:58:26.754Z",
+            "fetchedAt": "2026-08-03T07:21:15.930Z",
             "method": "yahoo",
-            "confidence": 0.85
+            "confidence": 0.75
+          },
+          "actual": {
+            "value": 4.76,
+            "unit": "INR",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/AETHER.NS/earnings-history",
+              "label": "Yahoo · earningsChart",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-06-30",
+            "fetchedAt": "2026-08-03T07:21:15.930Z",
+            "method": "yahoo",
+            "confidence": 0.8
           },
           "prior": null
         }
@@ -2105,8 +2118,8 @@
       "guidance": [],
       "reaction": {
         "benchmark": "SPX",
-        "baselineDate": null,
-        "baselineClose": null,
+        "baselineDate": "2026-08-03",
+        "baselineClose": 1514.800048828125,
         "points": [
           {
             "horizon": "d1",
@@ -2114,7 +2127,8 @@
             "excessReturn": null,
             "benchmark": "SPX",
             "computedAt": null,
-            "populatesOn": "2026-08-17"
+            "populatesOn": null,
+            "status": "pending"
           },
           {
             "horizon": "d3",
@@ -2122,7 +2136,8 @@
             "excessReturn": null,
             "benchmark": "SPX",
             "computedAt": null,
-            "populatesOn": "2026-08-19"
+            "populatesOn": null,
+            "status": "pending"
           },
           {
             "horizon": "w1",
@@ -2130,7 +2145,8 @@
             "excessReturn": null,
             "benchmark": "SPX",
             "computedAt": null,
-            "populatesOn": "2026-08-21"
+            "populatesOn": null,
+            "status": "pending"
           },
           {
             "horizon": "m1",
@@ -2138,7 +2154,8 @@
             "excessReturn": null,
             "benchmark": "SPX",
             "computedAt": null,
-            "populatesOn": "2026-09-06"
+            "populatesOn": null,
+            "status": "pending"
           }
         ]
       },
@@ -2148,6 +2165,11 @@
         "capturedAt": null,
         "items": [],
         "engineStatus": []
+      },
+      "eventDateSource": "yahoo-earnings-chart-reportedDate",
+      "sourceLink": {
+        "url": "https://finance.yahoo.com/quote/AETHER.NS/earnings-history",
+        "kind": "fallback"
       }
     }
   ]
