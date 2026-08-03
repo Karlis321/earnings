@@ -82,10 +82,11 @@ const PHASES = [
   { key: "estimator", label: "Median-gap next-event estimator", script: "run-estimator.mjs" },
   { key: "reactions", label: "Reaction maturation + baseline seeding", script: "mature-reactions.mjs" },
   { key: "marketcap", label: "Market-cap + FX batch (Yahoo v7 quote)", script: "refresh-marketcap.mjs" },
-  // Google-News RSS fanout — TODO. Standalone script not yet ported
-  // from route.ts step 5b. When it lands, drop it in here and remove
-  // the optional flag.
-  { key: "gnews", label: "Google News RSS fanout (50+ feeds)", script: "refresh-google-news.mjs", optional: true, todo: true },
+  // Google News + wire RSS fanout — ported to
+  // scripts/refresh-google-news.mjs on 2026-08-03. Single fetch pass
+  // (29 feeds), distributes matched items via displayName / aliases /
+  // cashtag string match. Attaches to the same target set as ir-rss.
+  { key: "gnews", label: "Google News + wire RSS fanout (29 feeds)", script: "refresh-google-news.mjs" },
   // IR press-release RSS ingest — merges per-ticker OFFICIAL_SOURCES
   // + auto-CIK EDGAR atom feeds into event.sources.items[] on the
   // ticker's latest past event + next upcoming shell, gated to the
@@ -94,6 +95,13 @@ const PHASES = [
   // Sector screen runs weekly only. Wrapped so the orchestrator can
   // skip it cheaply on non-Monday runs without invoking the script.
   { key: "sector-screen", label: "Sector universe expansion (weekly)", script: "backfills/expand-sectors.mjs", optional: true, weeklyOnly: true },
+  // Sanitize invariants — parity with sanitizeSnapshot inside the
+  // daily-cron mutateEarnings callback. Runs AFTER all ingest so any
+  // fresh Yahoo/SEC values that violate an invariant get cleared
+  // before the pipeline report reads them. Three sweeps, cheap:
+  { key: "sanitize-currency", label: "Currency-unit mismatch sweep", script: "fix-currency-unit-mismatch.mjs" },
+  { key: "sanitize-basis", label: "Same-basis surprise sweep (cross-basis clear)", script: "enforce-same-basis-surprise.mjs" },
+  { key: "sanitize-absurd", label: "Absurd-surprise floor sweep (>500%)", script: "suppress-absurd-surprise.mjs" },
   { key: "shard-earnings", label: "Rebuild shards + events-index", script: "shard-earnings.mjs" },
   { key: "pipeline-check", label: "Pipeline report + standing invariants", script: "run-pipeline-check.mjs" },
 ];
