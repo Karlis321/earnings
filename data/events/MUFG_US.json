@@ -722,6 +722,12 @@
               "actualFamily": "yahoo-timeseries",
               "estimateFamily": "yahoo-chart",
               "clearedAt": "2026-08-03T09:07:08.750Z"
+            },
+            {
+              "value": 19229.714420580596,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-08-03T11:34:43.213Z"
             }
           ]
         },
@@ -1311,13 +1317,13 @@
       "kind": "earnings",
       "period": "FY2026 Q2",
       "scheduledDate": "2026-08-14",
-      "eventDate": null,
+      "eventDate": "2026-08-03",
       "timing": null,
       "expectation": "unset",
       "guidanceMove": null,
-      "freshness": "stale",
-      "provenance": "estimator-median-gap",
-      "provenanceAsOf": "2026-07-31T13:45:57.654Z",
+      "freshness": "fresh",
+      "provenance": "yahoo-earnings-chart",
+      "provenanceAsOf": "2026-08-03T11:11:02.555Z",
       "cadence": "quarterly",
       "metrics": [
         {
@@ -1349,7 +1355,7 @@
           "key": "eps_usd",
           "displayLabel": "EPS",
           "isHeadline": true,
-          "surprisePct": null,
+          "surprisePct": 31.852914483122056,
           "estimate": {
             "value": 0.34157,
             "unit": "USD",
@@ -1367,7 +1373,20 @@
             "high": 0.34157,
             "numberOfAnalysts": 1
           },
-          "actual": null,
+          "actual": {
+            "value": 0.45037,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/MUFG/earnings-history",
+              "label": "Yahoo · earningsChart",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-06-30",
+            "fetchedAt": "2026-08-03T11:11:02.555Z",
+            "method": "yahoo",
+            "confidence": 0.8
+          },
           "prior": null
         }
       ],
@@ -1383,7 +1402,8 @@
             "excessReturn": null,
             "benchmark": "SPX",
             "computedAt": null,
-            "populatesOn": "2026-08-17"
+            "populatesOn": null,
+            "status": "pending"
           },
           {
             "horizon": "d3",
@@ -1391,7 +1411,8 @@
             "excessReturn": null,
             "benchmark": "SPX",
             "computedAt": null,
-            "populatesOn": "2026-08-19"
+            "populatesOn": null,
+            "status": "pending"
           },
           {
             "horizon": "w1",
@@ -1399,7 +1420,8 @@
             "excessReturn": null,
             "benchmark": "SPX",
             "computedAt": null,
-            "populatesOn": "2026-08-21"
+            "populatesOn": null,
+            "status": "pending"
           },
           {
             "horizon": "m1",
@@ -1407,13 +1429,82 @@
             "excessReturn": null,
             "benchmark": "SPX",
             "computedAt": null,
-            "populatesOn": "2026-09-06"
+            "populatesOn": null,
+            "status": "pending"
           }
         ]
       },
       "sources": {
         "windowStart": "2026-08-12",
         "windowEnd": "2026-09-18",
+        "capturedAt": null,
+        "items": [],
+        "engineStatus": []
+      },
+      "eventDateSource": "yahoo-earnings-chart-reportedDate",
+      "sourceLink": {
+        "url": "https://finance.yahoo.com/quote/MUFG/earnings-history",
+        "kind": "fallback"
+      }
+    },
+    {
+      "id": "evt-g9w6ys",
+      "ticker": "MUFG US",
+      "kind": "earnings",
+      "period": "FY2026 Q3",
+      "scheduledDate": "2026-11-02",
+      "eventDate": null,
+      "timing": null,
+      "expectation": "unset",
+      "guidanceMove": null,
+      "freshness": "stale",
+      "provenance": "estimator-median-gap",
+      "provenanceAsOf": "2026-08-03T11:31:00.552Z",
+      "cadence": "quarterly",
+      "metrics": [],
+      "guidance": [],
+      "reaction": {
+        "benchmark": "SPX",
+        "baselineDate": null,
+        "baselineClose": null,
+        "points": [
+          {
+            "horizon": "d1",
+            "absReturn": null,
+            "excessReturn": null,
+            "benchmark": "SPX",
+            "computedAt": null,
+            "populatesOn": "2026-11-05"
+          },
+          {
+            "horizon": "d3",
+            "absReturn": null,
+            "excessReturn": null,
+            "benchmark": "SPX",
+            "computedAt": null,
+            "populatesOn": "2026-11-07"
+          },
+          {
+            "horizon": "w1",
+            "absReturn": null,
+            "excessReturn": null,
+            "benchmark": "SPX",
+            "computedAt": null,
+            "populatesOn": "2026-11-09"
+          },
+          {
+            "horizon": "m1",
+            "absReturn": null,
+            "excessReturn": null,
+            "benchmark": "SPX",
+            "computedAt": null,
+            "populatesOn": "2026-11-25"
+          }
+        ]
+      },
+      "sources": {
+        "windowStart": "2026-10-31",
+        "windowEnd": "2026-12-07",
         "capturedAt": null,
         "items": [],
         "engineStatus": []
