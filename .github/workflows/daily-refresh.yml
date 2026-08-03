@@ -18,8 +18,14 @@ name: daily-refresh
 # Requires repo secret CRON_SECRET (same value as Vercel env var).
 
 on:
-  schedule:
-    - cron: "0 6 * * 1-5"
+  # Schedule disabled 2026-08-03. Vercel Hobby 300s cap + post-SP500
+  # event volume (13,065 events / 2,199 shards) reliably 504s slice 0
+  # regardless of SLICES setting. Successor is refresh-data.yml which
+  # runs the same phases as local scripts inside the Actions runner
+  # (no Vercel invocation, no 300s ceiling). workflow_dispatch left
+  # in place for legacy debugging only.
+  # schedule:
+  #   - cron: "0 6 * * 1-5"
   workflow_dispatch:
     inputs:
       note:

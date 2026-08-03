@@ -25,8 +25,14 @@ name: refresh-data
 # itself twice.
 
 on:
-  # schedule:
-  #   - cron: "0 6 * * 1-5"
+  # Schedule enabled 2026-08-03 after: (a) repo made public →
+  # unlimited GitHub Actions minutes, and (b) daily-refresh.yml
+  # (the Vercel-invoking workflow) started hitting the 300s Vercel
+  # Hobby function cap on slice 0 post-SP500 ingest. refresh-data
+  # runs everything locally inside the Actions runner, no Vercel
+  # 300s ceiling, no RSS fanout duplication across slices.
+  schedule:
+    - cron: "0 6 * * 1-5"
   workflow_dispatch:
     inputs:
       note:
