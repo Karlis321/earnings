@@ -438,7 +438,8 @@ async function compute() {
       const daysSinceEvent = ev.eventDate
         ? (Date.now() - new Date(ev.eventDate).getTime()) / 86_400_000
         : Infinity;
-      const HORIZON_MIN_DAYS = { d1: 2, d3: 5, w1: 8, m1: 30 };
+      // See pipelineReport.ts — bumped to cover Fri events landing d1 on Mon.
+      const HORIZON_MIN_DAYS = { d1: 5, d3: 8, w1: 11, m1: 33 };
       const rxnOk = ["d1", "d3", "w1", "m1"].every((h) => horizons.has(h)) &&
         points.every((p) => {
           if (p.absReturn != null) return true;

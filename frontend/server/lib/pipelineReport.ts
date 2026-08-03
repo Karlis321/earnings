@@ -759,8 +759,14 @@ export function computePipelineReport(input: ComputeReportInput): PipelineReport
       const daysSinceEvent = ev.eventDate
         ? (Date.now() - new Date(ev.eventDate).getTime()) / 86_400_000
         : Infinity;
+      // Thresholds account for weekend + late-close lag. Calendar-day
+      // math on trading horizons: a Fri event has its d1 close land
+      // MON (calendar day 3), not day 1. Fri + long weekend can push
+      // d1 to day 4-5. d3 = MON+3 trading days = calendar day 6-7 for
+      // Fri events. w1 = 5 trading days ≈ 7-10 calendar. Bumping the
+      // "pending-is-OK" ceiling by ~2 days on each horizon.
       const HORIZON_MIN_DAYS: Record<string, number> = {
-        d1: 2, d3: 5, w1: 8, m1: 30,
+        d1: 5, d3: 8, w1: 11, m1: 33,
       };
       const rxnOk =
         (["d1", "d3", "w1", "m1"] as const).every((h) => horizons.has(h)) &&
