@@ -1,9 +1,11 @@
 "use client";
 
-// Client-side filter for a sector / index-membership grouping view.
-// Wraps the pre-grouped rows produced by the server component and
-// provides a live search input that jump-filters across every group
-// simultaneously. Groups with zero matches collapse out of view.
+// Client-side filter + view-mode toggle for a sector / index-membership
+// grouping view. Wraps the pre-grouped rows produced by the server
+// component and provides:
+//   • A live search input that jump-filters across every group.
+//   • A view toggle: "Industry groups" (default, sub-grouped by
+//     industryGroup) vs "Market cap" (single flat list, largest first).
 //
 // Match rule: substring on ticker (any listing), displayName, aliases,
 // industryGroup. Case-insensitive. Empty query renders everything
@@ -20,6 +22,8 @@ interface Group {
   rows: WatchlistRow[];
 }
 
+type ViewMode = "industry" | "cap";
+
 export function SectorGroupsFilter({
   groups,
   totalRows,
@@ -28,6 +32,7 @@ export function SectorGroupsFilter({
   totalRows: number;
 }) {
   const [q, setQ] = useState("");
+  const [view, setView] = useState<ViewMode>("industry");
 
   const { filteredGroups, matchCount } = useMemo(() => {
     const term = q.trim().toLowerCase();
@@ -54,10 +59,20 @@ export function SectorGroupsFilter({
     return { filteredGroups: out, matchCount: match };
   }, [q, groups, totalRows]);
 
+  // Cap-mode: flatten filtered groups into one sorted list.
+  const capList = useMemo(() => {
+    if (view !== "cap") return [];
+    const all: WatchlistRow[] = [];
+    for (const g of filteredGroups) all.push(...g.rows);
+    return all.sort(
+      (a, b) => (b.entity.marketCapUsd ?? 0) - (a.entity.marketCapUsd ?? 0),
+    );
+  }, [view, filteredGroups]);
+
   return (
     <>
-      <div className="mb-4 flex items-center gap-3">
-        <div className="relative flex-1 max-w-[520px]">
+      <div className="mb-4 flex items-center gap-3 flex-wrap">
+        <div className="relative flex-1 max-w-[520px] min-w-[240px]">
           <Search
             size={13}
             className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-tx3"
@@ -79,11 +94,39 @@ export function SectorGroupsFilter({
             </button>
           ) : null}
         </div>
+
+        {/* View toggle: industry-grouped vs flat market-cap list. */}
+        <div className="inline-flex rounded-button border border-bd bg-s1 p-[2px]">
+          <button
+            onClick={() => setView("industry")}
+            className={`h-8 rounded-[4px] px-3 text-[12.5px] transition-colors ${
+              view === "industry"
+                ? "bg-s3 font-medium text-tx"
+                : "text-tx2 hover:text-tx"
+            }`}
+          >
+            Industry groups
+          </button>
+          <button
+            onClick={() => setView("cap")}
+            className={`h-8 rounded-[4px] px-3 text-[12.5px] transition-colors ${
+              view === "cap"
+                ? "bg-s3 font-medium text-tx"
+                : "text-tx2 hover:text-tx"
+            }`}
+          >
+            Market cap ↓
+          </button>
+        </div>
+
         {q ? (
           <span className="font-mono text-[11.5px] text-tx-mid">
-            {matchCount} match{matchCount === 1 ? "" : "es"} across{" "}
-            {filteredGroups.length} group
-            {filteredGroups.length === 1 ? "" : "s"}
+            {matchCount} match{matchCount === 1 ? "" : "es"}
+            {view === "industry"
+              ? ` across ${filteredGroups.length} group${
+                  filteredGroups.length === 1 ? "" : "s"
+                }`
+              : ""}
           </span>
         ) : null}
       </div>
@@ -97,7 +140,7 @@ export function SectorGroupsFilter({
             try a ticker like NVDA, a name like Nvidia, or an industry
           </div>
         </div>
-      ) : (
+      ) : view === "industry" ? (
         <div className="flex flex-col gap-4">
           {filteredGroups.map((g) => (
             <Panel
@@ -109,6 +152,13 @@ export function SectorGroupsFilter({
             </Panel>
           ))}
         </div>
+      ) : (
+        <Panel
+          eyebrow={`All members · ${capList.length} · largest cap first`}
+          padded={false}
+        >
+          <SectorMemberRows rows={capList} />
+        </Panel>
       )}
     </>
   );
