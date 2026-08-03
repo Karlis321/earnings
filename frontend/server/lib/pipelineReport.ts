@@ -698,7 +698,8 @@ export function computePipelineReport(input: ComputeReportInput): PipelineReport
     if (
       cik &&
       ev.ticker.endsWith(" US") &&
-      filerType !== "foreign"
+      filerType !== "foreign" &&
+      filerType !== "pre-listing"
     ) {
       reportedWithoutDocument++;
       if (reportedWithoutDocumentSamples.length < 8) {

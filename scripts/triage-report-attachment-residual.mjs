@@ -134,6 +134,34 @@ async function classifyTicker(entity, entities) {
     };
   }
 
+  // Rule 3b: PRE-LISTING TAIL — CIK IS a valid 10-Q filer, but every
+  //         violating event predates the CIK's earliest SEC filing.
+  //         This is the "recent IPO / spin-off with imported Yahoo
+  //         pre-IPO quarters" pattern: MDLN Inc (IPO Sep 2025) has
+  //         Yahoo actuals for FY2025 Q1/Q2 but SEC has nothing under
+  //         its CIK for those dates. Route to structural — no filing
+  //         will ever exist on this CIK for those events.
+  const earliestFiling =
+    filingRows.length > 0
+      ? filingRows.map((r) => r.filingDate).sort()[0]
+      : null;
+  if (earliestFiling && hasDomesticQuarterlies) {
+    const allPreListing = violations.every(
+      (ev) => ev.eventDate < earliestFiling,
+    );
+    if (allPreListing) {
+      return {
+        ticker: entity.ticker,
+        class: "pre-listing-tail",
+        violations: violations.length,
+        cik: entity.edgarCik,
+        formsFound: [...forms],
+        evidence: `every violating event predates CIK's earliest filing ${earliestFiling} — recent IPO or spin-off with imported pre-listing Yahoo quarters`,
+        earliestFiling,
+      };
+    }
+  }
+
   // Rule 2: FISCAL-OFFSET TAIL — has 10-Q/10-K but none matched our
   //         event dates. Report per-event the nearest filing gap so
   //         we can see why the matcher missed.
@@ -202,8 +230,11 @@ async function main() {
     }
   });
 
-  const byClass = { "foreign-primary-adr": [], "corporate-action-or-bad-cik": [], "fiscal-offset-or-tail": [] };
-  for (const r of results) byClass[r.class].push(r);
+  const byClass = { "foreign-primary-adr": [], "corporate-action-or-bad-cik": [], "fiscal-offset-or-tail": [], "pre-listing-tail": [] };
+  for (const r of results) {
+    if (!byClass[r.class]) byClass[r.class] = [];
+    byClass[r.class].push(r);
+  }
 
   console.log(`\n=== triage-report-attachment ===`);
   console.log(`  foreign-primary-adr:         ${byClass["foreign-primary-adr"].length}`);

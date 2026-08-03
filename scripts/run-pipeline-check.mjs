@@ -393,8 +393,14 @@ async function compute() {
     const cik = entityCikByTicker.get(ev.ticker);
     const filerType = entityFilerTypeByTicker.get(ev.ticker);
     // See pipelineReport.ts. Foreign filers (secFilerType==="foreign")
-    // route to structural.
-    if (cik && ev.ticker.endsWith(" US") && filerType !== "foreign") {
+    // and pre-listing tail (secFilerType==="pre-listing") route to
+    // the structural bucket.
+    if (
+      cik &&
+      ev.ticker.endsWith(" US") &&
+      filerType !== "foreign" &&
+      filerType !== "pre-listing"
+    ) {
       reportedWithoutDocument++;
       if (reportedWithoutDocumentSamples.length < 8) {
         reportedWithoutDocumentSamples.push(`${ev.ticker} · ${ev.period ?? "?"}`);

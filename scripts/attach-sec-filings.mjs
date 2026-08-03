@@ -146,11 +146,19 @@ function pickBestFiling(recent, eventDateIso) {
     if (r.form === "10-K") score += 3;
     if (r.form === "20-F" || r.form === "40-F") score += 2;
     if (r.form === "6-K") score += 1;
-    // 30-day window on the BEST of the two gap dimensions.
-    if (gap > 30) score -= 100;
+    // 100-day window on the BEST of the two gap dimensions.
+    // Widened from 30d after the R1000-batch triage: fiscal-offset
+    // issuers stamped by Yahoo at fiscal-quarter END (e.g. Sep 30)
+    // versus SEC's own reportDate/filingDate on the next 10-Q
+    // (Dec 31 filed Feb) land at exactly ~91-92 days off. The
+    // form-type bonus + minimum-of-two gap dimensions already keep
+    // false matches out — the wider window just lets the correct
+    // 10-Q qualify. Cases like LLYVK/GLIBA (Liberty Media tracker
+    // stocks with fiscal-offset labeling) were the surfacing bug.
+    if (gap > 100) score -= 100;
     return { ...r, score, gap, filingGap, reportGap };
   }).sort((a, b) => b.score - a.score);
-  return scored[0]?.gap <= 30 ? scored[0] : null;
+  return scored[0]?.gap <= 100 ? scored[0] : null;
 }
 
 async function loadShardObject(ticker) {
