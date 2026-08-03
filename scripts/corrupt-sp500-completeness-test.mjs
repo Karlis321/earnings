@@ -64,7 +64,8 @@ async function main() {
     const pts = ev.reaction?.points ?? [];
     const hzs = new Set(pts.map((p) => p.horizon));
     const daysSince = ev.eventDate ? (Date.now() - new Date(ev.eventDate).getTime()) / 86_400_000 : Infinity;
-    const HORIZON_MIN = { d1: 2, d3: 5, w1: 8, m1: 30 };
+    // Keep in sync with pipelineReport.ts and run-pipeline-check.mjs.
+    const HORIZON_MIN = { d1: 5, d3: 8, w1: 11, m1: 33 };
     const rxnOk =
       ["d1", "d3", "w1", "m1"].every((h) => hzs.has(h)) &&
       pts.every((p) => p.absReturn != null || p.status === "clipped" || daysSince < (HORIZON_MIN[p.horizon] ?? 30));
@@ -107,7 +108,10 @@ async function main() {
   // corrupted pct drops meaningfully (5 removals ≈ 1pp drop).
   const extraCorruptions = [];
   for (const e of sp500) {
-    if (extraCorruptions.length >= 5) break;
+    // 7 corruptions ≈ 1.4pp drop, safely below the 98% floor. Was 5
+    // when baseline was ~95%; now baseline is ~99% and the floor
+    // requires strict inequality (< 98), so more corruptions needed.
+    if (extraCorruptions.length >= 7) break;
     if (e.ticker === target.ticker) continue;
     const shardP = path.join(EVENTS_DIR, tickerSlug(e.ticker) + ".json");
     let jj;

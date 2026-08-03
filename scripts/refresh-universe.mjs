@@ -130,6 +130,14 @@ const PHASES = [
   // (like the R1000 batch on 2026-08-03) — resumable via
   // fetched/attach-sec-filings.checkpoint.json.
   { key: "attach-sec-filings", label: "Attach SEC 8-K/10-Q sourceLinks (SP500-latest)", script: "attach-sec-filings.mjs", extraArgs: ["--scope=sp500-latest"] },
+  // Collapse same-period past events across the universe. Mixed
+  // sources land at ingest (Yahoo quarter-end + SEC fiscal filing
+  // date OR sibling-inherit) and can create two events with the
+  // same period label. Runs BEFORE shard-earnings so the rebuilt
+  // events-index reflects the cleaned shards. Tie-break rules keep
+  // the entry with the most actuals + filing sourceLink + non-
+  // quarter-end date; see dedup-same-period.mjs header.
+  { key: "dedup-same-period", label: "Collapse same-period past-event duplicates", script: "dedup-same-period.mjs" },
   { key: "shard-earnings", label: "Rebuild shards + events-index", script: "shard-earnings.mjs" },
   { key: "pipeline-check", label: "Pipeline report + standing invariants", script: "run-pipeline-check.mjs" },
   // Full corruption-test suite — catches invariant regressions before
