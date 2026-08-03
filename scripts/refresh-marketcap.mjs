@@ -95,7 +95,40 @@ function parseCookieNames(setCookies) {
   return [...pairs].map(([n, v]) => `${n}=${v}`).join("; ");
 }
 
+const CRUMB_CACHE = "/tmp/yahoo-crumb.json";
 async function getCrumb() {
+  // Try the shared cache first — see scripts/prime-yahoo-crumb.mjs
+  // for the writer. Cache is valid for 55 min from the first prime
+  // in the orchestrator run. Falls through to a fresh prime + retry
+  // if the file is missing or the crumb has expired.
+  try {
+    const raw = await fs.readFile(CRUMB_CACHE, "utf-8");
+    const cached = JSON.parse(raw);
+    if (cached.crumb && cached.cookie && cached.expiresAt > Date.now()) {
+      return { crumb: cached.crumb, cookieHeader: cached.cookie };
+    }
+  } catch { /* no cache — fresh prime below */ }
+  // 3-attempt retry — see mature-any-reported.mjs primeCrumb for
+  // rationale (intermittent Yahoo response from datacenter IPs).
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    const state = await tryGetCrumb();
+    if (state) {
+      // Populate cache for the rest of the orchestrator run.
+      try {
+        await fs.writeFile(CRUMB_CACHE, JSON.stringify({
+          crumb: state.crumb,
+          cookie: state.cookieHeader,
+          expiresAt: Date.now() + 55 * 60_000,
+        }));
+      } catch { /* best-effort */ }
+      return state;
+    }
+    if (attempt < 3) await new Promise((r) => setTimeout(r, 2000));
+  }
+  return null;
+}
+async function tryGetCrumb() {
+  try {
   const r1 = await fetchWithTimeout("https://fc.yahoo.com/", {
     headers: {
       "User-Agent": UA,
@@ -124,6 +157,7 @@ async function getCrumb() {
   const crumb = (await r2.text()).trim();
   if (!crumb || /Unauthorized|<html/i.test(crumb)) return null;
   return { crumb, cookieHeader };
+  } catch { return null; }
 }
 
 async function fetchQuotesRaw(symbols, state) {

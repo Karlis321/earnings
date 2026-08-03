@@ -45,6 +45,18 @@ function periodFromEarningsLabel(label) {
 let CRUMB = null;
 let COOKIE = "";
 async function primeCrumb() {
+  // Check shared cache first (scripts/prime-yahoo-crumb.mjs writes it).
+  try {
+    const os = await import("node:os");
+    const path = await import("node:path");
+    const fsp = await import("node:fs/promises");
+    const cachePath = path.default.join(os.default.tmpdir(), "yahoo-crumb.json");
+    const raw = await fsp.default.readFile(cachePath, "utf-8");
+    const cached = JSON.parse(raw);
+    if (cached.crumb && cached.cookie && cached.expiresAt > Date.now()) {
+      CRUMB = cached.crumb; COOKIE = cached.cookie; return CRUMB;
+    }
+  } catch { /* no cache */ }
   // Retry with backoff — see mature-any-reported.mjs.
   for (let attempt = 1; attempt <= 3; attempt++) {
     try {

@@ -52,6 +52,22 @@ function periodFromEarningsLabel(label) {
 let CRUMB = null;
 let COOKIE = "";
 async function primeCrumb() {
+  // First check the shared cache written by scripts/prime-yahoo-crumb.mjs
+  // (the first orchestrator phase). If present + fresh, reuse — no
+  // handshake needed. Falls back to a fresh prime + retry if missing.
+  try {
+    const os = await import("node:os");
+    const path = await import("node:path");
+    const fsp = await import("node:fs/promises");
+    const cachePath = path.default.join(os.default.tmpdir(), "yahoo-crumb.json");
+    const raw = await fsp.default.readFile(cachePath, "utf-8");
+    const cached = JSON.parse(raw);
+    if (cached.crumb && cached.cookie && cached.expiresAt > Date.now()) {
+      CRUMB = cached.crumb;
+      COOKIE = cached.cookie;
+      return CRUMB;
+    }
+  } catch { /* no cache — proceed to fresh prime */ }
   // Retry-with-backoff. Yahoo occasionally returns empty Set-Cookie
   // headers or non-2xx on getcrumb from CI/datacenter IPs — a fresh
   // handshake usually succeeds seconds later. Was failing hard on

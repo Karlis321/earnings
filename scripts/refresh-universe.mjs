@@ -68,6 +68,12 @@ const IS_MONDAY = TODAY.getUTCDay() === 1;
 // the script may be missing (Task 1's not-yet-ported paths); we log and
 // continue rather than fail the run.
 const PHASES = [
+  // Prime Yahoo crumb ONCE for the whole orchestrator run + write
+  // to /tmp/yahoo-crumb.json. Subsequent Yahoo scripts read from
+  // the cache. Reduces the crumb-prime attempts from ~7 to 1 per
+  // run — Yahoo was soft-blocking GitHub Actions IPs after rapid
+  // retries in the first two failed runs (30795529807, 30797305938).
+  { key: "prime-crumb", label: "Prime Yahoo crumb (shared)", script: "prime-yahoo-crumb.mjs" },
   // Auto-resolve edgarCik for entities where it's still undefined.
   // Uses SEC's public ticker→CIK JSON; stamps `null` when the ticker
   // is confirmed not on SEC so future runs don't re-hit the endpoint.
