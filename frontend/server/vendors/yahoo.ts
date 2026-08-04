@@ -1010,6 +1010,16 @@ export async function yahooSeries(
         result?: Array<{
           timestamp?: number[];
           indicators?: { quote?: Array<{ close?: (number | null)[] }> };
+        // Yahoo's daily-bar array occasionally lags — the most-recent
+        // completed trading day sits with `close: null` for several
+        // hours post-close. `meta.regularMarketPrice` + `regularMarketTime`
+        // carry the live price and are always populated. Use them to
+        // append a synthetic latest bar when the daily-bar array is
+        // stale (its last date < today).
+          meta?: {
+            regularMarketPrice?: number | null;
+            regularMarketTime?: number | null;
+          };
         }>;
       };
     };
@@ -1025,6 +1035,18 @@ export async function yahooSeries(
           date: new Date(ts[i] * 1000).toISOString().slice(0, 10),
           close: c,
         });
+      }
+    }
+    // Append live-quote bar when Yahoo's daily bars are stale relative
+    // to `regularMarketTime`. Deduplicates on same-date to avoid a
+    // double bar during the ~1h window before Yahoo finalizes today.
+    const rmt = result.meta?.regularMarketTime;
+    const rmp = result.meta?.regularMarketPrice;
+    if (typeof rmt === "number" && rmt > 0 && typeof rmp === "number" && rmp > 0) {
+      const liveDate = new Date(rmt * 1000).toISOString().slice(0, 10);
+      const lastBarDate = out.length > 0 ? out[out.length - 1].date : "";
+      if (liveDate > lastBarDate) {
+        out.push({ date: liveDate, close: rmp });
       }
     }
     return out;
