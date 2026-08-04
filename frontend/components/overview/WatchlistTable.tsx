@@ -638,7 +638,7 @@ function HeaderRow() {
     >
       <span className="text-tx2">Name ▾</span>
       <span>Next event</span>
-      <span title="EPS actual vs consensus estimate on the latest reported quarter. Blank when no same-basis surprise triple is available.">Last EPS surprise</span>
+      <span title="Currently shows EPS surprise (actual vs consensus) on the latest reported quarter. Roadmap: swap per-row to a sector-specific headline metric (capex for miners, NIM for banks, AISC for gold producers, etc.) using the extendedMetricsRegistry.">Industry-specific metric</span>
       <span>Price · 1M</span>
       <span className="text-center">Fresh</span>
       <span className="text-right">Src</span>
