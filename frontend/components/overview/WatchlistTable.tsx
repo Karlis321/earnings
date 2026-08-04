@@ -170,7 +170,11 @@ type TierFilter = "any" | "mega" | "large" | "mid" | "small" | "unknown";
 // Falls back to eps_usd → revenue_usd_m if no sector-specific match.
 // Sector tags come from entity.sectorTags; the first tag wins.
 const SECTOR_HEADLINE_METRICS: Record<string, string[]> = {
+  // "mining" is the extended-registry tag; "materials" is the GICS
+  // sector tag most miners actually carry in entity.sectorTags. Both
+  // resolve to the same priority list.
   mining: ["aisc_gold", "c1_cash_cost", "production_cu_kt", "production_au_koz"],
+  materials: ["aisc_gold", "c1_cash_cost", "production_cu_kt", "production_au_koz"],
   financials: ["nim", "rotce", "cet1_ratio", "efficiency_ratio"],
   software: ["arr", "ndr", "crpo", "rpo_total"],
   technology: ["arr", "ndr", "crpo"],
