@@ -1,0 +1,37 @@
+{
+  "ticker": "AIG US",
+  "period": "FY2026 Q1",
+  "reported_at": "2026-04-30",
+  "generated_at": "2026-08-04T16:30:04Z",
+  "depth": "filing",
+  "headline": "Underwriting strength powers a standout quarter",
+  "kpis": [
+    { "label": "EPS basic", "value": "$1.42", "delta": "+20.3%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EPS diluted", "value": "$1.41", "delta": "+21.6%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EBIT", "value": "$1,087M", "delta": "+41.9%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "EBIT", "value": "$1,087M", "delta": "+3.3%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Net income", "value": "$763M", "delta": "+3.8%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Net income", "value": "$763M", "delta": "+9.3%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Revenue", "value": "$6,650M", "delta": "+1.4%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Revenue", "value": "$6,650M", "delta": "-1.8%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Pretax income", "value": "$987M", "delta": "+2.8%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Operating cash flow", "value": "$155M", "delta": "vs -$56M", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Total cash", "value": "$1,528M", "delta": "+13.6%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Total cash", "value": "$1,528M", "delta": "+8.5%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Shareholders' equity", "value": "$40,405M", "delta": "-1.8%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Shareholders' equity", "value": "$40,405M", "delta": "-2.5%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Weighted diluted shares", "value": "542.2M", "delta": "-9.5%", "delta_basis": "y/y", "direction": "down" }
+  ],
+  "summary_short": "AIG's Q1 2026 diluted EPS rose 21.6% y/y to $1.41 as General Insurance underwriting income more than tripled to $774M and the combined ratio improved 850bp to 87.3%, while net income grew 9.3% y/y to $763M.",
+  "summary_long": "Net income rose 9.3% y/y to $763M ($1.41 diluted EPS, +21.6%) as General Insurance underwriting income jumped 219% to $774M on a lower 3.0-point catastrophe load and $132M of favorable prior-year reserve development, pulling the combined ratio in 850bp to 87.3%. Net premiums written grew 24% y/y (18% constant-dollar) across all three segments. Adjusted after-tax income per share rose 80% to $2.11. AIG returned $760M to shareholders ($519M buybacks, $241M dividends) and raised its quarterly dividend 11% to $0.50/share starting Q2. Shareholders' equity fell 1.8% q/q to $40.4B on the capital returns. No new numeric guidance was issued; management reaffirmed its 2025 Investor Day targets qualitatively.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/5272/000000527226000048/q12026earningsrelease.htm",
+  "confidence_notes": "REGENERATION: this run was invoked in force-regenerate mode with the Step-0 'already exists' guard explicitly skipped per instructions; no summary file was actually present on disk for AIG US FY2026 Q1 prior to this run (summaryExists=false per the resolver, confirmed by a direct filesystem check), so this write is a fresh compose, not a true overwrite of prior content. Ledger notes: (1) 'EBIT' ($1,087M, Yahoo fundamentals-timeseries) and 'Pretax income' ($987M, SEC 10-Q 'IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest') are distinct lines from different provenance families and are reported as separate KPI rows, not conflated -- no surprisePct/cross-basis issue arose since this event carries no estimate-vs-actual triple in the resolver's kpis. (2) 'Operating cash flow' swung from -$56M (Q1 2025) to +$155M (Q1 2026); a percentage delta across a sign flip is mathematically meaningless, so the delta field records the prior absolute value ('vs -$56M') rather than a fabricated percentage. (3) The release's own non-GAAP headline metric is Adjusted After-tax Income (AATI) per diluted share of $2.11 (+80.3% y/y) -- materially different from GAAP diluted EPS of $1.41 (+21.6%) because AATI excludes Corebridge/equity-securities fair-value marks, Fortitude Re reinsurance items, and other non-operating adjustments per the release's Regulation G reconciliation; captured separately via Step 3b's extendedMetrics (eps_non_gaap). (4) AIG's sectorTags are 'financials'/'financial-services', but the registry's financials-sector extended-metrics set (NIM, CET1 ratio, net charge-off ratio, deposits balance) is bank-specific and not disclosed by this P&C/life insurer; only 'rotce' was extractable, mapped to the release's closest analog (Core Operating ROE, 12.2%) since AIG does not separately disclose a metric literally labeled ROTCE. (5) The release states AIG is 'on track to meet or exceed' its March-2025 Investor Day financial objectives but restates no specific numeric range/target for a future period in this release, so nothing was written to the event's guidance[] array -- that would require inventing a figure the document doesn't give.",
+  "drivers": [
+    { "metric": "Net income", "direction": "up", "explanation": "Higher underwriting income and net investment income in General Insurance, partially offset by fair-value changes in AIG's Corebridge and equity-securities investments, per the release's own MD&A.", "basis": "company-disclosed" },
+    { "metric": "Revenue", "direction": "down", "explanation": "Not explained in the release -- the y/y GAAP revenue line isn't narrated directly; the release instead discusses net premiums written (+24% y/y) and net investment income (-36% y/y) separately.", "basis": "company-disclosed" },
+    { "metric": "Pretax income", "direction": "up", "explanation": "General Insurance underwriting income more than tripled to $774M on lower catastrophe charges (3.0 vs 9.1 loss-ratio points) and higher favorable prior-year reserve development ($132M vs $64M).", "basis": "company-disclosed" },
+    { "metric": "EPS diluted", "direction": "up", "explanation": "Diluted EPS grew faster than net income because weighted diluted shares fell 9.5% y/y (599.2M to 542.2M) on continued share repurchases.", "basis": "derived-arithmetic" },
+    { "metric": "Operating cash flow", "direction": "up", "explanation": "Not explained in the release -- operating cash flow is not discussed in the press release's narrative sections.", "basis": "company-disclosed" },
+    { "metric": "overall", "direction": "up", "explanation": "CEO cited 'outstanding' underwriting results, 24% NPW growth across all three segments, and $760M returned to shareholders; reaffirmed being on track for March-2025 Investor Day objectives.", "basis": "company-disclosed" }
+  ]
+}
