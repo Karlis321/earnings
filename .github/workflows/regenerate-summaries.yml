@@ -1,0 +1,68 @@
+name: regenerate-summaries
+
+# On-demand backfill: re-runs /earnings with force=true for every
+# ticker under data/summaries/. Purpose is to populate
+# event.extendedMetrics[] on the 54 tickers that got summaries earlier
+# today (before Step 3b became mandatory in commit 47d78f95).
+#
+# Fires the /api/summarize endpoint sequentially with configurable
+# delay per ticker. Uses the CRON_SECRET GitHub secret (already stored)
+# — no local env setup needed. Concurrency group is INTENTIONALLY
+# NOT the shared "claude-summarize" so this workflow can fire while
+# runs from that group are also in flight (this workflow only makes
+# API calls, it doesn't itself invoke Claude Code).
+
+on:
+  workflow_dispatch:
+    inputs:
+      delay_seconds:
+        description: "Delay per ticker in seconds. Default 900 (15 min) matches typical /earnings run duration."
+        required: false
+        default: "900"
+      start_at:
+        description: "Index to start at (0-based). Resume a partial run without re-firing already-processed tickers."
+        required: false
+        default: "0"
+      limit:
+        description: "Max tickers to process this run. Blank = all."
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+concurrency:
+  group: regenerate-summaries
+  cancel-in-progress: false
+
+jobs:
+  regenerate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 1440  # 24h — plenty for a 14h sequential batch
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Fire regeneration batch
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          DELAY_MS: ${{ github.event.inputs.delay_seconds && format('{0}000', github.event.inputs.delay_seconds) || '900000' }}
+          START_AT: ${{ github.event.inputs.start_at }}
+          LIMIT: ${{ github.event.inputs.limit }}
+          API_BASE: https://earnings-karlis123.vercel.app
+        run: |
+          if [ -z "$CRON_SECRET" ]; then
+            echo "::error::CRON_SECRET secret is not set on this repo"
+            exit 1
+          fi
+          echo "Starting regeneration batch"
+          echo "  DELAY_MS   = $DELAY_MS"
+          echo "  START_AT   = ${START_AT:-0}"
+          echo "  LIMIT      = ${LIMIT:-<all>}"
+          echo "  API_BASE   = $API_BASE"
+          node scripts/regenerate-summaries-batch.mjs
