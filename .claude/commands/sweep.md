@@ -80,9 +80,30 @@ and continue to the next. Do not improvise.
 
 4. **Run per-ticker.** For each due ticker, execute the
    `/earnings` procedure exactly — Step 0 (resolver) through
-   Step 3 (compose summary + drivers + guidance). **SKIP the
+   Step 3 (compose summary + drivers + guidance) AND Step 3b
+   (extract extendedMetrics per sector registry). **SKIP the
    per-ticker Step 4** (commit + push per ticker) — commits are
    handled once at the end here.
+
+   **Step 3b is MANDATORY, not optional.** While the filing is
+   loaded from Step 2, extract every metric from the sector-
+   priority set in `frontend/lib/extendedMetricsRegistry.ts`
+   (universal set + sector-specific set matching the entity's
+   sectorTags) and call
+   `Bash: node scripts/apply-extended-metrics.mjs <TICKER> <PERIOD> <payload.json>`
+   with the extracted values. Extraction rules per Step 3b:
+   numeric-table hit → confidence 0.9-1.0; explicit prose call-
+   out → 0.7-0.9; anything below 0.7 → SKIP. Empty result set is
+   ACCEPTABLE (the filing may not disclose sector KPIs); an
+   ABSENT call to apply-extended-metrics.mjs is NOT — every
+   ticker MUST hit the script at least once, even if only to
+   write an empty array. Skipping 3b is a task failure.
+
+   Rationale: the mechanical ingest pipeline never fills sector-
+   specific KPIs (production, AISC, NIM, ARR, etc.). /earnings
+   Step 3b is the only writer for `event.extendedMetrics[]`. If
+   Step 3b is skipped, the whole "industry-specific metrics per
+   sector" feature never gets data.
 
    Per-ticker failure isolation: any single ticker's failure
    (no primary source, aggregator-only hit, schema-invalid
@@ -93,6 +114,8 @@ and continue to the next. Do not improvise.
 
    Per-ticker budget (from /earnings) is preserved: max 2
    WebSearch + max 3 fetches. That budget resets per ticker.
+   Step 3b re-uses the already-fetched filing text (no extra
+   fetches). It costs at most a few extraction turns per ticker.
 
 5. **Validate the batch.** Run
    `Bash: node scripts/validate.js` (no args — checks every
