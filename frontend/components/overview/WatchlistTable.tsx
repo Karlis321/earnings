@@ -187,6 +187,10 @@ export function WatchlistTable({ rows }: { rows: WatchlistRow[] }) {
   // so the 17 covered tickers are never hidden even if a rare one
   // happens not to be canonical of its company group.
   const [showAllListings, setShowAllListings] = useState(false);
+  // Metric-column selector. The "Industry-specific metric" column shows
+  // this metric's surprise% (or value, if no surprise) per row. Changing
+  // it also auto-sorts the list by the new metric's surprise desc.
+  const [columnMetric, setColumnMetric] = useState<string>("eps_usd");
   // Sibling-listing counts per company — used for the "+N listings"
   // badge on canonical rows and to expose the hidden members via title.
   const listingsByCompany = useMemo(() => {
@@ -573,7 +577,19 @@ export function WatchlistTable({ rows }: { rows: WatchlistRow[] }) {
           }
         }}
       >
-        <HeaderRow />
+        <HeaderRow
+          columnMetric={columnMetric}
+          setColumnMetric={setColumnMetric}
+          metricOptions={availableMetrics.map((m) => ({
+            key: m.key,
+            label: m.label,
+            count: m.count,
+          }))}
+          onMetricChange={(k) => {
+            // Auto-sort by the newly-picked metric's surprise desc.
+            setSortKey(`metric:${k}:surprise:desc`);
+          }}
+        />
         {grouped.map((g) => (
           <div key={g.id}>
             {group !== "flat" && (
@@ -604,6 +620,7 @@ export function WatchlistTable({ rows }: { rows: WatchlistRow[] }) {
                 onClick={() =>
                   router.push(`/s/${encodeURIComponent(r.ticker)}`)
                 }
+                columnMetric={columnMetric}
               />
             ))}
           </div>
@@ -625,20 +642,47 @@ export function WatchlistTable({ rows }: { rows: WatchlistRow[] }) {
   );
 }
 
-function HeaderRow() {
+interface HeaderRowProps {
+  columnMetric: string;
+  setColumnMetric: (m: string) => void;
+  metricOptions: Array<{ key: string; label: string; count: number }>;
+  onMetricChange: (m: string) => void;
+}
+
+function HeaderRow({ columnMetric, setColumnMetric, metricOptions, onMetricChange }: HeaderRowProps) {
   return (
     <div
       // z-20 keeps the header above any row content that establishes its
       // own stacking context (rounded pills, sparkline SVG etc.). Site
-      // header uses z-30 so this still sits below it. Inline background
-      // makes the opaque cover unconditional — no chance for a Tailwind
-      // purge or var lookup to leave it transparent.
+      // header uses z-30 so this still sits below it.
       className="sticky top-14 z-20 grid grid-cols-[2fr_1.3fr_1.1fr_1.2fr_0.7fr_0.7fr] gap-3 border-b border-bd px-[18px] py-[11px] font-mono text-[10px] uppercase tracking-[0.08em] text-tx3"
       style={{ background: "var(--panel2)" }}
     >
       <span className="text-tx2">Name ▾</span>
       <span>Next event</span>
-      <span title="Currently shows EPS surprise (actual vs consensus) on the latest reported quarter. Roadmap: swap per-row to a sector-specific headline metric (capex for miners, NIM for banks, AISC for gold producers, etc.) using the extendedMetricsRegistry.">Industry-specific metric</span>
+      {/* Column-metric selector — user picks EPS surprise, revenue
+          surprise, production, EBITDA, or any per-sector metric. Each
+          option is a metric.key from event.metrics (including sector-
+          specific ones from the extendedMetricsRegistry). Changing
+          the selection auto-sorts by that metric's surprise desc,
+          bubbling rows without the metric to the bottom. */}
+      <span className="flex items-center gap-1 -my-1">
+        <select
+          value={columnMetric}
+          onChange={(e) => {
+            setColumnMetric(e.target.value);
+            onMetricChange(e.target.value);
+          }}
+          className="h-6 max-w-full rounded-[4px] border border-bd bg-s2 px-1 font-mono text-[10px] uppercase tracking-[0.06em] text-tx2 hover:text-tx focus:border-brand/40 focus:outline-none"
+          title="Pick which metric shows in this column. Rows without the metric bubble to the bottom."
+        >
+          {metricOptions.map((o) => (
+            <option key={o.key} value={o.key}>
+              {o.label}
+            </option>
+          ))}
+        </select>
+      </span>
       <span>Price · 1M</span>
       <span className="text-center">Fresh</span>
       <span className="text-right">Src</span>
@@ -655,6 +699,7 @@ function Row({
   pricesLoading,
   siblingCount,
   siblingTickers,
+  columnMetric,
 }: {
   r: WatchlistRow;
   onClick: () => void;
@@ -664,6 +709,7 @@ function Row({
   pricesLoading?: boolean;
   siblingCount?: number;
   siblingTickers?: string[];
+  columnMetric: string;
 }) {
   const isDev = r.entity.securityType === "developer";
   const isEtf = r.entity.securityType === "etf";
@@ -679,8 +725,20 @@ function Row({
     d3 && d3.absReturn != null && (d3.status === "matured" || d3.status === "clipped")
       ? d3.absReturn * 100
       : null;
+  // Column-metric surprise: reads the selected metric's surprisePct off
+  // the row's latestMetrics snapshot. Falls back to the legacy chain
+  // (reaction d3 → headline surprise → Yahoo lastQuarter) when the
+  // metric isn't present on this row. `metricMissing` flags rows that
+  // don't have the metric at all — used to render an "n/a" badge.
+  const colMetricEntry = r.latestMetrics?.[columnMetric];
+  const columnMetricSurprise = colMetricEntry?.surprisePct ?? null;
+  const metricMissing = !colMetricEntry;
   const surprise =
-    reactionPct ?? r.lastSurprisePct ?? yahoo?.lastQuarter?.surprisePct ?? null;
+    columnMetricSurprise ??
+    reactionPct ??
+    r.lastSurprisePct ??
+    yahoo?.lastQuarter?.surprisePct ??
+    null;
   const nextIso = r.nextEvent.date ?? yahoo?.nextEarningsDate ?? null;
   // Date-only diff (via daysUntil helper) — both sides anchor at UTC
   // midnight so a same-day scheduled event reads "today", not "1d ago".
@@ -720,8 +778,16 @@ function Row({
           size={28}
         />
         <div className="flex min-w-0 flex-col leading-tight">
-          <span className="truncate text-[13.5px] font-medium text-tx">
-            {r.entity.displayName}
+          <span className="flex items-center gap-1.5 truncate text-[13.5px] font-medium text-tx">
+            <span className="truncate">{r.entity.displayName}</span>
+            {metricMissing && columnMetric !== "eps_usd" ? (
+              <span
+                title={`This row doesn't report ${columnMetric} on its latest event. Sorted to the bottom.`}
+                className="inline-flex shrink-0 items-center rounded-[3px] border border-bd bg-s2 px-[5px] font-mono text-[9px] uppercase tracking-[0.06em] text-tx-mid"
+              >
+                n/a
+              </span>
+            ) : null}
           </span>
           <span className="flex items-center gap-2 truncate font-mono text-[11px] text-tx-mid">
             {r.ticker}
