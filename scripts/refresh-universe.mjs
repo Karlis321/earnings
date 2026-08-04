@@ -103,6 +103,12 @@ const PHASES = [
   { key: "estimator", label: "Median-gap next-event estimator", script: "run-estimator.mjs" },
   { key: "reactions", label: "Reaction maturation + baseline seeding", script: "mature-reactions.mjs" },
   { key: "marketcap", label: "Market-cap + FX batch (Yahoo v7 quote)", script: "refresh-marketcap.mjs" },
+  // Overview Market Pulse snapshot — 4 indices × 3 ranges, ~12 Yahoo
+  // fetches. Appends live regularMarketPrice as a synthetic latest
+  // bar when the daily-bar array lags. Overview page reads the
+  // committed snapshot for instant paint; live client fetch stays
+  // as fallback for intra-day ticks between refreshes.
+  { key: "market-pulse", label: "Market Pulse index series (4 indices)", script: "refresh-market-pulse.mjs" },
   // Google News + wire RSS fanout — ported to
   // scripts/refresh-google-news.mjs on 2026-08-03. Single fetch pass
   // (29 feeds), distributes matched items via displayName / aliases /

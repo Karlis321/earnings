@@ -22,15 +22,47 @@ const INDICES: Array<{ symbol: string; label: string }> = [
   { symbol: "^VIX", label: "VIX" },
 ];
 
+interface MarketPulseSnapshot {
+  schema: "market-pulse/v1";
+  fetchedAt: string;
+  indices: Record<
+    string,
+    {
+      label: string;
+      ranges: Record<string, { series: PricePoint[]; meta?: unknown; error?: string }>;
+    }
+  >;
+}
+
 export function MarketPulse() {
   const [active, setActive] = useState(INDICES[0]);
   const [data, setData] = useState<PricesResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
+  const [snapshot, setSnapshot] = useState<MarketPulseSnapshot | null>(null);
+
+  // Fetch the daily-refresh snapshot once on mount. If present, every
+  // index tab paints instantly from committed data — no per-tab Yahoo
+  // call. Falls back to live /api/prices per tab if the snapshot
+  // hasn't been committed yet (first run before daily fires).
+  useEffect(() => {
+    fetch("/api/market-pulse", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j: MarketPulseSnapshot | null) => setSnapshot(j))
+      .catch(() => setSnapshot(null));
+  }, []);
 
   useEffect(() => {
-    setLoading(true);
     setErr(null);
+    // Snapshot path — instant paint from committed daily refresh.
+    const fromSnap = snapshot?.indices?.[active.symbol]?.ranges?.["1mo"];
+    if (fromSnap?.series && fromSnap.series.length > 0) {
+      setData({ symbol: active.symbol, range: "1mo", series: fromSnap.series });
+      setLoading(false);
+      return;
+    }
+    // Snapshot missing this index → live fallback.
+    setLoading(true);
     setData(null);
     const url = `/api/prices?symbol=${encodeURIComponent(active.symbol)}&range=1mo`;
     fetch(url, { cache: "no-store" })
@@ -41,7 +73,7 @@ export function MarketPulse() {
       .then((j: PricesResponse) => setData(j))
       .catch((e) => setErr(String(e)))
       .finally(() => setLoading(false));
-  }, [active.symbol]);
+  }, [active.symbol, snapshot]);
 
   return (
     <div className="mb-6 rounded-panel border border-bd bg-s1 p-5">

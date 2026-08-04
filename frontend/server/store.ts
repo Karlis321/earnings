@@ -72,6 +72,13 @@ export interface Store {
   readPipelineHistory?(): Promise<PipelineHistoryEntry[]>;
   appendPipelineHistory?(entry: PipelineHistoryEntry): Promise<void>;
 
+  // Market Pulse snapshot committed daily by
+  // scripts/refresh-market-pulse.mjs (4 indices × 3 ranges of Yahoo
+  // daily bars + live regularMarketPrice append). Overview page reads
+  // this so the chart paints instantly from committed data instead of
+  // hitting Yahoo per visitor.
+  readMarketPulse?(): Promise<unknown | null>;
+
   readDocument(id: string): Promise<Document | null>;
   writeDocument(doc: Document): Promise<void>;
 

@@ -158,6 +158,9 @@ export const inMemoryStore: Store = {
   async readPipelineReport() {
     return null;
   },
+  async readMarketPulse() {
+    return null;
+  },
   async writePipelineReport(): Promise<void> {
     notImplemented("writePipelineReport");
   },
