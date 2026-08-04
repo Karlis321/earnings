@@ -113,7 +113,29 @@ export async function GET(req: NextRequest) {
           yahooSymbol = resolved.yahooSymbol;
           name = resolved.name;
         }
-        const series = await yahooSeries(yahooSymbol, range);
+        // Auto-widen when Yahoo returns a suspiciously thin series.
+        // Low-volume foreign listings (Canada NEO, Indonesian small
+        // caps, etc.) return 1-2 bars at 1mo but 200+ at max — Yahoo's
+        // edge throttles low-volume symbols per-origin. Single-ticker
+        // /api/prices walks 6 ladder steps, but at CONCURRENCY=4 with
+        // 100-ticker batches under a 30s cap we can't afford that. Jump
+        // straight to `max` in one call, then slice down to the tail.
+        let series = await yahooSeries(yahooSymbol, range);
+        if (series.length < 5 && range !== "max") {
+          const wide = await yahooSeries(yahooSymbol, "max");
+          if (wide.length > series.length) {
+            // Slice to roughly the requested horizon so the sparkline
+            // still means "last month" not "last 25 years". Daily bars,
+            // ~21 trading days per month, tail-slice by count.
+            const targetBars =
+              range === "1mo" ? 22 :
+              range === "3mo" ? 66 :
+              range === "6mo" ? 132 :
+              range === "1y" ? 252 :
+              range === "5y" ? 1260 : wide.length;
+            series = wide.length > targetBars ? wide.slice(-targetBars) : wide;
+          }
+        }
         if (series.length < 1) {
           return [
             t,
