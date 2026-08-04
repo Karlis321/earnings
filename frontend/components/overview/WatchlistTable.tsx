@@ -9,7 +9,6 @@ import { useRouter } from "next/navigation";
 import type { WatchlistRow, SecurityType } from "@/lib/types";
 import {
   SurprisePill,
-  GuidanceMoveBadge,
   FreshnessDot,
   StalenessLegend,
   ReactionRow,
@@ -23,6 +22,7 @@ import { fmtDaysUntil, fmtDateShort } from "@/lib/format";
 import { daysUntil as daysUntilFn } from "@/lib/freshness";
 import { AlertTriangle, ChevronDown, ChevronRight } from "lucide-react";
 import clsx from "clsx";
+import { WatchlistFilterPopover } from "./WatchlistFilterPopover";
 
 // Server response shape from /api/prices/bulk
 interface BulkPriceEntry {
@@ -117,7 +117,16 @@ type Filter =
   | "realestate"
   | "utilities"
   | "developer";
-type SortKey = "next" | "surprise" | "reaction" | "freshness" | "name" | "cap";
+type SortKey =
+  | "cap"
+  | "cap-asc"
+  | "winners-1m"
+  | "losers-1m"
+  | "next"
+  | "surprise"
+  | "reaction"
+  | "freshness"
+  | "name";
 type Group = "flat" | "type" | "sector" | "industry" | "cap-industry";
 const CAP_TIER_ORDER: Array<"mega" | "large" | "mid" | "small" | "unknown"> = [
   "mega",
@@ -290,10 +299,29 @@ export function WatchlistTable({ rows }: { rows: WatchlistRow[] }) {
           return a.entity.displayName.localeCompare(b.entity.displayName);
         case "cap":
           return (b.entity.marketCapUsd ?? 0) - (a.entity.marketCapUsd ?? 0);
+        case "cap-asc":
+          return (a.entity.marketCapUsd ?? 0) - (b.entity.marketCapUsd ?? 0);
+        case "winners-1m": {
+          // Biggest 1M gainers first — reads live prices from state.
+          // Tickers without a prices entry (loading or errored) sink
+          // to the bottom via -Infinity.
+          const ap = prices?.tickers[a.ticker];
+          const bp = prices?.tickers[b.ticker];
+          const av = ap?.ok && typeof ap.pctChange === "number" ? ap.pctChange : -Infinity;
+          const bv = bp?.ok && typeof bp.pctChange === "number" ? bp.pctChange : -Infinity;
+          return bv - av;
+        }
+        case "losers-1m": {
+          const ap = prices?.tickers[a.ticker];
+          const bp = prices?.tickers[b.ticker];
+          const av = ap?.ok && typeof ap.pctChange === "number" ? ap.pctChange : Infinity;
+          const bv = bp?.ok && typeof bp.pctChange === "number" ? bp.pctChange : Infinity;
+          return av - bv;
+        }
       }
     });
     return list;
-  }, [rows, filter, reportingSoon, sortKey, tier]);
+  }, [rows, filter, reportingSoon, sortKey, tier, prices]);
 
   const grouped = useMemo(() => {
     if (group === "flat") {
@@ -380,57 +408,15 @@ export function WatchlistTable({ rows }: { rows: WatchlistRow[] }) {
         setFilter={setFilter}
         sortKey={sortKey}
         setSortKey={setSortKey}
-        reportingSoon={reportingSoon}
-        setReportingSoon={setReportingSoon}
         group={group}
         setGroup={setGroup}
+        tier={tier}
+        setTier={setTier}
+        reportingSoon={reportingSoon}
+        setReportingSoon={setReportingSoon}
+        showAllListings={showAllListings}
+        setShowAllListings={setShowAllListings}
       />
-
-      <div className="mt-2 flex flex-wrap items-center gap-[6px]">
-        <span className="font-mono text-[10.5px] uppercase tracking-[0.1em] text-tx3">
-          Cap tier
-        </span>
-        {(
-          [
-            { id: "any", label: "Any" },
-            { id: "mega", label: "Mega ≥$200B" },
-            { id: "large", label: "Large $10B–$200B" },
-            { id: "mid", label: "Mid $2B–$10B" },
-            { id: "small", label: "Small $250M–$2B" },
-            { id: "unknown", label: "Nano / n/a" },
-          ] as Array<{ id: TierFilter; label: string }>
-        ).map((t) => (
-          <button
-            key={t.id}
-            onClick={() => setTier(t.id)}
-            className={
-              tier === t.id
-                ? "inline-flex h-[22px] items-center rounded-[5px] border border-brand bg-brand/10 px-[9px] text-[11px] text-brand-fg"
-                : "inline-flex h-[22px] items-center rounded-[5px] border border-bd2 bg-s2 px-[9px] text-[11px] text-tx2 hover:text-tx"
-            }
-          >
-            {t.label}
-          </button>
-        ))}
-        <span className="ml-3 font-mono text-[10.5px] uppercase tracking-[0.1em] text-tx3">
-          Listings
-        </span>
-        <button
-          onClick={() => setShowAllListings((v) => !v)}
-          title={
-            showAllListings
-              ? "Showing every listing including BDR / ADR / GY wrappers"
-              : "Only the canonical listing per company (default). NVIDIA appears once, not four times."
-          }
-          className={
-            showAllListings
-              ? "inline-flex h-[22px] items-center rounded-[5px] border border-brand bg-brand/10 px-[9px] text-[11px] text-brand-fg"
-              : "inline-flex h-[22px] items-center rounded-[5px] border border-bd2 bg-s2 px-[9px] text-[11px] text-tx2 hover:text-tx"
-          }
-        >
-          {showAllListings ? "All listings" : "Canonical only"}
-        </button>
-      </div>
 
       <div
         // `overflow-hidden` on the container broke position:sticky for
@@ -519,13 +505,12 @@ function HeaderRow() {
       // header uses z-30 so this still sits below it. Inline background
       // makes the opaque cover unconditional — no chance for a Tailwind
       // purge or var lookup to leave it transparent.
-      className="sticky top-14 z-20 grid grid-cols-[2fr_1.3fr_1.1fr_1fr_1.2fr_0.7fr_0.7fr] gap-3 border-b border-bd px-[18px] py-[11px] font-mono text-[10px] uppercase tracking-[0.08em] text-tx3"
+      className="sticky top-14 z-20 grid grid-cols-[2fr_1.3fr_1.1fr_1.2fr_0.7fr_0.7fr] gap-3 border-b border-bd px-[18px] py-[11px] font-mono text-[10px] uppercase tracking-[0.08em] text-tx3"
       style={{ background: "var(--panel2)" }}
     >
       <span className="text-tx2">Name ▾</span>
       <span>Next event</span>
-      <span>Last surprise</span>
-      <span>Guidance</span>
+      <span title="EPS actual vs consensus estimate on the latest reported quarter. Blank when no same-basis surprise triple is available.">Last EPS surprise</span>
       <span>Price · 1M</span>
       <span className="text-center">Fresh</span>
       <span className="text-right">Src</span>
@@ -586,7 +571,7 @@ function Row({
       tabIndex={-1}
       onClick={onClick}
       className={clsx(
-        "grid cursor-pointer grid-cols-[2fr_1.3fr_1.1fr_1fr_1.2fr_0.7fr_0.7fr] items-center gap-3 px-[18px] py-3",
+        "grid cursor-pointer grid-cols-[2fr_1.3fr_1.1fr_1.2fr_0.7fr_0.7fr] items-center gap-3 px-[18px] py-3",
       )}
     >
       <div className="flex min-w-0 items-center gap-[10px]">
@@ -681,14 +666,6 @@ function Row({
         )}
       </span>
 
-      <span className="text-[12.5px]">
-        {isDev || isEtf ? (
-          <span className="text-tx3">—</span>
-        ) : (
-          <GuidanceMoveBadge move={r.guidanceMove} />
-        )}
-      </span>
-
       <span className="flex items-center gap-2">
         <RealPriceSparkline
           series={priceEntry?.series ?? []}
@@ -740,19 +717,27 @@ function FilterBar({
   setFilter,
   sortKey,
   setSortKey,
-  reportingSoon,
-  setReportingSoon,
   group,
   setGroup,
+  tier,
+  setTier,
+  reportingSoon,
+  setReportingSoon,
+  showAllListings,
+  setShowAllListings,
 }: {
   filter: Filter;
   setFilter: (f: Filter) => void;
   sortKey: SortKey;
   setSortKey: (s: SortKey) => void;
-  reportingSoon: boolean;
-  setReportingSoon: (v: boolean) => void;
   group: Group;
   setGroup: (g: Group) => void;
+  tier: TierFilter;
+  setTier: (t: TierFilter) => void;
+  reportingSoon: boolean;
+  setReportingSoon: (v: boolean) => void;
+  showAllListings: boolean;
+  setShowAllListings: (v: boolean) => void;
 }) {
   return (
     <div className="flex flex-wrap items-center gap-2">
@@ -789,40 +774,18 @@ function FilterBar({
           </button>
         ))}
       </div>
-      <button
-        onClick={() => setReportingSoon(!reportingSoon)}
-        className={clsx(
-          "rounded-button border px-3 py-[6px] text-[12.5px]",
-          reportingSoon
-            ? "border-brand bg-brand/10 text-brand-fg"
-            : "border-bd text-tx2 hover:text-tx",
-        )}
-      >
-        Reporting soon ≤ 14d
-      </button>
-      <select
-        value={sortKey}
-        onChange={(e) => setSortKey(e.target.value as SortKey)}
-        className="h-8 rounded-button border border-bd bg-s1 px-2 text-[12.5px] text-tx2"
-      >
-        <option value="cap">Sort: Market cap ↓</option>
-        <option value="next">Sort: Next event</option>
-        <option value="surprise">Sort: Surprise</option>
-        <option value="reaction">Sort: Reaction (+1d)</option>
-        <option value="freshness">Sort: Freshness</option>
-        <option value="name">Sort: Name</option>
-      </select>
-      <select
-        value={group}
-        onChange={(e) => setGroup(e.target.value as Group)}
-        className="h-8 rounded-button border border-bd bg-s1 px-2 text-[12.5px] text-tx2"
-      >
-        <option value="flat">Group: market cap ↓</option>
-        <option value="type">Group: type</option>
-        <option value="sector">Group: sector</option>
-        <option value="industry">Group: industry</option>
-        <option value="cap-industry">Group: cap band × industry</option>
-      </select>
+      <WatchlistFilterPopover
+        sortKey={sortKey}
+        setSortKey={setSortKey}
+        group={group}
+        setGroup={setGroup}
+        tier={tier}
+        setTier={setTier}
+        reportingSoon={reportingSoon}
+        setReportingSoon={setReportingSoon}
+        showAllListings={showAllListings}
+        setShowAllListings={setShowAllListings}
+      />
     </div>
   );
 }
