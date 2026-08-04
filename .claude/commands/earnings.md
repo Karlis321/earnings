@@ -27,6 +27,12 @@ Sanctioned scripts:
   resolver, prints one JSON object with everything Step 0 needs.
 - `scripts/fetch-edgar.mjs <sec.gov-url> [outfile]` — SEC-compliant
   fetcher; writes to `./fetched/<basename>` by default.
+- `scripts/resolve-edgar-exhibit.mjs <8-K-url>` — given a filing
+  URL that points at the 8-K cover document, resolves to the EX-99.1
+  press-release exhibit URL (prints one line to stdout). Use this
+  BEFORE fetch-edgar whenever the sourceLink URL looks like a bare
+  8-K cover — it converts an index-page-then-guess-exhibit dance
+  (2-3 fetches) into one exhibit fetch. Counts as one fetch.
 - `scripts/extract-doc-text.mjs <html-file> [--grep "pattern"]` —
   HTML → text (writes `.txt` beside the input), or `--grep` for
   targeted matches with 2 lines of context.
@@ -106,6 +112,16 @@ the first:
 
 **Rung 1: event-level `sourceLink.kind === "filing"`** — a filing
 URL we already observed on this exact event. Use it directly.
+**Exhibit-resolution shortcut**: if the URL matches an 8-K cover
+document (path shape `/Archives/edgar/data/<CIK>/<accession>/<file>.htm`
+where `<file>` is the issuer's 8-K identifier, e.g.
+`aapl-20260730.htm`, `abbv-20260808.htm`), FIRST run
+`Bash: node scripts/resolve-edgar-exhibit.mjs <sourceLink.url>` to
+resolve to the EX-99.1 press-release exhibit URL, THEN fetch-edgar
+that. Otherwise you'll waste the fetch on a cover-page stub that
+just says "See Exhibit 99.1" and be unable to compose from it. The
+resolve script counts as one of your three fetches — it hits EDGAR
+once to read the folder index.
 
 **Rung 2: `irSources.reports_page_url`** — the company's stable
 per-issuer reports/filings-list page (observed or mechanically

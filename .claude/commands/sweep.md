@@ -17,6 +17,11 @@ waste turns on recovery. Sanctioned tools:
   resolver, prints one JSON object.
 - `scripts/fetch-edgar.mjs <sec.gov-url> [outfile]` — SEC-compliant
   fetcher; writes to `./fetched/<basename>` by default.
+- `scripts/resolve-edgar-exhibit.mjs <8-K-url>` — resolves an 8-K
+  cover URL to its EX-99.1 press-release exhibit URL. Use before
+  fetch-edgar when the event sourceLink is a bare 8-K cover
+  (path ends in `.htm` under an accession folder); avoids burning
+  fetches on the cover stub. Prints one URL to stdout.
 - `scripts/extract-doc-text.mjs <html-file> [--grep pattern]` —
   HTML → text or targeted grep with 2 lines of context.
 - `scripts/validate.js` — schema + filename + aggregator-URL
