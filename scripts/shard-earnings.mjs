@@ -93,6 +93,23 @@ function buildIndexEntry(ticker, events, entity) {
     guidanceMove: latest?.guidanceMove ?? null,
     freshness: latest?.freshness ?? "never",
     lastEventReactionPoints,
+    // Per-metric snapshot for the watchlist "Industry-specific
+    // metric" column + dynamic per-metric sort. Only include metrics
+    // with an actual value; skip null-actual placeholders.
+    latestMetrics: (() => {
+      if (!latest) return undefined;
+      const out = {};
+      for (const m of latest.metrics ?? []) {
+        if (m.actual?.value == null || !m.key) continue;
+        out[m.key] = {
+          value: m.actual.value,
+          unit: m.actual.unit ?? null,
+          surprisePct: m.surprisePct ?? null,
+          label: m.displayLabel ?? m.key,
+        };
+      }
+      return Object.keys(out).length > 0 ? out : undefined;
+    })(),
   };
 }
 

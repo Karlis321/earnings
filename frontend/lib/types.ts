@@ -483,6 +483,20 @@ export interface EventsIndexEntry {
   // the last event has no reaction points (developer / etf / not-yet
   // -matured shells).
   lastEventReactionPoints?: ReactionPoint[];
+  // Per-metric snapshot of the latest event carried in the index so
+  // the watchlist's "Industry-specific metric" column selector +
+  // dynamic per-metric sort can read directly (no shard fetch).
+  // Populated by shard-earnings.mjs from latest.metrics[]. Keyed by
+  // metric.key (e.g. "revenue_usd_m", "capex_total", "production_cu_kt").
+  latestMetrics?: Record<
+    string,
+    {
+      value: number;
+      unit: string | null;
+      surprisePct: number | null;
+      label: string;
+    }
+  >;
 }
 
 export interface EventsIndex {

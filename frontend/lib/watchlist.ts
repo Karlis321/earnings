@@ -267,6 +267,18 @@ export function buildWatchlistRowsFromIndex(
       },
       lastPeriod: idx?.lastPeriod ?? null,
       lastSurprisePct: idx?.lastSurprisePct ?? null,
+      // Revenue surprise · derived by walking idx.latestMetrics for
+      // any revenue-family key that has a surprisePct.
+      lastRevenueSurprisePct: (() => {
+        const m = idx?.latestMetrics ?? {};
+        for (const [k, v] of Object.entries(m)) {
+          if (/^revenues?_/.test(k) && v?.surprisePct != null) {
+            return v.surprisePct;
+          }
+        }
+        return null;
+      })(),
+      latestMetrics: idx?.latestMetrics,
       guidanceMove,
       reactionSpark: [],
       reactionPending: false,
