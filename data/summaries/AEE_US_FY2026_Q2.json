@@ -1,0 +1,33 @@
+{
+  "ticker": "AEE US",
+  "period": "FY2026 Q2",
+  "reported_at": "2026-07-30",
+  "generated_at": "2026-08-04T15:45:17.000Z",
+  "depth": "filing",
+  "headline": "Earnings grow year over year despite softer revenue",
+  "kpis": [
+    { "label": "Revenue", "value": "$2,092M", "delta": "-3.9%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Revenue", "value": "$2,092M", "delta": "-5.8%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Operating income", "value": "$459M", "delta": "-13.7%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Operating income", "value": "$459M", "delta": "+11.7%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Pretax income", "value": "$368M", "delta": "+15.0%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EPS diluted", "value": "$1.13", "delta": "-11.7%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "EPS diluted", "value": "$1.13", "delta": "+11.9%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EPS basic", "value": "$1.14", "delta": "+11.8%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Cash", "value": "$12M", "delta": "-7.7%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Long-term debt", "value": "$19,064M", "delta": "+1.3%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Short-term debt", "value": "$1,524M", "delta": "+$1,495M", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Shareholders' equity", "value": "$13,687M", "delta": "+11.1%", "delta_basis": "y/y", "direction": "up" }
+  ],
+  "summary_short": "Ameren's diluted EPS rose to $1.13 in Q2 2026 (+11.9% y/y) as net income attributable to common shareholders grew to $314 million, even though total revenue slipped 5.8% y/y to $2,092 million on much lower off-system power sales; the company reaffirmed full-year guidance of $5.25-$5.45 per diluted share.",
+  "summary_long": "Second-quarter earnings rose to $314 million ($1.13 diluted EPS, +11.9% y/y) as infrastructure investment across Ameren Missouri, Ameren Transmission, and Ameren Illinois Electric Distribution added earnings, partly offset by higher operations-and-maintenance spending on reliability-focused tree trimming and energy-center maintenance; a higher diluted share count also tempered per-share growth. Total revenue fell 5.8% y/y to $2,092 million as off-system electricity sales dropped to $148 million from $471 million a year earlier. Six-month capital expenditures reached $2,653 million, funded in part by $1,794 million of new long-term debt issuance, lifting long-term debt to $19,064 million and shareholders' equity to $13,687 million. Ameren reaffirmed its full-year 2026 EPS guidance range of $5.25-$5.45.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/1002910/000100291026000020/q22026ex991earningsrelease.htm",
+  "confidence_notes": "REGENERATION: this run was invoked in force-regenerate mode with the Step-0 'already exists' guard explicitly skipped per instructions; no summary file was actually present on disk for AEE US FY2026 Q2 prior to this run (summaryExists=false), so this write is a fresh compose, not a true overwrite. Ledger notes: (1) short_term_debt_usd_m's y/y comparison is against a near-zero prior-year base ($29M -> $1,524M, i.e. current maturities of long-term debt), so the y/y delta is reported as a dollar amount (+$1,495M) rather than a percentage, which would be a meaningless ~+5155%. (2) The release does not break out quarterly capital expenditures, per-share dividends, buybacks, or any non-GAAP EPS reconciliation separately from its six-month cash-flow figures, and gives only full-year (not next-quarter) guidance -- so Step 3b's extendedMetrics extraction against the universal set came up empty; this is a genuine absence in a GAAP-only utility release, not a missed extraction. (3) Full-year 2026 EPS guidance of $5.25-$5.45 per diluted share was reaffirmed (the release's own 'reaffirmed' language) and has been written to the event's guidance[] array on the shard.",
+  "drivers": [
+    { "metric": "Revenue", "direction": "down", "explanation": "Off-system electricity sales at Ameren Missouri fell to $148M from $471M y/y, a $323M drop that more than explains the $129M net revenue decline -- every other reported revenue line (retail electric, both Illinois segments, natural gas) rose y/y.", "basis": "derived-arithmetic" },
+    { "metric": "Operating income", "direction": "up", "explanation": "Earnings gains from infrastructure investment across all four segments were partially offset by higher operations-and-maintenance expense, mainly increased reliability-focused tree trimming and energy-center maintenance.", "basis": "company-disclosed" },
+    { "metric": "EPS diluted", "direction": "up", "explanation": "The release states the EPS comparison also reflects higher weighted-average diluted shares outstanding in Q2 2026, which tempered per-share growth relative to the net-income increase.", "basis": "company-disclosed" },
+    { "metric": "Long-term debt", "direction": "up", "explanation": "Not detailed for the quarter specifically, but six-month cash flows show $1,794M of new long-term debt issuance funding a $2,653M capital program, consistent with the y/y debt growth.", "basis": "derived-arithmetic" },
+    { "metric": "overall", "direction": "up", "explanation": "By segment, Q2 2026 vs Q2 2025 earnings: Missouri $157M vs $150M, Transmission $96M vs $86M, Illinois Electric Distribution $70M vs $64M, Illinois Natural Gas $9M vs $10M, Parent loss narrowed to $18M from $35M. Company reaffirmed FY2026 EPS guidance of $5.25 to $5.45 per diluted share.", "basis": "company-disclosed" }
+  ]
+}
