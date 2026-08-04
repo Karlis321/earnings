@@ -86,9 +86,11 @@ export async function POST(req: NextRequest) {
     body && typeof body === "object" && typeof (body as { ticker?: unknown }).ticker === "string"
       ? (body as { ticker: string }).ticker
       : null;
+  const force =
+    body && typeof body === "object" && (body as { force?: unknown }).force === true;
   if (!ticker) {
     return NextResponse.json(
-      { error: "bad-request", message: "Body must be {ticker: string}" },
+      { error: "bad-request", message: "Body must be {ticker: string, force?: boolean}" },
       { status: 400 },
     );
   }
@@ -127,7 +129,8 @@ export async function POST(req: NextRequest) {
   // Existing-summary gate — if the latest reported period already has
   // a summary, dispatching would be a no-op (the /earnings command's
   // Step-0 guard would early-out). Surface that state to the UI.
-  if (store.readSummariesForTicker) {
+  // BYPASSED when the caller passed `force: true` (regenerate button).
+  if (!force && store.readSummariesForTicker) {
     const summaries = await store.readSummariesForTicker(ticker);
     if (summaries.length > 0) {
       // Compare against the ticker's latest reported period.
@@ -191,7 +194,7 @@ export async function POST(req: NextRequest) {
     },
     body: JSON.stringify({
       event_type: "summarize",
-      client_payload: { ticker: canonical.ticker },
+      client_payload: { ticker: canonical.ticker, force },
     }),
   });
   if (!r.ok) {

@@ -51,8 +51,16 @@ jobs:
           NARRATION="Narrate as you work: before every tool call, print one line stating what you are about to do and why (e.g. 'Searching for Hudbay Q1 2026 press release', 'Running validator', 'Committing HBM_US_FY2026_Q1'). After each numbered step of the procedure, print STEP <n> DONE: <one-line result>. Never work silently for more than one tool call."
           RESULT_LINE="Your final message MUST be exactly one of: 'RESULT: committed <filename>' or 'RESULT: skipped — <reason>'. Any other ending is a failure."
           TICKER="${{ github.event.client_payload.ticker || github.event.inputs.ticker }}"
+          # `force` comes from /api/summarize when the user clicked
+          # "Regenerate" on an existing summary. Instructs /earnings
+          # to bypass the "summary already exists" guard and rewrite.
+          FORCE="${{ github.event.client_payload.force }}"
+          FORCE_LINE=""
+          if [ "$FORCE" = "true" ]; then
+            FORCE_LINE=" IMPORTANT: force-regenerate mode. Skip the Step-0 'summary already exists' guard and produce a fresh summary, OVERWRITING the existing file on disk. Confidence-notes MUST mention this is a regeneration."
+          fi
           if [ -n "$TICKER" ]; then
-            echo "text=Run the /earnings procedure in .claude/commands/earnings.md for ticker $TICKER. Follow it exactly, including validation. Commit and push the result. $NARRATION $RESULT_LINE" >> "$GITHUB_OUTPUT"
+            echo "text=Run the /earnings procedure in .claude/commands/earnings.md for ticker $TICKER. Follow it exactly, including validation. Commit and push the result.$FORCE_LINE $NARRATION $RESULT_LINE" >> "$GITHUB_OUTPUT"
           else
             echo "text=Run the /sweep procedure in .claude/commands/sweep.md. Follow it exactly, including validation. Commit and push the result. $NARRATION $RESULT_LINE" >> "$GITHUB_OUTPUT"
           fi

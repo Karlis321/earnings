@@ -113,6 +113,7 @@ export default async function SecurityDetailPage({ params }: Props) {
         <SummaryPanel
           summaries={summaries}
           latestReportedPeriod={latestPast?.period ?? null}
+          ticker={ticker}
         />
       )}
 

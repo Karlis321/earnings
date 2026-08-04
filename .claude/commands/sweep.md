@@ -29,24 +29,28 @@ and continue to the next. Do not improvise.
 
 ## Procedure
 
-1. **List candidates.** THREE tiers, union produced by a single
-   script call:
+1. **List candidates.** Full-universe scope by default —
+   every operating, non-dormant, non-foreign-filer entity in the
+   registry. Single script call:
      `Bash: node scripts/sweep-target-list.mjs`
    → prints a JSON array of tickers on stdout. Parse and iterate.
 
-   **Tier A · covered** — `data/covered.json` (17 hand-picked names).
-   Always included when due.
+   Scope default is `all` (~2,985 entities). The
+   filter below is the same regardless of scope: the "reported in
+   last 5 trading days AND no summary yet" gate keeps real work
+   bounded to typically 5-40 tickers/week.
 
-   **Tier B · SP500 fresh-reporters** — SP500 members that are
-   US-primary + not foreign-filer (~473 domestic entities).
+   Cost-bounding fallback if needed: `SCOPE=indexed node
+   scripts/sweep-target-list.mjs` limits to covered + SP500 +
+   R1000 US-primary domestic (~1,000 tickers). The workflow uses
+   the default scope=all.
 
-   **Tier C · Russell 1000 fresh-reporters** — R1000 members that
-   are US-primary + not foreign-filer (~1,013 domestic entities;
-   superset of SP500).
-
-   Auto-expanded from Wikipedia — no hand-curation required.
-   Union size ≈ 1,000-1,100. Only ~5-40 report per week, so cost
-   stays bounded regardless of the wider candidate pool.
+   Tiers baked into the union:
+   - Tier A · covered → `data/covered.json` (17 hand-picked)
+   - Tier B · SP500 US-primary (~473)
+   - Tier C · Russell 1000 US-primary (~1,013)
+   - Tier D · every other operating entity (foreign primaries,
+     small-caps outside indices) — active in `all` scope only
 
    For each ticker in the union:
    - Run `Bash: node scripts/resolve-earnings-target.mjs "<ticker>"`
