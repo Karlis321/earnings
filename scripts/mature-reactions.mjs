@@ -108,6 +108,20 @@ async function yahooBars(symbol) {
         close: c,
       });
     }
+    // Yahoo's daily-bar array often leaves today's slot with close=null
+    // even after the US market has closed. Append the live-quote
+    // regularMarketPrice as a synthetic latest bar when it beats our
+    // last completed bar's date. Same fix already applied in
+    // frontend yahooSeries + refresh-market-pulse — brings Fri
+    // earnings reporters' d1 point in scope on Mon evening / Tue
+    // morning UTC when the completed close bar is still pending.
+    const rmt = result.meta?.regularMarketTime;
+    const rmp = result.meta?.regularMarketPrice;
+    if (typeof rmt === "number" && rmt > 0 && typeof rmp === "number" && rmp > 0) {
+      const liveDate = new Date(rmt * 1000).toISOString().slice(0, 10);
+      const lastBarDate = bars.length > 0 ? bars[bars.length - 1].date : "";
+      if (liveDate > lastBarDate) bars.push({ date: liveDate, close: rmp });
+    }
     barsCache.set(symbol, bars);
     return bars;
     } catch {
