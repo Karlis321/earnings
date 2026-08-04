@@ -117,7 +117,12 @@ type Filter =
   | "realestate"
   | "utilities"
   | "developer";
-type SortKey =
+// Fixed sort keys + a dynamic "metric:<key>:<dim>:<dir>" form. The
+// dynamic form lets the user sort by any metric present on visible
+// rows (e.g. revenue_usd_m, capex_total, buyback_qtr_usd). Dim is
+// "value" (raw actual) or "surprise" (surprisePct); dir is "desc"
+// or "asc". Parsed at sort time in the switch below.
+type FixedSortKey =
   | "cap"
   | "cap-asc"
   | "winners-1m"
@@ -135,6 +140,7 @@ type SortKey =
   | "reaction-loss-m1"
   | "freshness"
   | "name";
+type SortKey = FixedSortKey | `metric:${string}:${"value" | "surprise"}:${"desc" | "asc"}`;
 type Group = "flat" | "type" | "sector" | "industry" | "cap-industry";
 const CAP_TIER_ORDER: Array<"mega" | "large" | "mid" | "small" | "unknown"> = [
   "mega",
@@ -287,7 +293,22 @@ export function WatchlistTable({ rows }: { rows: WatchlistRow[] }) {
       list = list.filter((r) => r.entity.isCanonical || r.entity.isCore);
     }
     list.sort((a, b) => {
-      switch (sortKey) {
+      // Dynamic "metric:<key>:<dim>:<dir>" sort — check prefix before
+      // falling through to the fixed switch below.
+      if (sortKey.startsWith("metric:")) {
+        const parts = sortKey.split(":");
+        const key = parts[1];
+        const dim = parts[2]; // "value" | "surprise"
+        const dir = parts[3]; // "desc" | "asc"
+        const av = dim === "surprise"
+          ? a.latestMetrics?.[key]?.surprisePct ?? (dir === "asc" ? Infinity : -Infinity)
+          : a.latestMetrics?.[key]?.value ?? (dir === "asc" ? Infinity : -Infinity);
+        const bv = dim === "surprise"
+          ? b.latestMetrics?.[key]?.surprisePct ?? (dir === "asc" ? Infinity : -Infinity)
+          : b.latestMetrics?.[key]?.value ?? (dir === "asc" ? Infinity : -Infinity);
+        return dir === "asc" ? av - bv : bv - av;
+      }
+      switch (sortKey as FixedSortKey) {
         case "next":
           return (
             (a.nextEvent.daysUntil ?? 999) - (b.nextEvent.daysUntil ?? 999)
@@ -447,6 +468,26 @@ export function WatchlistTable({ rows }: { rows: WatchlistRow[] }) {
     return out;
   }, [grouped]);
 
+  // Union of metric keys across the currently-visible rows. Powers the
+  // dynamic "Sort by specific metric" section of the filter popover.
+  // Only metrics that are actually present on at least one visible row
+  // land in the list — no dead options. Frequency count sorts the most
+  // widely-populated metrics to the top.
+  const availableMetrics = useMemo(() => {
+    const freq = new Map<string, { count: number; label: string; unit: string | null }>();
+    for (const r of orderedRows) {
+      const rows = r.latestMetrics ?? {};
+      for (const [k, m] of Object.entries(rows)) {
+        const prev = freq.get(k);
+        if (prev) prev.count++;
+        else freq.set(k, { count: 1, label: m.label, unit: m.unit });
+      }
+    }
+    return [...freq.entries()]
+      .map(([key, v]) => ({ key, label: v.label, unit: v.unit, count: v.count }))
+      .sort((a, b) => b.count - a.count);
+  }, [orderedRows]);
+
   return (
     <div>
       <FilterBar
@@ -462,6 +503,7 @@ export function WatchlistTable({ rows }: { rows: WatchlistRow[] }) {
         setReportingSoon={setReportingSoon}
         showAllListings={showAllListings}
         setShowAllListings={setShowAllListings}
+        availableMetrics={availableMetrics}
       />
 
       <div
@@ -771,6 +813,7 @@ function FilterBar({
   setReportingSoon,
   showAllListings,
   setShowAllListings,
+  availableMetrics,
 }: {
   filter: Filter;
   setFilter: (f: Filter) => void;
@@ -784,6 +827,7 @@ function FilterBar({
   setReportingSoon: (v: boolean) => void;
   showAllListings: boolean;
   setShowAllListings: (v: boolean) => void;
+  availableMetrics: Array<{ key: string; label: string; unit: string | null; count: number }>;
 }) {
   return (
     <div className="flex flex-wrap items-center gap-2">
@@ -831,6 +875,7 @@ function FilterBar({
         setReportingSoon={setReportingSoon}
         showAllListings={showAllListings}
         setShowAllListings={setShowAllListings}
+        availableMetrics={availableMetrics}
       />
     </div>
   );

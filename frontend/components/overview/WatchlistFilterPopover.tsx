@@ -11,7 +11,7 @@ import * as Popover from "@radix-ui/react-popover";
 import { SlidersHorizontal, X } from "lucide-react";
 import clsx from "clsx";
 
-type SortKey =
+type FixedSortKey =
   | "cap"
   | "cap-asc"
   | "winners-1m"
@@ -29,10 +29,18 @@ type SortKey =
   | "reaction-loss-m1"
   | "freshness"
   | "name";
+type SortKey = FixedSortKey | `metric:${string}:${"value" | "surprise"}:${"desc" | "asc"}`;
 
 type Group = "flat" | "type" | "sector" | "industry" | "cap-industry";
 
 type TierFilter = "any" | "mega" | "large" | "mid" | "small" | "unknown";
+
+interface AvailableMetric {
+  key: string;
+  label: string;
+  unit: string | null;
+  count: number;
+}
 
 interface Props {
   sortKey: SortKey;
@@ -45,6 +53,7 @@ interface Props {
   setReportingSoon: (v: boolean) => void;
   showAllListings: boolean;
   setShowAllListings: (v: boolean) => void;
+  availableMetrics?: AvailableMetric[];
 }
 
 // Grouped sort options. Optgroups render as separators in the
@@ -131,7 +140,15 @@ export function WatchlistFilterPopover(props: Props) {
     tier, setTier,
     reportingSoon, setReportingSoon,
     showAllListings, setShowAllListings,
+    availableMetrics = [],
   } = props;
+
+  // Detect if current sort is a metric-sort so we can render the
+  // dynamic controls in that section instead of the fixed dropdown.
+  const isMetricSort = sortKey.startsWith("metric:");
+  const [metricKey, metricDim, metricDir] = isMetricSort
+    ? sortKey.split(":").slice(1)
+    : ["", "value", "desc"];
 
   // Show a small "active" dot when non-default filters are set.
   const isActive =
@@ -183,10 +200,13 @@ export function WatchlistFilterPopover(props: Props) {
               Sort by
             </label>
             <select
-              value={sortKey}
-              onChange={(e) => setSortKey(e.target.value as SortKey)}
+              value={isMetricSort ? "" : sortKey}
+              onChange={(e) => {
+                if (e.target.value) setSortKey(e.target.value as SortKey);
+              }}
               className="h-8 w-full rounded-button border border-bd bg-s2 px-2 text-[12.5px] text-tx"
             >
+              {isMetricSort ? <option value="">(sorting by specific metric ↓)</option> : null}
               {SORT_GROUPS.map((g) => (
                 <optgroup key={g.label} label={g.label}>
                   {g.options.map((s) => (
@@ -198,6 +218,68 @@ export function WatchlistFilterPopover(props: Props) {
               ))}
             </select>
           </div>
+
+          {/* Sort by a specific metric present on visible rows.
+              Dynamic — populated from availableMetrics prop by the
+              parent's useMemo over currently-filtered rows. Empty when
+              no rows have any metrics (rare — usually devs / ETFs
+              only). Two selectors + direction toggle. */}
+          {availableMetrics.length > 0 ? (
+            <div className="mb-4 rounded-[6px] border border-bd bg-s2/60 p-2.5">
+              <label className="mb-1.5 block font-mono text-[10px] uppercase tracking-[0.07em] text-tx-mid">
+                Or · sort by specific metric
+              </label>
+              <div className="flex gap-2">
+                <select
+                  value={metricKey}
+                  onChange={(e) => {
+                    const k = e.target.value;
+                    if (!k) return;
+                    setSortKey(`metric:${k}:${metricDim as "value" | "surprise"}:${metricDir as "desc" | "asc"}`);
+                  }}
+                  className="h-8 flex-1 rounded-button border border-bd bg-s1 px-2 text-[12px] text-tx"
+                >
+                  <option value="">— select metric —</option>
+                  {availableMetrics.map((m) => (
+                    <option key={m.key} value={m.key}>
+                      {m.label} ({m.count})
+                    </option>
+                  ))}
+                </select>
+              </div>
+              {isMetricSort && metricKey ? (
+                <div className="mt-2 flex gap-2">
+                  <select
+                    value={metricDim}
+                    onChange={(e) =>
+                      setSortKey(
+                        `metric:${metricKey}:${e.target.value as "value" | "surprise"}:${metricDir as "desc" | "asc"}`,
+                      )
+                    }
+                    className="h-8 flex-1 rounded-button border border-bd bg-s1 px-2 text-[12px] text-tx"
+                  >
+                    <option value="value">Value (actual reported)</option>
+                    <option value="surprise">Surprise vs estimate</option>
+                  </select>
+                  <select
+                    value={metricDir}
+                    onChange={(e) =>
+                      setSortKey(
+                        `metric:${metricKey}:${metricDim as "value" | "surprise"}:${e.target.value as "desc" | "asc"}`,
+                      )
+                    }
+                    className="h-8 flex-1 rounded-button border border-bd bg-s1 px-2 text-[12px] text-tx"
+                  >
+                    <option value="desc">High → low</option>
+                    <option value="asc">Low → high</option>
+                  </select>
+                </div>
+              ) : null}
+              <p className="mt-1.5 text-[10.5px] leading-[1.4] text-tx3">
+                Only metrics present on visible rows appear. The count is how many rows have this metric on their latest reported event.
+              </p>
+            </div>
+          ) : null}
 
           {/* Group */}
           <div className="mb-4">

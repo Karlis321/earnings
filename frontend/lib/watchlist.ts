@@ -85,6 +85,20 @@ export function buildWatchlistRows(
     const lastRevenueSurprise = latest?.metrics.find(
       (m) => /^revenues?_/.test(m.key ?? "") && m.surprisePct != null,
     )?.surprisePct ?? null;
+    // Per-metric snapshot for the "sort by specific metric" feature.
+    // Includes every metric that has an actual on the latest event.
+    const latestMetrics: WatchlistRow["latestMetrics"] = {};
+    if (latest) {
+      for (const m of latest.metrics ?? []) {
+        if (m.actual?.value == null || !m.key) continue;
+        latestMetrics[m.key] = {
+          value: m.actual.value,
+          unit: m.actual.unit ?? null,
+          surprisePct: m.surprisePct ?? null,
+          label: m.displayLabel ?? m.key,
+        };
+      }
+    }
 
     const freshness: Freshness =
       entity.securityType === "etf"
@@ -154,6 +168,7 @@ export function buildWatchlistRows(
       lastPeriod: latest?.period ?? null,
       lastSurprisePct: lastSurprise ?? null,
       lastRevenueSurprisePct: lastRevenueSurprise,
+      latestMetrics,
       guidanceMove,
       reactionSpark,
       reactionPending,

@@ -421,6 +421,19 @@ export interface WatchlistRow {
   // Revenue surprise on the latest reported event, if present with a
   // same-basis actual + estimate. Sort dimension on the watchlist.
   lastRevenueSurprisePct?: number | null;
+  // Per-metric snapshot from the latest reported event. Keyed by
+  // metric.key (e.g. "revenue_usd_m", "operating_income_usd_m",
+  // "capex_total"). Enables dynamic "sort by <specific metric>"
+  // options in the watchlist filter popover.
+  latestMetrics?: Record<
+    string,
+    {
+      value: number;
+      unit: string | null;
+      surprisePct: number | null;
+      label: string;
+    }
+  >;
   guidanceMove: GuidanceMove;
   reactionSpark: number[]; // 4 values, one per horizon, null-safe
   reactionPending: boolean;
