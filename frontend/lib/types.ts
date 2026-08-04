@@ -418,6 +418,9 @@ export interface WatchlistRow {
   };
   lastPeriod: string | null;
   lastSurprisePct: number | null;
+  // Revenue surprise on the latest reported event, if present with a
+  // same-basis actual + estimate. Sort dimension on the watchlist.
+  lastRevenueSurprisePct?: number | null;
   guidanceMove: GuidanceMove;
   reactionSpark: number[]; // 4 values, one per horizon, null-safe
   reactionPending: boolean;

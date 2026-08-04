@@ -124,7 +124,15 @@ type SortKey =
   | "losers-1m"
   | "next"
   | "surprise"
+  | "surprise-rev"
   | "reaction"
+  | "reaction-d3"
+  | "reaction-w1"
+  | "reaction-m1"
+  | "reaction-loss"
+  | "reaction-loss-d3"
+  | "reaction-loss-w1"
+  | "reaction-loss-m1"
   | "freshness"
   | "name";
 type Group = "flat" | "type" | "sector" | "industry" | "cap-industry";
@@ -286,10 +294,48 @@ export function WatchlistTable({ rows }: { rows: WatchlistRow[] }) {
           );
         case "surprise":
           return (b.lastSurprisePct ?? -Infinity) - (a.lastSurprisePct ?? -Infinity);
+        case "surprise-rev":
+          return (b.lastRevenueSurprisePct ?? -Infinity) - (a.lastRevenueSurprisePct ?? -Infinity);
         case "reaction": {
-          const av = a.reactionSpark[0] ?? 0;
-          const bv = b.reactionSpark[0] ?? 0;
+          // Default reaction sort = d1 winners
+          const av = a.reactionPoints?.find((p) => p.horizon === "d1")?.absReturn ?? -Infinity;
+          const bv = b.reactionPoints?.find((p) => p.horizon === "d1")?.absReturn ?? -Infinity;
           return bv - av;
+        }
+        case "reaction-d3": {
+          const av = a.reactionPoints?.find((p) => p.horizon === "d3")?.absReturn ?? -Infinity;
+          const bv = b.reactionPoints?.find((p) => p.horizon === "d3")?.absReturn ?? -Infinity;
+          return bv - av;
+        }
+        case "reaction-w1": {
+          const av = a.reactionPoints?.find((p) => p.horizon === "w1")?.absReturn ?? -Infinity;
+          const bv = b.reactionPoints?.find((p) => p.horizon === "w1")?.absReturn ?? -Infinity;
+          return bv - av;
+        }
+        case "reaction-m1": {
+          const av = a.reactionPoints?.find((p) => p.horizon === "m1")?.absReturn ?? -Infinity;
+          const bv = b.reactionPoints?.find((p) => p.horizon === "m1")?.absReturn ?? -Infinity;
+          return bv - av;
+        }
+        case "reaction-loss": {
+          const av = a.reactionPoints?.find((p) => p.horizon === "d1")?.absReturn ?? Infinity;
+          const bv = b.reactionPoints?.find((p) => p.horizon === "d1")?.absReturn ?? Infinity;
+          return av - bv;
+        }
+        case "reaction-loss-d3": {
+          const av = a.reactionPoints?.find((p) => p.horizon === "d3")?.absReturn ?? Infinity;
+          const bv = b.reactionPoints?.find((p) => p.horizon === "d3")?.absReturn ?? Infinity;
+          return av - bv;
+        }
+        case "reaction-loss-w1": {
+          const av = a.reactionPoints?.find((p) => p.horizon === "w1")?.absReturn ?? Infinity;
+          const bv = b.reactionPoints?.find((p) => p.horizon === "w1")?.absReturn ?? Infinity;
+          return av - bv;
+        }
+        case "reaction-loss-m1": {
+          const av = a.reactionPoints?.find((p) => p.horizon === "m1")?.absReturn ?? Infinity;
+          const bv = b.reactionPoints?.find((p) => p.horizon === "m1")?.absReturn ?? Infinity;
+          return av - bv;
         }
         case "freshness": {
           const order = { fresh: 0, overdue: 1, stale: 2, never: 3 } as const;

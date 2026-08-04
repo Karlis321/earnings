@@ -18,7 +18,15 @@ type SortKey =
   | "losers-1m"
   | "next"
   | "surprise"
+  | "surprise-rev"
   | "reaction"
+  | "reaction-d3"
+  | "reaction-w1"
+  | "reaction-m1"
+  | "reaction-loss"
+  | "reaction-loss-d3"
+  | "reaction-loss-w1"
+  | "reaction-loss-m1"
   | "freshness"
   | "name";
 
@@ -39,17 +47,65 @@ interface Props {
   setShowAllListings: (v: boolean) => void;
 }
 
-const SORT_OPTIONS: Array<{ id: SortKey; label: string }> = [
-  { id: "cap", label: "Market cap · high → low" },
-  { id: "cap-asc", label: "Market cap · low → high" },
-  { id: "winners-1m", label: "Biggest winners · 1M" },
-  { id: "losers-1m", label: "Biggest losers · 1M" },
-  { id: "next", label: "Next report date" },
-  { id: "surprise", label: "Last EPS surprise · latest quarter" },
-  { id: "reaction", label: "1-day reaction post-earnings" },
-  { id: "freshness", label: "Freshness" },
-  { id: "name", label: "Name (A → Z)" },
+// Grouped sort options. Optgroups render as separators in the
+// native <select>. Keys are the internal SortKey values.
+const SORT_GROUPS: Array<{
+  label: string;
+  options: Array<{ id: SortKey; label: string }>;
+}> = [
+  {
+    label: "By size",
+    options: [
+      { id: "cap", label: "Market cap · high → low" },
+      { id: "cap-asc", label: "Market cap · low → high" },
+    ],
+  },
+  {
+    label: "By price change (1-month sparkline)",
+    options: [
+      { id: "winners-1m", label: "Biggest winners · 1M price" },
+      { id: "losers-1m", label: "Biggest losers · 1M price" },
+    ],
+  },
+  {
+    label: "By reaction to last earnings (winners)",
+    options: [
+      { id: "reaction", label: "d1 · 1 trading day after report" },
+      { id: "reaction-d3", label: "d3 · 3 trading days after" },
+      { id: "reaction-w1", label: "w1 · 1 week after" },
+      { id: "reaction-m1", label: "m1 · 1 month after" },
+    ],
+  },
+  {
+    label: "By reaction to last earnings (losers)",
+    options: [
+      { id: "reaction-loss", label: "d1 · biggest 1-day drops" },
+      { id: "reaction-loss-d3", label: "d3 · biggest 3-day drops" },
+      { id: "reaction-loss-w1", label: "w1 · biggest 1-week drops" },
+      { id: "reaction-loss-m1", label: "m1 · biggest 1-month drops" },
+    ],
+  },
+  {
+    label: "By earnings surprise",
+    options: [
+      { id: "surprise", label: "EPS beat/miss · latest quarter" },
+      { id: "surprise-rev", label: "Revenue beat/miss · latest quarter" },
+    ],
+  },
+  {
+    label: "By calendar",
+    options: [
+      { id: "next", label: "Next report date · nearest first" },
+      { id: "freshness", label: "Data freshness" },
+    ],
+  },
+  {
+    label: "Alphabetical",
+    options: [{ id: "name", label: "Name (A → Z)" }],
+  },
 ];
+
+const SORT_OPTIONS = SORT_GROUPS.flatMap((g) => g.options);
 
 const GROUP_OPTIONS: Array<{ id: Group; label: string }> = [
   { id: "flat", label: "None (flat list)" },
@@ -120,7 +176,8 @@ export function WatchlistFilterPopover(props: Props) {
             </Popover.Close>
           </div>
 
-          {/* Sort */}
+          {/* Sort — grouped by category (size, price, reaction winners,
+              reaction losers, surprise, calendar, alphabetical). */}
           <div className="mb-4">
             <label className="mb-1 block font-mono text-[10px] uppercase tracking-[0.07em] text-tx-mid">
               Sort by
@@ -130,10 +187,14 @@ export function WatchlistFilterPopover(props: Props) {
               onChange={(e) => setSortKey(e.target.value as SortKey)}
               className="h-8 w-full rounded-button border border-bd bg-s2 px-2 text-[12.5px] text-tx"
             >
-              {SORT_OPTIONS.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.label}
-                </option>
+              {SORT_GROUPS.map((g) => (
+                <optgroup key={g.label} label={g.label}>
+                  {g.options.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.label}
+                    </option>
+                  ))}
+                </optgroup>
               ))}
             </select>
           </div>

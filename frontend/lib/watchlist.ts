@@ -79,6 +79,12 @@ export function buildWatchlistRows(
     const reactionPending = reactionPoints.some((p) => p.absReturn === null);
 
     const lastSurprise = latest?.metrics.find((m) => m.isHeadline)?.surprisePct;
+    // Revenue surprise on the latest event — match any revenue-family
+    // metric key (revenue_usd_m, revenue_*, revenues_*). Skips events
+    // where the same-basis rule cleared surprisePct.
+    const lastRevenueSurprise = latest?.metrics.find(
+      (m) => /^revenues?_/.test(m.key ?? "") && m.surprisePct != null,
+    )?.surprisePct ?? null;
 
     const freshness: Freshness =
       entity.securityType === "etf"
@@ -147,6 +153,7 @@ export function buildWatchlistRows(
       },
       lastPeriod: latest?.period ?? null,
       lastSurprisePct: lastSurprise ?? null,
+      lastRevenueSurprisePct: lastRevenueSurprise,
       guidanceMove,
       reactionSpark,
       reactionPending,
