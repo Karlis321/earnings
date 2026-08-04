@@ -9,10 +9,11 @@ name: refresh-data
 # job budget below.
 #
 # Scheduling:
-#   05:00 UTC weekdays, 90 min BEFORE the /sweep workflow at 06:30
+#   03:00 UTC weekdays, 90 min BEFORE the /sweep workflow at 04:30
 #   (which reads the shards this workflow just refreshed). Bumped
-#   from 06:00 → 05:00 on 2026-08-03 so /sweep has time to consume a
-#   fully-refreshed shard set before Karlis's morning check.
+#   from 06:00 → 05:00 on 2026-08-03 and then to 03:00 UTC (05:00
+#   Riga local, morning coffee) so summaries + fresh data are ready
+#   before Karlis opens the dashboard.
 #
 # NOTE: The schedule line is COMMENTED OUT for the initial commit —
 # GitHub Actions minutes may still be exhausted from a prior run.
@@ -34,7 +35,7 @@ on:
   # runs everything locally inside the Actions runner, no Vercel
   # 300s ceiling, no RSS fanout duplication across slices.
   schedule:
-    - cron: "0 5 * * 1-5"
+    - cron: "0 3 * * 1-5"
   workflow_dispatch:
     inputs:
       note:
