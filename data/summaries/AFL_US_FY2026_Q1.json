@@ -1,0 +1,38 @@
+{
+  "ticker": "AFL US",
+  "period": "FY2026 Q1",
+  "reported_at": "2026-04-29",
+  "generated_at": "2026-08-04T16:13:49Z",
+  "depth": "filing",
+  "headline": "Profit rebounds on easy comps while core earnings hold flat",
+  "kpis": [
+    { "label": "Revenue", "value": "$4,346M", "delta": "-11.1%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Revenue", "value": "$4,346M", "delta": "+27.9%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EBIT", "value": "$1,285M", "delta": "-21.3%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "EBIT", "value": "$1,285M", "delta": "+559.0%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Pretax income", "value": "$1,225M", "delta": "+744.8%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Net income", "value": "$1,019M", "delta": "-26.1%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Net income", "value": "$1,019M", "delta": "+3413.8%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EPS basic", "value": "$1.99", "delta": "-24.9%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "EPS basic", "value": "$1.99", "delta": "+3880.0%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EPS diluted", "value": "$1.98", "delta": "-25.0%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "EPS diluted", "value": "$1.98", "delta": "+3860.0%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Operating cash flow", "value": "$968M", "delta": "+64.3%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Total cash", "value": "$5,654M", "delta": "-9.5%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Total cash", "value": "$5,654M", "delta": "+8.1%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Shareholders' equity", "value": "$29,961M", "delta": "+1.6%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Shareholders' equity", "value": "$29,961M", "delta": "+13.8%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Weighted diluted shares", "value": "514.8M", "delta": "-5.9%", "delta_basis": "y/y", "direction": "down" }
+  ],
+  "summary_short": "Aflac's Q1 2026 net earnings jumped to $1,019M ($1.98 diluted EPS) from just $29M a year ago as last year's large net investment losses did not recur, while total revenue rose 27.9% y/y to $4,346M; adjusted earnings, which strip out investment gains/losses, were roughly flat at $901M vs $906M a year ago.",
+  "summary_long": "GAAP net earnings surged to $1.0 billion ($1.98/diluted share) from $29 million a year earlier, driven almost entirely by the absence of 2025's large net investment losses (Q1 2025 included $963M of investment losses vs a $49M gain this quarter); adjusted earnings, which exclude investment gains/losses, were roughly flat at $901M (-0.6% y/y) as Aflac Japan's pretax adjusted earnings rose 8.3% (yen basis) on favorable benefits while Aflac U.S. pretax adjusted earnings grew 1.4%. The yen averaged 2.8% weaker y/y, trimming adjusted EPS by $0.02. Shareholders' equity rose to $30.0 billion; the company returned $1.3 billion to shareholders ($1.0B buyback, $315M dividends) and raised its Q2 dividend 5.2% to $0.61/share. No forward guidance was issued.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/4977/000162828026028396/aflex991-q12026new.htm",
+  "confidence_notes": "REGENERATION: this run was invoked in force-regenerate mode with the Step-0 'already exists' guard explicitly skipped per instructions; no summary file was actually present on disk for AFL US FY2026 Q1 prior to this run (summaryExists=false per the resolver), so this write is a fresh compose, not a true overwrite of prior content. Ledger notes: (1) 'EBIT' ($1,285M, Yahoo fundamentals-timeseries) and 'Pretax income' ($1,225M, SEC 10-Q 'Earnings before income taxes') are distinct GAAP lines -- EBIT is a Yahoo-derived figure that differs from the filed pretax-income line by roughly the period's interest expense; both are reported as separate KPI rows, not conflated. (2) GAAP net earnings and EPS y/y comparisons (+3413.8% net income, +3860.0% diluted EPS) are driven almost entirely by the absence of Q1 2025's $963M net investment loss, not a change in underlying insurance operations -- adjusted earnings, which strip out investment gains/losses, were roughly flat at $901M vs $906M a year ago (-0.6%), captured separately via Step 3b's extendedMetrics (eps_non_gaap = $1.75). (3) The release declares a Q2 2026 dividend of $0.61/share (unchanged from Q1, +5.2% y/y) but gives no numeric range/target for a future period's revenue, EPS, or production -- this is a declared dividend action, not forward guidance, so no guidance[] entries were written to the shard. (4) Aflac's sectorTags are 'financials'/'financial-services' but the registry's financials-sector extended metrics (NIM, CET1 ratio, ROTCE, net charge-off ratio, deposits) are bank-specific and not disclosed by this life/health insurer -- none were extracted; only universal-set hits (quarterly buyback, dividend per share, non-GAAP EPS) populate extendedMetrics.",
+  "drivers": [
+    { "metric": "Net income", "direction": "up", "explanation": "Q1 2025 included $963M of net investment losses (mainly derivative and CECL-driven) versus a $49M net investment gain this quarter, per the release's own reconciliation; this swing accounts for nearly all of the y/y net-earnings jump.", "basis": "company-disclosed" },
+    { "metric": "Revenue", "direction": "up", "explanation": "Total revenues rose y/y primarily on the swing from net investment losses to gains embedded in GAAP revenue; adjusted (ex-investment-gains) revenue actually declined, per the segment tables.", "basis": "derived-arithmetic" },
+    { "metric": "Pretax income", "direction": "up", "explanation": "Aflac Japan pretax adjusted earnings rose 8.3% (yen basis) on favorable benefits experience, while Aflac U.S. pretax adjusted earnings grew 1.4% on improved sales and persistency, per the release's segment discussion.", "basis": "company-disclosed" },
+    { "metric": "EPS diluted", "direction": "up", "explanation": "A lower weighted-average diluted share count (514.8M vs 546.9M y/y), reflecting continued buybacks, added to the per-share gain beyond the rise in total net earnings.", "basis": "derived-arithmetic" },
+    { "metric": "overall", "direction": "flat", "explanation": "Adjusted earnings per diluted share, which exclude investment gains/losses, rose only 5.4% to $1.75 as a 2.8% weaker yen trimmed adjusted EPS by $0.02; the release issued no new forward guidance.", "basis": "company-disclosed" }
+  ]
+}
