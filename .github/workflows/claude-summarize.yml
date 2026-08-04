@@ -68,13 +68,20 @@ jobs:
           claude_args: >-
             --max-turns 30 --allowedTools "Bash(node scripts/*)" "Bash(node scripts/backfills/*)" "Bash(node scripts/dev-tests/*)" "Bash(git *)" "Bash(ls *)" "Bash(grep *)" Read Write Edit WebSearch WebFetch
 
-      - name: Verify a summary was produced or explicitly skipped
+      - name: Report summary outcome
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          # Informational only — don't fail the workflow on zero
+          # commits. /sweep legitimately skips when no candidate has
+          # reported since the last summary (most days: 0-2 commits;
+          # peak earnings weeks: 10-30). Actual failures (auth token
+          # revoked, action crash, prompt malformed) surface as a
+          # failure on the "Run Claude Code" step itself and fail
+          # the workflow there. Keep this step as a friendly log.
           NEW=$(gh api "repos/${{ github.repository }}/commits?path=data/summaries&since=$(date -u -d '30 minutes ago' +%Y-%m-%dT%H:%M:%SZ)" --jq 'length')
-          if [ "$NEW" -eq 0 ]; then
-            echo "::error::Run completed but no summary commit landed in data/summaries/"
-            exit 1
+          if [ "$NEW" -gt 0 ]; then
+            echo "✓ $NEW summary commit(s) landed in the last 30 minutes."
+          else
+            echo "ℹ️ No summary commits landed — Claude either had no due candidates or explicitly skipped. See the Run Claude Code step output above."
           fi
-          echo "Verified: $NEW summary commit(s) in the last 30 minutes."
