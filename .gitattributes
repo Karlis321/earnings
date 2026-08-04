@@ -1,0 +1,27 @@
+# Enforce LF on all text files to prevent phantom CRLF diffs on Windows.
+# Without this, 1,600+ shards show as "modified" on `git status` even
+# though their content is unchanged — Windows autocrlf converts on
+# read but the working-copy timestamp still triggers a re-check.
+* text=auto eol=lf
+
+# Explicit for the shapes that matter here.
+*.json      text eol=lf
+*.mjs       text eol=lf
+*.js        text eol=lf
+*.ts        text eol=lf
+*.tsx       text eol=lf
+*.md        text eol=lf
+*.yml       text eol=lf
+*.yaml      text eol=lf
+*.html      text eol=lf
+*.css       text eol=lf
+
+# Binary — never touch line endings.
+*.png       binary
+*.jpg       binary
+*.jpeg      binary
+*.gif       binary
+*.ico       binary
+*.pdf       binary
+*.woff      binary
+*.woff2     binary

@@ -22,6 +22,7 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { execFileSync } from "node:child_process";
+import { readFileSync } from "node:fs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -40,9 +41,31 @@ function run(label, script) {
 
 const t0 = Date.now();
 const results = [];
+// Actually inspect pipeline-report.json.status after the script runs.
+// The script exits 0 even when status="degraded" (invariant violations),
+// so gating only on exit code hides real regressions. Read the file it
+// wrote and fail loudly if status != "ok".
+function pipelineCheckAndInspect() {
+  const ok = run("Pipeline check", "run-pipeline-check.mjs");
+  if (!ok) return false;
+  try {
+    const report = JSON.parse(
+      readFileSync(path.join(__dirname, "..", "data", "pipeline-report.json"), "utf-8"),
+    );
+    if (report.status !== "ok") {
+      console.error(`✗ pipeline-report status="${report.status}" — reasons:`);
+      for (const r of report.reasons ?? []) console.error(`    · ${r}`);
+      return false;
+    }
+    return true;
+  } catch (e) {
+    console.error(`✗ failed to read pipeline-report.json: ${e.message}`);
+    return false;
+  }
+}
 results.push({
   label: "pipeline-report status=ok",
-  ok: run("Pipeline check", "run-pipeline-check.mjs"),
+  ok: pipelineCheckAndInspect(),
 });
 results.push({
   label: "cross-listing invariant fires + clears",
