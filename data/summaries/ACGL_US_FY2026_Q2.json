@@ -1,0 +1,32 @@
+{
+  "ticker": "ACGL US",
+  "period": "FY2026 Q2",
+  "reported_at": "2026-07-28",
+  "generated_at": "2026-08-04T00:00:00.000Z",
+  "depth": "filing",
+  "headline": "Profit dips on softer underwriting, buybacks continue",
+  "kpis": [
+    { "label": "EPS (basic)", "value": "$3.05", "delta": "-7.6%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "EPS (diluted)", "value": "$3.00", "delta": "-7.1%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Net income avail. to common shareholders", "value": "$1,047M", "delta": "-14.7%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Operating EPS (non-GAAP)", "value": "$2.56", "delta": "-0.8%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Combined ratio", "value": "83.5%", "delta": "+2.3ppt", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Combined ratio ex-cat/PYD", "value": "82.5%", "delta": "+1.6ppt", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Net premiums earned", "value": "$3,985M", "delta": "-8.1%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Book value per share", "value": "$68.04", "delta": "+2.8%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Share repurchases", "value": "$1.2B", "delta": null, "delta_basis": "none", "direction": "n/a" }
+  ],
+  "summary_short": "Arch Capital reported Q2 FY2026 net income available to common shareholders of $1,047M ($3.00 diluted EPS), down 14.7% y/y as net realized losses and a higher tax expense offset stable underwriting; the combined ratio widened to 83.5% (+2.3ppt y/y) while book value per share rose 2.8% q/q to $68.04.",
+  "summary_long": "Q2 net income fell 14.7% y/y to $1,047M ($3.00 diluted EPS) as net realized losses of $17M swung from $229M in gains a year ago, offsetting higher equity-method income. Operating EPS fell to $2.56 (-0.8% y/y). Underwriting income fell 19.7% to $657M; the combined ratio widened to 83.5% (+2.3ppt y/y) on higher catastrophe losses (7.6pts vs 2.9pts) in Insurance and lower favorable reserve development, partly offset by stronger Reinsurance-segment development. Net premiums earned fell 8.1% y/y on non-renewals across Insurance and Reinsurance. Book value per share rose 2.8% q/q to $68.04; Arch repurchased $1.2B of shares. No forward guidance was issued.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/947484/000094748426000118/ex-991release63026.htm",
+  "confidence_notes": "REGENERATION: this run was executed in explicit force-regenerate mode per instruction, bypassing the Step-0 already-exists guard; no ACGL_US_FY2026_Q2.json summary actually existed on disk prior to this run (resolver reported summaryExists=false), so there was nothing to overwrite, but all figures below were derived fresh from the resolver's shard KPIs and the primary EX-99.1 press release. Source-ladder note: the event's stored sourceLink (Rung 1, accession 0000947484-26-000114, filed 2026-06-16) pointed to an unrelated 8-K about senior-notes tender offers, not the earnings release; the actual Q2 2026 results 8-K (items 2.02/9.01, accession 0000947484-26-000118, filed 2026-07-28, exhibit ex-991release63026.htm) was located instead via the EDGAR CIK filing index (Rung 3) -- the stored sourceLink on the shard should be corrected in a future backfill pass. Ledger note: shard eps_usd (basic, Yahoo fundamentals-timeseries, $3.05) and eps_diluted_usd ($3.00) both reconcile with the press release's own figures (diluted EPS $3.00 vs $3.23 PY; the release states all EPS figures are on a diluted basis); no surprisePct/consensus estimate is stored on this event so no cross-basis clearance applies. No company-issued forward guidance ranges appear in the release (typical for this issuer); guidance array intentionally left empty.",
+  "drivers": [
+    { "metric": "EPS (diluted)", "direction": "down", "explanation": "Diluted EPS fell as $17M of net realized losses (vs $229M of gains in Q2 2025) and a smaller FX/tax benefit outweighed underwriting and higher equity-method income.", "basis": "company-disclosed" },
+    { "metric": "Net income avail. to common shareholders", "direction": "down", "explanation": "Net income fell on the same net realized loss swing and higher income tax expense, per the company's own GAAP-to-operating reconciliation table.", "basis": "company-disclosed" },
+    { "metric": "Operating EPS (non-GAAP)", "direction": "down", "explanation": "Operating income fell 8.8% to $893M on lower underwriting income, but the per-share decline was largely cushioned by an 8.2% reduction in diluted share count from buybacks.", "basis": "derived-arithmetic" },
+    { "metric": "Combined ratio", "direction": "up", "explanation": "Combined ratio widened as the loss ratio rose 2.0pts on higher current-year catastrophe activity in Insurance (7.6pts vs 2.9pts) and smaller favorable reserve development, partly offset by stronger Reinsurance-segment results.", "basis": "company-disclosed" },
+    { "metric": "Net premiums earned", "direction": "down", "explanation": "Premiums earned fell on lower net premiums written in Insurance (MCE Acquisition-related non-renewals) and Reinsurance (non-renewals, share reductions, increased retrocessions) over recent quarters.", "basis": "company-disclosed" },
+    { "metric": "Book value per share", "direction": "up", "explanation": "Book value per share rose as retained earnings and other comprehensive income additions outpaced the quarter's $1.2B of share repurchases.", "basis": "derived-arithmetic" },
+    { "metric": "overall", "direction": "down", "explanation": "CEO cited solid underwriting performance across all three segments and Arch's diversified platform; no forward guidance was issued in the release.", "basis": "company-disclosed" }
+  ]
+}
