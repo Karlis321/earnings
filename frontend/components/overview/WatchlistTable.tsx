@@ -141,7 +141,14 @@ type FixedSortKey =
   | "freshness"
   | "name";
 type SortKey = FixedSortKey | `metric:${string}:${"value" | "surprise"}:${"desc" | "asc"}`;
-type Group = "flat" | "type" | "sector" | "industry" | "cap-industry";
+type Group =
+  | "flat"
+  | "type"
+  | "sector"
+  | "industry"
+  | "cap-industry"
+  | "cap-band-desc"
+  | "cap-band-asc";
 const CAP_TIER_ORDER: Array<"mega" | "large" | "mid" | "small" | "unknown"> = [
   "mega",
   "large",
@@ -408,6 +415,39 @@ export function WatchlistTable({ rows }: { rows: WatchlistRow[] }) {
     // in fixed order (mega→large→mid→small→unknown); industries within
     // a band sort by row count desc so the biggest sub-groups surface
     // first.
+    // "cap-band-desc" / "cap-band-asc" — group by cap tier only (no
+    // industry sub-grouping). Within each band, rows sort by market cap
+    // matching the band direction (mega group is cap-desc; nano group
+    // is cap-asc when direction=asc).
+    if (group === "cap-band-desc" || group === "cap-band-asc") {
+      const byBand = new Map<string, WatchlistRow[]>();
+      for (const r of filtered) {
+        const band = (r.entity.capTier ?? "unknown") as string;
+        if (!byBand.has(band)) byBand.set(band, []);
+        byBand.get(band)!.push(r);
+      }
+      const order = group === "cap-band-asc"
+        ? [...CAP_TIER_ORDER].reverse()
+        : CAP_TIER_ORDER;
+      const out: Array<{ id: string; label: string; rows: WatchlistRow[] }> = [];
+      for (const band of order) {
+        const rows = byBand.get(band);
+        if (!rows || rows.length === 0) continue;
+        // Sort rows within band by cap in the group's direction.
+        const sorted = rows.slice().sort((a, b) =>
+          group === "cap-band-asc"
+            ? (a.entity.marketCapUsd ?? 0) - (b.entity.marketCapUsd ?? 0)
+            : (b.entity.marketCapUsd ?? 0) - (a.entity.marketCapUsd ?? 0),
+        );
+        out.push({
+          id: `band::${band}`,
+          label: `${CAP_TIER_LABEL[band] ?? band} · ${rows.length}`,
+          rows: sorted,
+        });
+      }
+      return out;
+    }
+
     if (group === "cap-industry") {
       const byBand = new Map<string, Map<string, WatchlistRow[]>>();
       for (const r of filtered) {

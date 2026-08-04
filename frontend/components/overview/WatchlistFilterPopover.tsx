@@ -31,7 +31,14 @@ type FixedSortKey =
   | "name";
 type SortKey = FixedSortKey | `metric:${string}:${"value" | "surprise"}:${"desc" | "asc"}`;
 
-type Group = "flat" | "type" | "sector" | "industry" | "cap-industry";
+type Group =
+  | "flat"
+  | "type"
+  | "sector"
+  | "industry"
+  | "cap-industry"
+  | "cap-band-desc"
+  | "cap-band-asc";
 
 type TierFilter = "any" | "mega" | "large" | "mid" | "small" | "unknown";
 
@@ -118,6 +125,8 @@ const SORT_OPTIONS = SORT_GROUPS.flatMap((g) => g.options);
 
 const GROUP_OPTIONS: Array<{ id: Group; label: string }> = [
   { id: "flat", label: "None (flat list)" },
+  { id: "cap-band-desc", label: "By cap band · high → low" },
+  { id: "cap-band-asc", label: "By cap band · low → high" },
   { id: "type", label: "By security type" },
   { id: "sector", label: "By sector" },
   { id: "industry", label: "By industry" },
