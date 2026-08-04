@@ -33,12 +33,13 @@ const ROOT = path.resolve(__dirname, "..");
 const SCOPE = process.env.SCOPE === "indexed" ? "indexed" : "all";
 const NOFILTER = process.env.NOFILTER === "1";
 const RECENT_DAYS = Number(process.env.RECENT_DAYS ?? 5);
-// Claude Code's --max-turns 30 caps how many tickers a single /sweep
-// run can meaningfully iterate through. 20 leaves headroom for the
-// per-ticker /earnings sub-flow. Freshest events land first so the
-// most-recently-reported get summarized first; any overflow gets
+// Claude Code's --max-turns 100 (bumped from 30 on 2026-08-04) caps
+// how many tickers a single /sweep run can process. 30 leaves headroom:
+// ~1 setup turn + 30 resolve calls + (0.25 * 30 * 8 turns/summary) ≈
+// 91 turns worst-case, well under 100. Freshest events land first so
+// the most-recently-reported get summarized first; any overflow gets
 // picked up on tomorrow's sweep.
-const LIMIT = Number(process.env.LIMIT ?? 20);
+const LIMIT = Number(process.env.LIMIT ?? 30);
 
 function todayIso() {
   return new Date().toISOString().slice(0, 10);
