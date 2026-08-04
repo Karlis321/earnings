@@ -15,6 +15,16 @@ name: regenerate-summaries
 on:
   workflow_dispatch:
     inputs:
+      source:
+        description: "Which pool to iterate."
+        required: true
+        type: choice
+        options:
+          - summaries
+          - sp500
+          - r1000
+          - covered
+        default: sp500
       delay_seconds:
         description: "Delay per ticker in seconds. Default 900 (15 min) matches typical /earnings run duration."
         required: false
@@ -51,6 +61,7 @@ jobs:
       - name: Fire regeneration batch
         env:
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          SOURCE: ${{ github.event.inputs.source }}
           DELAY_MS: ${{ github.event.inputs.delay_seconds && format('{0}000', github.event.inputs.delay_seconds) || '900000' }}
           START_AT: ${{ github.event.inputs.start_at }}
           LIMIT: ${{ github.event.inputs.limit }}
