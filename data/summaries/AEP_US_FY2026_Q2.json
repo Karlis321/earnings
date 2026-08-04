@@ -1,0 +1,37 @@
+{
+  "ticker": "AEP US",
+  "period": "FY2026 Q2",
+  "reported_at": "2026-07-30",
+  "generated_at": "2026-08-04T00:00:00.000Z",
+  "depth": "filing",
+  "headline": "Profit falls on tough comparisons, but guidance rises",
+  "kpis": [
+    { "label": "Revenue", "value": "$5,445M", "delta": "-9.6%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Revenue", "value": "$5,445M", "delta": "+7.0%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Operating income", "value": "$1,247M", "delta": "-8.3%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Operating income", "value": "$1,247M", "delta": "-10.9%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "EBIT", "value": "$1,355M", "delta": "-8.1%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "EBIT", "value": "$1,355M", "delta": "-10.0%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Gross profit", "value": "$3,398M", "delta": "-2.7%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Gross profit", "value": "$3,398M", "delta": "+7.7%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Net income", "value": "$713M", "delta": "-18.4%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Net income", "value": "$713M", "delta": "-41.8%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "EBITDA", "value": "$2,265M", "delta": "-4.9%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "EBITDA", "value": "$2,265M", "delta": "-4.0%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "EPS basic", "value": "$1.31", "delta": "-18.6%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "EPS basic", "value": "$1.31", "delta": "-42.8%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "EPS diluted", "value": "$1.30", "delta": "-18.8%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "EPS diluted", "value": "$1.30", "delta": "-43.2%", "delta_basis": "y/y", "direction": "down" }
+  ],
+  "summary_short": "AEP's Q2 2026 GAAP EPS fell to $1.31 from $2.29 a year ago (net income $713M vs $1,226M) mainly on the absence of large prior-year one-off items, even as revenue rose 7.0% y/y to $5,445 million; the company raised full-year 2026 operating EPS guidance to $6.25-$6.55 from $6.15-$6.45.",
+  "summary_long": "Second-quarter GAAP earnings fell to $713 million ($1.31/share) from $1,226 million ($2.29/share) a year earlier, primarily reflecting the absence of two 2025 items: a transmission minority-interest sale benefit at AEP Transmission Holdco and a FERC NOLC order gain. Operating (non-GAAP) earnings were roughly flat at $742 million ($1.36/share) versus $766 million ($1.43/share), as new item disallowances (WVPSC order, Pirkey Plant, Unified Tracker Mechanism) and wholesale customer contract agreements only partly offset segment growth. Revenue rose 7.0% y/y to $5,445 million on higher commercial and industrial demand. AEP raised full-year 2026 operating EPS guidance to $6.25-$6.55 from $6.15-$6.45, citing strong first-half performance, and reaffirmed its 7%-9% long-term annual growth rate.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/4904/000000490426000055/a2q20268kpressreleaseex991.htm",
+  "confidence_notes": "REGENERATION: this run was invoked in force-regenerate mode with the Step-0 'already exists' guard explicitly skipped per instructions; no summary file was actually present on disk for AEP US FY2026 Q2 prior to this run (summaryExists=false per the resolver), so this write is a fresh compose, not a true overwrite of prior content. Ledger notes: (1) The shard's 'Operating income' KPI ($1,247M, GAAP income-statement line) is a distinct figure from AEP's own non-GAAP 'Operating Earnings' measure ($742M / $1.36 per share) disclosed in the release -- these are not the same metric and should not be conflated; the KPI rows above use the SEC/Yahoo-sourced GAAP operating-income line, while the non-GAAP operating EPS figure is discussed only in prose and captured separately via Step 3b's extendedMetrics (eps_non_gaap = $1.36). (2) GAAP net income and EPS declined sharply y/y (-41.8% / -42.8%) almost entirely due to two large one-off prior-year items called out in the release (2025 transmission minority-interest sale gain at AEP Transmission Holdco and a FERC NOLC order benefit), not a deterioration in underlying operations -- operating (non-GAAP) EPS was down only $0.07 y/y. (3) Full-year 2026 operating EPS guidance was explicitly raised to $6.25-$6.55 per share from a prior $6.15-$6.45 range (the release's own 'raising' language); this has been written to the event's guidance[] array on the shard with move='raised'. (4) The release gives no quarterly capex, buyback, dividend-per-share, or next-quarter guidance figures, so Step 3b's extendedMetrics extraction against the universal set yielded only the one confident hit (non-GAAP operating EPS); AEP's sectorTag 'utilities' has no dedicated entry in the sector-specific extended-metrics registry.",
+  "drivers": [
+    { "metric": "Net income", "direction": "down", "explanation": "GAAP earnings fell y/y mainly because 2025 included a transmission minority-interest sale gain and a FERC NOLC order benefit that did not recur in 2026, per the release's own reconciliation tables.", "basis": "company-disclosed" },
+    { "metric": "Revenue", "direction": "up", "explanation": "Total retail and wholesale KWh sales grew 4.4% (vertically integrated) and 10.3% (T&D) y/y, driven by strong commercial and industrial load growth including data-center and hyperscaler demand.", "basis": "company-disclosed" },
+    { "metric": "EBIT", "direction": "down", "explanation": "Segment GAAP earnings show AEP Transmission Holdco falling to $225M from $578M y/y, the single largest driver of the consolidated EBIT decline, tied to the non-recurring 2025 items noted above.", "basis": "derived-arithmetic" },
+    { "metric": "EPS diluted", "direction": "down", "explanation": "A higher weighted-average share count (544M vs 534M shares y/y) modestly compounded the per-share decline beyond the drop in total net income.", "basis": "derived-arithmetic" },
+    { "metric": "overall", "direction": "up", "explanation": "AEP raised FY2026 operating EPS guidance to $6.25-$6.55 from $6.15-$6.45 on strong first-half results, reaffirmed its 7%-9% long-term growth rate, and highlighted 69 GW of contracted load growth through 2030 and ~13 GW of secured gas turbine capacity.", "basis": "company-disclosed" }
+  ]
+}
