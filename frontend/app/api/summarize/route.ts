@@ -115,12 +115,16 @@ export async function POST(req: NextRequest) {
     );
     if (canon) canonical = canon;
   }
+  // Covered-tier gate — v1 mode restricts dispatches to the hand-
+  // picked 17. Skipped when force=true (regenerate flow): if a user
+  // clicked "Regenerate" on a summary that already exists, we trust
+  // the ticker is intentional even if it's outside the covered tier.
   const covered = coveredTickers();
-  if (covered && !covered.has(canonical.ticker) && !covered.has(ticker)) {
+  if (!force && covered && !covered.has(canonical.ticker) && !covered.has(ticker)) {
     return NextResponse.json(
       {
         error: "not-covered",
-        message: `Ticker "${canonical.ticker}" isn't in the covered tier — /api/summarize is covered-only for v1`,
+        message: `Ticker "${canonical.ticker}" isn't in the covered tier — /api/summarize is covered-only for v1 (pass force:true to bypass)`,
       },
       { status: 403 },
     );
