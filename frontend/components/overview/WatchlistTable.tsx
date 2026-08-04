@@ -165,6 +165,49 @@ const CAP_TIER_LABEL: Record<string, string> = {
 };
 type TierFilter = "any" | "mega" | "large" | "mid" | "small" | "unknown";
 
+// Per-sector headline metric priority. When columnMetric === "__auto__",
+// each row picks the first metric from ITS sector's list that has data.
+// Falls back to eps_usd → revenue_usd_m if no sector-specific match.
+// Sector tags come from entity.sectorTags; the first tag wins.
+const SECTOR_HEADLINE_METRICS: Record<string, string[]> = {
+  mining: ["aisc_gold", "c1_cash_cost", "production_cu_kt", "production_au_koz"],
+  financials: ["nim", "rotce", "cet1_ratio", "efficiency_ratio"],
+  software: ["arr", "ndr", "crpo", "rpo_total"],
+  technology: ["arr", "ndr", "crpo"],
+  "consumer-cyclical": ["comp_sales_pct", "ecomm_growth_pct"],
+  "consumer-defensive": ["comp_sales_pct", "organic_sales_pct"],
+  energy: ["production_boed", "realized_price_bbl"],
+  "oil-gas": ["production_boed", "realized_price_bbl"],
+  healthcare: ["gross_margin_pct", "rd_pct_revenue"],
+  industrials: ["backlog_usd", "book_to_bill"],
+  "real-estate": ["nav_per_share", "occupancy_pct", "same_store_noi_pct"],
+  utilities: ["rate_base_growth_pct"],
+};
+const DEFAULT_HEADLINE_FALLBACK = ["eps_usd", "revenue_usd_m"];
+
+/** Resolve the headline metric key for a row given its sectorTags. */
+function pickRowHeadlineMetric(
+  row: WatchlistRow,
+): { key: string; label: string; value: number; unit: string | null; surprisePct: number | null } | null {
+  const metrics = row.latestMetrics ?? {};
+  const tags = row.entity.sectorTags ?? [];
+  // Try sector-specific priorities first.
+  for (const tag of tags) {
+    const prio = SECTOR_HEADLINE_METRICS[tag];
+    if (!prio) continue;
+    for (const k of prio) {
+      const m = metrics[k];
+      if (m?.value != null) return { key: k, ...m };
+    }
+  }
+  // Fallback to standard.
+  for (const k of DEFAULT_HEADLINE_FALLBACK) {
+    const m = metrics[k];
+    if (m?.value != null) return { key: k, ...m };
+  }
+  return null;
+}
+
 export function WatchlistTable({ rows }: { rows: WatchlistRow[] }) {
   const router = useRouter();
   const [filter, setFilter] = useState<Filter>("portfolio");
@@ -188,9 +231,15 @@ export function WatchlistTable({ rows }: { rows: WatchlistRow[] }) {
   // happens not to be canonical of its company group.
   const [showAllListings, setShowAllListings] = useState(false);
   // Metric-column selector. The "Industry-specific metric" column shows
-  // this metric's surprise% (or value, if no surprise) per row. Changing
-  // it also auto-sorts the list by the new metric's surprise desc.
-  const [columnMetric, setColumnMetric] = useState<string>("eps_usd");
+  // this metric's surprise% (or value, if no surprise) per row.
+  //
+  // Special value "__auto__" = per-row sector-picked metric. Each row
+  // picks its own headline via SECTOR_HEADLINE_METRICS priority list
+  // (mining → AISC / C1 / production; financials → NIM / ROTCE;
+  // software → ARR / NDR; etc.), falling back to EPS surprise when no
+  // sector-specific data is present. This is the default so users see
+  // industry-relevant metrics per row out of the box.
+  const [columnMetric, setColumnMetric] = useState<string>("__auto__");
   // Sibling-listing counts per company — used for the "+N listings"
   // badge on canonical rows and to expose the hidden members via title.
   const listingsByCompany = useMemo(() => {
@@ -513,23 +562,44 @@ export function WatchlistTable({ rows }: { rows: WatchlistRow[] }) {
   }, [grouped]);
 
   // Union of metric keys across the currently-visible rows. Powers the
-  // dynamic "Sort by specific metric" section of the filter popover.
-  // Only metrics that are actually present on at least one visible row
-  // land in the list — no dead options. Frequency count sorts the most
-  // widely-populated metrics to the top.
+  // dynamic "Sort by specific metric" section of the filter popover
+  // AND the column-header metric selector. For every metric we track
+  // both raw-value count AND surprise%-populated count — the header
+  // selector hides options that have zero surprise%-populated rows,
+  // since sorting by surprise on those would just null-out everyone.
   const availableMetrics = useMemo(() => {
-    const freq = new Map<string, { count: number; label: string; unit: string | null }>();
+    const freq = new Map<string, {
+      count: number;
+      surpriseCount: number;
+      label: string;
+      unit: string | null;
+    }>();
     for (const r of orderedRows) {
       const rows = r.latestMetrics ?? {};
       for (const [k, m] of Object.entries(rows)) {
         const prev = freq.get(k);
-        if (prev) prev.count++;
-        else freq.set(k, { count: 1, label: m.label, unit: m.unit });
+        if (prev) {
+          prev.count++;
+          if (m.surprisePct != null) prev.surpriseCount++;
+        } else {
+          freq.set(k, {
+            count: 1,
+            surpriseCount: m.surprisePct != null ? 1 : 0,
+            label: m.label,
+            unit: m.unit,
+          });
+        }
       }
     }
     return [...freq.entries()]
-      .map(([key, v]) => ({ key, label: v.label, unit: v.unit, count: v.count }))
-      .sort((a, b) => b.count - a.count);
+      .map(([key, v]) => ({
+        key,
+        label: v.label,
+        unit: v.unit,
+        count: v.count,
+        surpriseCount: v.surpriseCount,
+      }))
+      .sort((a, b) => b.surpriseCount - a.surpriseCount || b.count - a.count);
   }, [orderedRows]);
 
   return (
@@ -584,8 +654,12 @@ export function WatchlistTable({ rows }: { rows: WatchlistRow[] }) {
             key: m.key,
             label: m.label,
             count: m.count,
+            surpriseCount: m.surpriseCount,
           }))}
           onMetricChange={(k) => {
+            // Auto mode has no single sort key — rows sort themselves
+            // via pickRowHeadlineMetric. Skip auto-sort in that case.
+            if (k === "__auto__") return;
             // Auto-sort by the newly-picked metric's surprise desc.
             setSortKey(`metric:${k}:surprise:desc`);
           }}
@@ -645,11 +719,16 @@ export function WatchlistTable({ rows }: { rows: WatchlistRow[] }) {
 interface HeaderRowProps {
   columnMetric: string;
   setColumnMetric: (m: string) => void;
-  metricOptions: Array<{ key: string; label: string; count: number }>;
+  metricOptions: Array<{ key: string; label: string; count: number; surpriseCount: number }>;
   onMetricChange: (m: string) => void;
 }
 
 function HeaderRow({ columnMetric, setColumnMetric, metricOptions, onMetricChange }: HeaderRowProps) {
+  // Only show options that have SOME surprise% coverage — otherwise
+  // the auto-sort-by-surprise on change would just null everyone out.
+  // Plus the two "Industry-specific · auto" and "EPS surprise" pinned
+  // options at the top.
+  const surpriseCapable = metricOptions.filter((o) => o.surpriseCount > 0);
   return (
     <div
       // z-20 keeps the header above any row content that establishes its
@@ -674,13 +753,28 @@ function HeaderRow({ columnMetric, setColumnMetric, metricOptions, onMetricChang
             onMetricChange(e.target.value);
           }}
           className="h-6 max-w-full rounded-[4px] border border-bd bg-s2 px-1 font-mono text-[10px] uppercase tracking-[0.06em] text-tx2 hover:text-tx focus:border-brand/40 focus:outline-none"
-          title="Pick which metric shows in this column. Rows without the metric bubble to the bottom."
+          title="Auto = each row shows its own sector-relevant headline metric. Or pick a specific metric — options are limited to those with populated surprise% coverage across visible rows."
         >
-          {metricOptions.map((o) => (
-            <option key={o.key} value={o.key}>
-              {o.label}
-            </option>
-          ))}
+          <option value="__auto__">Auto · per-row sector metric</option>
+          {surpriseCapable.length > 0 ? (
+            <optgroup label="With surprise% data">
+              {surpriseCapable.map((o) => (
+                <option key={o.key} value={o.key}>
+                  {o.label} ({o.surpriseCount})
+                </option>
+              ))}
+            </optgroup>
+          ) : null}
+          <optgroup label="Value only (no surprise% available)">
+            {metricOptions
+              .filter((o) => o.surpriseCount === 0)
+              .slice(0, 15)
+              .map((o) => (
+                <option key={o.key} value={o.key}>
+                  {o.label} ({o.count})
+                </option>
+              ))}
+          </optgroup>
         </select>
       </span>
       <span>Price · 1M</span>
@@ -726,13 +820,16 @@ function Row({
       ? d3.absReturn * 100
       : null;
   // Column-metric surprise: reads the selected metric's surprisePct off
-  // the row's latestMetrics snapshot. Falls back to the legacy chain
-  // (reaction d3 → headline surprise → Yahoo lastQuarter) when the
-  // metric isn't present on this row. `metricMissing` flags rows that
-  // don't have the metric at all — used to render an "n/a" badge.
-  const colMetricEntry = r.latestMetrics?.[columnMetric];
+  // the row's latestMetrics snapshot. In "__auto__" mode, each row
+  // picks its own sector-relevant metric via pickRowHeadlineMetric.
+  // Falls back to legacy chain when nothing else applies. `metricMissing`
+  // flags rows that don't have the current explicit metric.
+  const autoPicked = columnMetric === "__auto__" ? pickRowHeadlineMetric(r) : null;
+  const colMetricEntry = columnMetric === "__auto__"
+    ? (autoPicked ? { ...autoPicked, key: undefined } : null)
+    : r.latestMetrics?.[columnMetric];
   const columnMetricSurprise = colMetricEntry?.surprisePct ?? null;
-  const metricMissing = !colMetricEntry;
+  const metricMissing = columnMetric !== "__auto__" && !r.latestMetrics?.[columnMetric];
   const surprise =
     columnMetricSurprise ??
     reactionPct ??
