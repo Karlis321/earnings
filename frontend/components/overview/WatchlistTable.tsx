@@ -1034,7 +1034,7 @@ function FilterBar({
   setReportingSoon: (v: boolean) => void;
   showAllListings: boolean;
   setShowAllListings: (v: boolean) => void;
-  availableMetrics: Array<{ key: string; label: string; unit: string | null; count: number }>;
+  availableMetrics: Array<{ key: string; label: string; unit: string | null; count: number; surpriseCount: number }>;
 }) {
   return (
     <div className="flex flex-wrap items-center gap-2">

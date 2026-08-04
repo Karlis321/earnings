@@ -47,6 +47,7 @@ interface AvailableMetric {
   label: string;
   unit: string | null;
   count: number;
+  surpriseCount?: number;
 }
 
 interface Props {
@@ -159,6 +160,30 @@ export function WatchlistFilterPopover(props: Props) {
     ? sortKey.split(":").slice(1)
     : ["", "value", "desc"];
 
+  // Selected metric's surprise-population count. Used to warn the
+  // user + block a no-op sort when they pick a metric whose surprise
+  // dim is universally null (same-basis rule cleared everything).
+  const selectedMetric = availableMetrics.find((m) => m.key === metricKey);
+  const surpriseSelectable = (selectedMetric?.surpriseCount ?? 0) > 0;
+
+  // Hide fixed "Revenue beat/miss" sort when 0 rows have revenue
+  // surprise% populated. The same-basis rule clears cross-basis
+  // triples at ingest, and today no revenue metrics survive the
+  // filter — the sort would be a silent no-op. EPS survives (~111
+  // tickers) so the EPS beat/miss option stays.
+  const revenueSurpriseCount =
+    availableMetrics.find((m) => /^revenues?_/.test(m.key))?.surpriseCount ?? 0;
+  const epsSurpriseCount =
+    availableMetrics.find((m) => /^eps(_|$)/.test(m.key))?.surpriseCount ?? 0;
+  const visibleSortGroups = SORT_GROUPS.map((g) => ({
+    ...g,
+    options: g.options.filter((o) => {
+      if (o.id === "surprise-rev" && revenueSurpriseCount === 0) return false;
+      if (o.id === "surprise" && epsSurpriseCount === 0) return false;
+      return true;
+    }),
+  })).filter((g) => g.options.length > 0);
+
   // Show a small "active" dot when non-default filters are set.
   const isActive =
     sortKey !== "cap" ||
@@ -216,7 +241,7 @@ export function WatchlistFilterPopover(props: Props) {
               className="h-8 w-full rounded-button border border-bd bg-s2 px-2 text-[12.5px] text-tx"
             >
               {isMetricSort ? <option value="">(sorting by specific metric ↓)</option> : null}
-              {SORT_GROUPS.map((g) => (
+              {visibleSortGroups.map((g) => (
                 <optgroup key={g.label} label={g.label}>
                   {g.options.map((s) => (
                     <option key={s.id} value={s.id}>
@@ -260,15 +285,20 @@ export function WatchlistFilterPopover(props: Props) {
                 <div className="mt-2 flex gap-2">
                   <select
                     value={metricDim}
-                    onChange={(e) =>
-                      setSortKey(
-                        `metric:${metricKey}:${e.target.value as "value" | "surprise"}:${metricDir as "desc" | "asc"}`,
-                      )
-                    }
+                    onChange={(e) => {
+                      const dim = e.target.value as "value" | "surprise";
+                      // Guard: don't switch to surprise if the metric
+                      // has no surprise% data (same-basis rule cleared
+                      // everything). Would produce a silent no-op sort.
+                      if (dim === "surprise" && !surpriseSelectable) return;
+                      setSortKey(`metric:${metricKey}:${dim}:${metricDir as "desc" | "asc"}`);
+                    }}
                     className="h-8 flex-1 rounded-button border border-bd bg-s1 px-2 text-[12px] text-tx"
                   >
                     <option value="value">Value (actual reported)</option>
-                    <option value="surprise">Surprise vs estimate</option>
+                    <option value="surprise" disabled={!surpriseSelectable}>
+                      Surprise vs estimate{surpriseSelectable ? "" : " · no data"}
+                    </option>
                   </select>
                   <select
                     value={metricDir}
