@@ -29,28 +29,27 @@ and continue to the next. Do not improvise.
 
 ## Procedure
 
-1. **List candidates.** Full-universe scope by default —
-   every operating, non-dormant, non-foreign-filer entity in the
-   registry. Single script call:
+1. **List candidates.** The pre-filter script does the heavy
+   lifting — pool the universe, filter to "reported in last 5
+   trading days AND no summary yet", cap at LIMIT (default 20)
+   sorted by freshest event date. Single call:
      `Bash: node scripts/sweep-target-list.mjs`
-   → prints a JSON array of tickers on stdout. Parse and iterate.
+   → prints a JSON array of tickers on stdout, already de-duped
+   and pre-filtered. Parse and iterate.
 
-   Scope default is `all` (~2,985 entities). The
-   filter below is the same regardless of scope: the "reported in
-   last 5 trading days AND no summary yet" gate keeps real work
-   bounded to typically 5-40 tickers/week.
+   Output size is typically 5-20 tickers/day. Occasional
+   overflow (peak earnings weeks) gets processed the following
+   day since freshest reports sort first.
 
-   Cost-bounding fallback if needed: `SCOPE=indexed node
-   scripts/sweep-target-list.mjs` limits to covered + SP500 +
-   R1000 US-primary domestic (~1,000 tickers). The workflow uses
-   the default scope=all.
+   Configuration knobs (env vars, all optional):
+   - `SCOPE=all` (default) — full universe ≈ 2,985 operating
+     non-dormant non-foreign-primary non-pre-listing entities
+   - `SCOPE=indexed` — SP500 + R1000 + covered pool ≈ 1,000
+   - `RECENT_DAYS=5` — how far back "recently reported" reaches
+   - `LIMIT=20` — hard cap on output size, keeps a single sweep
+     within Claude Code's --max-turns 30 budget
 
-   Tiers baked into the union:
-   - Tier A · covered → `data/covered.json` (17 hand-picked)
-   - Tier B · SP500 US-primary (~473)
-   - Tier C · Russell 1000 US-primary (~1,013)
-   - Tier D · every other operating entity (foreign primaries,
-     small-caps outside indices) — active in `all` scope only
+   Tier A (covered) is always included regardless of scope.
 
    For each ticker in the union:
    - Run `Bash: node scripts/resolve-earnings-target.mjs "<ticker>"`
