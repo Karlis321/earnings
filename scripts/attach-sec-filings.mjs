@@ -200,6 +200,16 @@ async function main() {
     candidateTickers = entities
       .filter((e) => (e.index_membership ?? []).includes("SP500") && e.edgarCik)
       .map((e) => e.ticker);
+  } else if (SCOPE === "indexed-latest") {
+    // SP500 + R1000 union, latest quarter only. Daily-cron budget:
+    // ~1,000 tickers with CIK * 1 req/s = ~17 min. Catches R1000
+    // violations that sp500-latest misses (CNH/INSP/JAZZ/PPLI class).
+    candidateTickers = entities
+      .filter((e) => {
+        const idx = e.index_membership ?? [];
+        return (idx.includes("SP500") || idx.includes("R1000")) && e.edgarCik;
+      })
+      .map((e) => e.ticker);
   } else if (SCOPE === "all") {
     candidateTickers = entities.filter((e) => e.edgarCik).map((e) => e.ticker);
   } else {
@@ -210,7 +220,7 @@ async function main() {
   // sp500-all / all: no depth cap — process every past event on the
   // shard. The previous 5-event cap missed older events (WMT US
   // FY2025 Q1/Q2 sat at indices 6-7 and were never touched).
-  const historyDepth = SCOPE === "sp500-latest" ? 1 : Infinity;
+  const historyDepth = (SCOPE === "sp500-latest" || SCOPE === "indexed-latest") ? 1 : Infinity;
   if (LIMIT) candidateTickers = candidateTickers.slice(0, LIMIT);
   console.log(`scope=${SCOPE} · candidates=${candidateTickers.length} · depth=${historyDepth} · checkpoint had ${checkpoint.size} completed`);
 

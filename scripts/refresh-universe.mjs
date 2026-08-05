@@ -135,7 +135,12 @@ const PHASES = [
   // `--scope=all` catches the tail after big population additions
   // (like the R1000 batch on 2026-08-03) — resumable via
   // fetched/attach-sec-filings.checkpoint.json.
-  { key: "attach-sec-filings", label: "Attach SEC 8-K/10-Q sourceLinks (SP500-latest)", script: "attach-sec-filings.mjs", extraArgs: ["--scope=sp500-latest"] },
+  // Widened from sp500-latest → indexed-latest on 2026-08-05 after the
+  // refresh workflow hit standing-tests failure on 32 R1000 report-
+  // attachment violations. SP500 + R1000 union, latest quarter only —
+  // ~1,000 tickers × 1 req/s = ~17 min. Catches CNH/INSP/JAZZ/PPLI-class
+  // R1000 violations that sp500-latest scope misses.
+  { key: "attach-sec-filings", label: "Attach SEC 8-K/10-Q sourceLinks (SP500 + R1000 latest)", script: "attach-sec-filings.mjs", extraArgs: ["--scope=indexed-latest"] },
   // Collapse same-period past events across the universe. Mixed
   // sources land at ingest (Yahoo quarter-end + SEC fiscal filing
   // date OR sibling-inherit) and can create two events with the

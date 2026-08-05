@@ -126,7 +126,12 @@ jobs:
           node scripts/refresh-universe.mjs $FLAGS
 
       - name: Push the daily commit
-        if: ${{ github.event.inputs.dry_run != 'true' }}
+        # Run even when the orchestrator exited 1 — a standing-tests
+        # failure (data-quality signal) shouldn't prevent publishing 22
+        # of 23 phases of legitimate refresh work. `if: always()` combined
+        # with the dry-run gate means: push if there's a commit, unless
+        # the operator asked for a dry-run.
+        if: ${{ always() && github.event.inputs.dry_run != 'true' }}
         run: |
           # The orchestrator already created the commit; we push here
           # so an auth failure is visible as its own workflow step. If
