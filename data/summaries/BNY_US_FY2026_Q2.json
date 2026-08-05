@@ -1,0 +1,38 @@
+{
+  "ticker": "BNY US",
+  "period": "FY2026 Q2",
+  "reported_at": "2026-07-15",
+  "generated_at": "2026-08-05T19:45:03Z",
+  "depth": "filing",
+  "headline": "Record quarter as fee growth and buybacks lift EPS",
+  "kpis": [
+    { "label": "EPS diluted", "value": "$2.45", "delta": "+9%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "EPS diluted", "value": "$2.45", "delta": "+27%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EPS basic", "value": "$2.47", "delta": "+9.3%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "EPS basic", "value": "$2.47", "delta": "+26.7%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Net income", "value": "$1,761M", "delta": "+7.9%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Net income", "value": "$1,761M", "delta": "+23.8%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Total cash", "value": "$7,483M", "delta": "+17.1%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Total cash", "value": "$7,483M", "delta": "+31.3%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Long-term debt", "value": "$30,368M", "delta": "-6.8%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Long-term debt", "value": "$30,368M", "delta": "-9.2%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Shareholders' equity", "value": "$44,664M", "delta": "-0.3%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Shareholders' equity", "value": "$44,664M", "delta": "+1.6%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Weighted diluted shares", "value": "692.2M", "delta": "-0.9%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Weighted diluted shares", "value": "692.2M", "delta": "-3.9%", "delta_basis": "y/y", "direction": "down" }
+  ],
+  "summary_short": "BNY's Q2 2026 diluted EPS rose 27% y/y to $2.45 as net income attributable to BNY grew 23.8% y/y to $1,761M, total revenue increased 13% to $5.7B, and ROTCE reached 31.3%.",
+  "summary_long": "Revenue grew 13% y/y to $5.698B (fee revenue +11%, net interest income +20% on reinvestment at higher yields) against 7% expense growth, plus an $8M credit-loss benefit, driving diluted EPS up 27% y/y to $2.45. ROTCE hit 31.3%, pre-tax margin 39.8%, with 606bps of positive operating leverage y/y. CET1 ratio held flat at 11.0%; total cash rose 31% y/y to $7,483M while long-term debt fell 9% to $30,368M. BNY returned $1.5B to shareholders ($1.1B buybacks, $371M dividends), an 87% year-to-date payout ratio, and diluted share count fell 3.9% y/y on repurchases. No explicit forward guidance was issued in this release.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/1390777/000139077726000071/ex991_earningsreleasex2q26.htm",
+  "confidence_notes": "REGENERATION: this run was invoked in force-regenerate mode with the Step-0 'already exists' guard explicitly skipped per instructions; no summary file was actually present on disk for BNY US FY2026 Q2 prior to this run (summaryExists=false per the resolver, confirmed by a direct filesystem check), so this write is a fresh compose, not a true overwrite of prior content. Sourcing notes: (1) the resolver's event-level sourceLink pointed at an 8-K filed 2026-06-24 (accession 0001193125-26-281160) covering only a dividend-increase intent and 2026 stress-test results -- unrelated to Q2 earnings and dated before quarter-end (2026-06-30), so it could not be the earnings release; resolve-edgar-exhibit.mjs correctly found no EX-99 exhibit there. The real Q2 2026 earnings 8-K (items 2.02/7.01/9.01, filed 2026-07-15, accession 0001390777-26-000071) was located via the EDGAR CIK filing list, and its EX-99.1 exhibit (ex991_earningsreleasex2q26.htm) supplied this summary -- the shard's sourceLink for this event should be corrected in a future pass. (2) reported_at is set to 2026-07-15 (the real filing/release date from the primary document), which differs from the shard's stored eventDate of 2026-06-30 (a quarter-end placeholder, not yet run through fetch-real-report-dates.mjs) -- flagging per Step 0's guidance to prefer the authoritative date and note the mismatch. (3) The resolver's 'Net income' KPI ($1,761M, SEC XBRL NetIncomeLoss) is net income attributable to BNY before preferred dividends -- distinct from the release's own headlined 'net income applicable to common shareholders' ($1,696M, +22% y/y) and from total consolidated net income including noncontrolling interests ($1,792M, +25% y/y). All three are legitimate, differently-scoped figures; the KPI ledger uses the SEC-verbatim tag per this pipeline's standing rule, not the release's headline scope. (4) No numeric forward guidance (revenue, EPS, capex, etc.) appears in this release's own text -- only standard forward-looking-statement boilerplate -- so nothing was written to the event's guidance[] array.",
+  "drivers": [
+    { "metric": "Net income", "direction": "up", "explanation": "Revenue grew 13% y/y (fee revenue +11%, NII +20%) against 7% expense growth, plus an $8M credit-loss benefit versus a $17M benefit a year ago; effective tax rate was 21.0%.", "basis": "company-disclosed" },
+    { "metric": "EPS diluted", "direction": "up", "explanation": "EPS grew faster than the release's own net-income-to-common growth (27% vs 22%) because diluted shares outstanding fell 3.9% y/y on continued buybacks ($1.1B this quarter).", "basis": "derived-arithmetic" },
+    { "metric": "EPS basic", "direction": "up", "explanation": "Same drivers as diluted EPS: underlying earnings growth plus a shrinking share count from ongoing buybacks.", "basis": "derived-arithmetic" },
+    { "metric": "Total cash", "direction": "up", "explanation": "Not explained in the release -- cash and equivalents movement isn't narrated directly; the release discusses average interest-earning assets growth (+6% y/y) instead.", "basis": "company-disclosed" },
+    { "metric": "Long-term debt", "direction": "down", "explanation": "Not explained in the release -- long-term debt isn't discussed in the narrative; the capital section instead discusses CET1 and Tier 1 capital movements.", "basis": "company-disclosed" },
+    { "metric": "Shareholders' equity", "direction": "flat", "explanation": "Roughly flat q/q (-0.3%) as capital generated through earnings was offset by $1.1B of buybacks and $371M of dividends; CET1 capital of $21.6B rose on earnings generation, per the release.", "basis": "company-disclosed" },
+    { "metric": "Weighted diluted shares", "direction": "down", "explanation": "Diluted share count fell as BNY repurchased $1.1B of common stock this quarter, part of $1.5B of total capital returned to shareholders.", "basis": "company-disclosed" },
+    { "metric": "overall", "direction": "up", "explanation": "CEO cited 'another strong quarter with robust organic growth,' 13% y/y revenue growth, 606bps of positive operating leverage, a 40% pre-tax margin, and 31% ROTCE, broad-based across all three segments.", "basis": "company-disclosed" }
+  ]
+}
