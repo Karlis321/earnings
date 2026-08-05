@@ -20,19 +20,27 @@ export interface ExtendedMetricDef {
   shape?: "point" | "range";
 }
 
+// YTD-fallback rule (applies to every cash-flow-derived metric below):
+// Some issuers (Apple, most large-caps) disclose ONLY 9M/6M YTD in
+// their 8-K condensed cash flow, not quarterly. In that case, capture
+// the YTD value AND mark the section string as "... · Nine Months
+// Ended <date> (YTD)". Do NOT skip — a YTD figure labeled as YTD is
+// vastly more useful than nothing. Downstream code / analysts can
+// diff YTD-current − YTD-prior-quarter to derive quarterly when the
+// prior quarter's YTD is on the sibling shard event.
 export const UNIVERSAL_EXTENDED_METRICS: ExtendedMetricDef[] = [
   { key: "capex_total", label: "Capex (total)", unit: "USD_m",
-    hint: "Total capital expenditures reported in the cash-flow statement or MD&A capex line. Sum property/plant + intangibles if broken out." },
+    hint: "Total capital expenditures from the cash-flow statement's 'Payments for acquisition of property, plant and equipment' line (or MD&A capex line). Sum PP&E + intangibles if broken out. If only YTD is disclosed, capture YTD and mark section as '<period> · YTD'." },
   { key: "capex_adjusted", label: "Adjusted CapEx", unit: "USD_m",
-    hint: "Management's adjusted-capex figure if disclosed (excludes acquisitions, one-time infrastructure, spectrum, etc.). Only when the filing labels it 'adjusted' or provides a reconciliation." },
+    hint: "Management's adjusted-capex figure if disclosed (excludes acquisitions, one-time infrastructure, spectrum, etc.). Only when the filing labels it 'adjusted' or provides a reconciliation. YTD is acceptable — mark in section." },
   { key: "free_cash_flow_mgmt", label: "Free cash flow (mgmt def)", unit: "USD_m",
-    hint: "Management's own FCF definition (operating cash flow − capex − sometimes lease payments). Take the labeled 'free cash flow' line, not a computed derivative." },
-  { key: "buyback_qtr_usd", label: "Buyback (this quarter)", unit: "USD_m",
-    hint: "Dollar value of common stock repurchased in the quarter. From the equity or cash flow statement." },
+    hint: "Management's own FCF definition (operating cash flow − capex − sometimes lease payments). Take the labeled 'free cash flow' line, not a computed derivative. YTD is acceptable — mark in section." },
+  { key: "buyback_qtr_usd", label: "Buyback (this quarter or YTD if only YTD disclosed)", unit: "USD_m",
+    hint: "Dollar value of common stock repurchased. Prefer quarterly from Item 2/Item 5 or the equity statement. If only YTD is disclosed in the cash flow (common for Apple / big issuers), capture the YTD value and mark section as '<period> · YTD'." },
   { key: "dividend_per_share", label: "Dividend per share", unit: "USD/shares",
-    hint: "Declared or paid dividend per share in the quarter. Common shares only." },
+    hint: "Declared or paid dividend PER SHARE in the quarter (common shares). This is a per-share figure that IS quarterly — don't confuse with the total dividend cash paid line on the YTD cash flow." },
   { key: "sale_of_assets_usd", label: "Sale of assets", unit: "USD_m",
-    hint: "Proceeds from asset divestitures / dispositions this quarter (property, subsidiaries, investments). Cash flow investing section." },
+    hint: "Proceeds from asset divestitures / dispositions (property, subsidiaries, investments). Cash flow investing section. YTD is acceptable — mark in section." },
   { key: "eps_non_gaap", label: "Non-GAAP EPS", unit: "USD/shares",
     hint: "Management's non-GAAP or adjusted EPS. Take diluted if both basic + diluted are given." },
   { key: "guidance_revenue_next_q", label: "Guidance · next-Q revenue", unit: "USD_m", shape: "range",
