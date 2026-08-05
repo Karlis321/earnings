@@ -13,6 +13,11 @@ on:
         description: "Trigger source label (e.g. 'claude', 'karlis test'). Shown in the run title."
         required: false
         default: ""
+      force:
+        description: "Force-regenerate: bypass the 'summary already exists' guard and overwrite. Required when retrying a ticker that got kpi-only downgrade."
+        required: false
+        type: boolean
+        default: false
 
 # run-name — the Actions-tab title per run. Shows /earnings vs /sweep,
 # trigger source, and any note so a scan of the tab reads at a glance.
@@ -56,7 +61,11 @@ jobs:
           # `force` comes from /api/summarize when the user clicked
           # "Regenerate" on an existing summary. Instructs /earnings
           # to bypass the "summary already exists" guard and rewrite.
-          FORCE="${{ github.event.client_payload.force }}"
+          # `force` comes from either the API-side repository_dispatch
+          # (client_payload.force from /api/summarize) OR from a manual
+          # workflow_dispatch input (Actions UI checkbox). Either fires
+          # the /earnings Step-0 bypass.
+          FORCE="${{ github.event.client_payload.force || github.event.inputs.force }}"
           FORCE_LINE=""
           if [ "$FORCE" = "true" ]; then
             FORCE_LINE=" IMPORTANT: force-regenerate mode. Skip the Step-0 'summary already exists' guard and produce a fresh summary, OVERWRITING the existing file on disk. Confidence-notes MUST mention this is a regeneration."
