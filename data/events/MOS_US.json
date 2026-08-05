@@ -1105,6 +1105,12 @@
               "actualFamily": "sec",
               "estimateFamily": "yahoo-chart",
               "clearedAt": "2026-08-04T06:50:34.479Z"
+            },
+            {
+              "value": 36.74854047230843,
+              "actualFamily": "sec",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-08-05T10:41:53.031Z"
             }
           ]
         },
@@ -1506,6 +1512,12 @@
               "actualFamily": "yahoo-timeseries",
               "estimateFamily": "yahoo-chart",
               "clearedAt": "2026-08-04T06:50:34.479Z"
+            },
+            {
+              "value": -468.27573016515913,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-08-05T10:41:53.031Z"
             }
           ]
         },
@@ -2535,8 +2547,8 @@
       "guidance": [],
       "reaction": {
         "benchmark": "SPX",
-        "baselineDate": null,
-        "baselineClose": null,
+        "baselineDate": "2026-08-04",
+        "baselineClose": 22.709999084472656,
         "points": [
           {
             "horizon": "d1",
@@ -2585,8 +2597,11 @@
       },
       "eventDateSource": "yahoo-earnings-chart-reportedDate",
       "sourceLink": {
-        "url": "https://finance.yahoo.com/quote/MOS/earnings-history",
-        "kind": "fallback"
+        "kind": "filing",
+        "url": "https://www.sec.gov/Archives/edgar/data/1285785/000128578526000109/mos-20260804.htm",
+        "form": "8-K",
+        "accession": "0001285785-26-000109",
+        "filingDate": "2026-08-04"
       }
     },
     {
@@ -2603,7 +2618,58 @@
       "provenance": "estimator-median-gap",
       "provenanceAsOf": "2026-08-05T07:03:27.137Z",
       "cadence": "quarterly",
-      "metrics": [],
+      "metrics": [
+        {
+          "key": "revenue_usd_m",
+          "displayLabel": "Revenue (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": {
+            "value": 3369.57874,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/MOS/analysis",
+              "label": "Yahoo · earningsTrend (8 analysts)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-09-30",
+            "fetchedAt": "2026-08-05T10:38:59.394Z",
+            "method": "yahoo",
+            "confidence": 0.75,
+            "low_usd_m": 2834.4,
+            "high_usd_m": 3691.92083,
+            "numberOfAnalysts": 8
+          },
+          "actual": null,
+          "prior": null
+        },
+        {
+          "key": "eps_usd",
+          "displayLabel": "EPS",
+          "isHeadline": true,
+          "surprisePct": null,
+          "estimate": {
+            "value": 0.25936,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/MOS/analysis",
+              "label": "Yahoo · earningsTrend (10 analysts)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-09-30",
+            "fetchedAt": "2026-08-05T10:38:59.394Z",
+            "method": "yahoo",
+            "confidence": 0.75,
+            "low": 0.12651,
+            "high": 0.44,
+            "numberOfAnalysts": 10
+          },
+          "actual": null,
+          "prior": null
+        }
+      ],
       "guidance": [],
       "reaction": {
         "benchmark": "SPX",

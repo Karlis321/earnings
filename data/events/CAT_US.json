@@ -1105,6 +1105,12 @@
               "actualFamily": "sec",
               "estimateFamily": "yahoo-chart",
               "clearedAt": "2026-08-04T06:50:33.348Z"
+            },
+            {
+              "value": 8.548108256288495,
+              "actualFamily": "sec",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-08-05T10:41:52.154Z"
             }
           ]
         },
@@ -1506,6 +1512,12 @@
               "actualFamily": "yahoo-timeseries",
               "estimateFamily": "yahoo-chart",
               "clearedAt": "2026-08-04T06:50:33.348Z"
+            },
+            {
+              "value": 9.29379232481692,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-08-05T10:41:52.154Z"
             }
           ]
         },
@@ -1931,6 +1943,12 @@
               "actualFamily": "sec",
               "estimateFamily": "yahoo-chart",
               "clearedAt": "2026-08-04T06:50:33.348Z"
+            },
+            {
+              "value": 18.435446221693923,
+              "actualFamily": "sec",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-08-05T10:41:52.154Z"
             }
           ]
         },
@@ -2593,8 +2611,8 @@
       "guidance": [],
       "reaction": {
         "benchmark": "SPX",
-        "baselineDate": null,
-        "baselineClose": null,
+        "baselineDate": "2026-08-04",
+        "baselineClose": 876.5399780273438,
         "points": [
           {
             "horizon": "d1",
@@ -2643,8 +2661,11 @@
       },
       "eventDateSource": "yahoo-earnings-chart-reportedDate",
       "sourceLink": {
-        "url": "https://finance.yahoo.com/quote/CAT/earnings-history",
-        "kind": "fallback"
+        "kind": "filing",
+        "url": "https://www.sec.gov/Archives/edgar/data/18230/000001823026000040/cat-20260804.htm",
+        "form": "8-K",
+        "accession": "0000018230-26-000040",
+        "filingDate": "2026-08-04"
       }
     },
     {
@@ -2661,7 +2682,58 @@
       "provenance": "estimator-median-gap",
       "provenanceAsOf": "2026-08-05T07:03:27.132Z",
       "cadence": "quarterly",
-      "metrics": [],
+      "metrics": [
+        {
+          "key": "revenue_usd_m",
+          "displayLabel": "Revenue (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": {
+            "value": 20173.66667,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/CAT/analysis",
+              "label": "Yahoo · earningsTrend (3 analysts)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-09-30",
+            "fetchedAt": "2026-08-05T10:38:59.394Z",
+            "method": "yahoo",
+            "confidence": 0.75,
+            "low_usd_m": 19979,
+            "high_usd_m": 20364,
+            "numberOfAnalysts": 3
+          },
+          "actual": null,
+          "prior": null
+        },
+        {
+          "key": "eps_usd",
+          "displayLabel": "EPS",
+          "isHeadline": true,
+          "surprisePct": null,
+          "estimate": {
+            "value": 6.74348,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/CAT/analysis",
+              "label": "Yahoo · earningsTrend (10 analysts)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-09-30",
+            "fetchedAt": "2026-08-05T10:38:59.394Z",
+            "method": "yahoo",
+            "confidence": 0.75,
+            "low": 6.43,
+            "high": 7.36,
+            "numberOfAnalysts": 10
+          },
+          "actual": null,
+          "prior": null
+        }
+      ],
       "guidance": [],
       "reaction": {
         "benchmark": "SPX",
