@@ -1,0 +1,30 @@
+{
+  "ticker": "CAT US",
+  "period": "FY2026 Q2",
+  "reported_at": "2026-08-04",
+  "generated_at": "2026-08-05T18:00:00.000Z",
+  "depth": "filing",
+  "headline": "Sales and profit surge to record levels, all segments up",
+  "kpis": [
+    { "label": "Revenue", "value": "$20.54B", "delta": "+18.0%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Revenue", "value": "$20.54B", "delta": "+24.0%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Operating profit", "value": "$4.30B", "delta": "+39.2%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Operating profit", "value": "$4.30B", "delta": "+50.2%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Net income (attributable)", "value": "$3.59B", "delta": "+41.0%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Net income (attributable)", "value": "$3.59B", "delta": "+64.9%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EPS diluted (GAAP)", "value": "$7.77", "delta": "+68.2%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Adjusted EPS diluted", "value": "$8.17", "delta": "+73.1%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Adjusted operating margin", "value": "21.9%", "delta": "+4.3pts", "delta_basis": "y/y", "direction": "up" }
+  ],
+  "summary_short": "Caterpillar's Q2 FY2026 revenue rose 24% y/y (18% q/q) to a record $20.54 billion, with adjusted EPS of $8.17 up 73% y/y as all three primary segments grew and operating profit jumped 50% y/y to $4.30 billion.",
+  "summary_long": "Revenue rose 24% y/y (18% q/q) to a record $20.54B, driven by $3.1B of higher sales volume and $595M of favorable price realization; all three primary segments grew (Construction +35%, Resource +20%, Power & Energy +17%). Operating profit rose 50% y/y to $4.30B, aided by $392M of expected IEEPA tariff recoveries; adjusted operating margin expanded to 21.9% from 17.6%. Net income rose 65% y/y to $3.59B; adjusted EPS of $8.17 rose 73% y/y. Cash fell to $6.71B from $9.98B at year-end 2025 after $2.2B deployed for buybacks and dividends this quarter. No formal guidance was issued.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/18230/000001823026000040/ex991toformcat2q2026earnin.htm",
+  "confidence_notes": "FORCE-REGENERATED on 2026-08-05 per explicit request (no prior summary existed on disk for CAT US FY2026 Q2, so this is a fresh first-time compose flagged as a regeneration run per the task's requirements). The resolver's kpis object surfaces only eps_usd, with a q/q prior of $5.50 and a y/y prior of $4.64 sourced from SEC EDGAR 10-Q GAAP Basic EPS -- a different accounting basis than the shard's own actual ($8.17, Yahoo earningsChart, which is Caterpillar's own non-GAAP adjusted diluted EPS). Per the same-basis surprise rule, these cross-basis priors were not used for KPI deltas. Instead, the full KPI ledger here (revenue, operating profit, net income, GAAP diluted EPS, adjusted diluted EPS, adjusted operating margin) was read directly from Caterpillar's own Q2 2026 earnings release, same-document and same-basis throughout. Q1 2026 quarterly figures for revenue, operating profit, and net income were derived arithmetically (exact) as six-months-ended-June-30-2026 minus the disclosed Q2 2026 quarter, since Caterpillar's release does not itself restate standalone Q1 2026 figures and no prior CAT summary exists on this platform to cross-check against; this arithmetic is exact for additive income-statement lines. EPS was not treated the same way for q/q (only y/y is reported here) because per-share figures are not strictly additive across quarters given changing weighted-average share counts. The shard's stored actual for eps_usd ($8.17) independently matches this release's own disclosed adjusted diluted EPS -- a consistency check that passed. No company-issued forward guidance (revenue, EPS, capex, or otherwise) appears in this release; the guidance array is left empty.",
+  "drivers": [
+    { "metric": "Revenue", "direction": "up", "explanation": "Growth was driven by $3.1B higher sales volume (mainly higher equipment sales to end users) plus $595M favorable price realization; all three primary segments grew.", "basis": "company-disclosed" },
+    { "metric": "Operating profit", "direction": "up", "explanation": "Increase was primarily due to the profit impact of higher sales volume, plus $392M of expected IEEPA tariff recoveries recorded in the quarter.", "basis": "company-disclosed" },
+    { "metric": "Adjusted operating margin", "direction": "up", "explanation": "Margin expansion reflects flow-through from higher volume and price realization, despite unfavorable manufacturing costs in Power & Energy (-$149M) and Resource Industries (-$158M).", "basis": "company-disclosed" },
+    { "metric": "Net income (attributable)", "direction": "up", "explanation": "Higher operating profit plus $398M of other income (vs $84M a year ago, mainly FX, swap contracts and investment income) drove the increase.", "basis": "company-disclosed" },
+    { "metric": "overall", "direction": "up", "explanation": "Management cited the first quarter ever above $20B in sales and revenues, pointing to strong order rates and a growing backlog across all three primary segments.", "basis": "company-disclosed" }
+  ]
+}
