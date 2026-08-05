@@ -161,6 +161,15 @@ function extraChecks(body, errors) {
   }
 }
 
+// Mirrors the slug function in scripts/apply-extended-metrics.mjs. Both
+// spaces AND other non-slug chars (e.g. the '/' in "BF/B US") collapse to
+// '_', so the mapping filename->ticker is lossy and can't be reversed by
+// swapping '_' back to ' '. Comparing ticker->slug (forward) instead of
+// slug->ticker (reverse) keeps this correct for every canonical ticker.
+function tickerSlug(t) {
+  return String(t).replace(/\s+/g, "_").replace(/[^A-Z0-9_.-]/gi, "_");
+}
+
 function filenameConsistency(fp, body, errors) {
   const base = path.basename(fp, ".json");
   const parts = base.split("_");
@@ -169,8 +178,11 @@ function filenameConsistency(fp, body, errors) {
     return;
   }
   const period = parts.slice(-2).join(" ");
-  const ticker = parts.slice(0, -2).join(" ");
-  if (body.ticker !== ticker) errors.push(`filename: ticker "${ticker}" in name vs body "${body.ticker}"`);
+  const tickerSlugInName = parts.slice(0, -2).join("_");
+  const expectedTickerSlug = tickerSlug(body.ticker);
+  if (tickerSlugInName !== expectedTickerSlug) {
+    errors.push(`filename: ticker slug "${tickerSlugInName}" in name vs expected "${expectedTickerSlug}" for body.ticker "${body.ticker}"`);
+  }
   if (body.period !== period) errors.push(`filename: period "${period}" in name vs body "${body.period}"`);
 }
 
