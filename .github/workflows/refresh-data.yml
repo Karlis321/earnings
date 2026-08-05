@@ -79,15 +79,15 @@ jobs:
       actions: write # required to chain to claude-summarize.yml.
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           # Fetch enough history so `git commit` doesn't refuse-shallow.
           fetch-depth: 2
 
-      - name: Setup Node 20
-        uses: actions/setup-node@v4
+      - name: Setup Node 24
+        uses: actions/setup-node@v5
         with:
-          node-version: "20"
+          node-version: "24"
 
       - name: Configure git identity for the daily commit
         run: |
