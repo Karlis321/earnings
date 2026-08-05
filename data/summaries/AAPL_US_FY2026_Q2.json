@@ -2,9 +2,9 @@
   "ticker": "AAPL US",
   "period": "FY2026 Q2",
   "reported_at": "2026-07-30",
-  "generated_at": "2026-08-04T15:30:00.000Z",
-  "depth": "kpi-only",
-  "headline": "Earnings and margins climb while cash cushion thins",
+  "generated_at": "2026-08-05T11:27:29.000Z",
+  "depth": "filing",
+  "headline": "Earnings and margins climb on a tariff-refund tailwind",
   "kpis": [
     { "label": "EPS (basic)", "value": "$2.03", "delta": "+29.3%", "delta_basis": "y/y", "direction": "up" },
     { "label": "EPS (diluted)", "value": "$2.02", "delta": "+28.7%", "delta_basis": "y/y", "direction": "up" },
@@ -21,8 +21,13 @@
     { "label": "Shareholders' equity", "value": "$107.52B", "delta": "+63.3%", "delta_basis": "y/y", "direction": "up" },
     { "label": "Weighted diluted shares", "value": "14,714.7M", "delta": "-1.6%", "delta_basis": "y/y", "direction": "down" }
   ],
-  "summary_short": "Apple reported diluted EPS of $2.02 (+28.7% y/y) on revenue of $109.42B (+16.4% y/y) and net income of $29.79B (+27.1% y/y).",
-  "summary_long": "Revenue was $109.42B, up 16.4% y/y but down 1.6% q/q. Gross profit of $54.77B (+25.3% y/y) outpaced revenue growth, implying gross margin expansion from about 46.5% to 50.1% y/y. Diluted EPS was $2.02 (+28.7% y/y). Net income reached $29.79B (+27.1% y/y). Cash fell to $39.54B, down 13.2% q/q but up 9.0% y/y, while shareholders' equity rose 63.3% y/y to $107.52B.",
-  "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/aapl-20260730.htm",
-  "confidence_notes": "primary filing unreachable — KPI-only summary from verified shard data. This run was executed in force-regenerate mode per explicit task instruction; no summary previously existed on disk for this ticker/period, so this is a fresh compose rather than a literal overwrite. Note on period labeling: the underlying 8-K's exhibit filename (a8-kex991q3202606272026.htm) indicates the release covers Apple's own fiscal Q3 2026 (quarter ended June 27, 2026); the platform labels this event 'FY2026 Q2' per its own period convention — a labeling-convention difference, not a data error, consistent with how other fiscal-offset issuers are handled elsewhere in this pipeline. Shareholders' equity's +63.3% y/y move is unusually large relative to other balance-sheet deltas this quarter; kpi-only depth cannot investigate the cause — flagging for a future filing-depth follow-up."
+  "summary_short": "Apple reported diluted EPS of $2.02 (+28.7% y/y) on revenue of $109.42B (+16.4% y/y) and net income of $29.79B (+27.1% y/y), with gross margin at 50.1% including a tariff-refund tailwind.",
+  "summary_long": "Revenue was $109.42B (+16.4% y/y, -1.6% q/q); gross margin rose to 50.1%, aided by roughly 2 points of favorable tariff-refund impact the release discloses explicitly. Diluted EPS of $2.02 (+28.7% y/y) included $0.11 from the same refunds. Net income reached $29.79B (+27.1% y/y). Cash fell to $39.54B (-13.2% q/q, +9.0% y/y) after nine-month buybacks of $62.09B and dividends of $11.78B, while shareholders' equity rose 63.3% y/y to $107.52B. The board declared a $0.27/share dividend, payable August 13, 2026. The release contains no forward guidance.",
+  "drivers": [
+    { "metric": "overall", "direction": "up", "explanation": "CEO cited the strongest June quarter ever, with double-digit revenue growth across iPhone, Mac and Services and every geographic segment; CFO cited record EPS and operating cash flow.", "basis": "company-disclosed" },
+    { "metric": "Gross profit", "direction": "up", "explanation": "Company states gross margin included approximately 2 percentage points of favorable impact from tariff refunds this quarter.", "basis": "company-disclosed" },
+    { "metric": "EPS (diluted)", "direction": "up", "explanation": "Company states diluted EPS growth included a $0.11 favorable impact from tariff refunds.", "basis": "company-disclosed" }
+  ],
+  "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/a8-kex991q3202606272026.htm",
+  "confidence_notes": "REGENERATED — this summary was force-regenerated per explicit operator instruction, overwriting a prior kpi-only version. That prior version existed because an earlier run fetched the 8-K cover document (aapl-20260730.htm) directly instead of resolving its EX-99.1 press-release exhibit (a8-kex991q3202606272026.htm), found the cover unreadable for narrative purposes, and downgraded to kpi-only. This run resolved and fetched the exhibit successfully via scripts/resolve-edgar-exhibit.mjs, upgrading depth to filing. Tariff refunds contributed a company-disclosed ~2pp of gross margin and $0.11 of diluted EPS this quarter — a one-off, factor it out when comparing margin/EPS trend to prior quarters. Period-label note: the exhibit itself describes this as Apple's fiscal 2026 third quarter (quarter ended June 27, 2026); the platform's period convention labels the same event 'FY2026 Q2' — a labeling-convention difference, not a data error. The exhibit disclosed no forward guidance (only dividend and earnings-call logistics); guidance array on the event shard left untouched."
 }
