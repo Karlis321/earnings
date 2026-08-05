@@ -49,7 +49,11 @@ const DRY = args.get("dry") === true;
 const LIMIT = args.get("limit") ? parseInt(args.get("limit"), 10) : Infinity;
 const REQ_INTERVAL_MS = 1000;
 
-const SEC_UA = "Earnings Tracker (contact@example.com)";
+// SEC EDGAR's fair-access policy requires a real contact email in the
+// UA. Hardcoded example.com gets soft-blocked after sustained querying
+// (~15-20 min into a universe-wide run). Read the same env var the rest
+// of the codebase uses (fetch-edgar.mjs, claude-summarize.yml).
+const SEC_UA = `Earnings Tracker (${process.env.EDGAR_CONTACT_EMAIL || "klpp@bluorbank.lv"})`;
 
 // XBRL concept priority list — expanded for Task 2 (Sweep 3 + Part 4).
 // Kept in sync with frontend/server/lib/secVerbatim.ts XBRL_MAP.

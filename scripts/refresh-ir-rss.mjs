@@ -53,7 +53,8 @@ const WINDOW_LEAD = 2;
 const WINDOW_TRAIL = 35;
 const REQUEST_TIMEOUT_MS = 8_000;
 const CONCURRENCY = 6;
-const SEC_UA = "earnings-dashboard karlis@example.com";
+// SEC EDGAR fair-access — real contact email required.
+const SEC_UA = `earnings-dashboard ${process.env.EDGAR_CONTACT_EMAIL || "klpp@bluorbank.lv"}`;
 const BROWSER_UA =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +
   "(KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36";

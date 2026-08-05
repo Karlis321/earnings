@@ -23,7 +23,8 @@ const __dirname = path.dirname(__filename);
 const ROOT = path.resolve(__dirname, "..");
 const REG_PATH = path.join(ROOT, "data", "entity-registry.json");
 const AUDIT_PATH = path.join(ROOT, "scripts", "audits", "resolve-missing-ciks.json");
-const SEC_UA = "earnings-dashboard karlis@example.com";
+// SEC EDGAR fair-access — real contact email required.
+const SEC_UA = `earnings-dashboard ${process.env.EDGAR_CONTACT_EMAIL || "klpp@bluorbank.lv"}`;
 
 const DRY = process.argv.includes("--dry-run");
 

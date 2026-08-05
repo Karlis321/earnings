@@ -102,6 +102,13 @@ jobs:
           FMP_API_KEY: ${{ secrets.FMP_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           TWITTERAPI_IO_KEY: ${{ secrets.TWITTERAPI_IO_KEY }}
+          # SEC EDGAR fair-access — the sec-verbatim phase (rederive-sec-
+          # xbrl) queries data.sec.gov/api/xbrl/companyfacts per CIK at 1
+          # req/s across ~1,200 companies (~20 min sustained). SEC blocks
+          # UAs containing example.com after prolonged querying, which
+          # caused the phase to fail ~15-20 min into every run before
+          # this fix. All SEC-touching scripts must inherit this env.
+          EDGAR_CONTACT_EMAIL: ${{ vars.EDGAR_CONTACT_EMAIL || 'klpp@bluorbank.lv' }}
         run: |
           set -euo pipefail
           FLAGS=""

@@ -42,7 +42,9 @@ const args = process.argv.slice(2);
 const DRY = args.includes("--dry-run");
 const SCOPE = args.find((a) => a.startsWith("--scope="))?.slice(8) ?? "sp500-latest";
 const LIMIT = Number(args.find((a) => a.startsWith("--limit="))?.slice(8) ?? 0) || null;
-const SEC_UA = "earnings-dashboard karlis@example.com";
+// SEC EDGAR fair-access — real contact email required; example.com
+// gets soft-blocked after sustained querying.
+const SEC_UA = `earnings-dashboard ${process.env.EDGAR_CONTACT_EMAIL || "klpp@bluorbank.lv"}`;
 
 function tickerSlug(t) { return t.replace(/\s+/g, "_").replace(/[^A-Z0-9_.-]/gi, "_"); }
 function daysBetween(a, b) {
