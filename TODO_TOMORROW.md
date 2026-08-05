@@ -2,6 +2,29 @@
 
 Small named items that need a follow-up, not fresh design work.
 
+## Post-refresh follow-ups (2026-08-05)
+
+Not blocking, but worth doing when you have time:
+
+1. **AAPL retry** — still `kpi-only`, no extendedMetrics. Batch didn't
+   reach it after the 8-K exhibit resolver fix (commit 6a669fb9).
+   Manual trigger `/earnings AAPL US` needed via
+   `.github/workflows/claude-summarize.yml` dispatch.
+
+2. **SP500 batch resumption** — the `regenerate-summaries` batch ran
+   25 tickers before hitting the workflow's 24h timeout / `--max-turns`
+   cap. Only 25/491 SP500 have extendedMetrics. Fire another
+   `regenerate-summaries.yml` with `source=sp500`, `start_at=25`,
+   `limit=30` to continue.
+
+3. **/sweep for 2026-08-05 reports** — the refresh workflow's step 7
+   (chain to `/sweep`) got skipped because step 5 exited 1. Any
+   companies that reported today didn't get automatically summarized.
+   Optional manual `/sweep` trigger via `claude-summarize.yml`.
+
+4. **6 residual report-attachment violations** — will auto-heal in
+   tomorrow's 03:00 UTC cron. No action needed.
+
 ## Actionable
 
 - **PSN US ↔ PSNY US revenue drift (co-7f5a4f7089, Polestar).** Both
