@@ -102,13 +102,17 @@ jobs:
           FMP_API_KEY: ${{ secrets.FMP_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           TWITTERAPI_IO_KEY: ${{ secrets.TWITTERAPI_IO_KEY }}
-          # SEC EDGAR fair-access — the sec-verbatim phase (rederive-sec-
-          # xbrl) queries data.sec.gov/api/xbrl/companyfacts per CIK at 1
-          # req/s across ~1,200 companies (~20 min sustained). SEC blocks
-          # UAs containing example.com after prolonged querying, which
-          # caused the phase to fail ~15-20 min into every run before
-          # this fix. All SEC-touching scripts must inherit this env.
+          # SEC EDGAR fair-access — real contact email. Historical bug
+          # was hardcoded example.com in some scripts; fixed 2026-08-05.
           EDGAR_CONTACT_EMAIL: ${{ vars.EDGAR_CONTACT_EMAIL || 'klpp@bluorbank.lv' }}
+          # Bump Node heap to 8 GB. sec-verbatim (rederive-sec-xbrl)
+          # accumulates ~1,200 companies × ~7 events × shard objects
+          # plus a per-CIK factsCache; the default 4 GB heap OOMs at
+          # ~800 companies with "Reached heap limit Allocation failed".
+          # This is the real root cause of every refresh-data failure
+          # today — SEC UA email was a red herring. Ubuntu GitHub runners
+          # have 16 GB RAM, so 8 GB is safe headroom.
+          NODE_OPTIONS: "--max-old-space-size=8192"
         run: |
           set -euo pipefail
           FLAGS=""
