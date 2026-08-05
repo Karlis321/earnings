@@ -1,0 +1,28 @@
+{
+  "ticker": "BMY US",
+  "period": "FY2026 Q2",
+  "reported_at": "2026-07-30",
+  "generated_at": "2026-08-05T00:00:00.000Z",
+  "depth": "filing",
+  "headline": "Growth Portfolio momentum lifts results; outlook raised",
+  "kpis": [
+    { "label": "Revenue", "value": "$12.973B", "delta": "+5.7%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Net earnings (GAAP)", "value": "$3.317B", "delta": "+153.3%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Net earnings (non-GAAP)", "value": "$4.172B", "delta": "+39.8%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EPS (diluted, GAAP)", "value": "$1.62", "delta": "+153.1%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EPS (diluted, non-GAAP)", "value": "$2.04", "delta": "+39.7%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Gross margin (GAAP)", "value": "71.3%", "delta": "-120bps", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Cash & equivalents", "value": "$8.722B", "delta": "-30.8%", "delta_basis": "y/y", "direction": "down" }
+  ],
+  "summary_short": "Bristol Myers Squibb reported Q2 FY2026 revenue of $12.973 billion, up 5.7% y/y (+6% as stated in the release) on 15% Growth Portfolio growth, with GAAP EPS of $1.62 (+153.1% y/y) and non-GAAP EPS of $2.04 (+39.7% y/y); the company raised full-year non-GAAP revenue and EPS guidance.",
+  "summary_long": "Growth Portfolio revenue rose 15% y/y to $7.6B led by Opdivo Qvantig, Reblozyl, Breyanzi, Camzyos and Opdualag, while Legacy Portfolio fell 4% on generic erosion partly offset by Eliquis growth; total revenue reached $13.0B (+6%). GAAP net earnings roughly tripled y/y to $3.317B ($1.62 diluted EPS) as the prior-year quarter carried a $1.5B Acquired IPRD charge and higher amortization; non-GAAP EPS was $2.04 (+40% y/y). Gross margin compressed 120bps to 71.3% on mix. Cash fell to $8.722B from $9.574B last quarter. BMS raised FY2026 non-GAAP revenue guidance to ~$49.0-$50.0B (from ~$46.0-$47.5B), non-GAAP EPS guidance to $6.75-$7.00 (from $6.05-$6.35), and its Eliquis WW growth outlook to 20%-25% (from 10%-15%).",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/14272/000001427226000018/a2026q2ex991-filing.htm",
+  "confidence_notes": "REGENERATION: this run was executed in explicit force-regenerate mode per instruction, bypassing the Step-0 already-exists guard; no BMY_US_FY2026_Q2.json summary actually existed on disk prior to this run (resolver reported summaryExists=false, and no file was found under data/summaries/), so there was nothing literally to overwrite, but every figure below was derived fresh from the resolver's shard KPIs and the primary EX-99.1 press release (Bristol Myers Squibb Q2 2026 results, filed 2026-07-30) rather than reused from any prior version. Ledger note: GAAP basic and diluted EPS are both $1.62 for the quarter per the filing's consolidated statement of earnings, matching the shard's eps_usd and eps_diluted_usd KPIs exactly. Non-GAAP EPS ($2.04) and non-GAAP net earnings ($4.172B) come from the release's own Specified Items / GAAP-to-non-GAAP reconciliation table and are reported alongside, not merged into, the GAAP shard KPIs -- no cross-basis surprise or absurd-surprise flags were present on this event at resolution time. Revenue delta is shown as +5.7% (precise y/y calc from shard actual/prior) vs. the release's own rounded '+6%' headline figure -- both derive from the same $12,973M / $12,269M figures, the difference is presentation rounding only. Guidance change (revenue, non-GAAP EPS, and Eliquis growth range) is captured in summary_long and drivers per the release's explicit 'raising' language, but was NOT written to the event's data/events/BMY_US.json guidance[] array -- no sanctioned script exists for that write (apply-extended-metrics.mjs only covers extendedMetrics[]), so per the tooling-gap rule this sub-step was left undone rather than hand-edited; this matches established practice on other filing-depth summaries in this repo (e.g. ABT_US_FY2026_Q2), where guidance[] also remains empty on the shard despite guidance being disclosed and narrated.",
+  "drivers": [
+    { "metric": "Revenue", "direction": "up", "explanation": "Growth Portfolio revenue rose 15% (14% Ex-FX) to $7.6B, led by Opdivo Qvantig, Reblozyl, Camzyos, Breyanzi and Opdualag; Legacy Portfolio fell 4% on generic erosion, partly offset by Eliquis demand growth.", "basis": "company-disclosed" },
+    { "metric": "Net earnings (GAAP)", "direction": "up", "explanation": "GAAP net income roughly tripled y/y as the prior-year quarter included a $1.5B Acquired IPRD charge and higher amortization ($830M vs $437M this quarter), plus a lower effective tax rate (18.8% vs 25.9%).", "basis": "company-disclosed" },
+    { "metric": "Gross margin (GAAP)", "direction": "down", "explanation": "Gross margin decreased from 72.5% to 71.3% on a GAAP basis, primarily reflecting a change in product mix.", "basis": "company-disclosed" },
+    { "metric": "Net earnings (non-GAAP)", "direction": "up", "explanation": "Non-GAAP earnings growth is explained by excluding the same specified items (IPRD impairments, priority review voucher cost, amortization, restructuring) that inflate the GAAP comparison base; underlying non-GAAP EPS still rose 40% y/y.", "basis": "derived-arithmetic" },
+    { "metric": "overall", "direction": "up", "explanation": "Company raised FY2026 non-GAAP revenue guidance to ~$49.0-$50.0B (from ~$46.0-$47.5B) and non-GAAP diluted EPS guidance to $6.75-$7.00 (from $6.05-$6.35), citing broad-based and continuing portfolio momentum.", "basis": "company-disclosed" }
+  ]
+}
