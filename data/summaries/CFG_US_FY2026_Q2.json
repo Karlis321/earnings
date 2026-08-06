@@ -1,0 +1,38 @@
+{
+  "ticker": "CFG US",
+  "period": "FY2026 Q2",
+  "reported_at": "2026-07-16",
+  "generated_at": "2026-08-06T08:40:33.000Z",
+  "depth": "filing",
+  "headline": "Profit surges as margins widen and credit quality improves",
+  "kpis": [
+    { "label": "Revenue", "value": "$2,283M", "delta": "+5.3%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Revenue", "value": "$2,283M", "delta": "+12.1%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Net income", "value": "$587M", "delta": "+13.5%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Net income", "value": "$587M", "delta": "+34.6%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EPS (diluted)", "value": "$1.30", "delta": "+15.0%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "EPS (diluted)", "value": "$1.30", "delta": "+41.3%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Pretax income", "value": "$755M", "delta": "+16.2%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Pretax income", "value": "$755M", "delta": "+36.3%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Total cash", "value": "$12,760M", "delta": "+3.5%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Total cash", "value": "$12,760M", "delta": "+49.3%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Long-term debt", "value": "$15,190M", "delta": "+23.9%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Long-term debt", "value": "$15,190M", "delta": "+21.3%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Shareholders' equity", "value": "$26,183M", "delta": "+0.0%", "delta_basis": "q/q", "direction": "flat" },
+    { "label": "Shareholders' equity", "value": "$26,183M", "delta": "+3.8%", "delta_basis": "y/y", "direction": "up" }
+  ],
+  "summary_short": "Citizens Financial Group reported Q2 FY2026 net income of $587M, up 35% y/y and 14% q/q, with diluted EPS of $1.30 (+41% y/y) as net interest margin rose to 3.17% and fee income grew 8% q/q on record Capital Markets and Wealth results.",
+  "summary_long": "Net interest income rose 4.4% q/q and 14% y/y as NIM expanded to 3.17%, benefiting from swap-termination effects, Non-Core runoff, and fixed-rate asset repricing. Fee income increased 8% q/q to $652M, led by record Capital Markets ($153M) and Wealth ($102M) fees. Pre-provision profit rose 13% q/q to $889M with positive operating leverage of 4.1% q/q and 6.4% y/y. Credit quality improved: net charge-offs fell to 37bps (-2bps q/q) and nonaccrual loans declined 4% q/q, though the CET1 ratio slipped to 10.4% from 10.5%. Citizens repurchased $225M of shares and paid a $0.46/share dividend, ending the quarter with $26.2B of stockholders' equity and tangible book value per share up 1% q/q to $38.29.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/759944/000075994426000133/a2q26earningsrelease.htm",
+  "confidence_notes": "REGENERATION: this run was executed in explicit force-regenerate mode per instruction (Step-0 already-exists guard bypassed); the resolver reported summaryExists=false and no CFG_US_FY2026_Q2.json existed on disk prior to this run, so there was nothing to overwrite, but this is documented as a forced regeneration per instruction. Sourcing note: within resolve-earnings-target's shard kpis object, the current-quarter actuals for Revenue and Net income are SEC-verbatim (regulatory) but their prior_qq/prior_yy comparison values are labeled Yahoo fundamentals-timeseries (wire provenance) rather than SEC — a basis mismatch on the comparison side only (not an actual-vs-estimate surprise, so the same-basis surprise rule doesn't formally apply, but flagging for ledger discipline). Cross-checked: the q/q and y/y percentage deltas computed from these mixed-basis pairs (+5.3%/+12.1% revenue, +13.5%/+34.6% net income) match the release's own self-reported deltas (+5%/+12%, +14%/+35%) to within rounding, so no material distortion. Pretax income, Total cash, Long-term debt, and Shareholders' equity priors are same-basis SEC EDGAR on both sides. Sector-specific ratios (NIM, efficiency ratio, CET1, ROTCE, net charge-off ratio) are not in the SEC-XBRL-derived shard kpis object (banks don't tag these via standard GAAP concepts) and were extracted separately into extendedMetrics via Step 3b.",
+  "drivers": [
+    { "metric": "Revenue", "direction": "up", "explanation": "Company attributes the increase to net interest income growth (higher NIM from swap terminations, Non-Core runoff and fixed-rate repricing) plus record Capital Markets and Wealth fees.", "basis": "company-disclosed" },
+    { "metric": "Net income", "direction": "up", "explanation": "Growth reflects the revenue increase and a lower provision for credit losses ($134M vs $164M y/y), partially offset by higher noninterest expense from Private Bank hiring.", "basis": "company-disclosed" },
+    { "metric": "EPS (diluted)", "direction": "up", "explanation": "EPS growth outpaces net income growth due to a lower diluted share count (426.7M vs 436.5M a year ago) from continued buybacks.", "basis": "derived-arithmetic" },
+    { "metric": "Pretax income", "direction": "up", "explanation": "not explained separately in the release; mirrors the pre-provision profit and provision-for-credit-losses moves already covered under Net income.", "basis": "company-disclosed" },
+    { "metric": "Total cash", "direction": "up", "explanation": "not explained directly, but consistent with the release's interest-earning-assets table showing interest-bearing deposits in banks up $4.5 billion y/y.", "basis": "derived-arithmetic" },
+    { "metric": "Long-term debt", "direction": "up", "explanation": "Company attributes the rise in period-end borrowed funds primarily to an increase in FHLB advances, partially offset by declining auto-collateralized borrowings as that portfolio runs off.", "basis": "company-disclosed" },
+    { "metric": "Shareholders' equity", "direction": "up", "explanation": "Y/y growth reflects retained earnings accumulation; q/q was roughly flat as retained earnings growth was offset by $225M of buybacks and $197M of common dividends paid in the quarter.", "basis": "derived-arithmetic" },
+    { "metric": "overall", "direction": "up", "explanation": "CEO Van Saun calls it an \"outstanding\" quarter, citing strong revenue growth, positive operating leverage, and favorable credit performance, with confidence in momentum through 2027.", "basis": "company-disclosed" }
+  ]
+}
