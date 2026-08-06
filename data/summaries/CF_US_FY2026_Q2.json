@@ -1,0 +1,35 @@
+{
+  "ticker": "CF US",
+  "period": "FY2026 Q2",
+  "reported_at": "2026-08-05",
+  "generated_at": "2026-08-06T00:00:00.000Z",
+  "depth": "filing",
+  "headline": "Strong pricing drives sharp profit growth as margins widen",
+  "kpis": [
+    { "label": "Revenue", "value": "$2,222M", "delta": "+11.9%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Revenue", "value": "$2,222M", "delta": "+17.6%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Gross margin %", "value": "51.5%", "delta": "+13.9ppt", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Gross margin %", "value": "51.5%", "delta": "+11.6ppt", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Net earnings", "value": "$727M", "delta": "+18.2%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Net earnings", "value": "$727M", "delta": "+88.3%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EPS (diluted)", "value": "$4.73", "delta": "+18.5%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "EPS (diluted)", "value": "$4.73", "delta": "+99.6%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Adjusted EBITDA", "value": "$1,192M", "delta": "+21.3%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Adjusted EBITDA", "value": "$1,192M", "delta": "+56.6%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Capital expenditures", "value": "$271M", "delta": "+21.5%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Capital expenditures", "value": "$271M", "delta": "+10.6%", "delta_basis": "y/y", "direction": "up" }
+  ],
+  "summary_short": "CF Industries reported Q2 FY2026 net sales of $2,222M, up 17.6% y/y and 11.9% q/q, with diluted EPS of $4.73 (+99.6% y/y) as strong nitrogen pricing lifted gross margin to 51.5% of sales and Adjusted EBITDA to $1,192M.",
+  "summary_long": "Adjusted EBITDA rose to $1,192M (+56.6% y/y) as a $588M pricing gain outweighed a $158M volume headwind and a $52M swing in business-interruption insurance. Net earnings attributable to common stockholders reached $727M ($4.73 diluted EPS), nearly double last year. CF returned $302M to shareholders in Q2 via $225M of buybacks and dividends, then raised its quarterly dividend 20% to $0.60/share in July. Blue Point's low-carbon ammonia JV received permits in July, with construction starting in August; Yazoo City remains offline pending a 1H 2027 restart. Management guides FY2026 CF-funded capex to ~$950M (~$400M for Blue Point) and gross ammonia production to ~9.5 million tons.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/1324404/000110465926091275/tm2622111d1_ex99-1.htm",
+  "confidence_notes": "REGENERATION: this run was executed in explicit force-regenerate mode per instruction, bypassing the Step-0 already-exists guard; no CF_US_FY2026_Q2.json summary existed on disk prior to this run (resolver reported summaryExists=false), so there was nothing to overwrite, but this run is documented as a forced regeneration per instruction. Sourcing note: the resolver's shard 'kpis' object only carries eps_usd for this shallow-coverage ticker (prior_qq=3.99, prior_yy=2.37, both SEC-verbatim); all other KPI values and deltas above were read directly from the primary filing (EX-99.1 investor presentation), which discloses only Q2 and 1H columns for both fiscal years. Q1 2026 and Q1 2025 comparison bases (used for the q/q deltas on Revenue, Gross margin %, Net earnings, Adjusted EBITDA, and Capital expenditures) were derived by simple subtraction of the disclosed Q2 figure from the disclosed 1H figure for the same fiscal year -- pure arithmetic on numbers the release states explicitly, no invented data. Gross margin % for the derived Q1 2026 base (37.6%) was computed by dividing the derived Q1 gross-margin dollars by the derived Q1 net-sales dollars. EPS q/q/y/y deltas use the shard's SEC-verbatim EarningsPerShareBasic priors rather than a derived diluted figure, per ledger-discipline preference for regulatory-sourced data; the derived diluted-EPS equivalent (8.71-4.73=3.98 for Q1 2026) is consistent with the shard's 3.99. Adjusted EBITDA (non-GAAP) is management's own reconciled measure per the filing's appendix; EBITDA (GAAP-adjacent, $1,166M) was not used as a KPI row to avoid duplicating Adjusted EBITDA.",
+  "drivers": [
+    { "metric": "Revenue", "direction": "up", "explanation": "Company attributes the gain to a tight global nitrogen supply-demand balance and strong realized pricing, partly offset by lower sales volumes.", "basis": "company-disclosed" },
+    { "metric": "Adjusted EBITDA", "direction": "up", "explanation": "Company's own bridge shows a $588M favorable pricing swing outweighing a $158M unfavorable volume impact and a $52M unfavorable swing in business-interruption insurance versus Q2 2025.", "basis": "company-disclosed" },
+    { "metric": "Gross margin %", "direction": "up", "explanation": "Margin expansion is arithmetically explained by net sales growing faster than cost of sales; the natural-gas cost used in production was roughly flat y/y ($3.36 to $3.37/MMBtu).", "basis": "derived-arithmetic" },
+    { "metric": "Net earnings", "direction": "up", "explanation": "Growth mirrors the Adjusted EBITDA increase from higher realized pricing; the release does not separately explain net-earnings drivers beyond the EBITDA bridge.", "basis": "derived-arithmetic" },
+    { "metric": "EPS (diluted)", "direction": "up", "explanation": "EPS growth reflects both higher net earnings and a lower diluted share count (153.9M vs 163.1M a year ago) from continued buybacks.", "basis": "derived-arithmetic" },
+    { "metric": "Capital expenditures", "direction": "up", "explanation": "not explained in the release beyond forward guidance for the full year (~$950M FY2026 CF-funded capex, ~$400M for Blue Point).", "basis": "company-disclosed" },
+    { "metric": "overall", "direction": "up", "explanation": "Company frames the quarter as outstanding operational performance amid tight global nitrogen supply-demand fundamentals, citing 98% 1H available-ammonia-capacity utilization and capacity utilization ahead of North American peers.", "basis": "company-disclosed" }
+  ]
+}
