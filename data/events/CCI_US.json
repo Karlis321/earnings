@@ -1080,6 +1080,12 @@
               "actualFamily": "sec",
               "estimateFamily": "yahoo-chart",
               "clearedAt": "2026-08-05T10:41:52.162Z"
+            },
+            {
+              "value": 44.047340963949246,
+              "actualFamily": "sec",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-08-06T06:02:42.613Z"
             }
           ]
         },
@@ -1509,6 +1515,12 @@
               "actualFamily": "yahoo-timeseries",
               "estimateFamily": "yahoo-chart",
               "clearedAt": "2026-08-05T10:41:52.162Z"
+            },
+            {
+              "value": 15.734742878858544,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-08-06T06:02:42.613Z"
             }
           ]
         },
@@ -1930,6 +1942,12 @@
               "actualFamily": "sec",
               "estimateFamily": "yahoo-chart",
               "clearedAt": "2026-08-05T10:41:52.162Z"
+            },
+            {
+              "value": -27.800900365242498,
+              "actualFamily": "sec",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-08-06T06:02:42.613Z"
             }
           ]
         },
@@ -2205,7 +2223,7 @@
       "guidanceMove": null,
       "freshness": "fresh",
       "provenance": "yahoo-timeseries",
-      "provenanceAsOf": "2026-07-31T10:18:15.544Z",
+      "provenanceAsOf": "2026-08-06T05:45:02.155Z",
       "metrics": [
         {
           "key": "eps_diluted_usd",
@@ -2215,19 +2233,31 @@
           "estimate": null,
           "actual": {
             "value": 0.22,
-            "unit": "USD",
+            "unit": "USD/shares",
             "source": {
-              "url": "https://finance.yahoo.com/quote/CCI/financials",
-              "label": "Yahoo · fundamentals-timeseries",
-              "provenance": "wire",
+              "url": "https://www.sec.gov/Archives/edgar/data/1051470/000105147026000074/",
+              "label": "SEC EDGAR · 10-Q · EarningsPerShareDiluted",
+              "provenance": "regulatory",
               "locator": null
             },
             "asOf": "2026-06-30",
-            "fetchedAt": "2026-07-31T10:18:15.544Z",
-            "method": "yahoo",
-            "confidence": 0.85
+            "fetchedAt": "2026-08-06T05:45:02.155Z",
+            "method": "filing_manual",
+            "confidence": 0.98
           },
-          "prior": null
+          "prior": null,
+          "superseded": [
+            {
+              "value": 0.22,
+              "unit": "USD",
+              "source": "Yahoo · fundamentals-timeseries",
+              "asOf": "2026-06-30",
+              "fetchedAt": "2026-07-31T10:18:15.544Z",
+              "replaced_at": "2026-08-06T05:45:02.155Z",
+              "replaced_by": "rederive-sec-xbrl",
+              "pct_delta": 0
+            }
+          ]
         },
         {
           "key": "eps_usd",
@@ -2250,17 +2280,17 @@
           },
           "actual": {
             "value": 0.22,
-            "unit": "USD",
+            "unit": "USD/shares",
             "source": {
-              "url": "https://finance.yahoo.com/quote/CCI/financials",
-              "label": "Yahoo · fundamentals-timeseries",
-              "provenance": "wire",
+              "url": "https://www.sec.gov/Archives/edgar/data/1051470/000105147026000074/",
+              "label": "SEC EDGAR · 10-Q · EarningsPerShareBasic",
+              "provenance": "regulatory",
               "locator": null
             },
             "asOf": "2026-06-30",
-            "fetchedAt": "2026-07-31T10:18:15.544Z",
-            "method": "yahoo",
-            "confidence": 0.85
+            "fetchedAt": "2026-08-06T05:45:02.155Z",
+            "method": "filing_manual",
+            "confidence": 0.98
           },
           "prior": null,
           "_crossBasisSurprise": [
@@ -2293,8 +2323,224 @@
               "actualFamily": "yahoo-timeseries",
               "estimateFamily": "yahoo-chart",
               "clearedAt": "2026-08-05T10:41:52.162Z"
+            },
+            {
+              "value": -56.60835092010019,
+              "actualFamily": "sec",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-08-06T06:02:42.613Z"
+            }
+          ],
+          "superseded": [
+            {
+              "value": 0.22,
+              "unit": "USD",
+              "source": "Yahoo · fundamentals-timeseries",
+              "asOf": "2026-06-30",
+              "fetchedAt": "2026-07-31T10:18:15.544Z",
+              "replaced_at": "2026-08-06T05:45:02.155Z",
+              "replaced_by": "rederive-sec-xbrl",
+              "pct_delta": 0
             }
           ]
+        },
+        {
+          "key": "revenue_usd_m",
+          "displayLabel": "revenue (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 1008,
+            "unit": "USD",
+            "source": {
+              "url": "https://www.sec.gov/Archives/edgar/data/1051470/000105147026000074/",
+              "label": "SEC EDGAR · 10-Q · Revenues",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2026-06-30",
+            "fetchedAt": "2026-08-06T05:45:02.155Z",
+            "method": "filing_manual",
+            "confidence": 0.98
+          },
+          "prior": null
+        },
+        {
+          "key": "cost_of_revenue_usd_m",
+          "displayLabel": "cost of revenue (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 19,
+            "unit": "USD",
+            "source": {
+              "url": "https://www.sec.gov/Archives/edgar/data/1051470/000105147026000074/",
+              "label": "SEC EDGAR · 10-Q · CostOfGoodsAndServicesSold",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2026-06-30",
+            "fetchedAt": "2026-08-06T05:45:02.155Z",
+            "method": "filing_manual",
+            "confidence": 0.98
+          },
+          "prior": null
+        },
+        {
+          "key": "operating_income_usd_m",
+          "displayLabel": "operating income (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 470,
+            "unit": "USD",
+            "source": {
+              "url": "https://www.sec.gov/Archives/edgar/data/1051470/000105147026000074/",
+              "label": "SEC EDGAR · 10-Q · OperatingIncomeLoss",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2026-06-30",
+            "fetchedAt": "2026-08-06T05:45:02.155Z",
+            "method": "filing_manual",
+            "confidence": 0.98
+          },
+          "prior": null
+        },
+        {
+          "key": "pretax_income_usd_m",
+          "displayLabel": "pretax income (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 303,
+            "unit": "USD",
+            "source": {
+              "url": "https://www.sec.gov/Archives/edgar/data/1051470/000105147026000074/",
+              "label": "SEC EDGAR · 10-Q · IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2026-06-30",
+            "fetchedAt": "2026-08-06T05:45:02.155Z",
+            "method": "filing_manual",
+            "confidence": 0.98
+          },
+          "prior": null
+        },
+        {
+          "key": "net_income_usd_m",
+          "displayLabel": "net income (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 94,
+            "unit": "USD",
+            "source": {
+              "url": "https://www.sec.gov/Archives/edgar/data/1051470/000105147026000074/",
+              "label": "SEC EDGAR · 10-Q · NetIncomeLoss",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2026-06-30",
+            "fetchedAt": "2026-08-06T05:45:02.155Z",
+            "method": "filing_manual",
+            "confidence": 0.98
+          },
+          "prior": null
+        },
+        {
+          "key": "total_cash_usd_m",
+          "displayLabel": "total cash (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 1042,
+            "unit": "USD",
+            "source": {
+              "url": "https://www.sec.gov/Archives/edgar/data/1051470/000105147026000074/",
+              "label": "SEC EDGAR · 10-Q · CashAndCashEquivalentsAtCarryingValue",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2026-06-30",
+            "fetchedAt": "2026-08-06T05:45:02.155Z",
+            "method": "filing_manual",
+            "confidence": 0.98
+          },
+          "prior": null
+        },
+        {
+          "key": "short_term_debt_usd_m",
+          "displayLabel": "short term debt (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 2260,
+            "unit": "USD",
+            "source": {
+              "url": "https://www.sec.gov/Archives/edgar/data/1051470/000105147026000074/",
+              "label": "SEC EDGAR · 10-Q · DebtCurrent",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2026-06-30",
+            "fetchedAt": "2026-08-06T05:45:02.155Z",
+            "method": "filing_manual",
+            "confidence": 0.98
+          },
+          "prior": null
+        },
+        {
+          "key": "shareholders_equity_usd_m",
+          "displayLabel": "shareholders equity (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": -3270,
+            "unit": "USD",
+            "source": {
+              "url": "https://www.sec.gov/Archives/edgar/data/1051470/000105147026000074/",
+              "label": "SEC EDGAR · 10-Q · StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2026-06-30",
+            "fetchedAt": "2026-08-06T05:45:02.155Z",
+            "method": "filing_manual",
+            "confidence": 0.98
+          },
+          "prior": null
+        },
+        {
+          "key": "weighted_diluted_shares_m",
+          "displayLabel": "weighted diluted shares m",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 434,
+            "unit": "shares",
+            "source": {
+              "url": "https://www.sec.gov/Archives/edgar/data/1051470/000105147026000074/",
+              "label": "SEC EDGAR · 10-Q · WeightedAverageNumberOfDilutedSharesOutstanding",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2026-06-30",
+            "fetchedAt": "2026-08-06T05:45:02.155Z",
+            "method": "filing_manual",
+            "confidence": 0.98
+          },
+          "prior": null
         }
       ],
       "guidance": [
@@ -2303,9 +2549,45 @@
           "displayLabel": "Site rental revenue",
           "period": "FY2026",
           "basis": "full-year, continuing operations ex-Fiber",
-          "low": { "value": 3833, "unit": "USD_m", "source": { "url": "https://www.sec.gov/Archives/edgar/data/1051470/000105147026000069/q22026earningsrelease.htm", "label": "release · guidance", "provenance": "regulatory", "locator": "Outlook table" }, "asOf": "2026-07-22", "method": "filing_manual", "confidence": 0.95 },
-          "high": { "value": 3878, "unit": "USD_m", "source": { "url": "https://www.sec.gov/Archives/edgar/data/1051470/000105147026000069/q22026earningsrelease.htm", "label": "release · guidance", "provenance": "regulatory", "locator": "Outlook table" }, "asOf": "2026-07-22", "method": "filing_manual", "confidence": 0.95 },
-          "midpoint": { "value": 3855, "unit": "USD_m", "source": { "url": "https://www.sec.gov/Archives/edgar/data/1051470/000105147026000069/q22026earningsrelease.htm", "label": "release · guidance", "provenance": "regulatory", "locator": "Outlook summary table, midpoint" }, "asOf": "2026-07-22", "method": "filing_manual", "confidence": 0.95 },
+          "low": {
+            "value": 3833,
+            "unit": "USD_m",
+            "source": {
+              "url": "https://www.sec.gov/Archives/edgar/data/1051470/000105147026000069/q22026earningsrelease.htm",
+              "label": "release · guidance",
+              "provenance": "regulatory",
+              "locator": "Outlook table"
+            },
+            "asOf": "2026-07-22",
+            "method": "filing_manual",
+            "confidence": 0.95
+          },
+          "high": {
+            "value": 3878,
+            "unit": "USD_m",
+            "source": {
+              "url": "https://www.sec.gov/Archives/edgar/data/1051470/000105147026000069/q22026earningsrelease.htm",
+              "label": "release · guidance",
+              "provenance": "regulatory",
+              "locator": "Outlook table"
+            },
+            "asOf": "2026-07-22",
+            "method": "filing_manual",
+            "confidence": 0.95
+          },
+          "midpoint": {
+            "value": 3855,
+            "unit": "USD_m",
+            "source": {
+              "url": "https://www.sec.gov/Archives/edgar/data/1051470/000105147026000069/q22026earningsrelease.htm",
+              "label": "release · guidance",
+              "provenance": "regulatory",
+              "locator": "Outlook summary table, midpoint"
+            },
+            "asOf": "2026-07-22",
+            "method": "filing_manual",
+            "confidence": 0.95
+          },
           "move": "raised",
           "version": 1,
           "supersededById": null
@@ -2315,9 +2597,45 @@
           "displayLabel": "Net income (loss)",
           "period": "FY2026",
           "basis": "full-year, includes contribution from discontinued operations through April 30, 2026",
-          "low": { "value": 730, "unit": "USD_m", "source": { "url": "https://www.sec.gov/Archives/edgar/data/1051470/000105147026000069/q22026earningsrelease.htm", "label": "release · guidance", "provenance": "regulatory", "locator": "Outlook table" }, "asOf": "2026-07-22", "method": "filing_manual", "confidence": 0.95 },
-          "high": { "value": 1010, "unit": "USD_m", "source": { "url": "https://www.sec.gov/Archives/edgar/data/1051470/000105147026000069/q22026earningsrelease.htm", "label": "release · guidance", "provenance": "regulatory", "locator": "Outlook table" }, "asOf": "2026-07-22", "method": "filing_manual", "confidence": 0.95 },
-          "midpoint": { "value": 870, "unit": "USD_m", "source": { "url": "https://www.sec.gov/Archives/edgar/data/1051470/000105147026000069/q22026earningsrelease.htm", "label": "release · guidance", "provenance": "regulatory", "locator": "Outlook summary table, midpoint" }, "asOf": "2026-07-22", "method": "filing_manual", "confidence": 0.95 },
+          "low": {
+            "value": 730,
+            "unit": "USD_m",
+            "source": {
+              "url": "https://www.sec.gov/Archives/edgar/data/1051470/000105147026000069/q22026earningsrelease.htm",
+              "label": "release · guidance",
+              "provenance": "regulatory",
+              "locator": "Outlook table"
+            },
+            "asOf": "2026-07-22",
+            "method": "filing_manual",
+            "confidence": 0.95
+          },
+          "high": {
+            "value": 1010,
+            "unit": "USD_m",
+            "source": {
+              "url": "https://www.sec.gov/Archives/edgar/data/1051470/000105147026000069/q22026earningsrelease.htm",
+              "label": "release · guidance",
+              "provenance": "regulatory",
+              "locator": "Outlook table"
+            },
+            "asOf": "2026-07-22",
+            "method": "filing_manual",
+            "confidence": 0.95
+          },
+          "midpoint": {
+            "value": 870,
+            "unit": "USD_m",
+            "source": {
+              "url": "https://www.sec.gov/Archives/edgar/data/1051470/000105147026000069/q22026earningsrelease.htm",
+              "label": "release · guidance",
+              "provenance": "regulatory",
+              "locator": "Outlook summary table, midpoint"
+            },
+            "asOf": "2026-07-22",
+            "method": "filing_manual",
+            "confidence": 0.95
+          },
           "move": "raised",
           "version": 1,
           "supersededById": null
@@ -2327,9 +2645,45 @@
           "displayLabel": "Net income per share - diluted",
           "period": "FY2026",
           "basis": "full-year, includes contribution from discontinued operations through April 30, 2026",
-          "low": { "value": 1.70, "unit": "USD/shares", "source": { "url": "https://www.sec.gov/Archives/edgar/data/1051470/000105147026000069/q22026earningsrelease.htm", "label": "release · guidance", "provenance": "regulatory", "locator": "Outlook table" }, "asOf": "2026-07-22", "method": "filing_manual", "confidence": 0.95 },
-          "high": { "value": 2.35, "unit": "USD/shares", "source": { "url": "https://www.sec.gov/Archives/edgar/data/1051470/000105147026000069/q22026earningsrelease.htm", "label": "release · guidance", "provenance": "regulatory", "locator": "Outlook table" }, "asOf": "2026-07-22", "method": "filing_manual", "confidence": 0.95 },
-          "midpoint": { "value": 2.02, "unit": "USD/shares", "source": { "url": "https://www.sec.gov/Archives/edgar/data/1051470/000105147026000069/q22026earningsrelease.htm", "label": "release · guidance", "provenance": "regulatory", "locator": "Outlook summary table, midpoint" }, "asOf": "2026-07-22", "method": "filing_manual", "confidence": 0.95 },
+          "low": {
+            "value": 1.7,
+            "unit": "USD/shares",
+            "source": {
+              "url": "https://www.sec.gov/Archives/edgar/data/1051470/000105147026000069/q22026earningsrelease.htm",
+              "label": "release · guidance",
+              "provenance": "regulatory",
+              "locator": "Outlook table"
+            },
+            "asOf": "2026-07-22",
+            "method": "filing_manual",
+            "confidence": 0.95
+          },
+          "high": {
+            "value": 2.35,
+            "unit": "USD/shares",
+            "source": {
+              "url": "https://www.sec.gov/Archives/edgar/data/1051470/000105147026000069/q22026earningsrelease.htm",
+              "label": "release · guidance",
+              "provenance": "regulatory",
+              "locator": "Outlook table"
+            },
+            "asOf": "2026-07-22",
+            "method": "filing_manual",
+            "confidence": 0.95
+          },
+          "midpoint": {
+            "value": 2.02,
+            "unit": "USD/shares",
+            "source": {
+              "url": "https://www.sec.gov/Archives/edgar/data/1051470/000105147026000069/q22026earningsrelease.htm",
+              "label": "release · guidance",
+              "provenance": "regulatory",
+              "locator": "Outlook summary table, midpoint"
+            },
+            "asOf": "2026-07-22",
+            "method": "filing_manual",
+            "confidence": 0.95
+          },
           "move": "raised",
           "version": 1,
           "supersededById": null
@@ -2339,9 +2693,45 @@
           "displayLabel": "Adjusted EBITDA",
           "period": "FY2026",
           "basis": "full-year, ex-Fiber",
-          "low": { "value": 2665, "unit": "USD_m", "source": { "url": "https://www.sec.gov/Archives/edgar/data/1051470/000105147026000069/q22026earningsrelease.htm", "label": "release · guidance", "provenance": "regulatory", "locator": "Outlook table" }, "asOf": "2026-07-22", "method": "filing_manual", "confidence": 0.95 },
-          "high": { "value": 2715, "unit": "USD_m", "source": { "url": "https://www.sec.gov/Archives/edgar/data/1051470/000105147026000069/q22026earningsrelease.htm", "label": "release · guidance", "provenance": "regulatory", "locator": "Outlook table" }, "asOf": "2026-07-22", "method": "filing_manual", "confidence": 0.95 },
-          "midpoint": { "value": 2690, "unit": "USD_m", "source": { "url": "https://www.sec.gov/Archives/edgar/data/1051470/000105147026000069/q22026earningsrelease.htm", "label": "release · guidance", "provenance": "regulatory", "locator": "Outlook summary table, midpoint" }, "asOf": "2026-07-22", "method": "filing_manual", "confidence": 0.95 },
+          "low": {
+            "value": 2665,
+            "unit": "USD_m",
+            "source": {
+              "url": "https://www.sec.gov/Archives/edgar/data/1051470/000105147026000069/q22026earningsrelease.htm",
+              "label": "release · guidance",
+              "provenance": "regulatory",
+              "locator": "Outlook table"
+            },
+            "asOf": "2026-07-22",
+            "method": "filing_manual",
+            "confidence": 0.95
+          },
+          "high": {
+            "value": 2715,
+            "unit": "USD_m",
+            "source": {
+              "url": "https://www.sec.gov/Archives/edgar/data/1051470/000105147026000069/q22026earningsrelease.htm",
+              "label": "release · guidance",
+              "provenance": "regulatory",
+              "locator": "Outlook table"
+            },
+            "asOf": "2026-07-22",
+            "method": "filing_manual",
+            "confidence": 0.95
+          },
+          "midpoint": {
+            "value": 2690,
+            "unit": "USD_m",
+            "source": {
+              "url": "https://www.sec.gov/Archives/edgar/data/1051470/000105147026000069/q22026earningsrelease.htm",
+              "label": "release · guidance",
+              "provenance": "regulatory",
+              "locator": "Outlook summary table, midpoint"
+            },
+            "asOf": "2026-07-22",
+            "method": "filing_manual",
+            "confidence": 0.95
+          },
           "move": "held",
           "version": 1,
           "supersededById": null
@@ -2351,9 +2741,45 @@
           "displayLabel": "AFFO",
           "period": "FY2026",
           "basis": "full-year, ex-Fiber",
-          "low": { "value": 1950, "unit": "USD_m", "source": { "url": "https://www.sec.gov/Archives/edgar/data/1051470/000105147026000069/q22026earningsrelease.htm", "label": "release · guidance", "provenance": "regulatory", "locator": "Outlook table" }, "asOf": "2026-07-22", "method": "filing_manual", "confidence": 0.95 },
-          "high": { "value": 2000, "unit": "USD_m", "source": { "url": "https://www.sec.gov/Archives/edgar/data/1051470/000105147026000069/q22026earningsrelease.htm", "label": "release · guidance", "provenance": "regulatory", "locator": "Outlook table" }, "asOf": "2026-07-22", "method": "filing_manual", "confidence": 0.95 },
-          "midpoint": { "value": 1975, "unit": "USD_m", "source": { "url": "https://www.sec.gov/Archives/edgar/data/1051470/000105147026000069/q22026earningsrelease.htm", "label": "release · guidance", "provenance": "regulatory", "locator": "Outlook summary table, midpoint" }, "asOf": "2026-07-22", "method": "filing_manual", "confidence": 0.95 },
+          "low": {
+            "value": 1950,
+            "unit": "USD_m",
+            "source": {
+              "url": "https://www.sec.gov/Archives/edgar/data/1051470/000105147026000069/q22026earningsrelease.htm",
+              "label": "release · guidance",
+              "provenance": "regulatory",
+              "locator": "Outlook table"
+            },
+            "asOf": "2026-07-22",
+            "method": "filing_manual",
+            "confidence": 0.95
+          },
+          "high": {
+            "value": 2000,
+            "unit": "USD_m",
+            "source": {
+              "url": "https://www.sec.gov/Archives/edgar/data/1051470/000105147026000069/q22026earningsrelease.htm",
+              "label": "release · guidance",
+              "provenance": "regulatory",
+              "locator": "Outlook table"
+            },
+            "asOf": "2026-07-22",
+            "method": "filing_manual",
+            "confidence": 0.95
+          },
+          "midpoint": {
+            "value": 1975,
+            "unit": "USD_m",
+            "source": {
+              "url": "https://www.sec.gov/Archives/edgar/data/1051470/000105147026000069/q22026earningsrelease.htm",
+              "label": "release · guidance",
+              "provenance": "regulatory",
+              "locator": "Outlook summary table, midpoint"
+            },
+            "asOf": "2026-07-22",
+            "method": "filing_manual",
+            "confidence": 0.95
+          },
           "move": "raised",
           "version": 1,
           "supersededById": null
@@ -2363,9 +2789,45 @@
           "displayLabel": "AFFO per share",
           "period": "FY2026",
           "basis": "full-year, ex-Fiber",
-          "low": { "value": 4.53, "unit": "USD/shares", "source": { "url": "https://www.sec.gov/Archives/edgar/data/1051470/000105147026000069/q22026earningsrelease.htm", "label": "release · guidance", "provenance": "regulatory", "locator": "Outlook table" }, "asOf": "2026-07-22", "method": "filing_manual", "confidence": 0.95 },
-          "high": { "value": 4.65, "unit": "USD/shares", "source": { "url": "https://www.sec.gov/Archives/edgar/data/1051470/000105147026000069/q22026earningsrelease.htm", "label": "release · guidance", "provenance": "regulatory", "locator": "Outlook table" }, "asOf": "2026-07-22", "method": "filing_manual", "confidence": 0.95 },
-          "midpoint": { "value": 4.59, "unit": "USD/shares", "source": { "url": "https://www.sec.gov/Archives/edgar/data/1051470/000105147026000069/q22026earningsrelease.htm", "label": "release · guidance", "provenance": "regulatory", "locator": "Outlook summary table, midpoint" }, "asOf": "2026-07-22", "method": "filing_manual", "confidence": 0.95 },
+          "low": {
+            "value": 4.53,
+            "unit": "USD/shares",
+            "source": {
+              "url": "https://www.sec.gov/Archives/edgar/data/1051470/000105147026000069/q22026earningsrelease.htm",
+              "label": "release · guidance",
+              "provenance": "regulatory",
+              "locator": "Outlook table"
+            },
+            "asOf": "2026-07-22",
+            "method": "filing_manual",
+            "confidence": 0.95
+          },
+          "high": {
+            "value": 4.65,
+            "unit": "USD/shares",
+            "source": {
+              "url": "https://www.sec.gov/Archives/edgar/data/1051470/000105147026000069/q22026earningsrelease.htm",
+              "label": "release · guidance",
+              "provenance": "regulatory",
+              "locator": "Outlook table"
+            },
+            "asOf": "2026-07-22",
+            "method": "filing_manual",
+            "confidence": 0.95
+          },
+          "midpoint": {
+            "value": 4.59,
+            "unit": "USD/shares",
+            "source": {
+              "url": "https://www.sec.gov/Archives/edgar/data/1051470/000105147026000069/q22026earningsrelease.htm",
+              "label": "release · guidance",
+              "provenance": "regulatory",
+              "locator": "Outlook summary table, midpoint"
+            },
+            "asOf": "2026-07-22",
+            "method": "filing_manual",
+            "confidence": 0.95
+          },
           "move": "held",
           "version": 1,
           "supersededById": null
@@ -2375,9 +2837,45 @@
           "displayLabel": "Discretionary capital expenditures",
           "period": "FY2026",
           "basis": "full-year, continuing operations, less prepaid rent additions excluded",
-          "low": { "value": 150, "unit": "USD_m", "source": { "url": "https://www.sec.gov/Archives/edgar/data/1051470/000105147026000069/q22026earningsrelease.htm", "label": "release · guidance", "provenance": "regulatory", "locator": "Outlook for Discretionary Capital Expenditures table" }, "asOf": "2026-07-22", "method": "filing_manual", "confidence": 0.95 },
-          "high": { "value": 250, "unit": "USD_m", "source": { "url": "https://www.sec.gov/Archives/edgar/data/1051470/000105147026000069/q22026earningsrelease.htm", "label": "release · guidance", "provenance": "regulatory", "locator": "Outlook for Discretionary Capital Expenditures table" }, "asOf": "2026-07-22", "method": "filing_manual", "confidence": 0.95 },
-          "midpoint": { "value": 200, "unit": "USD_m", "source": { "url": "https://www.sec.gov/Archives/edgar/data/1051470/000105147026000069/q22026earningsrelease.htm", "label": "release · guidance", "provenance": "regulatory", "locator": "footnote (d): unchanged from previous Outlook" }, "asOf": "2026-07-22", "method": "filing_manual", "confidence": 0.95 },
+          "low": {
+            "value": 150,
+            "unit": "USD_m",
+            "source": {
+              "url": "https://www.sec.gov/Archives/edgar/data/1051470/000105147026000069/q22026earningsrelease.htm",
+              "label": "release · guidance",
+              "provenance": "regulatory",
+              "locator": "Outlook for Discretionary Capital Expenditures table"
+            },
+            "asOf": "2026-07-22",
+            "method": "filing_manual",
+            "confidence": 0.95
+          },
+          "high": {
+            "value": 250,
+            "unit": "USD_m",
+            "source": {
+              "url": "https://www.sec.gov/Archives/edgar/data/1051470/000105147026000069/q22026earningsrelease.htm",
+              "label": "release · guidance",
+              "provenance": "regulatory",
+              "locator": "Outlook for Discretionary Capital Expenditures table"
+            },
+            "asOf": "2026-07-22",
+            "method": "filing_manual",
+            "confidence": 0.95
+          },
+          "midpoint": {
+            "value": 200,
+            "unit": "USD_m",
+            "source": {
+              "url": "https://www.sec.gov/Archives/edgar/data/1051470/000105147026000069/q22026earningsrelease.htm",
+              "label": "release · guidance",
+              "provenance": "regulatory",
+              "locator": "footnote (d): unchanged from previous Outlook"
+            },
+            "asOf": "2026-07-22",
+            "method": "filing_manual",
+            "confidence": 0.95
+          },
           "move": "held",
           "version": 1,
           "supersededById": null

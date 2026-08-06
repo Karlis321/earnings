@@ -959,6 +959,12 @@
               "actualFamily": "yahoo-timeseries",
               "estimateFamily": "yahoo-chart",
               "clearedAt": "2026-08-05T10:41:53.698Z"
+            },
+            {
+              "value": -83.22831061168748,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-08-06T06:02:44.158Z"
             }
           ]
         },
@@ -1322,6 +1328,12 @@
               "actualFamily": "yahoo-timeseries",
               "estimateFamily": "yahoo-chart",
               "clearedAt": "2026-08-05T10:41:53.698Z"
+            },
+            {
+              "value": -73.43195392038088,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-08-06T06:02:44.158Z"
             }
           ]
         },
@@ -1807,6 +1819,12 @@
               "actualFamily": "yahoo-timeseries",
               "estimateFamily": "yahoo-chart",
               "clearedAt": "2026-08-05T10:41:53.698Z"
+            },
+            {
+              "value": -3.7968188814776758,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-08-06T06:02:44.158Z"
             }
           ]
         },
@@ -2544,7 +2562,7 @@
           "key": "eps_usd",
           "displayLabel": "EPS",
           "isHeadline": true,
-          "surprisePct": 0.3354650396781193,
+          "surprisePct": null,
           "estimate": {
             "value": 0.98669,
             "unit": "USD",
@@ -2563,20 +2581,36 @@
             "numberOfAnalysts": 9
           },
           "actual": {
-            "value": 0.99,
+            "value": 0.53,
             "unit": "USD",
             "source": {
-              "url": "https://finance.yahoo.com/quote/TSN/earnings-history",
-              "label": "Yahoo · earningsChart",
+              "url": "https://finance.yahoo.com/quote/TSN/financials",
+              "label": "Yahoo · fundamentals-timeseries",
               "provenance": "wire",
               "locator": null
             },
             "asOf": "2026-06-30",
-            "fetchedAt": "2026-08-03T13:31:10.040Z",
+            "fetchedAt": "2026-08-06T05:39:35.457Z",
             "method": "yahoo",
-            "confidence": 0.8
+            "confidence": 0.85
           },
-          "prior": null
+          "prior": null,
+          "superseded": [
+            {
+              "value": 0.99,
+              "unit": "USD",
+              "source": "Yahoo · earningsChart",
+              "from_provenance": "yahoo-earnings-chart"
+            }
+          ],
+          "_crossBasisSurprise": [
+            {
+              "value": 0.3354650396781193,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-trend",
+              "clearedAt": "2026-08-06T06:02:44.158Z"
+            }
+          ]
         },
         {
           "key": "cost_of_revenue_usd_m",
@@ -2795,6 +2829,50 @@
             "fetchedAt": "2026-08-04T06:46:04.753Z",
             "method": "filing_manual",
             "confidence": 0.98
+          },
+          "prior": null
+        },
+        {
+          "key": "ebitda_usd_m",
+          "displayLabel": "EBITDA (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 693,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/TSN/financials",
+              "label": "Yahoo · fundamentals-timeseries",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-06-30",
+            "fetchedAt": "2026-08-06T05:39:35.457Z",
+            "method": "yahoo",
+            "confidence": 0.85
+          },
+          "prior": null
+        },
+        {
+          "key": "ebit_usd_m",
+          "displayLabel": "EBIT (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 364,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/TSN/financials",
+              "label": "Yahoo · fundamentals-timeseries",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-06-30",
+            "fetchedAt": "2026-08-06T05:39:35.457Z",
+            "method": "yahoo",
+            "confidence": 0.85
           },
           "prior": null
         }
