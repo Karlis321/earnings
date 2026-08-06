@@ -1,0 +1,26 @@
+{
+  "ticker": "COST US",
+  "period": "FY2026 Q3",
+  "reported_at": "2026-06-03",
+  "generated_at": "2026-08-06T14:31:49.000Z",
+  "depth": "filing",
+  "headline": "Sales and profit accelerate on strong comparable sales",
+  "kpis": [
+    { "label": "Revenue", "value": "$70.53B", "delta": "+11.6%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Operating income", "value": "$2.82B", "delta": "+11.3%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Net income", "value": "$2.19B", "delta": "+15.2%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EPS (basic)", "value": "$4.94", "delta": "+15.2%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EPS (diluted)", "value": "$4.93", "delta": "+15.2%", "delta_basis": "y/y", "direction": "up" }
+  ],
+  "summary_short": "Costco's fiscal 2026 third-quarter net sales rose 12% to $69.15B and diluted EPS grew 15.2% y/y to $4.93, as comparable sales rose 10% and membership fees climbed 11% to $1.37B.",
+  "summary_long": "Total revenue rose 11.6% y/y to $70.53B on net sales +12% (comparable sales +10%, 7% ex-fx/gas) and membership fees +11% to $1.37B. Gross margin fell 21bp to 11.04% (flat ex-gasoline) on core-category mix, offset by a smaller LIFO charge; SG&A leverage improved 20bp to 8.96% of sales. Operating income rose 11.3% to $2.82B and net income rose 15.2% to $2.19B, aided by higher interest income on larger cash balances and a lower 25.4% effective tax rate (vs 26.2%). Diluted EPS was $4.93 (+15.2% y/y). Cash and short-term investments ended the quarter at $19.99B (from $15.28B at fiscal year-end). Capex plan: ~$6.5B for fiscal 2026; quarterly dividend $1.47/share, up from $1.30 a year ago.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/909832/000090983226000051/cost-20260510.htm",
+  "confidence_notes": "REGENERATION: this summary was force-regenerated per explicit instruction (no prior COST_US_FY2026_Q3.json existed on disk before this run, so this is a fresh generation, not an overwrite of prior content). Ledger inconsistency found and NOT propagated: the shard's FY2026 Q3 event stored 'actual' values for operating_income_usd_m ($2,530M), net_income_usd_m ($1,903M), eps_usd ($4.29) and eps_diluted_usd ($4.28) that exactly match the PRIOR-YEAR quarter (12 weeks ended May 11, 2025) column of this same 10-Q, not the current quarter (12 weeks ended May 10, 2026: operating income $2,815M, net income $2,192M, basic EPS $4.94, diluted EPS $4.93). The same one-fiscal-year lag is present on the shard's FY2025 Q3 event, whose stored actuals ($2,197M / $1,681M / $3.79) in turn match Costco's real FY2024 Q3 results — this looks like a systemic ingestion bug (likely the SEC-XBRL puller grabbing the comparative context instead of the current one), not isolated to this quarter, and is left uncorrected on the shard here (out of scope for this run; flagging for a dedicated backfill). This summary's KPI values and y/y deltas are read directly, verbatim, from the primary 10-Q's current-quarter and year-ago columns, printed side by side in the same document — not from the shard's mismatched actual fields. Because the shard's stored FY2026 Q2 actual is suspected to carry the same one-year lag and a second filing was not fetched to verify it independently within this run's fetch budget, q/q deltas are omitted rather than risk publishing a wrong comparison; only y/y deltas (verified against this filing's own comparative column) are reported. Revenue was absent from the shard's kpis object for this event; the $70,527M total-revenue figure here is read directly from the 10-Q's income statement.",
+  "drivers": [
+    { "metric": "Revenue", "direction": "up", "explanation": "Net sales rose 12% on 10% comparable-sales growth (7% ex-FX/gas) plus 23 net new warehouses opened since Q3 2025; higher gasoline prices added 221bp and FX added 104bp to net sales.", "basis": "company-disclosed" },
+    { "metric": "Operating income", "direction": "up", "explanation": "Gross margin fell 21bp (flat ex-gasoline) on core-category mix, offset by a smaller LIFO charge and no repeat vacation-accrual charge; SG&A leverage improved 20bp as sales growth outpaced expense growth.", "basis": "company-disclosed" },
+    { "metric": "Net income", "direction": "up", "explanation": "Operating income growth plus higher interest income from larger cash balances and a lower 25.4% effective tax rate (vs 26.2% a year ago) lifted net income growth above operating income growth.", "basis": "company-disclosed" },
+    { "metric": "EPS (diluted)", "direction": "up", "explanation": "Net income growth of about 15% combined with a slightly lower diluted share count from ongoing buybacks lifted diluted EPS by the same roughly 15% y/y.", "basis": "derived-arithmetic" },
+    { "metric": "overall", "direction": "up", "explanation": "Management reaffirmed intent to spend approximately $6.5B on capex in fiscal 2026 and open 13 more warehouses this year; a $1.47/share quarterly dividend was declared and paid, up from $1.30 a year earlier.", "basis": "company-disclosed" }
+  ]
+}
