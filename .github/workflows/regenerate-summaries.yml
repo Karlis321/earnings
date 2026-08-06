@@ -40,6 +40,7 @@ on:
 
 permissions:
   contents: read
+  actions: write  # required for self-chaining via `gh workflow run`
 
 concurrency:
   group: regenerate-summaries
@@ -57,6 +58,46 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: "24"
+
+      # Chain the NEXT batch immediately, before this batch starts its
+      # ~6h work. GitHub-hosted runners have a hard 6h job limit, so
+      # steps after "Fire regeneration batch" would not run when
+      # cancelled. Firing the next dispatch here queues it in the
+      # concurrency group (1 in-progress + 1 queued max); when this
+      # batch ends (either normally or via 6h cancel), the queued one
+      # starts and repeats the chain. Stops when start_at + limit
+      # exceeds the SP500 pool size (491).
+      - name: Chain next batch (self-perpetuating)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SOURCE: ${{ github.event.inputs.source }}
+          DELAY_SECONDS: ${{ github.event.inputs.delay_seconds }}
+          START_AT: ${{ github.event.inputs.start_at }}
+          LIMIT: ${{ github.event.inputs.limit }}
+        run: |
+          START=${START_AT:-0}
+          LIM=${LIMIT:-25}
+          NEXT_START=$((START + LIM))
+          # Pool sizes: SP500 ~491, R1000 ~1013, summaries ~54, covered ~17.
+          # Only chain if there's more work in the same pool.
+          POOL_SIZE=491
+          case "$SOURCE" in
+            r1000) POOL_SIZE=1013 ;;
+            summaries) POOL_SIZE=54 ;;
+            covered) POOL_SIZE=17 ;;
+          esac
+          if [ "$NEXT_START" -ge "$POOL_SIZE" ]; then
+            echo "chain done · next_start=$NEXT_START ≥ pool_size=$POOL_SIZE for source=$SOURCE"
+            exit 0
+          fi
+          echo "chaining next batch · source=$SOURCE start_at=$NEXT_START limit=$LIM (pool size $POOL_SIZE)"
+          gh workflow run regenerate-summaries.yml \
+            --repo "${{ github.repository }}" \
+            --field source="$SOURCE" \
+            --field delay_seconds="$DELAY_SECONDS" \
+            --field start_at="$NEXT_START" \
+            --field limit="$LIM" \
+            || echo "::warning::chain dispatch failed (non-fatal)"
 
       - name: Fire regeneration batch
         env:
