@@ -2,9 +2,9 @@
   "ticker": "COO US",
   "period": "FY2026 Q2",
   "reported_at": "2026-06-04",
-  "generated_at": "2026-08-06T13:27:20Z",
-  "headline": "Revenue grows but profitability swings sharply negative",
-  "depth": "kpi-only",
+  "generated_at": "2026-08-06T00:00:00Z",
+  "headline": "Litigation charge tips GAAP results into a loss",
+  "depth": "filing",
   "kpis": [
     {
       "label": "Revenue",
@@ -63,8 +63,58 @@
       "direction": "down"
     }
   ],
-  "summary_short": "Revenue rose 2.0% y/y to $1,081.5M and gross profit rose 6.3% to $735.4M, but net income swung to a $(77.9)M loss from $98.3M a year ago and diluted EPS fell to $(0.40) from $0.49.",
-  "summary_long": "Revenue was $1,081.5M, up 2.0% y/y. Gross profit rose 6.3% y/y to $735.4M. Operating income fell to $(31.0)M from $175.7M y/y; EBIT fell to $(27.5)M from $168.7M y/y. EBITDA declined 74.0% y/y to $67.9M. Net income swung to a $(77.9)M loss from $98.3M net income a year ago. Diluted and basic EPS were both $(0.40) versus $0.49 y/y, down 181.6%.",
-  "source_url": "https://www.google.com/search?q=%22COO%22+%22FY2026+Q2%22+earnings",
-  "confidence_notes": "primary filing unreachable — KPI-only summary from verified shard data. This is a force-regenerated run (Step-0 exists-guard bypassed per operator instruction); no prior COO_US_FY2026_Q2 summary file existed on disk before this run. The exhibit resolver found no EX-99 press-release exhibit on the event's stored sourceLink accession, and the underlying 8-K (filed 2026-05-04) turned out to be an unrelated Item 5.02 officer-departure/appointment filing, not the Q2 FY2026 earnings release (actually published 2026-06-04 per web search) — this looks like a shard sourceLink data-linkage error worth correcting separately. A follow-up WebFetch of the company's IR press-release page timed out, exhausting the 3-fetch budget before any primary document was read; source_url therefore falls back to a search link rather than the mismatched filing URL. Separately, the shard's prior_qq values for revenue, operating_income, gross_profit, eps, eps_diluted, and net_income are identical to the current-quarter values (apparent stale/duplicated q/q baseline, not a genuine flat print), so only y/y deltas are reported here."
+  "summary_short": "Revenue rose 2.0% y/y to $1,081.5M and gross profit rose 6.3% to $735.4M, but a $271.6M net litigation-related charge swung net income to a $(77.9)M loss from $98.3M a year ago, with diluted EPS falling to $(0.40) from $0.49.",
+  "summary_long": "GAAP operating and net income swung negative on a $271.6M net litigation charge (gross $324.1M accrued liability, $52.5M expected insurance recovery) settling substantially all outstanding claims from the 2023 CooperSurgical fertility-media recall. Excluding that charge, non-GAAP diluted EPS rose 26% to $1.21 and non-GAAP operating margin expanded 260bp to 27%, on 8% reported / 5% organic revenue growth across CooperVision and CooperSurgical. Free cash flow was $96.4M ($182.8M operating cash flow less $86.4M capex). FY2026 guidance: revenue $4.285-$4.321B, non-GAAP diluted EPS $4.58-$4.66; long-term FCF objective of over $2.2B (FY2026-2028) reaffirmed.",
+  "drivers": [
+    {
+      "metric": "overall",
+      "direction": "down",
+      "explanation": "GAAP results were driven by a $271.6M net litigation charge to resolve substantially all outstanding CooperSurgical fertility-media recall claims; non-GAAP margins, EPS, and organic revenue growth all improved.",
+      "basis": "company-disclosed"
+    },
+    {
+      "metric": "Revenue",
+      "direction": "up",
+      "explanation": "Growth was 5% organic across both CooperVision and CooperSurgical, with unfavorable FX (about -3pts) reducing 8% reported growth to 5% constant-currency.",
+      "basis": "company-disclosed"
+    },
+    {
+      "metric": "Gross profit",
+      "direction": "up",
+      "explanation": "Gross profit rose with revenue while gross margin held steady at 68%, as favorable FX offset higher costs including tariffs.",
+      "basis": "company-disclosed"
+    },
+    {
+      "metric": "Operating income",
+      "direction": "down",
+      "explanation": "Operating margin fell to negative 3% from 18%, driven by SG&A from the $271.6M litigation charge; non-GAAP operating margin rose 260bp to 27% on execution and reorganization synergies.",
+      "basis": "company-disclosed"
+    },
+    {
+      "metric": "EBIT",
+      "direction": "down",
+      "explanation": "EBIT moves with operating income; the swing reflects the same litigation charge, not underlying operations.",
+      "basis": "derived-arithmetic"
+    },
+    {
+      "metric": "EBITDA",
+      "direction": "down",
+      "explanation": "EBITDA decline reflects the litigation charge embedded in operating income; depreciation and amortization were not the driver.",
+      "basis": "derived-arithmetic"
+    },
+    {
+      "metric": "Net income",
+      "direction": "down",
+      "explanation": "Net loss is attributable to the $271.6M net litigation charge; non-GAAP net income rose to $237.4M, up from $193.5M a year ago.",
+      "basis": "company-disclosed"
+    },
+    {
+      "metric": "EPS (diluted)",
+      "direction": "down",
+      "explanation": "GAAP diluted EPS fell on the litigation charge; non-GAAP diluted EPS rose 26% to $1.21 excluding that item.",
+      "basis": "company-disclosed"
+    }
+  ],
+  "source_url": "https://www.sec.gov/Archives/edgar/data/711404/000162828026040823/cooperq22026pressrelease.htm",
+  "confidence_notes": "This is a force-regenerated run (Step-0 exists-guard bypassed per operator instruction), replacing a prior kpi-only summary. Data-linkage bug found and fixed: the event shard's sourceLink pointed to an unrelated 8-K (accession 0001628280-26-029853, filed 2026-05-04, Item 5.02 officer appointment) instead of the actual Q2 FY2026 earnings 8-K (accession 0001628280-26-040823, filed 2026-06-04, Items 2.02/8.01/9.01); resolved via EDGAR CIK-list browse and corrected on the shard. GAAP net loss and negative operating/EBIT/EBITDA margins this quarter are driven almost entirely by a $271.6M net pre-tax litigation charge tied to the CooperSurgical embryo-culture-media recall settlement, not by underlying operating deterioration; non-GAAP figures (diluted EPS +26% to $1.21, operating margin +260bp to 27%) show the business performed well. Ledger inconsistency: the shard's stored y/y comparator values (used for the deltas above, per SEC-verbatim ingest) diverge from the release's own stated prior-year comparatives — e.g. revenue prior_yy $1,060.3M on the shard vs. $1,002.3M in the release's own income statement, gross profit $692M vs $679.1M, operating income $175.7M vs $184.8M, net income $98.3M vs $87.7M, diluted EPS $0.49 vs $0.44. Deltas here use the shard's SEC-verbatim prior_yy per KPI source-of-truth rules; the discrepancy is noted rather than massaged and may warrant a shard re-check. Separately, the shard's prior_qq values for revenue, gross profit, operating income, net income, EPS basic, and EPS diluted are identical to the current quarter's actuals (a stale/duplicated q/q baseline, not a genuine flat print), so only y/y deltas are reported for those metrics."
 }
