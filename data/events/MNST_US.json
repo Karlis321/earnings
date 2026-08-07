@@ -1123,6 +1123,12 @@
               "actualFamily": "yahoo-timeseries",
               "estimateFamily": "yahoo-chart",
               "clearedAt": "2026-08-06T06:02:43.491Z"
+            },
+            {
+              "value": 11.28055063265054,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-08-07T05:11:30.490Z"
             }
           ]
         },
@@ -1558,6 +1564,12 @@
               "actualFamily": "yahoo-timeseries",
               "estimateFamily": "yahoo-chart",
               "clearedAt": "2026-08-06T06:02:43.491Z"
+            },
+            {
+              "value": -4.496948054644346,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-08-07T05:11:30.490Z"
             }
           ]
         },
@@ -1890,7 +1902,15 @@
             "method": "yahoo",
             "confidence": 0.85
           },
-          "prior": null
+          "prior": null,
+          "_crossBasisSurprise": [
+            {
+              "value": 10.155166847093215,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-08-07T05:11:30.490Z"
+            }
+          ]
         },
         {
           "key": "cost_of_revenue_usd_m",
@@ -2497,13 +2517,13 @@
       "kind": "earnings",
       "period": "FY2026 Q2",
       "scheduledDate": "2026-08-06",
-      "eventDate": null,
+      "eventDate": "2026-08-06",
       "timing": null,
       "expectation": "unset",
       "guidanceMove": null,
-      "freshness": "stale",
-      "provenance": "estimator-median-gap",
-      "provenanceAsOf": "2026-07-31T13:45:57.653Z",
+      "freshness": "fresh",
+      "provenance": "yahoo-earnings-chart",
+      "provenanceAsOf": "2026-08-07T04:48:47.655Z",
       "cadence": "quarterly",
       "metrics": [
         {
@@ -2535,7 +2555,7 @@
           "key": "eps_usd",
           "displayLabel": "EPS",
           "isHeadline": true,
-          "surprisePct": null,
+          "surprisePct": 1.6347694268832578,
           "estimate": {
             "value": 0.58051,
             "unit": "USD",
@@ -2553,15 +2573,28 @@
             "high": 0.61409,
             "numberOfAnalysts": 8
           },
-          "actual": null,
+          "actual": {
+            "value": 0.59,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/MNST/earnings-history",
+              "label": "Yahoo · earningsChart",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-06-30",
+            "fetchedAt": "2026-08-07T04:48:47.655Z",
+            "method": "yahoo",
+            "confidence": 0.8
+          },
           "prior": null
         }
       ],
       "guidance": [],
       "reaction": {
         "benchmark": "SPX",
-        "baselineDate": null,
-        "baselineClose": null,
+        "baselineDate": "2026-08-06",
+        "baselineClose": 94.16000366210938,
         "points": [
           {
             "horizon": "d1",
@@ -2569,7 +2602,8 @@
             "excessReturn": null,
             "benchmark": "SPX",
             "computedAt": null,
-            "populatesOn": "2026-08-09"
+            "populatesOn": null,
+            "status": "pending"
           },
           {
             "horizon": "d3",
@@ -2577,7 +2611,8 @@
             "excessReturn": null,
             "benchmark": "SPX",
             "computedAt": null,
-            "populatesOn": "2026-08-11"
+            "populatesOn": null,
+            "status": "pending"
           },
           {
             "horizon": "w1",
@@ -2585,7 +2620,8 @@
             "excessReturn": null,
             "benchmark": "SPX",
             "computedAt": null,
-            "populatesOn": "2026-08-13"
+            "populatesOn": null,
+            "status": "pending"
           },
           {
             "horizon": "m1",
@@ -2593,7 +2629,8 @@
             "excessReturn": null,
             "benchmark": "SPX",
             "computedAt": null,
-            "populatesOn": "2026-08-29"
+            "populatesOn": null,
+            "status": "pending"
           }
         ]
       },
@@ -2961,8 +2998,88 @@
             "provenance": "regulatory",
             "time": "2026-03-17T00:59:44.000Z",
             "kind": "edgar"
+          },
+          {
+            "id": "pr-mnst-465926092046indexhtm",
+            "headline": "8-K  - Current report",
+            "url": "https://www.sec.gov/Archives/edgar/data/865752/000110465926092046/0001104659-26-092046-index.htm",
+            "source": "SEC EDGAR filings",
+            "provenance": "regulatory",
+            "time": "2026-08-06T20:23:16.000Z",
+            "kind": "edgar"
           }
         ],
+        "engineStatus": []
+      },
+      "eventDateSource": "yahoo-earnings-chart-reportedDate",
+      "sourceLink": {
+        "kind": "filing",
+        "url": "https://www.sec.gov/Archives/edgar/data/865752/000110465926092046/tm2622396d1_8k.htm",
+        "form": "8-K",
+        "accession": "0001104659-26-092046",
+        "filingDate": "2026-08-06"
+      }
+    },
+    {
+      "id": "evt-hebr1k",
+      "ticker": "MNST US",
+      "kind": "earnings",
+      "period": "FY2026 Q3",
+      "scheduledDate": "2026-11-05",
+      "eventDate": null,
+      "timing": null,
+      "expectation": "unset",
+      "guidanceMove": null,
+      "freshness": "stale",
+      "provenance": "estimator-median-gap",
+      "provenanceAsOf": "2026-08-07T05:09:46.546Z",
+      "cadence": "quarterly",
+      "metrics": [],
+      "guidance": [],
+      "reaction": {
+        "benchmark": "SPX",
+        "baselineDate": null,
+        "baselineClose": null,
+        "points": [
+          {
+            "horizon": "d1",
+            "absReturn": null,
+            "excessReturn": null,
+            "benchmark": "SPX",
+            "computedAt": null,
+            "populatesOn": "2026-11-08"
+          },
+          {
+            "horizon": "d3",
+            "absReturn": null,
+            "excessReturn": null,
+            "benchmark": "SPX",
+            "computedAt": null,
+            "populatesOn": "2026-11-10"
+          },
+          {
+            "horizon": "w1",
+            "absReturn": null,
+            "excessReturn": null,
+            "benchmark": "SPX",
+            "computedAt": null,
+            "populatesOn": "2026-11-12"
+          },
+          {
+            "horizon": "m1",
+            "absReturn": null,
+            "excessReturn": null,
+            "benchmark": "SPX",
+            "computedAt": null,
+            "populatesOn": "2026-11-28"
+          }
+        ]
+      },
+      "sources": {
+        "windowStart": "2026-11-03",
+        "windowEnd": "2026-12-10",
+        "capturedAt": null,
+        "items": [],
         "engineStatus": []
       }
     }

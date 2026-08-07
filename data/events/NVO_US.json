@@ -1506,6 +1506,12 @@
               "actualFamily": "sec",
               "estimateFamily": "yahoo-chart",
               "clearedAt": "2026-08-06T06:02:43.639Z"
+            },
+            {
+              "value": -97.40769631397981,
+              "actualFamily": "sec",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-08-07T05:11:30.644Z"
             }
           ]
         },
@@ -2129,6 +2135,12 @@
               "actualFamily": "yahoo-timeseries",
               "estimateFamily": "yahoo-chart",
               "clearedAt": "2026-08-06T06:02:43.639Z"
+            },
+            {
+              "value": 2.6770586241951793,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-08-07T05:11:30.644Z"
             }
           ]
         },
@@ -2686,6 +2698,12 @@
               "actualFamily": "sec",
               "estimateFamily": "yahoo-chart",
               "clearedAt": "2026-08-06T06:02:43.639Z"
+            },
+            {
+              "value": -99.2816783441824,
+              "actualFamily": "sec",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-08-07T05:11:30.644Z"
             }
           ]
         },
@@ -3354,7 +3372,7 @@
           "key": "eps_usd",
           "displayLabel": "EPS",
           "isHeadline": true,
-          "surprisePct": 24.013460878569155,
+          "surprisePct": null,
           "estimate": {
             "value": 4.98333,
             "unit": "USD",
@@ -3373,20 +3391,36 @@
             "numberOfAnalysts": 3
           },
           "actual": {
-            "value": 6.18,
-            "unit": "USD",
+            "value": 4.74,
+            "unit": "DKK",
             "source": {
-              "url": "https://finance.yahoo.com/quote/NVO/earnings-history",
-              "label": "Yahoo · earningsChart",
+              "url": "https://finance.yahoo.com/quote/NVO/financials",
+              "label": "Yahoo · fundamentals-timeseries",
               "provenance": "wire",
               "locator": null
             },
             "asOf": "2026-06-30",
-            "fetchedAt": "2026-08-06T05:40:27.277Z",
+            "fetchedAt": "2026-08-07T04:47:51.525Z",
             "method": "yahoo",
-            "confidence": 0.8
+            "confidence": 0.85
           },
-          "prior": null
+          "prior": null,
+          "superseded": [
+            {
+              "value": 6.18,
+              "unit": "USD",
+              "source": "Yahoo · earningsChart",
+              "from_provenance": "yahoo-earnings-chart"
+            }
+          ],
+          "_crossBasisSurprise": [
+            {
+              "value": 24.013460878569155,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-trend",
+              "clearedAt": "2026-08-07T05:11:30.644Z"
+            }
+          ]
         },
         {
           "key": "gross_profit_usd_m",
@@ -3932,6 +3966,15 @@
             "provenance": "regulatory",
             "time": "2026-02-24T17:50:51.000Z",
             "kind": "edgar"
+          },
+          {
+            "id": "pr-nvo_-544726000025indexhtm",
+            "headline": "SCHEDULE 13G/A [Amend]  - Statement of Beneficial Ownership by Certain Investors",
+            "url": "https://www.sec.gov/Archives/edgar/data/1021860/000132544726000025/0001325447-26-000025-index.htm",
+            "source": "SEC EDGAR filings",
+            "provenance": "regulatory",
+            "time": "2026-08-06T14:33:33.000Z",
+            "kind": "edgar"
           }
         ],
         "engineStatus": []
@@ -3956,7 +3999,58 @@
       "provenance": "estimator-median-gap",
       "provenanceAsOf": "2026-08-06T06:01:07.046Z",
       "cadence": "quarterly",
-      "metrics": [],
+      "metrics": [
+        {
+          "key": "revenue_usd_m",
+          "displayLabel": "Revenue (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": {
+            "value": 73639.41876,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/NVO/analysis",
+              "label": "Yahoo · earningsTrend (8 analysts)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-09-30",
+            "fetchedAt": "2026-08-07T05:09:19.105Z",
+            "method": "yahoo",
+            "confidence": 0.75,
+            "low_usd_m": 70680,
+            "high_usd_m": 76681.64572,
+            "numberOfAnalysts": 8
+          },
+          "actual": null,
+          "prior": null
+        },
+        {
+          "key": "eps_usd",
+          "displayLabel": "EPS",
+          "isHeadline": true,
+          "surprisePct": null,
+          "estimate": {
+            "value": 4.871,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/NVO/analysis",
+              "label": "Yahoo · earningsTrend (3 analysts)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-09-30",
+            "fetchedAt": "2026-08-07T05:09:19.105Z",
+            "method": "yahoo",
+            "confidence": 0.75,
+            "low": 4.53,
+            "high": 5.403,
+            "numberOfAnalysts": 3
+          },
+          "actual": null,
+          "prior": null
+        }
+      ],
       "guidance": [],
       "reaction": {
         "benchmark": "SPX",

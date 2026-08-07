@@ -1297,6 +1297,12 @@
               "actualFamily": "yahoo-timeseries",
               "estimateFamily": "yahoo-generic",
               "clearedAt": "2026-08-06T06:02:43.587Z"
+            },
+            {
+              "value": -37.5,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-generic",
+              "clearedAt": "2026-08-07T05:11:30.589Z"
             }
           ]
         },
@@ -1844,6 +1850,15 @@
               "actualUnit": "USD",
               "estimateUnit": "USD",
               "clearedAt": "2026-08-06T06:02:46.025Z",
+              "reason": "absurd_magnitude"
+            },
+            {
+              "value": -2011.111111111111,
+              "actual": -3.44,
+              "estimate": 0.18,
+              "actualUnit": "USD",
+              "estimateUnit": "USD",
+              "clearedAt": "2026-08-07T05:11:33.191Z",
               "reason": "absurd_magnitude"
             }
           ]
@@ -3476,7 +3491,58 @@
       "provenance": "estimator-median-gap",
       "provenanceAsOf": "2026-08-06T06:01:07.046Z",
       "cadence": "quarterly",
-      "metrics": [],
+      "metrics": [
+        {
+          "key": "revenue_usd_m",
+          "displayLabel": "Revenue (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": {
+            "value": 371.76,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/NGL/analysis",
+              "label": "Yahoo · earningsTrend (1 analysts)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-09-30",
+            "fetchedAt": "2026-08-07T05:09:19.105Z",
+            "method": "yahoo",
+            "confidence": 0.75,
+            "low_usd_m": 371.76,
+            "high_usd_m": 371.76,
+            "numberOfAnalysts": 1
+          },
+          "actual": null,
+          "prior": null
+        },
+        {
+          "key": "eps_usd",
+          "displayLabel": "EPS",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": {
+            "value": 0.18,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/NGL/analysis",
+              "label": "Yahoo · earningsTrend (1 analysts)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-09-30",
+            "fetchedAt": "2026-08-07T05:09:19.105Z",
+            "method": "yahoo",
+            "confidence": 0.75,
+            "low": 0.18,
+            "high": 0.18,
+            "numberOfAnalysts": 1
+          },
+          "actual": null,
+          "prior": null
+        }
+      ],
       "guidance": [],
       "reaction": {
         "benchmark": "CL=F",
