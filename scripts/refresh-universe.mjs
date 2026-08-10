@@ -94,6 +94,14 @@ const PHASES = [
   { key: "mature-reported", label: "Newly-reported promotion", script: "mature-any-reported.mjs" },
   { key: "mature-stale", label: "Mature stale upcoming shells", script: "mature-stale-upcoming.mjs" },
   { key: "mature-if-actual", label: "Mature upcoming with actuals present", script: "mature-if-actual-present.mjs" },
+  // Roll-stale-shells — bumps scheduledDate forward for upcoming events
+  // whose date has already passed AND that couldn't be matured (typically
+  // foreign ADRs like BOLSY/B3 where Yahoo doesn't have earningsChart
+  // coverage). Without this, the "next event" label shows a past date
+  // literally (e.g. "Aug 7" when today is Aug 10). Runs AFTER the mature-*
+  // phases so it only touches shells that legitimately couldn't be
+  // promoted. Uses median-gap cadence to project forward.
+  { key: "roll-stale", label: "Roll stale scheduledDate shells forward", script: "roll-stale-shells.mjs" },
   { key: "sec-verbatim", label: "SEC-verbatim rederive (CIK universe)", script: "backfills/rederive-sec-xbrl.mjs", optional: true },
   // sec-shells removed — the backfill script is DEPRECATED (reads/
   // writes the gitignored data/earnings.json monolith). Its function
