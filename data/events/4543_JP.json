@@ -318,6 +318,12 @@
               "actualFamily": "yahoo-timeseries",
               "estimateFamily": "yahoo-generic",
               "clearedAt": "2026-08-10T04:46:32.903Z"
+            },
+            {
+              "value": -2.1285798140195795,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-generic",
+              "clearedAt": "2026-08-10T07:05:52.785Z"
             }
           ]
         }
@@ -488,6 +494,12 @@
               "actualFamily": "yahoo-timeseries",
               "estimateFamily": "yahoo-generic",
               "clearedAt": "2026-08-10T04:46:32.903Z"
+            },
+            {
+              "value": 2.998589468277933,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-generic",
+              "clearedAt": "2026-08-10T07:05:52.785Z"
             }
           ]
         }
@@ -658,6 +670,12 @@
               "actualFamily": "yahoo-timeseries",
               "estimateFamily": "yahoo-generic",
               "clearedAt": "2026-08-10T04:46:32.903Z"
+            },
+            {
+              "value": 19.08006485099,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-generic",
+              "clearedAt": "2026-08-10T07:05:52.785Z"
             }
           ]
         }
@@ -904,7 +922,7 @@
           "key": "eps_usd",
           "displayLabel": "EPS",
           "isHeadline": true,
-          "surprisePct": 81.73692381134381,
+          "surprisePct": null,
           "estimate": {
             "value": 26.26874,
             "unit": "JPY",
@@ -926,17 +944,33 @@
             "value": 47.74,
             "unit": "JPY",
             "source": {
-              "url": "https://finance.yahoo.com/quote/4543.T/earnings-history",
-              "label": "Yahoo · earningsChart",
+              "url": "https://finance.yahoo.com/quote/4543.T/financials",
+              "label": "Yahoo · fundamentals-timeseries",
               "provenance": "wire",
               "locator": null
             },
             "asOf": "2026-06-30",
-            "fetchedAt": "2026-08-10T04:23:05.883Z",
+            "fetchedAt": "2026-08-10T06:42:48.154Z",
             "method": "yahoo",
-            "confidence": 0.8
+            "confidence": 0.85
           },
-          "prior": null
+          "prior": null,
+          "superseded": [
+            {
+              "value": 47.74,
+              "unit": "JPY",
+              "source": "Yahoo · earningsChart",
+              "from_provenance": "yahoo-earnings-chart"
+            }
+          ],
+          "_crossBasisSurprise": [
+            {
+              "value": 81.73692381134381,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-trend",
+              "clearedAt": "2026-08-10T07:05:52.785Z"
+            }
+          ]
         }
       ],
       "guidance": [],
@@ -1018,7 +1052,58 @@
       "provenance": "estimator-median-gap",
       "provenanceAsOf": "2026-08-10T04:44:59.979Z",
       "cadence": "quarterly",
-      "metrics": [],
+      "metrics": [
+        {
+          "key": "revenue_usd_m",
+          "displayLabel": "Revenue (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": {
+            "value": 308706.71429,
+            "unit": "JPY",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/4543.T/analysis",
+              "label": "Yahoo · earningsTrend (7 analysts)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-09-30",
+            "fetchedAt": "2026-08-10T07:03:51.644Z",
+            "method": "yahoo",
+            "confidence": 0.75,
+            "low_usd_m": 298400,
+            "high_usd_m": 315307,
+            "numberOfAnalysts": 7
+          },
+          "actual": null,
+          "prior": null
+        },
+        {
+          "key": "eps_usd",
+          "displayLabel": "EPS",
+          "isHeadline": true,
+          "surprisePct": null,
+          "estimate": {
+            "value": 23.85,
+            "unit": "JPY",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/4543.T/analysis",
+              "label": "Yahoo · earningsTrend (1 analysts)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-09-30",
+            "fetchedAt": "2026-08-10T07:03:51.644Z",
+            "method": "yahoo",
+            "confidence": 0.75,
+            "low": 23.85,
+            "high": 23.85,
+            "numberOfAnalysts": 1
+          },
+          "actual": null,
+          "prior": null
+        }
+      ],
       "guidance": [],
       "reaction": {
         "benchmark": "SPX",

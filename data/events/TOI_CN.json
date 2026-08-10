@@ -1131,6 +1131,12 @@
               "actualFamily": "yahoo-timeseries",
               "estimateFamily": "yahoo-chart",
               "clearedAt": "2026-08-10T04:46:35.097Z"
+            },
+            {
+              "value": -31.092436974789916,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-08-10T07:05:55.048Z"
             }
           ]
         },
@@ -1494,7 +1500,15 @@
             "method": "yahoo",
             "confidence": 0.85
           },
-          "prior": null
+          "prior": null,
+          "_crossBasisSurprise": [
+            {
+              "value": -55.00000000000001,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-trend",
+              "clearedAt": "2026-08-10T07:05:55.048Z"
+            }
+          ]
         },
         {
           "key": "ebit_usd_m",
@@ -2834,7 +2848,58 @@
       "provenance": "estimator-median-gap",
       "provenanceAsOf": "2026-08-10T04:44:59.983Z",
       "cadence": "quarterly",
-      "metrics": [],
+      "metrics": [
+        {
+          "key": "revenue_usd_m",
+          "displayLabel": "Revenue (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": {
+            "value": 436.43333,
+            "unit": "CAD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/TOI.V/analysis",
+              "label": "Yahoo · earningsTrend (3 analysts)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-09-30",
+            "fetchedAt": "2026-08-10T07:03:51.644Z",
+            "method": "yahoo",
+            "confidence": 0.75,
+            "low_usd_m": 432,
+            "high_usd_m": 443.8,
+            "numberOfAnalysts": 3
+          },
+          "actual": null,
+          "prior": null
+        },
+        {
+          "key": "eps_usd",
+          "displayLabel": "EPS",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": {
+            "value": 0.645,
+            "unit": "CAD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/TOI.V/analysis",
+              "label": "Yahoo · earningsTrend (2 analysts)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-09-30",
+            "fetchedAt": "2026-08-10T07:03:51.644Z",
+            "method": "yahoo",
+            "confidence": 0.75,
+            "low": 0.61,
+            "high": 0.68,
+            "numberOfAnalysts": 2
+          },
+          "actual": null,
+          "prior": null
+        }
+      ],
       "guidance": [],
       "reaction": {
         "benchmark": "TSX",

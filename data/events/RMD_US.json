@@ -957,6 +957,12 @@
               "actualFamily": "sec",
               "estimateFamily": "yahoo-chart",
               "clearedAt": "2026-08-10T04:46:34.836Z"
+            },
+            {
+              "value": -4.751995005482774,
+              "actualFamily": "sec",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-08-10T07:05:54.783Z"
             }
           ]
         },
@@ -1506,6 +1512,12 @@
               "actualFamily": "sec",
               "estimateFamily": "yahoo-chart",
               "clearedAt": "2026-08-10T04:46:34.836Z"
+            },
+            {
+              "value": -1.2528770653382992,
+              "actualFamily": "sec",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-08-10T07:05:54.783Z"
             }
           ]
         },
@@ -2011,6 +2023,12 @@
               "actualFamily": "sec",
               "estimateFamily": "yahoo-chart",
               "clearedAt": "2026-08-10T04:46:34.836Z"
+            },
+            {
+              "value": -2.138313564558342,
+              "actualFamily": "sec",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-08-10T07:05:54.783Z"
             }
           ]
         },
@@ -2779,7 +2797,7 @@
           "key": "eps_usd",
           "displayLabel": "EPS",
           "isHeadline": true,
-          "surprisePct": 1.9600523970981225,
+          "surprisePct": null,
           "estimate": {
             "value": 2.89329,
             "unit": "USD",
@@ -2798,20 +2816,36 @@
             "numberOfAnalysts": 9
           },
           "actual": {
-            "value": 2.95,
+            "value": 2.65,
             "unit": "USD",
             "source": {
-              "url": "https://finance.yahoo.com/quote/RMD/earnings-history",
-              "label": "Yahoo · earningsChart",
+              "url": "https://finance.yahoo.com/quote/RMD/financials",
+              "label": "Yahoo · fundamentals-timeseries",
               "provenance": "wire",
               "locator": null
             },
             "asOf": "2026-06-30",
-            "fetchedAt": "2026-08-10T04:23:05.883Z",
+            "fetchedAt": "2026-08-10T06:42:48.154Z",
             "method": "yahoo",
-            "confidence": 0.8
+            "confidence": 0.85
           },
-          "prior": null
+          "prior": null,
+          "superseded": [
+            {
+              "value": 2.95,
+              "unit": "USD",
+              "source": "Yahoo · earningsChart",
+              "from_provenance": "yahoo-earnings-chart"
+            }
+          ],
+          "_crossBasisSurprise": [
+            {
+              "value": 1.9600523970981225,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-trend",
+              "clearedAt": "2026-08-10T07:05:54.783Z"
+            }
+          ]
         },
         {
           "key": "eps_diluted_usd",
@@ -2913,7 +2947,58 @@
       "provenance": "estimator-median-gap",
       "provenanceAsOf": "2026-08-10T04:44:59.982Z",
       "cadence": "quarterly",
-      "metrics": [],
+      "metrics": [
+        {
+          "key": "revenue_usd_m",
+          "displayLabel": "Revenue (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": {
+            "value": 1390.41297,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/RMD/analysis",
+              "label": "Yahoo · earningsTrend (15 analysts)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-09-30",
+            "fetchedAt": "2026-08-10T07:03:51.644Z",
+            "method": "yahoo",
+            "confidence": 0.75,
+            "low_usd_m": 1361.59,
+            "high_usd_m": 1421.2,
+            "numberOfAnalysts": 15
+          },
+          "actual": null,
+          "prior": null
+        },
+        {
+          "key": "eps_usd",
+          "displayLabel": "EPS",
+          "isHeadline": true,
+          "surprisePct": null,
+          "estimate": {
+            "value": 2.68899,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/RMD/analysis",
+              "label": "Yahoo · earningsTrend (12 analysts)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-09-30",
+            "fetchedAt": "2026-08-10T07:03:51.644Z",
+            "method": "yahoo",
+            "confidence": 0.75,
+            "low": 2.62,
+            "high": 2.7763,
+            "numberOfAnalysts": 12
+          },
+          "actual": null,
+          "prior": null
+        }
+      ],
       "guidance": [],
       "reaction": {
         "benchmark": "SPX",

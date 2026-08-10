@@ -1382,6 +1382,12 @@
               "actualFamily": "sec",
               "estimateFamily": "yahoo-chart",
               "clearedAt": "2026-08-10T04:46:35.249Z"
+            },
+            {
+              "value": -9.010980023309546,
+              "actualFamily": "sec",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-08-10T07:05:55.207Z"
             }
           ]
         },
@@ -2958,7 +2964,15 @@
             "method": "yahoo",
             "confidence": 0.85
           },
-          "prior": null
+          "prior": null,
+          "_crossBasisSurprise": [
+            {
+              "value": -56.38724386559891,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-trend",
+              "clearedAt": "2026-08-10T07:05:55.207Z"
+            }
+          ]
         },
         {
           "key": "eps_diluted_usd",
@@ -3433,7 +3447,58 @@
       "provenance": "estimator-median-gap",
       "provenanceAsOf": "2026-08-10T04:44:59.983Z",
       "cadence": "quarterly",
-      "metrics": [],
+      "metrics": [
+        {
+          "key": "revenue_usd_m",
+          "displayLabel": "Revenue (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": {
+            "value": 7185.7852,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/VST/analysis",
+              "label": "Yahoo · earningsTrend (2 analysts)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-09-30",
+            "fetchedAt": "2026-08-10T07:03:51.644Z",
+            "method": "yahoo",
+            "confidence": 0.75,
+            "low_usd_m": 6811.57039,
+            "high_usd_m": 7560,
+            "numberOfAnalysts": 2
+          },
+          "actual": null,
+          "prior": null
+        },
+        {
+          "key": "eps_usd",
+          "displayLabel": "EPS",
+          "isHeadline": true,
+          "surprisePct": null,
+          "estimate": {
+            "value": 2.56213,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/VST/analysis",
+              "label": "Yahoo · earningsTrend (7 analysts)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-09-30",
+            "fetchedAt": "2026-08-10T07:03:51.644Z",
+            "method": "yahoo",
+            "confidence": 0.75,
+            "low": -0.05,
+            "high": 3.57,
+            "numberOfAnalysts": 7
+          },
+          "actual": null,
+          "prior": null
+        }
+      ],
       "guidance": [],
       "reaction": {
         "benchmark": "SPX",

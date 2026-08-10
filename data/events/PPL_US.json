@@ -1147,6 +1147,12 @@
               "actualFamily": "sec",
               "estimateFamily": "yahoo-chart",
               "clearedAt": "2026-08-10T04:46:34.740Z"
+            },
+            {
+              "value": -5.641745847139631,
+              "actualFamily": "sec",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-08-10T07:05:54.689Z"
             }
           ]
         },
@@ -1594,6 +1600,12 @@
               "actualFamily": "yahoo-timeseries",
               "estimateFamily": "yahoo-chart",
               "clearedAt": "2026-08-10T04:46:34.740Z"
+            },
+            {
+              "value": -13.29688591315239,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-08-10T07:05:54.689Z"
             }
           ]
         },
@@ -2009,6 +2021,12 @@
               "actualFamily": "sec",
               "estimateFamily": "yahoo-chart",
               "clearedAt": "2026-08-10T04:46:34.740Z"
+            },
+            {
+              "value": -2.777327672813307,
+              "actualFamily": "sec",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-08-10T07:05:54.689Z"
             }
           ]
         },
@@ -2699,7 +2717,7 @@
           "key": "eps_usd",
           "displayLabel": "EPS",
           "isHeadline": true,
-          "surprisePct": -3.9972071914819267,
+          "surprisePct": null,
           "estimate": {
             "value": 0.34374,
             "unit": "USD",
@@ -2718,20 +2736,36 @@
             "numberOfAnalysts": 13
           },
           "actual": {
-            "value": 0.33,
+            "value": 0.31,
             "unit": "USD",
             "source": {
-              "url": "https://finance.yahoo.com/quote/PPL/earnings-history",
-              "label": "Yahoo · earningsChart",
+              "url": "https://finance.yahoo.com/quote/PPL/financials",
+              "label": "Yahoo · fundamentals-timeseries",
               "provenance": "wire",
               "locator": null
             },
             "asOf": "2026-06-30",
-            "fetchedAt": "2026-08-10T04:23:05.883Z",
+            "fetchedAt": "2026-08-10T06:42:48.154Z",
             "method": "yahoo",
-            "confidence": 0.8
+            "confidence": 0.85
           },
-          "prior": null
+          "prior": null,
+          "superseded": [
+            {
+              "value": 0.33,
+              "unit": "USD",
+              "source": "Yahoo · earningsChart",
+              "from_provenance": "yahoo-earnings-chart"
+            }
+          ],
+          "_crossBasisSurprise": [
+            {
+              "value": -3.9972071914819267,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-trend",
+              "clearedAt": "2026-08-10T07:05:54.689Z"
+            }
+          ]
         },
         {
           "key": "eps_diluted_usd",
@@ -3209,7 +3243,58 @@
       "provenance": "estimator-median-gap",
       "provenanceAsOf": "2026-08-10T04:44:59.982Z",
       "cadence": "quarterly",
-      "metrics": [],
+      "metrics": [
+        {
+          "key": "revenue_usd_m",
+          "displayLabel": "Revenue (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": {
+            "value": 2446.09499,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/PPL/analysis",
+              "label": "Yahoo · earningsTrend (3 analysts)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-09-30",
+            "fetchedAt": "2026-08-10T07:03:51.644Z",
+            "method": "yahoo",
+            "confidence": 0.75,
+            "low_usd_m": 2395.41496,
+            "high_usd_m": 2526.87,
+            "numberOfAnalysts": 3
+          },
+          "actual": null,
+          "prior": null
+        },
+        {
+          "key": "eps_usd",
+          "displayLabel": "EPS",
+          "isHeadline": true,
+          "surprisePct": null,
+          "estimate": {
+            "value": 0.51762,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/PPL/analysis",
+              "label": "Yahoo · earningsTrend (10 analysts)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-09-30",
+            "fetchedAt": "2026-08-10T07:03:51.644Z",
+            "method": "yahoo",
+            "confidence": 0.75,
+            "low": 0.5,
+            "high": 0.53434,
+            "numberOfAnalysts": 10
+          },
+          "actual": null,
+          "prior": null
+        }
+      ],
       "guidance": [],
       "reaction": {
         "benchmark": "SPX",

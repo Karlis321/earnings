@@ -1065,6 +1065,12 @@
               "actualFamily": "yahoo-timeseries",
               "estimateFamily": "yahoo-chart",
               "clearedAt": "2026-08-10T04:46:35.305Z"
+            },
+            {
+              "value": 38.46812152332049,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-08-10T07:05:55.266Z"
             }
           ]
         },
@@ -2147,7 +2153,7 @@
           "key": "eps_usd",
           "displayLabel": "EPS",
           "isHeadline": false,
-          "surprisePct": 2.937874574690404,
+          "surprisePct": null,
           "estimate": {
             "value": 1.15798,
             "unit": "USD",
@@ -2166,20 +2172,36 @@
             "numberOfAnalysts": 12
           },
           "actual": {
-            "value": 1.192,
+            "value": 1.196,
             "unit": "USD",
             "source": {
-              "url": "https://finance.yahoo.com/quote/WPM/earnings-history",
-              "label": "Yahoo · earningsChart",
+              "url": "https://finance.yahoo.com/quote/WPM/financials",
+              "label": "Yahoo · fundamentals-timeseries",
               "provenance": "wire",
               "locator": null
             },
             "asOf": "2026-06-30",
-            "fetchedAt": "2026-08-10T04:23:05.883Z",
+            "fetchedAt": "2026-08-10T06:42:48.154Z",
             "method": "yahoo",
-            "confidence": 0.8
+            "confidence": 0.85
           },
-          "prior": null
+          "prior": null,
+          "superseded": [
+            {
+              "value": 1.192,
+              "unit": "USD",
+              "source": "Yahoo · earningsChart",
+              "from_provenance": "yahoo-earnings-chart"
+            }
+          ],
+          "_crossBasisSurprise": [
+            {
+              "value": 2.937874574690404,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-trend",
+              "clearedAt": "2026-08-10T07:05:55.266Z"
+            }
+          ]
         },
         {
           "key": "operating_income_usd_m",
@@ -2767,7 +2789,58 @@
       "provenance": "estimator-median-gap",
       "provenanceAsOf": "2026-08-10T04:44:59.983Z",
       "cadence": "quarterly",
-      "metrics": [],
+      "metrics": [
+        {
+          "key": "revenue_usd_m",
+          "displayLabel": "Revenue (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": {
+            "value": 931.36638,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/WPM/analysis",
+              "label": "Yahoo · earningsTrend (5 analysts)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-09-30",
+            "fetchedAt": "2026-08-10T07:03:51.644Z",
+            "method": "yahoo",
+            "confidence": 0.75,
+            "low_usd_m": 805.889,
+            "high_usd_m": 1040.78453,
+            "numberOfAnalysts": 5
+          },
+          "actual": null,
+          "prior": null
+        },
+        {
+          "key": "eps_usd",
+          "displayLabel": "EPS",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": {
+            "value": 1.23175,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/WPM/analysis",
+              "label": "Yahoo · earningsTrend (9 analysts)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-09-30",
+            "fetchedAt": "2026-08-10T07:03:51.644Z",
+            "method": "yahoo",
+            "confidence": 0.75,
+            "low": 0.943,
+            "high": 2.06277,
+            "numberOfAnalysts": 9
+          },
+          "actual": null,
+          "prior": null
+        }
+      ],
       "guidance": [],
       "reaction": {
         "benchmark": "SPX",
