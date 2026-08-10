@@ -1,0 +1,27 @@
+{
+  "ticker": "CRM US",
+  "period": "FY2026 Q2",
+  "reported_at": "2026-05-27",
+  "generated_at": "2026-08-10T09:26:55.000Z",
+  "depth": "filing",
+  "headline": "Broad beat with margin gains, guidance raised",
+  "kpis": [
+    { "label": "Revenue", "value": "$11.13B", "delta": "+13%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EPS (diluted)", "value": "$2.42", "delta": "+52%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EPS (basic)", "value": "$2.43", "delta": null, "delta_basis": "none", "direction": "n/a" },
+    { "label": "Gross profit", "value": "$8.56B", "delta": null, "delta_basis": "none", "direction": "n/a" },
+    { "label": "EBIT", "value": "$3.04B", "delta": null, "delta_basis": "none", "direction": "n/a" },
+    { "label": "EBITDA", "value": "$4.02B", "delta": null, "delta_basis": "none", "direction": "n/a" },
+    { "label": "Net income", "value": "$2.11B", "delta": null, "delta_basis": "none", "direction": "n/a" },
+    { "label": "Operating income", "value": "$2.43B", "delta": null, "delta_basis": "none", "direction": "n/a" }
+  ],
+  "summary_short": "Salesforce reported quarterly revenue of $11.13B (+13% y/y) and GAAP diluted EPS of $2.42 (+52% y/y), then raised full-year revenue guidance and initiated next-quarter guidance above the current run rate.",
+  "summary_long": "Revenue rose 13% y/y to $11.13B, including a $444M Informatica contribution; subscription & support revenue grew 14% y/y to $10.6B. GAAP diluted EPS was $2.42 (+52% y/y); non-GAAP diluted EPS was $3.88 (+50% y/y). GAAP operating margin was 21.1%, non-GAAP 34.8%. Operating cash flow was $6.7B (+3% y/y); free cash flow was $6.56B (+4% y/y). Salesforce returned $27.5B to shareholders — $27.25B in buybacks (new $25B accelerated share repurchase) and $365M in dividends. Full-year FY27 revenue guidance was raised to $45.9-46.2B (+11% y/y); Q2 FY27 revenue guidance was initiated at $11.27-11.35B.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/1108524/000110852426000125/crm-q1fy27xexhibit991.htm",
+  "confidence_notes": "Regeneration: this summary is a fresh, force-regenerated compose (Step 0's summary-exists guard was bypassed per operator request); no prior CRM_US_FY2026_Q2.json summary existed on disk before this run. Fiscal-period note: the primary document itself is titled 'Salesforce Delivers Record First Quarter Fiscal 2027 Results' (quarter ended April 30, 2026, filed May 27, 2026) — Salesforce's fiscal year ends January 31, so this is Q1 FY2027 on the issuer's own calendar, not 'FY2026 Q2' as labeled on our shard/event (a calendar-quarter-derived label mismatching the issuer's real fiscal quarter numbering — the same failure class documented in CLAUDE.md's fiscal-offset invariant; CRM was not previously on that known-affected list and should be added). Period/reported_at above are kept as 'FY2026 Q2' / 2026-05-27 to match the shard's event record, not the issuer's own numbering. Ledger inconsistency: the resolver's joined q/q and y/y comparator 'actual' values for this event do not reconcile with the release's own stated growth — e.g. the shard's y/y revenue comparator ($10,236M) implies +8.8% vs the release's explicitly stated 'revenue... up 13% Y/Y', and the shard's y/y diluted-EPS comparator ($1.96) implies +23.5% vs the release's stated 'GAAP EPS $2.42, up 52% Y/Y'; separately, 5 of 8 metrics' stored 'prior quarter' (q/q) values are identical to this quarter's own value, indicating a join/self-reference defect rather than genuine prior-quarter data. Because of this, q/q deltas are omitted for every KPI in this summary, and y/y deltas are shown only for the two metrics (Revenue, EPS diluted) where the release itself explicitly states the Y/Y percentage — not computed from the shard's suspect comparators. This is a data-quality finding for the pipeline, not a correction applied here.",
+  "drivers": [
+    { "metric": "overall", "direction": "up", "explanation": "CEO cites broad Agentic AI adoption via Agentforce across every Customer 360 application as the primary growth driver; CFO expects organic revenue acceleration in H2 FY27 from Sales, Service, Slack, Agentforce, and Data 360.", "basis": "company-disclosed" },
+    { "metric": "Revenue", "direction": "up", "explanation": "Growth included a $444M contribution from the recently acquired Informatica plus broad subscription growth; Agentforce and Data 360 combined ARR grew over 200% y/y to nearly $3.4B.", "basis": "company-disclosed" },
+    { "metric": "EPS (diluted)", "direction": "up", "explanation": "Not explained in the release — no cost, margin, or share-count driver is disclosed for why EPS grew far faster than revenue this quarter.", "basis": "company-disclosed" }
+  ]
+}
