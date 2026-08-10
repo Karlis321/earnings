@@ -33,8 +33,26 @@ run-name: >-
     || 'manual'
   }}
 
+# Per-ticker concurrency instead of a single global group. Effect:
+#
+#   - Different tickers run in PARALLEL (bounded only by GitHub's
+#     concurrent-job cap on your plan, ~20 for personal accounts).
+#   - Same-ticker retries still serialize (identical group name).
+#   - /sweep is its own group ("sweep") so it doesn't block per-
+#     ticker dispatches and vice versa.
+#
+# Previously: `group: claude-summarize` → strict 1-at-a-time. Every
+# ticker queued behind the last, giving ~15 min-per-ticker effective
+# throughput. With per-ticker groups + ~20-way parallelism, effective
+# throughput is ~20x on a busy batch (main bottleneck moves to
+# Yahoo/SEC rate limits, not GH scheduling).
 concurrency:
-  group: claude-summarize
+  group: >-
+    claude-summarize-${{
+      github.event.inputs.ticker != '' && github.event.inputs.ticker
+      || github.event.client_payload.ticker != null && github.event.client_payload.ticker
+      || 'sweep'
+    }}
   cancel-in-progress: false
 
 permissions:
