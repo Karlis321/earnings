@@ -370,11 +370,9 @@ export function OperatingDetail({ entity, events }: Props) {
           </Panel>
         ) : null}
 
-        {primary.guidance && primary.guidance.length > 0 ? (
-          <Panel eyebrow="Guidance" padded={false}>
-            <GuidanceTimeline items={primary.guidance} />
-          </Panel>
-        ) : null}
+        {/* Guidance panel moved up to page.tsx — sits directly under
+            the ExtendedMetricsPanel below the AI summary, grouped
+            with the "this-earnings" content. */}
 
         <Panel eyebrow="Reaction · 4-horizon">
           <ReactionChart

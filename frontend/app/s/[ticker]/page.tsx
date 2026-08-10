@@ -13,6 +13,7 @@ import { EtfDetail } from "@/components/security/EtfDetail";
 import { SummaryPanel } from "@/components/security/SummaryPanel";
 import { SummarizeButton } from "@/components/security/SummarizeButton";
 import { ExtendedMetricsPanel } from "@/components/security/ExtendedMetricsPanel";
+import { GuidanceTimeline, Panel } from "@/components/primitives";
 import { EmptyState } from "@/components/primitives";
 import { computeFreshness, todayIso } from "@/lib/freshness";
 import type { EventRecord } from "@/lib/types";
@@ -126,6 +127,19 @@ export default async function SecurityDetailPage({ params }: Props) {
       {entity.securityType === "operating" && latestPast && (
         <div className="mt-4">
           <ExtendedMetricsPanel event={latestPast} />
+        </div>
+      )}
+
+      {/* Guidance panel — company-issued forward statements for the
+          latest reported event. Moved up from OperatingDetail so the
+          "everything about this earnings" block (summary + extended
+          metrics + guidance) is visually grouped. Panel only renders
+          when the event's guidance[] array is non-empty. */}
+      {entity.securityType === "operating" && latestPast?.guidance && latestPast.guidance.length > 0 && (
+        <div className="mt-4">
+          <Panel eyebrow="Guidance" padded={false}>
+            <GuidanceTimeline items={latestPast.guidance} />
+          </Panel>
         </div>
       )}
 
