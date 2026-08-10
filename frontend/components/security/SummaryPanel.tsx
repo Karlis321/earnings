@@ -4,14 +4,17 @@ import type { Summary, SummaryDirection, SummaryDriver, SummaryDriverBasis } fro
 import { OlderSummaries } from "./OlderSummaries";
 import { RegenerateSummaryButton } from "./RegenerateSummaryButton";
 
-// Compact summary panel. Design goals:
-//   • Tight vertical rhythm — no wasted padding.
-//   • Sharp hierarchy: eyebrow (tiny mono) → headline (sharp, 17px) →
-//     KPI chips row → summary paragraphs → optional drivers + notes.
-//   • Regenerate button lives in the header, secondary styling so it
-//     doesn't compete with the headline.
-//   • Card sits below the SecurityHeader and above OperatingDetail on
-//     the ticker page.
+// Restructured summary card. Layout goals (from prompt1.txt):
+//   1. Meta line (muted): "AI summary · <period> · reported <date> · Filing/KPI-only" + Regenerate button right-aligned.
+//   2. Headline: one bold line, 17px.
+//   3. Summary prose: 3-5 sentences, comfortable line-height, max-width ~70ch.
+//   4. Capital returns strip: compact muted line with · separators (buybacks · dividends · declared dividend). Omit if empty.
+//   5. KPI grid: each metric its own cell — name muted, value prominent, delta colored + separated.
+//   6. "Why the numbers moved": collapsible via <details>, collapsed by default.
+//   7. Caveats: warning-tinted (⚠), max 3 one-liners of user-facing content.
+//   8. Pipeline notes: <details> disclosure, collapsed by default, monospace small text. Never visible on first paint.
+//   9. Footer (tiny, muted): "AI-generated · timestamp · Source link".
+// Mobile: KPI grid wraps to 2 columns via responsive grid.
 
 function DepthBadge({ depth }: { depth: "filing" | "kpi-only" }) {
   const isFiling = depth === "filing";
@@ -54,6 +57,57 @@ export function SummaryPanel({ summaries, latestReportedPeriod, ticker }: Props)
   );
 }
 
+// Heuristic split of confidence_notes into user-facing caveats vs
+// pipeline-debug provenance. TODO: eventually make these separate
+// fields on the Summary type and stop guessing. Current rules:
+//   - Sentences containing script names (*.mjs), filenames (*.htm),
+//     or workflow-jargon keywords ("REGENERATED", "prior version",
+//     "downgraded", "backfill", etc.) → pipeline notes.
+//   - Everything else → caveats. Capped at 3 caveats to keep the
+//     warning box scannable.
+function splitConfidenceNotes(raw: string | undefined | null): {
+  caveats: string[];
+  pipeline: string;
+} {
+  if (!raw || !raw.trim()) return { caveats: [], pipeline: "" };
+  // Split on sentence boundaries. Semicolons kept inside sentences.
+  const sentences = raw
+    .split(/(?<=[.!?])\s+(?=[A-Z(⚠"])/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const pipelineRe =
+    /\b(REGENERATED|regenerat(ed|ion)|prior kpi-only|prior version|downgrad(e|ed)|exhibit-|8-K cover|EX-99|backfill|ingest pipeline|force-regenerate|scripts\/|resolve-edgar|apply-extended|shard|Yahoo timeseries|SEC-verbatim|CIK|primary filing unreachable|kpi-only version)\b|\.(mjs|htm|json)/i;
+  const caveats: string[] = [];
+  const pipelineParts: string[] = [];
+  for (const s of sentences) {
+    if (pipelineRe.test(s)) pipelineParts.push(s);
+    else caveats.push(s);
+  }
+  return { caveats: caveats.slice(0, 3), pipeline: pipelineParts.join(" ") };
+}
+
+// Extract capital-returns strip from summary_long if present. Looks for
+// buyback / dividend paid / declared-dividend patterns. Returns null
+// when nothing matches — strip is then omitted. TODO: promote to first-
+// class fields on the Summary type once /earnings prompt tracks them.
+function extractCapitalReturns(long: string | undefined | null): {
+  buyback?: string;
+  dividendPaid?: string;
+  declaredDividend?: string;
+} | null {
+  if (!long) return null;
+  const out: { buyback?: string; dividendPaid?: string; declaredDividend?: string } = {};
+  const buy = long.match(/\$[\d.,]+[BM]?\s+in\s+buybacks?/i) ||
+    long.match(/buybacks?\s+of\s+\$[\d.,]+[BM]?/i);
+  if (buy) out.buyback = buy[0];
+  const divPaid = long.match(/\$[\d.,]+[BM]?\s+in\s+dividends\s+paid/i) ||
+    long.match(/dividends?\s+of\s+\$[\d.,]+[BM]?/i);
+  if (divPaid) out.dividendPaid = divPaid[0];
+  const declared = long.match(/\$[\d.]+\s*\/\s*share\s+(?:cash\s+)?dividend[^.]*(?:payable[^.]*|record[^.]*)?/i);
+  if (declared) out.declaredDividend = declared[0].replace(/\s+/g, " ").trim();
+  return Object.keys(out).length > 0 ? out : null;
+}
+
 export function SummaryCard({
   summary,
   compact = false,
@@ -63,6 +117,10 @@ export function SummaryCard({
   compact?: boolean;
   ticker?: string;
 }) {
+  const { caveats, pipeline } = splitConfidenceNotes(summary.confidence_notes);
+  const capReturns = compact ? null : extractCapitalReturns(summary.summary_long);
+  const drivers = Array.isArray(summary.drivers) ? summary.drivers : [];
+
   return (
     <article
       className={clsx(
@@ -70,7 +128,7 @@ export function SummaryCard({
         compact ? "px-4 py-3" : "px-5 py-4",
       )}
     >
-      {/* Header: eyebrow row + regenerate button + headline */}
+      {/* 1. Meta line + regenerate button */}
       <header className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-[10px] uppercase tracking-[0.07em] text-tx3">
@@ -81,6 +139,7 @@ export function SummaryCard({
             <span>reported {summary.reported_at}</span>
             <DepthBadge depth={summary.depth ?? "filing"} />
           </div>
+          {/* 2. Headline */}
           <h2
             id={compact ? undefined : "summary-panel-headline"}
             className="mt-[6px] text-[17px] font-semibold leading-[1.3] text-tx"
@@ -95,40 +154,75 @@ export function SummaryCard({
         ) : null}
       </header>
 
-      {/* KPI chips — horizontal row, wraps under. */}
-      {!compact && summary.kpis.length > 0 ? (
-        <div className="mt-3 flex flex-wrap gap-[6px]">
-          {summary.kpis.map((k, i) => (
-            <KpiChip key={`${k.label}-${i}`} kpi={k} />
-          ))}
-        </div>
-      ) : null}
-
-      {/* Summary text — short is emphasized; long is smaller + muted. */}
+      {/* 3. Summary prose — max-width 70ch, comfortable line-height. */}
       {summary.summary_short ? (
         <p
           className={clsx(
             "mt-3 text-tx",
-            compact ? "text-[13px] leading-[1.5]" : "text-[14px] leading-[1.5]",
+            compact ? "text-[13px] leading-[1.55]" : "text-[14px] leading-[1.6] max-w-[70ch]",
           )}
         >
           {summary.summary_short}
         </p>
       ) : null}
-
       {!compact && summary.summary_long ? (
-        <p className="mt-2 text-[12.5px] leading-[1.6] text-tx-mid">
+        <p className="mt-2 text-[13px] leading-[1.6] text-tx-mid max-w-[70ch]">
           {summary.summary_long}
         </p>
       ) : null}
 
-      {/* Drivers section — only if present and not empty. */}
-      {!compact && Array.isArray(summary.drivers) && summary.drivers.length > 0 ? (
-        <DriversList drivers={summary.drivers} />
+      {/* 4. Capital returns strip — compact muted line. Omit if empty. */}
+      {capReturns ? (
+        <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-[10.5px] uppercase tracking-[0.06em] text-tx3">
+          <span>Capital returns</span>
+          {capReturns.buyback ? (
+            <>
+              <span aria-hidden>·</span>
+              <span className="normal-case tracking-normal text-tx-mid">{capReturns.buyback}</span>
+            </>
+          ) : null}
+          {capReturns.dividendPaid ? (
+            <>
+              <span aria-hidden>·</span>
+              <span className="normal-case tracking-normal text-tx-mid">{capReturns.dividendPaid}</span>
+            </>
+          ) : null}
+          {capReturns.declaredDividend ? (
+            <>
+              <span aria-hidden>·</span>
+              <span className="normal-case tracking-normal text-tx-mid">{capReturns.declaredDividend}</span>
+            </>
+          ) : null}
+        </div>
       ) : null}
 
-      {/* Confidence notes — warning-tinted when populated. */}
-      {summary.confidence_notes && summary.confidence_notes.trim().length > 0 ? (
+      {/* 5. KPI grid — each metric its own cell. */}
+      {!compact && summary.kpis.length > 0 ? (
+        <div className="mt-4 grid grid-cols-2 gap-x-3 gap-y-2 sm:grid-cols-3 md:grid-cols-4">
+          {summary.kpis.map((k, i) => (
+            <KpiCell key={`${k.label}-${i}`} kpi={k} />
+          ))}
+        </div>
+      ) : null}
+
+      {/* 6. "Why the numbers moved" — collapsible, collapsed by default. */}
+      {!compact && drivers.length > 0 ? (
+        <details className="group mt-4 rounded-[6px] border border-bd bg-panel2/60">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-2 px-2.5 py-1.5 font-mono text-[10px] uppercase tracking-[0.07em] text-tx-mid hover:text-tx">
+            <span>Why the numbers moved ({drivers.length})</span>
+            <span
+              aria-hidden
+              className="text-tx3 transition-transform group-open:rotate-180"
+            >
+              ▾
+            </span>
+          </summary>
+          <DriversList drivers={drivers} />
+        </details>
+      ) : null}
+
+      {/* 7. Caveats — warning-tinted, max 3 one-liners. */}
+      {caveats.length > 0 ? (
         <div
           role="note"
           className="mt-3 flex items-start gap-2 rounded-[6px] border border-[rgba(202,138,4,0.32)] bg-[rgba(202,138,4,0.07)] px-2.5 py-1.5 text-[11.5px] leading-[1.5]"
@@ -137,16 +231,27 @@ export function SummaryCard({
             aria-hidden
             className="mt-[2px] h-[12px] w-[12px] shrink-0 text-[rgba(202,138,4,1)]"
           />
-          <div>
-            <span className="mr-1 font-mono text-[9.5px] uppercase tracking-[0.06em] text-[rgba(202,138,4,1)]">
-              Confidence
-            </span>
-            <span className="text-tx-mid">{summary.confidence_notes}</span>
-          </div>
+          <ul className="min-w-0 flex-1 space-y-0.5 text-tx-mid">
+            {caveats.map((c, i) => (
+              <li key={i}>{c}</li>
+            ))}
+          </ul>
         </div>
       ) : null}
 
-      {/* Footer — small, muted, one line. */}
+      {/* 8. Pipeline notes — hidden by default, monospace small. */}
+      {pipeline ? (
+        <details className="mt-3 rounded-[6px] border border-bd bg-panel2/40">
+          <summary className="cursor-pointer list-none px-2.5 py-1 font-mono text-[9.5px] uppercase tracking-[0.07em] text-tx3 hover:text-tx-mid">
+            Pipeline notes
+          </summary>
+          <p className="px-2.5 py-1.5 font-mono text-[10.5px] leading-[1.5] text-tx3">
+            {pipeline}
+          </p>
+        </details>
+      ) : null}
+
+      {/* 9. Footer — tiny, muted. */}
       <footer className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 border-t border-bd pt-2 font-mono text-[10.5px] text-tx3">
         <span className="uppercase tracking-[0.06em]">AI-generated</span>
         <span aria-hidden>·</span>
@@ -166,69 +271,68 @@ export function SummaryCard({
   );
 }
 
-function KpiChip({ kpi }: { kpi: import("@/lib/types").SummaryKpi }) {
-  const cls = directionClass(kpi.direction);
+function KpiCell({ kpi }: { kpi: import("@/lib/types").SummaryKpi }) {
+  const dirClass = kpi.direction === "up"
+    ? "text-success-fg"
+    : kpi.direction === "down"
+    ? "text-danger"
+    : "text-tx-mid";
   const Icon = directionIcon(kpi.direction);
   return (
-    <span
-      className={clsx(
-        "inline-flex items-center gap-[6px] rounded-[6px] border px-[7px] py-[3px] font-mono text-[11px]",
-        cls,
-      )}
-    >
-      <span className="text-tx-mid">{kpi.label}</span>
-      <span className="font-semibold tabular-nums text-tx">{kpi.value}</span>
-      {kpi.delta ? (
-        <span className="inline-flex items-center gap-[3px] tabular-nums">
-          <Icon aria-hidden className="h-[10px] w-[10px]" />
-          {kpi.delta}
-          <span className="text-tx3">· {kpi.delta_basis}</span>
-        </span>
+    <div className="min-w-0 rounded-[6px] border border-bd bg-panel2/50 px-2.5 py-1.5">
+      <div className="truncate font-mono text-[10px] uppercase tracking-[0.05em] text-tx3">
+        {kpi.label}
+      </div>
+      <div className="mt-[2px] flex items-baseline gap-2">
+        <span className="text-[14px] font-semibold tabular-nums text-tx">{kpi.value}</span>
+        {kpi.delta ? (
+          <span className={clsx("inline-flex items-center gap-[3px] text-[11px] tabular-nums", dirClass)}>
+            <Icon aria-hidden className="h-[10px] w-[10px]" />
+            {kpi.delta}
+          </span>
+        ) : null}
+      </div>
+      {kpi.delta && kpi.delta_basis ? (
+        <div className="mt-[1px] font-mono text-[9px] uppercase tracking-[0.05em] text-tx3">
+          {kpi.delta_basis}
+        </div>
       ) : null}
-    </span>
+    </div>
   );
 }
 
 function DriversList({ drivers }: { drivers: SummaryDriver[] }) {
   return (
-    <section
-      aria-label="Why the numbers moved"
-      className="mt-3 rounded-[6px] border border-bd bg-panel2/60"
-    >
-      <p className="border-b border-bd px-2.5 py-1 font-mono text-[9.5px] uppercase tracking-[0.07em] text-tx3">
-        Why the numbers moved
-      </p>
-      <ul className="divide-y divide-bd">
-        {drivers.map((d, i) => {
-          const notExplained = /^not explained in the release$/i.test(d.explanation.trim());
-          const Icon = directionIcon(d.direction);
-          const dirClass =
-            d.direction === "up"
-              ? "text-success-fg"
-              : d.direction === "down"
-              ? "text-danger"
-              : "text-tx-mid";
-          return (
-            <li
-              key={`${d.metric}-${i}`}
-              className={clsx(
-                "flex items-start gap-2 px-2.5 py-1.5 text-[12px] leading-[1.5]",
-                notExplained && "opacity-70",
-              )}
-            >
-              <Icon aria-hidden className={clsx("mt-[3px] h-[11px] w-[11px] shrink-0", dirClass)} />
-              <div className="min-w-[7rem] shrink-0 font-mono text-[10.5px] uppercase tracking-[0.04em] text-tx-mid">
-                {d.metric}
-              </div>
-              <div className={clsx("flex-1", notExplained ? "text-tx3 italic" : "text-tx")}>
-                {d.explanation}
-              </div>
-              <DriverBasisTag basis={d.basis} />
-            </li>
-          );
-        })}
-      </ul>
-    </section>
+    <ul className="divide-y divide-bd border-t border-bd">
+      {drivers.map((d, i) => {
+        const notExplained = /^not explained in the release$/i.test(d.explanation.trim());
+        const Icon = directionIcon(d.direction);
+        const dirClass =
+          d.direction === "up"
+            ? "text-success-fg"
+            : d.direction === "down"
+            ? "text-danger"
+            : "text-tx-mid";
+        return (
+          <li
+            key={`${d.metric}-${i}`}
+            className={clsx(
+              "flex items-start gap-2 px-2.5 py-1.5 text-[12px] leading-[1.5]",
+              notExplained && "opacity-70",
+            )}
+          >
+            <Icon aria-hidden className={clsx("mt-[3px] h-[11px] w-[11px] shrink-0", dirClass)} />
+            <div className="min-w-[7rem] shrink-0 font-mono text-[10.5px] uppercase tracking-[0.04em] text-tx-mid">
+              {d.metric}
+            </div>
+            <div className={clsx("flex-1", notExplained ? "text-tx3 italic" : "text-tx")}>
+              {d.explanation}
+            </div>
+            <DriverBasisTag basis={d.basis} />
+          </li>
+        );
+      })}
+    </ul>
   );
 }
 
@@ -251,20 +355,6 @@ function DriverBasisTag({ basis }: { basis: SummaryDriverBasis }) {
       {isCompany ? "Company" : "Derived"}
     </span>
   );
-}
-
-function directionClass(d: SummaryDirection): string {
-  switch (d) {
-    case "up":
-      return "text-success-fg bg-[rgba(18,183,106,0.08)] border-[rgba(18,183,106,0.28)]";
-    case "down":
-      return "text-danger bg-[rgba(180,35,24,0.06)] border-[rgba(180,35,24,0.28)]";
-    case "flat":
-      return "text-tx2 bg-s3 border-bd2";
-    case "n/a":
-    default:
-      return "text-tx-mid bg-s2 border-bd";
-  }
 }
 
 function directionIcon(d: SummaryDirection) {
