@@ -108,13 +108,23 @@ const PHASES = [
   // is covered by attach-sec-filings.mjs which stores accession URLs
   // directly on event.sourceLink from SEC submissions endpoint.
   { key: "trend-estimates", label: "Yahoo earningsTrend estimates (upcoming)", script: "ingest-estimates-universe.mjs" },
-  // Pull Yahoo's REAL calendarEvents.earnings.earningsDate for every
-  // ticker Yahoo covers, override any stale/estimated scheduledDate
-  // with the actual company-published date. Runs BEFORE the estimator
-  // so estimator only fills in tickers Yahoo has no calendar for.
-  // Stamps scheduledDateSource = "yahoo-calendarEvents".
-  { key: "calendar-refine", label: "Yahoo calendarEvents real earningsDate", script: "refine-stale-via-calendar.mjs" },
-  { key: "estimator", label: "Median-gap next-event estimator (fallback)", script: "run-estimator.mjs" },
+  // *** REAL SOURCE-OF-TRUTH pass (runs BEFORE estimator) ***
+  // Pulls Yahoo's REAL calendarEvents.earnings.earningsDate for
+  // EVERY upcoming shell across the universe (~2,900 shells). ~40%
+  // hit rate; the remaining 60% either have no Yahoo calendar
+  // coverage (foreign non-US) or errored. Stamps
+  // scheduledDateSource = "yahoo-calendarEvents". Never overwrites a
+  // shell whose source is "company-disclosed*" (manual overrides
+  // always win). Guardrail: only accepts dates that are future OR
+  // within last 5 days. Runtime ~15-20 min at concurrency 4.
+  { key: "pull-yahoo-calendar", label: "Yahoo calendarEvents REAL earningsDate (universe-wide)", script: "pull-yahoo-calendar-dates.mjs" },
+  // Estimator ONLY fills in tickers that don't already have a shell
+  // (with a real Yahoo date from the phase above OR company-disclosed).
+  // It never overwrites an existing scheduledDate. Confirmed via
+  // `if (shellByTicker.has(ticker)) skipped.hasShell++; continue;`
+  // guard in run-estimator.mjs. So this phase is now a genuine
+  // FALLBACK for tickers with no other date source.
+  { key: "estimator", label: "Median-gap next-event estimator (fallback — no shell yet)", script: "run-estimator.mjs" },
   { key: "reactions", label: "Reaction maturation + baseline seeding", script: "mature-reactions.mjs" },
   { key: "marketcap", label: "Market-cap + FX batch (Yahoo v7 quote)", script: "refresh-marketcap.mjs" },
   // Overview Market Pulse snapshot — 4 indices × 3 ranges, ~12 Yahoo
