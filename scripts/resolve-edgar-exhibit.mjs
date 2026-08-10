@@ -96,6 +96,9 @@ function scoreExhibit(filename) {
   // filers): `ex99d1.htm` literally encodes "ex99.1" since old
   // EDGAR filenames couldn't carry a second dot.
   if (/ex[-_]?99d1(\D|$)/i.test(lower)) return 100;
+  // Healthpeak/others: `ex99106302026.htm` — exhibit number immediately
+  // followed by a MMDDYYYY date stamp before the extension, no separator.
+  if (/ex[-_]?99[-_]?1\d{6,8}\.(?:htm|html)$/i.test(lower)) return 100;
   // Cover common looser patterns (some filers use `exhibit991` or
   // `pressrelease*`).
   if (/exhibit[-_]?99[-_]?1/i.test(lower)) return 90;
@@ -105,6 +108,7 @@ function scoreExhibit(filename) {
   // above via the higher score).
   if (/ex[-_]?99[-_]?[2-9](\D|$)/i.test(lower)) return 50;
   if (/ex[-_]?99d[2-9](\D|$)/i.test(lower)) return 50;
+  if (/ex[-_]?99[-_]?[2-9]\d{6,8}\.(?:htm|html)$/i.test(lower)) return 50;
   return 0;
 }
 
