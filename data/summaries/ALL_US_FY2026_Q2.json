@@ -1,0 +1,31 @@
+{
+  "ticker": "ALL US",
+  "period": "FY2026 Q2",
+  "reported_at": "2026-08-05",
+  "generated_at": "2026-08-10T08:55:56.000Z",
+  "depth": "filing",
+  "headline": "Underwriting strength lifts profit as catastrophes ease",
+  "kpis": [
+    { "label": "Revenue", "value": "$18.596B", "delta": "+11.8%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EPS (basic)", "value": "$12.66", "delta": "+61.1%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EPS (diluted)", "value": "$12.51", "delta": "+61.2%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EBIT", "value": "$4.238B", "delta": "+51.2%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Net income", "value": "$3.271B", "delta": "+55.1%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Total cash", "value": "$840M", "delta": "-15.6%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Long-term debt", "value": "$7.492B", "delta": "-7.4%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Shareholders' equity", "value": "$33.698B", "delta": "+40.3%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Weighted diluted shares", "value": "259.1M shares", "delta": "-3.3%", "delta_basis": "y/y", "direction": "down" }
+  ],
+  "summary_short": "Allstate's Q2 FY2026 revenue rose 11.8% y/y to $18.596 billion on policy growth and higher homeowners pricing, while net income climbed 55.1% y/y to $3.271 billion as the Property-Liability combined ratio improved to 86.6 from 91.1.",
+  "summary_long": "Revenue grew 11.8% y/y to $18.596 billion on higher policies in force, increased homeowners insurance pricing, and strong investment results. Property-Liability underwriting income more than doubled to $2.006 billion as the combined ratio improved 4.5 points to 86.6, aided by lower catastrophe losses ($1.722B vs $1.990B) and favorable prior-year reserve releases, partly offset by higher legal expenses. Net investment income rose to $1.009 billion on higher fixed-income yields and performance-based gains. Net income rose 55.1% y/y to $3.271 billion; diluted EPS was $12.51 (+61.2% y/y). Allstate repurchased $1.0 billion of stock and paid $280 million in dividends. Shareholders' equity rose to $33.698 billion. The release issued no new forward guidance.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/899051/000089905126000117/allcorp63026earningsreleas.htm",
+  "confidence_notes": "REGENERATION: this run was executed in explicit force-regenerate mode per instruction, bypassing the Step-0 already-exists guard; no ALL_US_FY2026_Q2.json summary actually existed on disk prior to this run (resolver reported summaryExists=false), so there was nothing to overwrite, but every figure below was derived fresh from the resolver's shard KPIs and the primary EX-99.1 press release rather than reused from any prior version. Ledger notes: (1) the shard's net_income_usd_m y/y prior (2,109) is the release's 'Net income attributable to Allstate' line, while the current-period value (3,271) is the release's undifferentiated 'Net income' line (identical this quarter because noncontrolling interest was $0) -- the release's own headlined net-income comparison is 'Net income applicable to common shareholders' ($3,241 vs $2,079, +55.9%), a third, further-adjusted figure; all three move in the same direction and same rough magnitude but are not numerically identical, so a reader diffing this summary's +55.1% against the press release's own +55.9% should expect that ~1pt gap rather than treat it as an error. (2) the shard's ebit_usd_m (Yahoo fundamentals-timeseries, 4,238) reconciles exactly to the release's GAAP 'income from operations before income tax expense' (4,142) plus interest expense (96) -- confirmed consistent, not a data error. (3) Allstate discloses no capex, adjusted capex, management-defined free cash flow, dividend-per-share, asset-sale proceeds, or next-quarter revenue/EPS guidance in this release; Step 3b extraction below is limited to the buyback total and adjusted (non-GAAP) diluted EPS, both explicitly stated figures. (4) the entity's 'financials' sectorTag maps the registry's bank-oriented extended-metric set (NIM, CET1, efficiency ratio, net charge-offs, deposits) which does not apply to a P&C insurer like Allstate -- none of that set was extracted, correctly, since the release discloses none of it in bank terms.",
+  "drivers": [
+    { "metric": "Revenue", "direction": "up", "explanation": "Growth reflects increased policies in force, higher average homeowners insurance premiums, and strong investment results, per management's quarter summary.", "basis": "company-disclosed" },
+    { "metric": "Net income", "direction": "up", "explanation": "Growth is attributed to strong underwriting results -- Property-Liability underwriting income more than doubled y/y on lower catastrophe losses and favorable reserve releases.", "basis": "company-disclosed" },
+    { "metric": "EBIT", "direction": "up", "explanation": "Rise tracks the $1.439B y/y improvement in pretax income before tax, itself driven by lower catastrophe losses and higher Property-Liability underwriting income.", "basis": "derived-arithmetic" },
+    { "metric": "Shareholders' equity", "direction": "up", "explanation": "Growth reflects retained-income accumulation from strong net income, partially offset by treasury-stock buybacks and dividends paid during the period.", "basis": "derived-arithmetic" },
+    { "metric": "Weighted diluted shares", "direction": "down", "explanation": "Diluted share count fell as this quarter's $1.0 billion of buybacks reduced common shares outstanding to 253.5 million from 263.8 million a year earlier.", "basis": "company-disclosed" },
+    { "metric": "overall", "direction": "up", "explanation": "Management called the quarter's operating and financial results \"excellent,\" citing Transformative Growth execution and $3.5 billion of trailing-twelve-month shareholder returns (6.7% of market cap).", "basis": "company-disclosed" }
+  ]
+}
