@@ -92,6 +92,10 @@ function scoreExhibit(filename) {
   // ABBV's `ex-991_earnings...`, generic `ex991.htm` / `ex-99-1.htm`, etc.
   if (/ex[-_]?99[-_]?1(\D|$)/i.test(lower)) return 100;
   if (/ex[-_]?991(\D|$)/i.test(lower)) return 100;
+  // EDGAR's "d"-as-decimal-point convention (Donnelley/Merrill
+  // filers): `ex99d1.htm` literally encodes "ex99.1" since old
+  // EDGAR filenames couldn't carry a second dot.
+  if (/ex[-_]?99d1(\D|$)/i.test(lower)) return 100;
   // Cover common looser patterns (some filers use `exhibit991` or
   // `pressrelease*`).
   if (/exhibit[-_]?99[-_]?1/i.test(lower)) return 90;
@@ -100,6 +104,7 @@ function scoreExhibit(filename) {
   // slides in .2 and the release in .1; we still return .1 candidates
   // above via the higher score).
   if (/ex[-_]?99[-_]?[2-9](\D|$)/i.test(lower)) return 50;
+  if (/ex[-_]?99d[2-9](\D|$)/i.test(lower)) return 50;
   return 0;
 }
 
