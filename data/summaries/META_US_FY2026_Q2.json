@@ -1,0 +1,53 @@
+{
+  "ticker": "META US",
+  "period": "FY2026 Q2",
+  "reported_at": "2026-07-29",
+  "generated_at": "2026-08-10T00:00:00.000Z",
+  "depth": "filing",
+  "headline": "Strong ad growth overshadowed by legal charge, severance hit",
+  "kpis": [
+    { "label": "Revenue", "value": "$60,801M USD", "delta": "+28.0%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Gross profit", "value": "$49,471M USD", "delta": "+26.8%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Operating income", "value": "$18,775M USD", "delta": "-8.1%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "EBITDA", "value": "$25,895M USD", "delta": "+3.1%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Net income", "value": "$15,848M USD", "delta": "-13.6%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "EPS", "value": "$6.23 USD", "delta": "-14.4%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "EPS (diluted)", "value": "$6.18 USD", "delta": "-13.4%", "delta_basis": "y/y", "direction": "down" }
+  ],
+  "summary_short": "Revenue rose 28% y/y to $60.80B on 14% higher ad impressions and 12% higher average price per ad, but operating income fell 8% to $18.78B and diluted EPS fell 13% to $6.18 as total costs and expenses jumped 55% y/y.",
+  "summary_long": "Q2 revenue grew 28% y/y to $60.80B (27% ex-FX) on 14% higher ad impressions and 12% higher average price per ad; Family of Apps revenue was $60.37B against a $4.62B Reality Labs operating loss. Costs and expenses rose 55% y/y to $42.03B, including $2.40B of legal-proceedings charges and $1.18B of severance from the May 2026 headcount reduction, pulling operating margin to 31% from 43% and net income down 14% to $15.85B. Capex was $31.08B; free cash flow fell to $784M from $8.55B. Cash and marketable securities were $90.26B against $83.66B of long-term debt. Guidance: Q3 revenue $61-64B; FY26 expenses raised to $165-169B, capex narrowed to $130-145B, tax rate raised to 15-17%.",
+  "drivers": [
+    {
+      "metric": "Revenue",
+      "direction": "up",
+      "explanation": "Company attributes the increase to ad impressions delivered across Family of Apps rising 14% y/y and average price per ad rising 12% y/y; revenue ex-FX would have grown 27%.",
+      "basis": "company-disclosed"
+    },
+    {
+      "metric": "Operating income",
+      "direction": "down",
+      "explanation": "Total costs and expenses rose 55% y/y, which the release attributes to $2.40B of legal-proceedings charges and $1.18B of severance from the May 2026 headcount reduction, on top of higher R&D spend.",
+      "basis": "company-disclosed"
+    },
+    {
+      "metric": "Net income",
+      "direction": "down",
+      "explanation": "Tracks the operating-income decline plus a higher effective tax rate (16% vs 11% a year ago); pre-tax income fell $1.78B and tax expense rose $711M.",
+      "basis": "derived-arithmetic"
+    },
+    {
+      "metric": "EPS (diluted)",
+      "direction": "down",
+      "explanation": "EPS fell 13%, roughly tracking the 14% net-income decline; diluted share count was little changed (2,566M vs 2,570M) since Meta did not repurchase stock this quarter.",
+      "basis": "derived-arithmetic"
+    },
+    {
+      "metric": "overall",
+      "direction": "down",
+      "explanation": "CEO Mark Zuckerberg framed the quarter as AI \"accelerating our core business,\" while the release itself attributes the margin compression to one-off legal and severance charges rather than the underlying ad business, which grew impressions and pricing.",
+      "basis": "company-disclosed"
+    }
+  ],
+  "source_url": "https://www.sec.gov/Archives/edgar/data/1326801/000162828026050596/meta-06302026xexhibit991.htm",
+  "confidence_notes": "FORCED REGENERATION — this run was executed in force-regenerate mode per operator instruction, bypassing the Step-0 already-exists guard; no prior summary file existed on disk for this ticker/period, so this is a fresh compose rather than an overwrite of prior content. The sourceLink from the resolver pointed at the 8-K cover (meta-20260729.htm); resolve-edgar-exhibit.mjs correctly resolved it to the EX-99.1 press release (meta-06302026xexhibit991.htm), which was fetched directly. The resolver's shard 'eps_usd' ($6.23) is GAAP basic EPS and 'eps_diluted_usd' ($6.18) is GAAP diluted EPS; both match the release exactly, so both are reported as separate KPI rows here (labeled 'EPS' and 'EPS (diluted)') rather than collapsed, to avoid discarding a verified figure. Free cash flow ($784M) is a non-GAAP measure per the release's own reconciliation table (operating cash flow $31.86B less capex $30.12B less finance-lease principal payments $0.96B) and is not carried as a shard KPI; it is quoted narratively only, not added as a delta-bearing KPI row, per ledger discipline (only resolver-sourced KPIs get delta_basis treatment). No revenue/EPS guidance figures for Q3 were available to add as delta_basis='vs guidance' on this period's KPIs since the guidance covers the NEXT quarter, not this one; guidance is instead written to the event's guidance[] array per Step 3's guidance procedure."
+}
