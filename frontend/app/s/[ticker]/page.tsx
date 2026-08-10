@@ -12,6 +12,7 @@ import { DeveloperDetail } from "@/components/security/DeveloperDetail";
 import { EtfDetail } from "@/components/security/EtfDetail";
 import { SummaryPanel } from "@/components/security/SummaryPanel";
 import { SummarizeButton } from "@/components/security/SummarizeButton";
+import { ExtendedMetricsPanel } from "@/components/security/ExtendedMetricsPanel";
 import { EmptyState } from "@/components/primitives";
 import { computeFreshness, todayIso } from "@/lib/freshness";
 import type { EventRecord } from "@/lib/types";
@@ -115,6 +116,17 @@ export default async function SecurityDetailPage({ params }: Props) {
           latestReportedPeriod={latestPast?.period ?? null}
           ticker={ticker}
         />
+      )}
+
+      {/* Extended metrics render RIGHT UNDER the AI summary — sits
+          logically with Revenue/Net Income/EPS in the KPI grid rather
+          than in a separate right-hand column. Only shows when the
+          latest event has extendedMetrics populated (renders null when
+          empty). Operating types only — matches SummaryPanel gating. */}
+      {entity.securityType === "operating" && latestPast && (
+        <div className="mt-4">
+          <ExtendedMetricsPanel event={latestPast} />
+        </div>
       )}
 
       {/* Summarize button — where the SummaryPanel would render but
