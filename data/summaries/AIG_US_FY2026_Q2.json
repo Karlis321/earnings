@@ -1,0 +1,30 @@
+{
+  "ticker": "AIG US",
+  "period": "FY2026 Q2",
+  "reported_at": "2026-08-06",
+  "generated_at": "2026-08-10T00:00:00.000Z",
+  "depth": "filing",
+  "headline": "Underwriting profit climbs while investment swings cut EPS",
+  "kpis": [
+    { "label": "Net premiums written (General Insurance)", "value": "$7.516B", "delta": "+9%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Revenue (total, GAAP)", "value": "$7.085B", "delta": "-0.1%", "delta_basis": "y/y", "direction": "flat" },
+    { "label": "General Insurance combined ratio", "value": "89.0%", "delta": "-0.3ppt", "delta_basis": "y/y", "direction": "down" },
+    { "label": "EPS (diluted, GAAP)", "value": "$1.78", "delta": "-10.1%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Adjusted after-tax income per diluted share (AATI)", "value": "$2.00", "delta": "+10.5%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Pre-tax income (GAAP)", "value": "$1.264B", "delta": "-18.1%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Total shareholders' equity", "value": "$40.606B", "delta": "-2.2%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Book value per share", "value": "$77.39", "delta": "+4.4%", "delta_basis": "y/y", "direction": "up" }
+  ],
+  "summary_short": "AIG's Q2 FY2026 net premiums written rose 9% y/y to $7.5 billion and General Insurance underwriting income grew 10% to $686 million, but GAAP diluted EPS fell 10.1% y/y to $1.78 on investment-related fair-value swings tied to its Corebridge exit; adjusted (AATI) diluted EPS rose 10.5% to $2.00.",
+  "summary_long": "General Insurance NPW grew 9% y/y to $7.5 billion, with underwriting income up 10% to $686 million and the combined ratio improving 30bp to 89.0%. GAAP net income fell 10% y/y to $948 million ($1.78/diluted share) on mark-to-market swings in AIG's former Corebridge stake and equity securities, partially offset by higher underwriting income; AATI rose 10% to $1.07 billion ($2.00/diluted share). AIG completed its Corebridge exit in May for ~$710 million and returned $904 million to shareholders via $641 million of buybacks and $263 million of dividends. Shareholders' equity fell 2.2% y/y to $40.6 billion even as book value per share rose 4.4% to $77.39 on the reduced share count. No numeric guidance was issued this quarter.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/5272/000000527226000072/q22026earningsrelease.htm",
+  "confidence_notes": "FORCE-REGENERATED per operator request (force-regenerate mode) — the Step-0 'summary already exists' guard was intentionally bypassed for this run. In practice this file did not previously exist on disk (resolver also reported summaryExists=false), so this compose is a fresh write rather than an overwrite of a prior valid summary; noted per the regeneration instruction regardless. Net premiums written ($7.516B), General Insurance combined ratio (89.0%), Adjusted after-tax income per diluted share (AATI, $2.00) and book value per share ($77.39) are sourced directly from the press release (EX-99.1), not the resolver's shard kpis object, which for this shallow-coverage ticker carries only revenue/EPS/pretax income/cash/equity. Shard 'revenue_usd_m' ($7.085B GAAP total revenues, SEC-verbatim) is essentially flat y/y (-0.1%) despite 9% NPW growth — per the release's own MD&A, the gap is investment-income and Corebridge/equity fair-value volatility, not premium growth. AIG's registry sectorTags ('financials', 'financial-services') map to the extended-metrics registry's bank-oriented set (NIM, CET1 ratio, efficiency ratio, net charge-offs, deposits, provision for credit losses); none of these apply to a multi-line insurer and none are disclosed in this release, so Step 3b's sector-specific layer intentionally contributed zero entries — only universal-set metrics that were actually disclosed were extracted.",
+  "drivers": [
+    { "metric": "EPS (diluted, GAAP)", "direction": "down", "explanation": "Decrease driven primarily by changes in the fair value of AIG's investment in Corebridge and equity securities, partially offset by higher underwriting income.", "basis": "company-disclosed" },
+    { "metric": "Adjusted after-tax income per diluted share (AATI)", "direction": "up", "explanation": "Increase reflects higher underwriting income, partially offset by lower Other Operations net investment income.", "basis": "company-disclosed" },
+    { "metric": "General Insurance combined ratio", "direction": "down", "explanation": "Improvement driven by higher favorable prior-year reserve development and a lower expense ratio, partially offset by higher catastrophe-related charges.", "basis": "company-disclosed" },
+    { "metric": "Net premiums written (General Insurance)", "direction": "up", "explanation": "Growth driven by organic growth across all three business segments and recent strategic transactions, partially offset by declines in North America Property lines.", "basis": "company-disclosed" },
+    { "metric": "Book value per share", "direction": "up", "explanation": "Rose y/y even as total shareholders' equity fell, because the buyback-driven drop in shares outstanding (559.8M to 524.7M) outpaced the equity decline.", "basis": "derived-arithmetic" },
+    { "metric": "overall", "direction": "up", "explanation": "Management cites an 'exceptional first half,' with organic growth and strategic transactions offsetting a more selective pricing environment; reiterated confidence in 2025 Investor Day objectives without new numeric guidance.", "basis": "company-disclosed" }
+  ]
+}
