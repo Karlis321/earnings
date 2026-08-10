@@ -137,11 +137,26 @@ jobs:
           # so an auth failure is visible as its own workflow step. If
           # the orchestrator found no changes (weekend + nothing
           # ingested), `git push` is a no-op.
-          if git log -1 --pretty=%s | grep -q "^daily refresh:"; then
-            git push
-          else
+          if ! git log -1 --pretty=%s | grep -q "^daily refresh:"; then
             echo "no daily-refresh commit to push (nothing changed)"
+            exit 0
           fi
+          # Rebase onto origin/main before push. Multi-hour orchestrator
+          # runs commonly collide with /sweep or manual commits that
+          # landed while we were working; without rebase the push fails
+          # non-fast-forward and 22 phases of refresh work get dropped.
+          # If rebase hits a conflict, prefer OURS (this fresh refresh
+          # is more authoritative than whatever raced in on the same
+          # data files) — merge markers would break shard JSON parsing
+          # on Vercel.
+          git fetch origin main
+          if ! git rebase -X ours origin/main; then
+            echo "::warning::rebase conflict on daily refresh — aborting rebase"
+            git rebase --abort || true
+            echo "::error::could not rebase onto origin/main; skipping push"
+            exit 1
+          fi
+          git push
 
       - name: Chain to claude-summarize (fetch fresh Q reports)
         if: ${{ github.event.inputs.dry_run != 'true' }}
