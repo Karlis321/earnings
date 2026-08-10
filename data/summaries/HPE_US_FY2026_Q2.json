@@ -1,0 +1,36 @@
+{
+  "ticker": "HPE US",
+  "period": "FY2026 Q2",
+  "reported_at": "2026-06-01",
+  "generated_at": "2026-08-10T14:32:10.000Z",
+  "depth": "filing",
+  "headline": "Record revenue and profit; HPE raises full-year outlook",
+  "kpis": [
+    { "label": "Revenue", "value": "$10.68B", "delta": "+14.8%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Revenue", "value": "$10.68B", "delta": "+40.0%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Operating income", "value": "$747M", "delta": "+58.9%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Operating income", "value": "$747M", "delta": "+$1,856M", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Gross profit", "value": "$3.90B", "delta": "+16.8%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Gross profit", "value": "$3.90B", "delta": "+79.8%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Net income", "value": "$624M", "delta": "+38.1%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Net income", "value": "$624M", "delta": "+$1,674M", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EPS (diluted)", "value": "$0.44", "delta": "+41.9%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "EPS (diluted)", "value": "$0.44", "delta": "+$1.26", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EPS (basic)", "value": "$0.45", "delta": "+40.6%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "EPS (basic)", "value": "$0.45", "delta": "+$1.27", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Non-GAAP EPS (diluted)", "value": "$0.79", "delta": "+21.5%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Non-GAAP EPS (diluted)", "value": "$0.79", "delta": "+107.9%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EBITDA", "value": "$1.70B", "delta": "+16.7%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "EBITDA", "value": "$1.70B", "delta": "+96.1%", "delta_basis": "y/y", "direction": "up" }
+  ],
+  "summary_short": "HPE posted record Q2 FY2026 revenue of $10.68B, up 40.0% y/y and 14.8% q/q, with GAAP diluted EPS of $0.44 swinging from a $0.82 year-ago loss; the company raised FY26 guidance and introduced an FY27 growth framework.",
+  "summary_long": "Revenue rose 40.0% y/y to $10.68B, driven by Networking (+148% y/y, Routing adding $775M post-Juniper-acquisition vs $1M a year ago) and Cloud & AI (+22.9% y/y, Server +32.7%). GAAP operating income was $747M (vs a $1,109M loss a year ago that included a $1,361M impairment); non-GAAP diluted EPS reached $0.79. Cash was $5.29B, long-term debt $18.24B; free cash flow was $915M. HPE raised FY26 revenue-growth guidance to 29-33% and non-GAAP diluted EPS guidance to $3.35-3.45, guided Q3 revenue to $11.5-12.1B, introduced an FY27 growth framework (8-12% revenue growth), and completed the H3C divestiture for ~$1.36B cash.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/1645590/000164559026000052/ex-991x612026x8k.htm",
+  "confidence_notes": "Force-regeneration run per explicit instruction: no prior summary file actually existed on disk for HPE US FY2026 Q2 (summaryExists=false from the resolver), so this is a fresh generation rather than a literal overwrite of an existing file — noted here for transparency rather than fabricating a 'regenerated from a prior version' history that didn't occur. Source-link correction: the shard's stored sourceLink.url (accession 0001645590-26-000040, filed 2026-05-04) pointed to an unrelated Item 7.01 8-K declaring a preferred-stock dividend, not the earnings release; the actual FY2026 Q2 results (Item 2.02) were filed as accession 0001645590-26-000052 on 2026-06-01, located via the EDGAR CIK filing index — the shard's sourceLink should be corrected in a follow-up backfill. Ledger inconsistency: resolve-earnings-target.mjs's kpis object carried prior_qq values that exactly equal the current-quarter value for revenue ($10,678M vs $10,678M) and GAAP diluted EPS ($0.44 vs $0.44), and prior_yy values diverging materially from the release's own comparative table (e.g. diluted EPS prior_yy shown as +$0.21 vs the release's actual -$0.82 loss for the year-ago quarter; revenue prior_yy shown as $9,136M vs the release's $7,627M) — this looks like a shard ingestion bug, not a genuine second data point. Per ledger discipline this summary's KPI table instead uses the primary release's own three-period comparative figures (GAAP, same document, same basis) for revenue, operating income, gross profit, net income, and EPS basic/diluted; EBITDA remains Yahoo-fundamentals-timeseries-sourced (unverified against the filing) since HPE does not disclose an EBITDA reconciliation in the release. The resolver also exposed an 'ebit_usd_m' field identical in current value to 'operating_income_usd_m' ($825M, Yahoo-standardized — excludes the $78M of acquisition/disposition charges GAAP includes) but with different SEC-sourced priors; omitted here to avoid two conflicting 'operating income' cards, using the release's own GAAP $747M figure instead. Non-GAAP figures exclude stock-based compensation, intangible amortization, impairment, acquisition/disposition and cost-reduction charges, and H3C-related items. Guidance detail (FY26 Q3 outlook, raised FY26 full-year outlook, new FY27 framework) is captured in summary_long/drivers only — not written to the event shard's guidance[] array, since no sanctioned script exists for that shard mutation (only scripts/apply-extended-metrics.mjs is sanctioned for shard writes in this run).",
+  "drivers": [
+    { "metric": "Revenue", "direction": "up", "explanation": "Networking revenue rose 148% y/y (Routing added $775M vs $1M a year ago from the Juniper Networks acquisition); Cloud & AI revenue rose 22.9% y/y led by Server (+32.7%).", "basis": "company-disclosed" },
+    { "metric": "Operating income", "direction": "up", "explanation": "Management cited operational discipline and executing ahead of schedule on Juniper Networks and Catalyst cost-synergy targets as drivers of the quarter's profitability gain.", "basis": "company-disclosed" },
+    { "metric": "EPS (diluted)", "direction": "up", "explanation": "Y/y EPS gain reflects higher operating income plus the absence of the $1,361M impairment charge recorded in the year-ago quarter.", "basis": "company-disclosed" },
+    { "metric": "overall", "direction": "up", "explanation": "HPE raised FY26 revenue-growth guidance to 29-33% and non-GAAP EPS guidance to $3.35-3.45, introduced an FY27 growth framework, and completed the H3C divestiture on May 28 for ~$1.36B cash.", "basis": "company-disclosed" }
+  ]
+}
