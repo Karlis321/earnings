@@ -108,7 +108,13 @@ const PHASES = [
   // is covered by attach-sec-filings.mjs which stores accession URLs
   // directly on event.sourceLink from SEC submissions endpoint.
   { key: "trend-estimates", label: "Yahoo earningsTrend estimates (upcoming)", script: "ingest-estimates-universe.mjs" },
-  { key: "estimator", label: "Median-gap next-event estimator", script: "run-estimator.mjs" },
+  // Pull Yahoo's REAL calendarEvents.earnings.earningsDate for every
+  // ticker Yahoo covers, override any stale/estimated scheduledDate
+  // with the actual company-published date. Runs BEFORE the estimator
+  // so estimator only fills in tickers Yahoo has no calendar for.
+  // Stamps scheduledDateSource = "yahoo-calendarEvents".
+  { key: "calendar-refine", label: "Yahoo calendarEvents real earningsDate", script: "refine-stale-via-calendar.mjs" },
+  { key: "estimator", label: "Median-gap next-event estimator (fallback)", script: "run-estimator.mjs" },
   { key: "reactions", label: "Reaction maturation + baseline seeding", script: "mature-reactions.mjs" },
   { key: "marketcap", label: "Market-cap + FX batch (Yahoo v7 quote)", script: "refresh-marketcap.mjs" },
   // Overview Market Pulse snapshot — 4 indices × 3 ranges, ~12 Yahoo
