@@ -2,9 +2,9 @@
   "ticker": "CNC US",
   "period": "FY2026 Q2",
   "reported_at": "2026-07-28",
-  "generated_at": "2026-08-06T12:10:14.000Z",
-  "depth": "kpi-only",
-  "headline": "Centene swings back to profit as revenue grows",
+  "generated_at": "2026-08-10T09:17:15Z",
+  "depth": "filing",
+  "headline": "Centene returns to profit, lifts full-year guidance",
   "kpis": [
     { "label": "Revenue", "value": "$53,579M", "delta": "+9.9%", "delta_basis": "y/y", "direction": "up" },
     { "label": "EBITDA", "value": "$1,939M", "delta": "+750.4%", "delta_basis": "y/y", "direction": "up" },
@@ -14,8 +14,18 @@
     { "label": "Total cash", "value": "$24,151M", "delta": "+66.4%", "delta_basis": "y/y", "direction": "up" },
     { "label": "Shareholders' equity", "value": "$22,562M", "delta": "-17.7%", "delta_basis": "y/y", "direction": "down" }
   ],
-  "summary_short": "Centene reported Q2 FY2026 revenue of $53,579M, up 9.9% y/y, with net income of $1,091M swinging to a profit from a $253M loss a year earlier and diluted EPS of $2.19 versus a $0.51 per-share loss.",
-  "summary_long": "Revenue of $53,579M rose 9.9% y/y and 7.3% q/q. EBITDA margin was 3.6%, down from 5.1% q/q but up from 0.5% a year earlier. Diluted EPS of $2.19 swung to a profit from a $0.51 per-share loss y/y, though it fell 29.6% q/q from $3.11. Net income of $1,091M swung to a profit from a $253M loss y/y. Cash and equivalents rose to $24,151M, up 66.4% y/y and 13.6% q/q.",
-  "source_url": "https://www.sec.gov/Archives/edgar/data/1071739/000107173926000153/",
-  "confidence_notes": "primary filing unreachable — KPI-only summary from verified shard data. Run in force-regenerate mode (Step 0 already-exists guard bypassed); no prior summary was found on disk for CNC US FY2026 Q2, so this write is a fresh generation rather than an overwrite. Fetch budget (3/3) was spent resolving the event's sourceLink: the 8-K EX-99.1 exhibit pointed to by the shard's sourceLink resolved to an unrelated board-appointment press release (Lauren M. Tyler, filed 2026-06-22), not the Q2 earnings release. The correct 10-Q (accession 0001071739-26-000153, filed 2026-07-28) was located via the EDGAR CIK filing index but fetching its contents would have exceeded the 3-fetch budget, triggering the kpi-only downgrade. source_url above points to that verified-correct filing's EDGAR archive folder, not the mismatched shard sourceLink. No drivers or guidance assessed."
+  "summary_short": "Centene reported Q2 FY2026 revenue of $53,579M, up 9.9% y/y, with net income of $1,091M swinging to a profit from a $253M loss a year earlier and diluted EPS of $2.19 versus a $0.51 per-share loss; the health benefits ratio improved to 89.6% from 93.0%.",
+  "summary_long": "Revenue of $53,579M rose 9.9% y/y and 7.3% q/q, driven by PDP premium/membership growth, Marketplace and Medicaid rate increases, and risk-adjustment transfers, partly offset by lower Marketplace and Medicaid membership. The health benefits ratio fell to 89.6% from 93.0% y/y on improved Marketplace pricing/risk transfer, Medicaid cost management, and no 2026 Medicare Advantage premium-deficiency reserve add (versus one in 2025). Diluted EPS of $2.19 and net income of $1,091M both swung to a profit from a year-ago loss, though both fell versus Q1's $3.11 EPS. Cash rose to $24,151M (+66.4% y/y). Centene raised FY2026 guidance: total revenue to $193.5-197.5B, GAAP diluted EPS floor to >$3.11, adjusted diluted EPS floor to >$4.80.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/0001071739/000107173926000154/a20260728ex991pressrelease.htm",
+  "confidence_notes": "REGENERATION: this summary replaces a previous depth=kpi-only file for CNC US FY2026 Q2, produced here in force-regenerate mode (Step-0 already-exists guard bypassed per explicit instruction) and overwriting the prior file on disk. Source-ladder correction: the shard's event-level sourceLink (cnc-20260619.htm, filed 2026-06-22) resolves via its EX-99.1 exhibit to an unrelated board-appointment press release (Lauren M. Tyler), not an earnings release — this defeated the prior kpi-only attempt's fetch budget. This run located the correct filing via WebSearch: EX-99.1 to Centene's Form 8-K filed 2026-07-28 (accession 0001071739-26-000154), 'Centene Corporation Reports Second Quarter 2026 Results.' All KPI values cross-checked exactly against the SEC-verbatim shard data (diluted EPS $2.19, revenue $53,579M, net income $1,091M). Adjusted diluted EPS of $2.51 (non-GAAP) differs from GAAP diluted EPS of $2.19 primarily due to amortization of acquired intangibles and severance/enterprise-optimization costs — see release's non-GAAP reconciliation. No cross-basis or restatement issues identified.",
+  "drivers": [
+    { "metric": "Revenue", "direction": "up", "explanation": "Premium yield and PDP membership growth, Marketplace/Medicaid rate increases, and Marketplace risk-adjustment transfers drove growth, partly offset by lower Marketplace and Medicaid membership.", "basis": "company-disclosed" },
+    { "metric": "Net income", "direction": "up", "explanation": "Swing to profit driven by HBR improving to 89.6% from 93.0% on better Marketplace pricing/risk transfer, Medicaid cost management, and no 2026 Medicare Advantage premium-deficiency reserve addition versus one in 2025.", "basis": "company-disclosed" },
+    { "metric": "Diluted EPS", "direction": "up", "explanation": "Mirrors net income's swing to profit; same HBR and SG&A-ratio improvements underlie the EPS gain.", "basis": "derived-arithmetic" },
+    { "metric": "Operating income", "direction": "up", "explanation": "Same HBR improvement and lower SG&A expense ratio (7.0% vs 7.1% y/y) that drove the net income swing.", "basis": "company-disclosed" },
+    { "metric": "EBITDA", "direction": "up", "explanation": "Not explained in the release; the company discloses operating earnings and adjusted net earnings, not an EBITDA figure specifically.", "basis": "company-disclosed" },
+    { "metric": "Total cash", "direction": "up", "explanation": "Cash flow from operations of $3.6B in the quarter, driven by net earnings and timing of pass-through/premium payments, partly offset by the 2025 risk-adjustment transfer position.", "basis": "company-disclosed" },
+    { "metric": "Shareholders' equity", "direction": "down", "explanation": "Not explained in the release for the y/y decline.", "basis": "company-disclosed" },
+    { "metric": "overall", "direction": "up", "explanation": "Management frames the quarter and improved full-year outlook as milestones toward restoring profitability, raising the 2026 GAAP diluted EPS guidance floor to >$3.11 and adjusted diluted EPS floor to >$4.80.", "basis": "company-disclosed" }
+  ]
 }
