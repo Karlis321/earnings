@@ -536,6 +536,12 @@
               "actualFamily": "yahoo-timeseries",
               "estimateFamily": "yahoo-generic",
               "clearedAt": "2026-08-07T05:11:31.288Z"
+            },
+            {
+              "value": -53.560371517027875,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-generic",
+              "clearedAt": "2026-08-10T04:46:35.228Z"
             }
           ]
         },
@@ -1225,6 +1231,12 @@
               "actualFamily": "yahoo-timeseries",
               "estimateFamily": "yahoo-generic",
               "clearedAt": "2026-07-31T06:51:41.624Z"
+            },
+            {
+              "value": 137.4414976599064,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-generic",
+              "clearedAt": "2026-08-10T04:46:35.228Z"
             }
           ]
         },
@@ -1637,7 +1649,7 @@
       "kind": "earnings",
       "period": "FY2026 Q2",
       "scheduledDate": "2026-08-06",
-      "eventDate": null,
+      "eventDate": "2026-08-06",
       "timing": null,
       "expectation": "unset",
       "guidanceMove": null,
@@ -1673,7 +1685,7 @@
           "key": "eps_usd",
           "displayLabel": "EPS (basic)",
           "isHeadline": false,
-          "surprisePct": null,
+          "surprisePct": -20.261384852666612,
           "estimate": {
             "value": 0.86233,
             "unit": "CAD",
@@ -1691,51 +1703,90 @@
             "high": 1.119,
             "numberOfAnalysts": 3
           },
-          "actual": null,
+          "actual": {
+            "value": 0.68761,
+            "unit": "CAD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/VLE.TO/earnings-history",
+              "label": "Yahoo · earningsChart",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-06-30",
+            "fetchedAt": "2026-08-10T04:23:05.883Z",
+            "method": "yahoo",
+            "confidence": 0.8
+          },
+          "prior": null
+        },
+        {
+          "key": "eps_diluted_usd",
+          "displayLabel": "EPS diluted",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 0.500358,
+            "unit": "CAD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/VLE.TO/financials",
+              "label": "Yahoo · fundamentals-timeseries",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-06-30",
+            "fetchedAt": "2026-08-10T04:22:13.943Z",
+            "method": "yahoo",
+            "confidence": 0.85,
+            "_originalUnit": "USD"
+          },
           "prior": null
         }
       ],
       "guidance": [],
       "reaction": {
         "benchmark": "CL=F",
-        "baselineDate": null,
-        "baselineClose": null,
+        "baselineDate": "2026-08-06",
+        "baselineClose": 11.699999809265137,
         "points": [
           {
             "horizon": "d1",
-            "absReturn": null,
-            "excessReturn": null,
+            "absReturn": -0.013675200856448456,
+            "excessReturn": -0.02519026592445312,
             "benchmark": "CL=F",
-            "computedAt": "2026-07-29T11:46:52.578Z",
-            "populatesOn": "2026-08-09",
-            "status": "unavailable"
+            "computedAt": "2026-08-10T04:45:01.394Z",
+            "populatesOn": null,
+            "status": "matured"
           },
           {
             "horizon": "d3",
-            "absReturn": null,
-            "excessReturn": null,
+            "absReturn": -0.013675200856448456,
+            "excessReturn": -0.031400685787925556,
             "benchmark": "CL=F",
-            "computedAt": "2026-07-29T11:46:52.578Z",
-            "populatesOn": "2026-08-11",
-            "status": "unavailable"
+            "computedAt": "2026-08-10T04:45:01.394Z",
+            "populatesOn": null,
+            "status": "clipped",
+            "clipped": true
           },
           {
             "horizon": "w1",
-            "absReturn": null,
-            "excessReturn": null,
+            "absReturn": -0.013675200856448456,
+            "excessReturn": -0.031400685787925556,
             "benchmark": "CL=F",
-            "computedAt": "2026-07-29T11:46:52.578Z",
-            "populatesOn": "2026-08-13",
-            "status": "unavailable"
+            "computedAt": "2026-08-10T04:45:01.394Z",
+            "populatesOn": null,
+            "status": "clipped",
+            "clipped": true
           },
           {
             "horizon": "m1",
-            "absReturn": null,
-            "excessReturn": null,
+            "absReturn": -0.013675200856448456,
+            "excessReturn": -0.031400685787925556,
             "benchmark": "CL=F",
-            "computedAt": "2026-07-29T11:46:52.578Z",
-            "populatesOn": "2026-08-29",
-            "status": "unavailable"
+            "computedAt": "2026-08-10T04:45:01.394Z",
+            "populatesOn": null,
+            "status": "clipped",
+            "clipped": true
           }
         ]
       },
@@ -2207,12 +2258,13 @@
         "engineStatus": []
       },
       "provenance": "yahoo-earnings-chart",
-      "provenanceAsOf": "2026-07-30T10:59:26.339Z",
+      "provenanceAsOf": "2026-08-10T04:23:05.883Z",
       "sourceLink": {
         "url": "https://www.google.com/search?q=Valeura%20Energy%20Q2%202026%20earnings%20results",
         "kind": "fallback"
       },
-      "scheduledDateSource": "yahoo-calendarEvents"
+      "scheduledDateSource": "yahoo-calendarEvents",
+      "eventDateSource": "yahoo-earnings-chart-reportedDate"
     },
     {
       "id": "evt-nt2vos",
@@ -2540,6 +2592,69 @@
       "sourceLink": {
         "url": "https://www.google.com/search?q=Valeura%20Energy%20Q1%202025%20earnings%20results",
         "kind": "fallback"
+      }
+    },
+    {
+      "id": "evt-xlhttk",
+      "ticker": "VLE CN",
+      "kind": "earnings",
+      "period": "FY2026 Q3",
+      "scheduledDate": "2026-11-05",
+      "eventDate": null,
+      "timing": null,
+      "expectation": "unset",
+      "guidanceMove": null,
+      "freshness": "stale",
+      "provenance": "estimator-median-gap",
+      "provenanceAsOf": "2026-08-10T04:44:59.983Z",
+      "cadence": "quarterly",
+      "metrics": [],
+      "guidance": [],
+      "reaction": {
+        "benchmark": "CL=F",
+        "baselineDate": null,
+        "baselineClose": null,
+        "points": [
+          {
+            "horizon": "d1",
+            "absReturn": null,
+            "excessReturn": null,
+            "benchmark": "CL=F",
+            "computedAt": null,
+            "populatesOn": "2026-11-08"
+          },
+          {
+            "horizon": "d3",
+            "absReturn": null,
+            "excessReturn": null,
+            "benchmark": "CL=F",
+            "computedAt": null,
+            "populatesOn": "2026-11-10"
+          },
+          {
+            "horizon": "w1",
+            "absReturn": null,
+            "excessReturn": null,
+            "benchmark": "CL=F",
+            "computedAt": null,
+            "populatesOn": "2026-11-12"
+          },
+          {
+            "horizon": "m1",
+            "absReturn": null,
+            "excessReturn": null,
+            "benchmark": "CL=F",
+            "computedAt": null,
+            "populatesOn": "2026-11-28"
+          }
+        ]
+      },
+      "sources": {
+        "windowStart": "2026-11-03",
+        "windowEnd": "2026-12-10",
+        "capturedAt": null,
+        "items": [],
+        "engineStatus": []
       }
     }
   ]

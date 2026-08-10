@@ -1079,6 +1079,12 @@
               "actualFamily": "sec",
               "estimateFamily": "yahoo-chart",
               "clearedAt": "2026-08-07T05:11:29.687Z"
+            },
+            {
+              "value": -29.99581747162615,
+              "actualFamily": "sec",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-08-10T04:46:33.621Z"
             }
           ]
         },
@@ -1532,6 +1538,12 @@
               "actualFamily": "yahoo-timeseries",
               "estimateFamily": "yahoo-chart",
               "clearedAt": "2026-08-07T05:11:29.687Z"
+            },
+            {
+              "value": -36.20022691845413,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-08-10T04:46:33.621Z"
             }
           ]
         },
@@ -1941,6 +1953,12 @@
               "actualFamily": "sec",
               "estimateFamily": "yahoo-chart",
               "clearedAt": "2026-08-07T05:11:29.687Z"
+            },
+            {
+              "value": -6.036342364081761,
+              "actualFamily": "sec",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-08-10T04:46:33.621Z"
             }
           ]
         },
@@ -3214,7 +3232,7 @@
           "key": "eps_usd",
           "displayLabel": "EPS",
           "isHeadline": true,
-          "surprisePct": 6.302847701428716,
+          "surprisePct": null,
           "estimate": {
             "value": 6.58496,
             "unit": "USD",
@@ -3233,18 +3251,56 @@
             "numberOfAnalysts": 15
           },
           "actual": {
-            "value": 7,
+            "value": 3.75,
             "unit": "USD",
             "source": {
-              "url": "https://finance.yahoo.com/quote/CPAY/earnings-history",
-              "label": "Yahoo · earningsChart",
+              "url": "https://finance.yahoo.com/quote/CPAY/financials",
+              "label": "Yahoo · fundamentals-timeseries",
               "provenance": "wire",
               "locator": null
             },
             "asOf": "2026-06-30",
-            "fetchedAt": "2026-08-07T04:48:47.655Z",
+            "fetchedAt": "2026-08-10T04:22:13.943Z",
             "method": "yahoo",
-            "confidence": 0.8
+            "confidence": 0.85
+          },
+          "prior": null,
+          "superseded": [
+            {
+              "value": 7,
+              "unit": "USD",
+              "source": "Yahoo · earningsChart",
+              "from_provenance": "yahoo-earnings-chart"
+            }
+          ],
+          "_crossBasisSurprise": [
+            {
+              "value": 6.302847701428716,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-trend",
+              "clearedAt": "2026-08-10T04:46:33.621Z"
+            }
+          ]
+        },
+        {
+          "key": "eps_diluted_usd",
+          "displayLabel": "EPS diluted",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 3.7,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/CPAY/financials",
+              "label": "Yahoo · fundamentals-timeseries",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-06-30",
+            "fetchedAt": "2026-08-10T04:22:13.943Z",
+            "method": "yahoo",
+            "confidence": 0.85
           },
           "prior": null
         }
@@ -3705,7 +3761,58 @@
       "provenance": "estimator-median-gap",
       "provenanceAsOf": "2026-08-07T05:09:46.545Z",
       "cadence": "quarterly",
-      "metrics": [],
+      "metrics": [
+        {
+          "key": "revenue_usd_m",
+          "displayLabel": "Revenue (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": {
+            "value": 1357.00979,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/CPAY/analysis",
+              "label": "Yahoo · earningsTrend (12 analysts)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-09-30",
+            "fetchedAt": "2026-08-10T04:44:34.720Z",
+            "method": "yahoo",
+            "confidence": 0.75,
+            "low_usd_m": 1351.941,
+            "high_usd_m": 1363.4,
+            "numberOfAnalysts": 12
+          },
+          "actual": null,
+          "prior": null
+        },
+        {
+          "key": "eps_usd",
+          "displayLabel": "EPS",
+          "isHeadline": true,
+          "surprisePct": null,
+          "estimate": {
+            "value": 7.16109,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/CPAY/analysis",
+              "label": "Yahoo · earningsTrend (15 analysts)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-09-30",
+            "fetchedAt": "2026-08-10T04:44:34.720Z",
+            "method": "yahoo",
+            "confidence": 0.75,
+            "low": 7.06106,
+            "high": 7.21,
+            "numberOfAnalysts": 15
+          },
+          "actual": null,
+          "prior": null
+        }
+      ],
       "guidance": [],
       "reaction": {
         "benchmark": "SPX",

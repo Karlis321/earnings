@@ -1303,6 +1303,12 @@
               "actualFamily": "yahoo-timeseries",
               "estimateFamily": "yahoo-generic",
               "clearedAt": "2026-08-07T05:11:30.589Z"
+            },
+            {
+              "value": -37.5,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-generic",
+              "clearedAt": "2026-08-10T04:46:34.535Z"
             }
           ]
         },
@@ -1859,6 +1865,15 @@
               "actualUnit": "USD",
               "estimateUnit": "USD",
               "clearedAt": "2026-08-07T05:11:33.191Z",
+              "reason": "absurd_magnitude"
+            },
+            {
+              "value": -2011.111111111111,
+              "actual": -3.44,
+              "estimate": 0.18,
+              "actualUnit": "USD",
+              "estimateUnit": "USD",
+              "clearedAt": "2026-08-10T04:46:37.122Z",
               "reason": "absurd_magnitude"
             }
           ]
@@ -3184,7 +3199,7 @@
           "key": "eps_usd",
           "displayLabel": "EPS",
           "isHeadline": false,
-          "surprisePct": 336.3636363636364,
+          "surprisePct": null,
           "estimate": {
             "value": 0.11,
             "unit": "USD",
@@ -3206,17 +3221,33 @@
             "value": 0.48,
             "unit": "USD",
             "source": {
-              "url": "https://finance.yahoo.com/quote/NGL/earnings-history",
-              "label": "Yahoo · earningsChart",
+              "url": "https://finance.yahoo.com/quote/NGL/financials",
+              "label": "Yahoo · fundamentals-timeseries",
               "provenance": "wire",
               "locator": null
             },
             "asOf": "2026-06-30",
-            "fetchedAt": "2026-08-06T05:40:27.277Z",
+            "fetchedAt": "2026-08-10T04:22:13.943Z",
             "method": "yahoo",
-            "confidence": 0.8
+            "confidence": 0.85
           },
-          "prior": null
+          "prior": null,
+          "superseded": [
+            {
+              "value": 0.48,
+              "unit": "USD",
+              "source": "Yahoo · earningsChart",
+              "from_provenance": "yahoo-earnings-chart"
+            }
+          ],
+          "_crossBasisSurprise": [
+            {
+              "value": 336.3636363636364,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-trend",
+              "clearedAt": "2026-08-10T04:46:34.535Z"
+            }
+          ]
         },
         {
           "key": "cost_of_revenue_usd_m",
@@ -3413,6 +3444,94 @@
             "fetchedAt": "2026-08-06T05:53:38.013Z",
             "method": "filing_manual",
             "confidence": 0.98
+          },
+          "prior": null
+        },
+        {
+          "key": "eps_diluted_usd",
+          "displayLabel": "EPS diluted",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 0.48,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/NGL/financials",
+              "label": "Yahoo · fundamentals-timeseries",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-06-30",
+            "fetchedAt": "2026-08-10T04:22:13.943Z",
+            "method": "yahoo",
+            "confidence": 0.85
+          },
+          "prior": null
+        },
+        {
+          "key": "ebitda_usd_m",
+          "displayLabel": "EBITDA (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 208.667,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/NGL/financials",
+              "label": "Yahoo · fundamentals-timeseries",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-06-30",
+            "fetchedAt": "2026-08-10T04:22:13.943Z",
+            "method": "yahoo",
+            "confidence": 0.85
+          },
+          "prior": null
+        },
+        {
+          "key": "ebit_usd_m",
+          "displayLabel": "EBIT (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 145.17,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/NGL/financials",
+              "label": "Yahoo · fundamentals-timeseries",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-06-30",
+            "fetchedAt": "2026-08-10T04:22:13.943Z",
+            "method": "yahoo",
+            "confidence": 0.85
+          },
+          "prior": null
+        },
+        {
+          "key": "gross_profit_usd_m",
+          "displayLabel": "Gross profit (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 243.688,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/NGL/financials",
+              "label": "Yahoo · fundamentals-timeseries",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-06-30",
+            "fetchedAt": "2026-08-10T04:22:13.943Z",
+            "method": "yahoo",
+            "confidence": 0.85
           },
           "prior": null
         }
