@@ -1,0 +1,31 @@
+{
+  "ticker": "ROL US",
+  "period": "FY2026 Q2",
+  "reported_at": "2026-07-22",
+  "generated_at": "2026-08-11T13:03:35.000Z",
+  "depth": "filing",
+  "headline": "Revenue keeps climbing but margins slip on soft demand",
+  "kpis": [
+    { "label": "Revenue", "value": "$1,078.6M", "delta": "+7.9%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Gross profit", "value": "$569.9M", "delta": "+6.0%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Operating income", "value": "$201.4M", "delta": "+1.5%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EBITDA", "value": "$232.8M", "delta": "+1.0%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Net income", "value": "$143.9M", "delta": "+1.7%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EPS (diluted)", "value": "$0.30", "delta": "+3.4%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Cash and cash equivalents", "value": "$109.1M", "delta": "-11.3%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Long-term debt", "value": "$487.1M", "delta": "+0.4%", "delta_basis": "y/y", "direction": "flat" },
+    { "label": "Short-term debt", "value": "$215.9M", "delta": "+31.7%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Short-term debt", "value": "$215.9M", "delta": "+259.9%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Stockholders' equity", "value": "$1,429.6M", "delta": "-1.0%", "delta_basis": "y/y", "direction": "down" }
+  ],
+  "summary_short": "Rollins' Q2 FY2026 revenue rose 7.9% y/y to $1,078.6M (organic +5.7%), but operating margin fell 110bp to 18.7% as residential demand softened, and net income grew just 1.7% y/y to $143.9M ($0.30 diluted EPS).",
+  "summary_long": "Revenue rose 7.9% y/y to $1,078.6M (organic +5.7%), but growth was uneven: residential organic revenue grew just 3.6% as consumer-initiated lead volume softened, while commercial and relationship-based channels (home builders, door-to-door) stayed strong. Operating margin compressed 110bp y/y to 18.7% as the cost base was sized for stronger demand than materialized; net income rose only 1.7% y/y to $143.9M ($0.30 diluted EPS). Adjusted EBITDA margin fell 120bp y/y to 21.9%. Free cash flow was $166.1M, down 1.2% y/y, funding $116.8M of acquisitions, $20.5M of buybacks, and $88.1M of dividends. Cash fell to $109.1M and short-term debt rose to $215.9M on incremental borrowings; long-term debt held flat at $487.1M and equity was $1,429.6M.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/84839/000008483926000038/rol-20260722xex991.htm",
+  "confidence_notes": "REGENERATION: this run was executed in force-regenerate mode per explicit operator instruction, overwriting whatever was on disk for data/summaries/ROL_US_FY2026_Q2.json (no prior file was actually present, so this compose is a fresh write executed under the regeneration instruction rather than a true overwrite of pre-existing content). The resolved sourceLink (rol-20260722.htm) was an 8-K cover document; scripts/resolve-edgar-exhibit.mjs resolved it to the EX-99.1 press release (rol-20260722xex991.htm), which was fetched and read directly instead of the cover stub. Two shard KPIs were omitted from the table above as near-duplicates: ebit_usd_m (199.145) is a Yahoo-derived EBIT figure (pretax income + interest expense) that diverges from the company's own GAAP 'Operating income' line (201.359) because it excludes 'other (income) expense, net'; the release's own operating income figure was used instead. eps_usd (basic, 0.30/0.22/0.29) is identical to eps_diluted_usd for every period shown (Rollins reports 'EPS - basic and diluted' as a single combined line) so only the diluted row is shown to avoid a duplicate. pretax_income_usd_m and weighted_diluted_shares_m are present in the shard's kpis object for ledger completeness but were not surfaced as standalone headline rows (pretax income is a direct derivation from operating income and net interest/other expense already visible via net income and tax; diluted share count was flat q/q and -0.7% y/y, not independently newsworthy). All q/q comparisons for the core P&L lines (revenue, gross profit, operating income, EBITDA, net income, EPS) were computed here from the shard's prior_qq values but omitted from the table because Rollins' pest-control business is seasonally stronger in Q2 than Q1 and the company's own release presents only y/y comparisons throughout — a q/q delta on these lines would overstate performance versus a like-for-like read. Short-term debt is shown with both q/q and y/y because the swing (largely additional short-term borrowings) is a genuine sequential financing event, not a seasonal artifact; its y/y delta is large (+259.9%) because the year-ago base (59.989) was unusually small, not because of any data-quality issue. The release discloses NO explicit forward guidance (no numeric outlook, no 'raised/lowered/reaffirmed' language for any metric) — guidance[] was intentionally left empty on the shard, consistent with the rule that silence is not reaffirmation.",
+  "drivers": [
+    { "metric": "overall", "direction": "down", "explanation": "Management says results fell short of expectations: consumer-lead-driven residential pest control softened (search, digital media, inbound calls), while relationship-based channels (home builders, door-to-door) delivered solid organic growth.", "basis": "company-disclosed" },
+    { "metric": "Revenue", "direction": "up", "explanation": "Organic growth of 5.7% was driven by relationship-based channels and commercial/termite services growing faster than consumer-lead-driven residential lines, per management commentary.", "basis": "company-disclosed" },
+    { "metric": "Operating income", "direction": "up", "explanation": "Growth was limited to 1.5% (margin -110bp to 18.7%) because the cost structure remained sized for a stronger demand environment than the softer lead volumes that materialized this quarter.", "basis": "company-disclosed" },
+    { "metric": "Net income", "direction": "up", "explanation": "not explained in the release beyond the same demand/cost-structure mismatch cited for operating income", "basis": "company-disclosed" }
+  ]
+}
