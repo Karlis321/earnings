@@ -1,0 +1,41 @@
+{
+  "ticker": "PM US",
+  "period": "FY2026 Q2",
+  "reported_at": "2026-07-22",
+  "generated_at": "2026-08-11T13:05:00.000Z",
+  "depth": "filing",
+  "headline": "Pricing lifts profit, one-off charge drags earnings down",
+  "kpis": [
+    { "label": "EPS (diluted)", "value": "$1.80", "delta": "-7.7%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "EPS (basic)", "value": "$1.80", "delta": "-7.7%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Revenue", "value": "$11.19B", "delta": "+10.4%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Gross profit", "value": "$7.66B", "delta": "+11.5%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Operating income (M)", "value": "$4.53B", "delta": "+22.0%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EBIT", "value": "$4.54B", "delta": "+22.5%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EBITDA", "value": "$5.05B", "delta": "+20.4%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Net income (M)", "value": "$2.82B", "delta": "-7.3%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Cost of revenue", "value": "$3.53B", "delta": "+7.9%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Pretax income", "value": "$4.29B", "delta": "+25.3%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Weighted diluted shares", "value": "1,560.0M", "delta": "+0.1%", "delta_basis": "y/y", "direction": "flat" },
+    { "label": "Total cash", "value": "$6.00B", "delta": "+45.0%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Short-term debt", "value": "$3.34B", "delta": "+31.5%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Shareholders' equity", "value": "-$8.58B", "delta": "+28.3%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Gross margin", "value": "68.4%", "delta": "+0.7ppt", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Operating margin", "value": "40.5%", "delta": "+3.9ppt", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Net margin", "value": "25.2%", "delta": "-4.8ppt", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Effective tax rate", "value": "22.3%", "delta": "+3.3ppt", "delta_basis": "y/y", "direction": "up" }
+  ],
+  "summary_short": "Philip Morris International's Q2 FY2026 revenue rose 10.4% y/y to $11.19B on pricing-led smoke-free growth, but net earnings fell 7.3% y/y to $2.82B (diluted EPS $1.80, -7.7%) after a $511M non-cash RBH impairment and unfavorable equity-investment swings.",
+  "summary_long": "Net revenues of $11.19B (+10.4% y/y) were led by favorable international-combustibles pricing and smoke-free volume/mix (IQOS, VEEV), partly offset by softer U.S. volumes. Gross profit rose 11.5% y/y to $7.66B; operating income rose 22.0% y/y to $4.53B on pricing plus lower restructuring charges. Net earnings fell 7.3% y/y to $2.82B and diluted EPS fell 7.7% to $1.80, as a $511M non-cash RBH equity-investment impairment, unfavorable equity-security fair-value swings, and a higher effective tax rate (22.3% vs 19.0%) offset the operating gains. Cash rose to $6.00B; shareholders' equity stayed an $8.58B deficit. Management guided FY2026 capex to $1.4-1.6B and full-year effective tax rate near 21.5% ex-discrete items.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/1413329/000162828026049493/pm-20260630.htm",
+  "confidence_notes": "REGENERATION: operator requested force-regenerate/overwrite mode for this run. No prior data/summaries/PM_US_FY2026_Q2.json existed on disk, so this compose is executed under that regeneration instruction rather than a true overwrite of pre-existing data. Filing-depth summary: the resolved accession (0001628280-26-049493) is PM's 10-Q itself, not an 8-K wrapping a separate EX-99.1 press-release exhibit, so pm-20260630.htm was fetched and read directly — the exhibit-resolution shortcut did not apply. All Yahoo-timeseries-sourced KPIs (revenue, gross profit, operating income, EBIT, EBITDA, net income) were cross-checked against the 10-Q's own tables during this read and match exactly; SEC-verbatim KPIs (EPS, cost of revenue, pretax income, diluted shares, cash, short-term debt, shareholders' equity) are unchanged from the shard. Shareholders' equity is structurally negative (-$8.58B) because the cumulative cost of treasury stock ($35.5B) exceeds paid-in capital plus retained earnings — a longstanding PMI balance-sheet feature from years of buybacks, not a current-quarter event (driver marked derived-arithmetic below). Operating income ($4,530M) and EBIT ($4,535M) differ by $5M because they are separate Yahoo-timeseries line items with slightly different equity-income treatment; both are reported as-is, not reconciled. The Effective tax rate KPI (22.3%, +3.3ppt y/y) is sourced directly from the 10-Q's Note 10/MD&A disclosure, not from resolve-earnings-target's shard kpis. No analyst-consensus estimate is used anywhere: the shard's Yahoo earningsChart consensus EPS estimate is cross-basis vs the SEC-verbatim actual and was correctly left out of both kpis and surprisePct (already null on the shard, unchanged here).",
+  "drivers": [
+    { "metric": "Revenue", "direction": "up", "explanation": "MD&A: net revenues +10.4% y/y (+7.6% ex-currency/acquisitions) on favorable international-combustibles pricing and higher international smoke-free volumes, partly offset by softer U.S. and combustibles volumes.", "basis": "company-disclosed" },
+    { "metric": "Gross profit", "direction": "up", "explanation": "Same pricing and volume/mix factors as revenue, partly offset by higher manufacturing costs per the MD&A.", "basis": "company-disclosed" },
+    { "metric": "Operating income (M)", "direction": "up", "explanation": "Same revenue drivers plus lower restructuring charges versus Q2 2025, partly offset by higher marketing, administration and research costs.", "basis": "company-disclosed" },
+    { "metric": "Net income (M)", "direction": "down", "explanation": "Decline driven by unfavorable equity-security fair-value swings on India/Sri Lanka holdings, a $511M non-cash RBH equity-investment impairment, and a higher tax rate, despite higher operating income.", "basis": "company-disclosed" },
+    { "metric": "EPS (diluted)", "direction": "down", "explanation": "Tracks the net-income decline; excluding a $0.03 favorable currency impact, diluted EPS fell 9.2% y/y per the MD&A per-share bridge.", "basis": "company-disclosed" },
+    { "metric": "Effective tax rate", "direction": "up", "explanation": "Rose 3.3ppt y/y to 22.3%, per Note 10, mainly reflecting deferred-tax on Swedish Match acquisition financing versus favorable one-off Indonesia items in the prior-year quarter.", "basis": "company-disclosed" },
+    { "metric": "Shareholders' equity", "direction": "up", "explanation": "Deficit narrowed y/y as retained-earnings growth outpaced treasury-stock cost; the balance stays negative because cumulative buyback cost exceeds paid-in capital plus retained earnings.", "basis": "derived-arithmetic" }
+  ]
+}
