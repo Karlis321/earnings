@@ -1,0 +1,37 @@
+{
+  "ticker": "PNR US",
+  "period": "FY2026 Q2",
+  "reported_at": "2026-07-28",
+  "generated_at": "2026-08-11T00:00:00Z",
+  "depth": "filing",
+  "headline": "Pool destocking crushes profit, tariff refunds cushion blow",
+  "kpis": [
+    { "label": "Revenue", "value": "$932.6M", "delta": "-17.0%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Revenue", "value": "$932.6M", "delta": "-10.0%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Gross profit", "value": "$395.0M", "delta": "-13.5%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Gross profit", "value": "$395.0M", "delta": "-8.9%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Operating income", "value": "$166.5M", "delta": "-23.5%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Operating income", "value": "$166.5M", "delta": "-20.7%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Net income", "value": "$128.6M", "delta": "-13.4%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Net income", "value": "$128.6M", "delta": "-25.4%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Diluted EPS", "value": "$0.80", "delta": "-11.1%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Diluted EPS", "value": "$0.80", "delta": "-23.8%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Basic EPS", "value": "$0.80", "delta": "-11.1%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Basic EPS", "value": "$0.80", "delta": "-24.5%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "EBITDA", "value": "$196.8M", "delta": "-10.3%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "EBITDA", "value": "$196.8M", "delta": "-17.9%", "delta_basis": "q/q", "direction": "down" }
+  ],
+  "summary_short": "Pentair reported Q2 FY2026 sales of $932.6M, down 17.0% y/y and 10.0% q/q as Pool-channel inventory destocking cut deeply into results, with diluted EPS falling 11.1% y/y to $0.80 despite a roughly $35M IEEPA tariff-refund benefit.",
+  "summary_long": "Pentair's preliminary Q2 results fell well short of its own prior guidance, driven almost entirely by Pool-segment channel destocking: management estimates the inventory realignment cut Q2 Pool sales by about $170M and Pool segment income by about $105M, while Flow and Water Solutions performed roughly in line with plan. A roughly $35M IEEPA tariff refund partly offset the hit. Revenue fell to $932.6M (-17.0% y/y), operating income to $166.5M (-23.5% y/y), and diluted EPS to $0.80 (-11.1% y/y). The company cut full-year 2026 guidance (adjusted EPS to $4.60-$4.80 from $5.30-$5.40) and repurchased $150M of shares in the quarter. CFO Nicholas Brazis departed July 10; Bob Fishman returned as interim CFO.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/77360/000007736026000039/july2026pre-earningsexhibit.htm",
+  "confidence_notes": "REGENERATION: this run was executed in explicit force-regenerate mode per instruction; the resolver reported summaryExists=false and summaryReady=false, so there was no prior PNR_US_FY2026_Q2.json on disk to overwrite — this compose is a fresh run under that instruction rather than a reuse of any prior version. Source-document note: the sourceLink's 8-K (filed 2026-07-14) attaches a 'preliminary second quarter 2026 financial results' press release, not the full Q2 earnings release the company said it would file on 2026-07-28 (this run's fetch budget was exhausted resolving/fetching this exhibit, so the later 8-K was not retrieved); the preliminary figures in this release (sales ~$930M, operating income ~$165M, EPS ~$0.80) match the resolver's final SEC/Yahoo-sourced actuals (932.6, 166.5, 0.80) closely enough to treat the narrative as reliable for this quarter. EBIT/operating-income discrepancy: the resolver's ebit_usd_m ($166.3M, Yahoo-derived) and operating_income_usd_m ($166.5M, blended Yahoo/SEC) are near-duplicate figures for the same line item under slightly different methodology; only Operating income is reported as a KPI row here to avoid a redundant near-identical line. Extended-metrics note: two universal metrics were captured via apply-extended-metrics.mjs with explicit filing quotes — buyback_qtr_usd ($150M, 2.0M shares repurchased in Q2) and eps_non_gaap ($1.12 adjusted EPS, preliminary/approximate per the release). No industrials-specific metric (backlog, book-to-bill, organic revenue growth, price/cost impact) was disclosed in this release, and no next-quarter revenue/EPS guidance was given (only a revised full-year 2026 range), so those fields were omitted rather than invented. Guidance tooling gap: the release explicitly revises full-year 2026 guidance (e.g. adjusted EPS to $4.60-$4.80 from $5.30-$5.40, sales down 4%-7% from up 2%-4%) — this qualifies as company-issued forward guidance per the /earnings Step 3 rules, but no sanctioned script in scripts/ writes to an event's guidance[] array (apply-extended-metrics.mjs only touches extendedMetrics), so per the hard tooling rule this is logged here rather than written via an unsanctioned shard edit; backlog item persists from prior runs: a scripts/apply-guidance.mjs analogous to apply-extended-metrics.mjs.",
+  "drivers": [
+    { "metric": "overall", "direction": "down", "explanation": "Pentair attributes the quarter's shortfall almost entirely to a more pronounced Pool channel inventory realignment than previously estimated, plus worsening business conditions (higher interest rates, inflation); Flow and Water Solutions performed roughly in line with prior guidance.", "basis": "company-disclosed" },
+    { "metric": "Revenue", "direction": "down", "explanation": "The company estimates Pool-channel inventory destocking cut Pool segment sales by about $170M in the quarter, versus a previous guide of sales up approximately 1%.", "basis": "company-disclosed" },
+    { "metric": "Operating income", "direction": "down", "explanation": "Pool destocking cut Pool segment income by about $105M; partly offset by roughly $35M of IEEPA tariff refunds recognized in the quarter.", "basis": "company-disclosed" },
+    { "metric": "Diluted EPS", "direction": "down", "explanation": "EPS of approximately $0.80 versus previous guidance of $1.39-$1.42 reflects the same Pool destocking impact partly offset by the IEEPA refund, per the company's own guidance revision.", "basis": "company-disclosed" },
+    { "metric": "Gross profit", "direction": "down", "explanation": "not explained in the release — the release breaks out the Pool destocking and IEEPA impacts at the operating-income and EPS level, not gross profit.", "basis": "company-disclosed" },
+    { "metric": "Net income", "direction": "down", "explanation": "not explained separately in the release beyond the same Pool-destocking / IEEPA-refund dynamics disclosed for operating income and EPS above.", "basis": "company-disclosed" },
+    { "metric": "EBITDA", "direction": "down", "explanation": "not explained separately in the release beyond the operating-income drivers above.", "basis": "company-disclosed" }
+  ]
+}
