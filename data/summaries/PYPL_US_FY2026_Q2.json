@@ -1,0 +1,33 @@
+{
+  "ticker": "PYPL US",
+  "period": "FY2026 Q2",
+  "reported_at": "2026-07-28",
+  "generated_at": "2026-08-11T12:42:44.000Z",
+  "depth": "filing",
+  "headline": "Revenue and volumes grow, profit dips as FY guidance rises",
+  "kpis": [
+    { "label": "Revenue", "value": "$8.68B", "delta": "+4.8%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Transaction margin dollars", "value": "$3.90B", "delta": "+1.5%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Operating income", "value": "$1.54B", "delta": "+2.4%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EBIT", "value": "$1.44B", "delta": "-12.6%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "EBITDA", "value": "$1.68B", "delta": "-10.6%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Net income", "value": "$1.10B", "delta": "-12.4%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "EPS (diluted)", "value": "$1.25", "delta": "-3.1%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "EPS (basic)", "value": "$1.26", "delta": "-3.1%", "delta_basis": "y/y", "direction": "down" }
+  ],
+  "summary_short": "PayPal's Q2 2026 net revenue rose 5% y/y to $8.7 billion on 10% TPV growth, but GAAP net income fell 12% to $1.1 billion and diluted EPS dropped 3% to $1.25 as operating expenses outpaced revenue; PayPal raised full-year non-GAAP EPS guidance to roughly $5.38.",
+  "summary_long": "Net revenues grew 5% y/y to $8.7 billion on 10% TPV growth, but GAAP operating income fell 5% to $1.4 billion and non-GAAP operating income fell 8% to $1.5 billion as opex growth (+7% y/y) outpaced revenue. GAAP net income fell 12% to $1.1 billion and diluted EPS fell 3% to $1.25, partly on a $0.07 negative swing from strategic-investment and crypto mark-to-market (vs a $0.01 gain a year ago). Cash and investments were $15.3 billion against $13.4 billion of debt; PayPal repurchased $1.5 billion of stock and declared a $0.14/share dividend. PayPal raised FY2026 non-GAAP EPS guidance to ~$5.38 and reaffirmed GAAP EPS guidance of a mid-single-digit decline.",
+  "drivers": [
+    { "metric": "overall", "direction": "up", "explanation": "CEO Enrique Lores cited stabilizing branded checkout, momentum in Venmo and Braintree, and diversification into financial services as the basis for raising full-year non-GAAP guidance despite near-term profit pressure.", "basis": "company-disclosed" },
+    { "metric": "Revenue", "direction": "up", "explanation": "Release attributes the 5% revenue increase to 10% TPV growth (9% FXN) and 8% growth in payment transactions.", "basis": "company-disclosed" },
+    { "metric": "Transaction margin dollars", "direction": "up", "explanation": "TM$ grew a slower 1% than TM$ ex-interest-on-customer-balances (+3%), meaning lower interest earned on customer balances held back the headline figure.", "basis": "company-disclosed" },
+    { "metric": "Operating income", "direction": "up", "explanation": "not explained in the release — this shard figure (Yahoo-timeseries provenance) conflicts with the release's own GAAP operating income of $1.427B (-5% y/y) and non-GAAP $1.507B (-8% y/y); see confidence_notes.", "basis": "company-disclosed" },
+    { "metric": "EBIT", "direction": "down", "explanation": "Total operating expenses rose 7% y/y to $7.26 billion, outpacing 5% revenue growth, compressing operating income; release does not break out per-line drivers beyond expense category totals.", "basis": "derived-arithmetic" },
+    { "metric": "EBITDA", "direction": "down", "explanation": "Tracks the same operating-income compression as EBIT, since depreciation and amortization ($246M) was roughly flat y/y ($239M).", "basis": "derived-arithmetic" },
+    { "metric": "Net income", "direction": "down", "explanation": "Reflects the operating income decline plus a $0.07-per-share negative swing from strategic investments and crypto assets held for investment, versus a $0.01 gain a year earlier.", "basis": "company-disclosed" },
+    { "metric": "EPS (diluted)", "direction": "down", "explanation": "Tracks net income decline; partly offset by a lower diluted share count (882M vs 977M y/y) from buybacks.", "basis": "derived-arithmetic" },
+    { "metric": "EPS (basic)", "direction": "down", "explanation": "Tracks diluted EPS decline on the same net income and share-count dynamics.", "basis": "derived-arithmetic" }
+  ],
+  "source_url": "https://www.sec.gov/Archives/edgar/data/1633917/000163391726000080/pypl2q-26earningsrelease.htm",
+  "confidence_notes": "REGENERATED — this summary was force-regenerated per explicit operator instruction, with the Step-0 already-exists guard skipped. No prior summary file existed on disk for this ticker+period, so this run wrote it fresh rather than overwriting existing content. SOURCE-RESOLUTION NOTE: Step 0's sourceLink pointed at the 8-K cover document (pypl-20260728.htm); scripts/resolve-edgar-exhibit.mjs found no EX-99-labeled exhibit in the accession folder's index, but the correct press-release exhibit was identifiable among the listed candidates as pypl2q-26earningsrelease.htm, which was fetched directly and used as the primary source. DATA-QUALITY FINDING: the shard's ebit_usd_m ($1,436M) and operating_income_usd_m ($1,540M) — both Yahoo-timeseries (\"wire\") provenance — do not reconcile with the release's own GAAP operating income ($1,427M, -5% y/y) or non-GAAP operating income ($1,507M, -8% y/y); operating_income_usd_m even shows an increase (+2.4% y/y) where the release discloses a decrease. These shard values are reported above as-is per ledger discipline (using our own stored KPI data, not fabricating a correction), but the discrepancy should be investigated by a future SEC-verbatim rederive pass. All other KPIs (revenue, net income, EPS basic/diluted, transaction margin dollars) tie out exactly to the release's own reported figures and growth rates. FY2026 non-GAAP EPS guidance was raised to ~$5.38 (from a prior qualitative range of \"low-single-digit decline to slightly positive\" against $5.31 in FY2025); this is recorded on the event's guidance[] array. FY2026 GAAP EPS guidance (\"mid-single-digit decline\", reaffirmed) and Q3'26 GAAP/non-GAAP EPS guidance (both \"low-single-digit decline\", first disclosed this quarter) are qualitative only — no explicit numeric range or point value was given, so no Fact could be constructed without inventing numbers; these are noted here rather than written to guidance[]. No restatements observed."
+}
