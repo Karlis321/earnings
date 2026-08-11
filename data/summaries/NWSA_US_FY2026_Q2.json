@@ -1,0 +1,100 @@
+{
+  "ticker": "NWSA US",
+  "period": "FY2026 Q2",
+  "reported_at": "2026-08-05",
+  "generated_at": "2026-08-11T12:00:00Z",
+  "headline": "Record quarterly profit caps a strong fiscal year",
+  "depth": "filing",
+  "kpis": [
+    {
+      "label": "Total revenues",
+      "value": "$2.34B",
+      "delta": "+10.8%",
+      "delta_basis": "y/y",
+      "direction": "up"
+    },
+    {
+      "label": "Total Segment EBITDA",
+      "value": "$423M",
+      "delta": "+31.4%",
+      "delta_basis": "y/y",
+      "direction": "up"
+    },
+    {
+      "label": "EPS (continuing ops)",
+      "value": "$0.33",
+      "delta": "+106.3%",
+      "delta_basis": "q/q",
+      "direction": "up"
+    },
+    {
+      "label": "Net income (attributable to stockholders)",
+      "value": "$179M",
+      "delta": "+101.1%",
+      "delta_basis": "q/q",
+      "direction": "up"
+    },
+    {
+      "label": "Operating income",
+      "value": "$295M",
+      "delta": "+46.0%",
+      "delta_basis": "y/y",
+      "direction": "up"
+    },
+    {
+      "label": "Cash and cash equivalents",
+      "value": "$2.10B",
+      "delta": "-12.8%",
+      "delta_basis": "y/y",
+      "direction": "down"
+    }
+  ],
+  "summary_short": "Fourth-quarter revenue rose to $2.34B (+10.8% y/y) and Total Segment EBITDA jumped to $423M (+31.4% y/y), while EPS from continuing operations climbed to $0.33 from $0.16 the prior quarter.",
+  "summary_long": "Growth was led by Digital Real Estate Services (+19%), Book Publishing (+15%) and Dow Jones (+7%), with REA Group and Move both posting double-digit revenue gains and Dow Jones subscriptions up 7% to 6.7 million. Adjusted EPS was $0.35 versus $0.19 a year ago. Net income attributable to stockholders was $179M, up from $89M last quarter; the year-ago comparable of $743M/$1.31 EPS included a one-time discontinued-operations gain not present this quarter, so that comparison isn't like-for-like. Cash fell to $2.10B from $2.40B a year earlier after $641M of share buybacks (vs $150M prior year) and $204M of dividends paid. The company declared a $0.10/share semi-annual dividend; no numeric forward guidance was issued.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/1564708/000156470826000171/release-q4fy2026.htm",
+  "confidence_notes": "REGENERATION (force-regenerate mode, operator-directed): no prior NWSA_US_FY2026_Q2.json existed on disk before this run, so this is a fresh compose rather than a literal overwrite of a materially different file. FISCAL-PERIOD MISLABELING FOUND: the primary filing is titled 'News Corporation Reports Fourth Quarter and Full Year Results for Fiscal 2026' and covers the quarter ended June 30, 2026 (News Corp's fiscal year runs July-June) — i.e. this is fiscal Q4 2026, not fiscal Q2 2026. Our data/events/NWSA_US.json shard labels this event 'FY2026 Q2' (eventDate 2026-08-05), and every prior event on the shard shows the same ~2-quarter offset between its period label and its real fiscal quarter (confirmed via eventDate spacing and cross-checking KPI values against this filing's own tables, which match exactly). This is the same fiscal-offset-mislabeling bug class already documented in CLAUDE.md for SAP/STX/ABI/Japanese banks/etc., just not previously caught for News Corp. This summary keeps the shard's existing (incorrect) period label 'FY2026 Q2' for filename/schema/shard consistency, since correcting the shard's period taxonomy is a backfill-script-level fix outside /earnings' scope — flagging here for a dedicated fix. BASIS MISMATCH ON Y/Y COMPARATORS: the resolver's shard kpis carry a prior_yy for EPS ($1.31) and net income ($743M) that are total-company figures including a one-time discontinued-operations gain in the year-ago quarter (net income from discontinued operations, net of tax: $690M; EPS from discontinued operations: $1.22) not present this quarter — comparing this quarter's continuing-ops-only $0.33 EPS / $179M net income against those totals would be misleading, so q/q (not y/y) was used as the delta basis for both KPI rows instead. Per the filing's own continuing-operations comparison (not carried in the KPI delta fields, cited here narratively): Q4 FY2026 continuing-ops EPS was $0.33 vs $0.09 a year ago (+267%), and continuing-ops net income was $230M vs $86M (+167%); the $179M figure used in this summary's KPI row is net income attributable to News Corporation stockholders after $51M of noncontrolling interests. 'Operating income' ($295M) is not a company-disclosed line item — it is derived as revenue less operating expenses, SG&A and D&A (shard provenance: Yahoo fundamentals-timeseries), excluding impairment/restructuring, equity losses, interest income and other, net. A shard/filing reconciliation gap was found and excluded from this summary: the resolver's long_term_debt_usd_m prior_yy ($1,962M) does not match this filing's own FYE2025 borrowings balance ($1,937M); that KPI was omitted rather than propagated unreconciled. No numeric forward guidance (revenue, EPS, capex) was given anywhere in the release for FY2027 or any future quarter, so data/events/NWSA_US.json's guidance[] array was left untouched.",
+  "drivers": [
+    {
+      "metric": "Total revenues",
+      "direction": "up",
+      "explanation": "Growth driven by higher real estate revenues at Digital Real Estate Services, higher book sales at Book Publishing, and higher circulation/subscription and digital advertising revenue at Dow Jones.",
+      "basis": "company-disclosed"
+    },
+    {
+      "metric": "Total Segment EBITDA",
+      "direction": "up",
+      "explanation": "EBITDA growth mirrors the revenue gains across segments, led by Digital Real Estate Services and Dow Jones, partly offset by higher employee and technology costs.",
+      "basis": "company-disclosed"
+    },
+    {
+      "metric": "EPS (continuing ops)",
+      "direction": "up",
+      "explanation": "Tracks the rise in net income from continuing operations; the release attributes the year-over-year profit jump to higher Total Segment EBITDA and lower impairment/restructuring charges.",
+      "basis": "company-disclosed"
+    },
+    {
+      "metric": "Net income (attributable to stockholders)",
+      "direction": "up",
+      "explanation": "Per the release, continuing-operations net income rose on higher Total Segment EBITDA and lower impairment and restructuring charges versus the prior year; noncontrolling interests take $51M of the $230M continuing-ops total.",
+      "basis": "company-disclosed"
+    },
+    {
+      "metric": "Operating income",
+      "direction": "up",
+      "explanation": "Not a company-disclosed line; derived as revenue less operating expenses, SG&A and D&A, which grew because segment revenue growth outpaced cost growth.",
+      "basis": "derived-arithmetic"
+    },
+    {
+      "metric": "Cash and cash equivalents",
+      "direction": "down",
+      "explanation": "Cash declined despite higher free cash flow, as $641M of News Corp share buybacks (vs $150M a year ago), $141M of REA Group share buybacks and $204M of dividends paid outweighed the FCF gain.",
+      "basis": "company-disclosed"
+    },
+    {
+      "metric": "overall",
+      "direction": "up",
+      "explanation": "CEO Robert Thomson called it an exceptional quarter, crediting Digital Real Estate Services, Dow Jones and Book Publishing as the company's core growth engines behind record profitability.",
+      "basis": "company-disclosed"
+    }
+  ]
+}
