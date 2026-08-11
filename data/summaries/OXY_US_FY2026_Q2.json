@@ -1,0 +1,36 @@
+{
+  "ticker": "OXY US",
+  "period": "FY2026 Q2",
+  "reported_at": "2026-08-05",
+  "generated_at": "2026-08-11T11:49:11.000Z",
+  "depth": "filing",
+  "headline": "Profits surge on higher oil prices as debt keeps shrinking",
+  "kpis": [
+    { "label": "Revenue", "value": "$8.07B", "delta": "+54.2%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Revenue", "value": "$8.07B", "delta": "+53.4%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EPS", "value": "$2.75", "delta": "-12.1%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "EPS", "value": "$2.75", "delta": "+$2.49", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Net income", "value": "$2.98B", "delta": "-11.0%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Net income", "value": "$2.98B", "delta": "+550.0%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Pretax income", "value": "$3.92B", "delta": "+599.1%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EBITDA", "value": "$5.87B", "delta": "+91.6%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Total cash", "value": "$4.15B", "delta": "+8.9%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Long-term debt", "value": "$12.80B", "delta": "-13.0%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Shareholders' equity", "value": "$41.75B", "delta": "+16.9%", "delta_basis": "y/y", "direction": "up" }
+  ],
+  "summary_short": "Occidental earned $2.75 per diluted share (adjusted $2.40) in Q2 FY2026 on revenue of $8.07 billion, both up sharply from a year ago as worldwide realized crude prices jumped 38% q/q to $96.78/bbl, while long-term debt fell to $12.80 billion.",
+  "summary_long": "Revenue rose 54.2% q/q and 53.4% y/y to $8.07B as worldwide realized crude prices jumped 38% q/q to $96.78/bbl and midstream & marketing swung to $1.3B of pre-tax income from an $87M loss on higher crude-sale-timing and gas-transportation margins. Diluted EPS was $2.75 (adjusted $2.40), down 12.1% q/q but up from $0.26 a year ago, when items affecting comparability weighed on results. Production averaged 1,433 Mboed, above the high end of guidance on Permian and Gulf of America outperformance. Occidental cut principal debt by $1.9B to $11.8B, raised its quarterly dividend 8% to $0.28/share, and generated $3.0B of free cash flow before working capital, the highest since Q3 2022.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/797468/000162828026053377/oxyex9916-30x26earningsrel.htm",
+  "confidence_notes": "FORCE-REGENERATED per operator instruction (force-regenerate mode) — Step 0's 'summary already exists' guard was explicitly bypassed for this run; no prior OXY_US_FY2026_Q2.json existed on disk at run time (resolver reported summaryExists=false), so this is a fresh compose rather than an overwrite of stale prior data — the regeneration framing is honored even though there was nothing on disk to overwrite. The event's sourceLink pointed at the 8-K cover document (oxy-20260805.htm); scripts/resolve-edgar-exhibit.mjs exited 3 (no exact EX-99* filename match) and printed a candidate list instead — the EX-99.1 press-release exhibit (oxyex9916-30x26earningsrel.htm) was identified from that list and fetched directly; the cover document itself was never fetched. 'EPS' in this summary is diluted EPS ($2.75), matching the release's own headline convention and the reported-EPS schedule; the shard's separately tracked basic EPS (eps_usd, $2.80) was not used as the primary metric. The y/y deltas for diluted EPS, net income, and pretax income are extreme (respectively a $2.49 dollar move, +550.0%, +599.1%) because Q2 2025 was depressed by negative items affecting comparability per the release's own non-GAAP reconciliation schedules — not a data error; diluted EPS y/y is expressed as a dollar delta rather than a percentage because the prior-year base ($0.26) is too small for a percentage to be meaningful. The release's headline 'reduced principal debt by $1.9 billion to $11.8 billion' does not exactly match the shard's GAAP long-term-debt-net figure ($12.80B) — the two are non-identical GAAP/non-GAAP conventions (principal balance vs. net carrying value) and both are accurate to their own definitions. No explicit forward guidance (next-quarter or full-year) was found in this release — the 'exceeding guidance' language describes Q2's own results against prior guidance, not a new forward statement — so the event's guidance[] array was left untouched. Extended metrics (capex, adjusted capex, free cash flow, buyback, dividend/share, asset-sale proceeds, adjusted EPS, production, realized oil/gas prices, lifting cost) were extracted per Step 3b and written via scripts/apply-extended-metrics.mjs.",
+  "drivers": [
+    { "metric": "Revenue", "direction": "up", "explanation": "Higher worldwide realized crude prices (+38% q/q to $96.78/bbl) and a midstream & marketing swing to pre-tax income on higher crude-sale-timing and gas-transportation margins.", "basis": "company-disclosed" },
+    { "metric": "EPS", "direction": "up", "explanation": "Adjusted EPS of $2.40 tracks higher oil & gas pre-tax income from higher realized crude prices, partially offset by lower domestic natural gas prices.", "basis": "company-disclosed" },
+    { "metric": "Net income", "direction": "up", "explanation": "Reflects the same oil & gas segment swing on higher realized crude prices plus midstream & marketing's return to profitability, per the segment result tables.", "basis": "derived-arithmetic" },
+    { "metric": "Pretax income", "direction": "up", "explanation": "Consolidated pretax income tracks the oil & gas and midstream segment income swings described above, per the segment income schedule.", "basis": "derived-arithmetic" },
+    { "metric": "EBITDA", "direction": "up", "explanation": "not explained in the release", "basis": "company-disclosed" },
+    { "metric": "Total cash", "direction": "up", "explanation": "Cash grew as $4.27B of net operating cash inflow exceeded $2.15B of net financing outflow (mostly $1.79B of debt repayments) and $1.78B of investing outflow, per the cash-flow statement.", "basis": "derived-arithmetic" },
+    { "metric": "Long-term debt", "direction": "down", "explanation": "Debt fell on continued principal repayments ($1.79B of debt payments this quarter) following Q1's asset-sale-funded paydown, per the financing-activities section.", "basis": "derived-arithmetic" },
+    { "metric": "Shareholders' equity", "direction": "up", "explanation": "Growth was primarily retained-earnings accretion from the quarter's net income, partially offset by ongoing treasury-stock purchases, per the balance sheet.", "basis": "derived-arithmetic" },
+    { "metric": "overall", "direction": "up", "explanation": "Management highlighted an 8% dividend increase to $0.28/share, a $1.9B reduction in principal debt to $11.8B, and $3.0B of free cash flow before working capital — the highest since Q3 2022 — citing strong execution and advanced recovery capabilities.", "basis": "company-disclosed" }
+  ]
+}
