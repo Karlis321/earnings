@@ -1,0 +1,36 @@
+{
+  "ticker": "NDSN US",
+  "period": "FY2026 Q2",
+  "reported_at": "2026-05-20",
+  "generated_at": "2026-08-11T00:00:00.000Z",
+  "depth": "filing",
+  "headline": "Record sales, EBITDA and backlog; guidance raised again",
+  "kpis": [
+    { "label": "Revenue", "value": "$740.8M", "delta": "+10.7%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Revenue", "value": "$740.8M", "delta": "+8.5%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Gross profit", "value": "$404.1M", "delta": "+10.4%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Gross profit", "value": "$404.1M", "delta": "+8.1%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Operating profit", "value": "$197.2M", "delta": "+18.5%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Operating profit", "value": "$197.2M", "delta": "+16.9%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EBITDA (non-GAAP)", "value": "$235.2M", "delta": "+15.9%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "EBITDA (non-GAAP)", "value": "$235.2M", "delta": "+8.3%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Net income", "value": "$117.3M", "delta": "-12.0%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Net income", "value": "$117.3M", "delta": "+4.4%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EPS (diluted)", "value": "$2.09", "delta": "-12.2%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "EPS (diluted)", "value": "$2.09", "delta": "+6.1%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Adjusted EPS (non-GAAP)", "value": "$2.86", "delta": "+20.7%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Adjusted EPS (non-GAAP)", "value": "$2.86", "delta": "+18.2%", "delta_basis": "y/y", "direction": "up" }
+  ],
+  "summary_short": "Nordson's Q2 FY2026 sales rose 8.5% y/y to a second-quarter record $740.8M on 7% organic growth, with EBITDA up 8.3% to $235.2M; GAAP EPS of $2.09 (+6.1% y/y) absorbed a $24.0M pension settlement charge, while adjusted EPS hit a record $2.86 (+18.2% y/y).",
+  "summary_long": "Sales rose 8.5% y/y (7% organic, 3% FX) to a Q2 record $740.8M, with growth across all three segments. Gross margin held roughly flat at 54.5% (-20bp y/y). Operating profit rose 16.9% y/y to $197.2M as revenue growth outpaced flat SG&A. GAAP net income of $117.3M (+4.4% y/y, EPS $2.09) absorbed a $24.0M non-cash pension settlement charge and a loss on minority investments; adjusted EPS excluding these hit a record $2.86 (+18.2% y/y). Cash fell to $102.0M after $129.3M of buybacks and $91.6M of dividends YTD. Nordson raised full-year guidance to $2,930-3,010M sales and $11.30-11.80 adjusted EPS, and guided Q3 sales of $760-790M.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/72331/000007233126000022/ndsn-q220268kxex991.htm",
+  "confidence_notes": "REGENERATION — this file was force-regenerated per operator instruction (Step-0 'already exists' guard bypassed); no prior NDSN_US_FY2026_Q2.json existed on disk at generation time, so this write is a fresh compose rather than a true overwrite. Data-quality finding: resolve-earnings-target.mjs's kpis object returned corrupted q/q and y/y comparators for several metrics on this ticker — revenue_usd_m, net_income_usd_m, eps_usd, eps_diluted_usd and operating_income_usd_m all had prior_qq EXACTLY equal to the current-quarter value (traced to the FY2026 Q1 event on data/events/NDSN_US.json storing Q2's own SEC-verbatim actual, asOf 2026-04-30, instead of Q1's Jan-31 figure), and prior_yy values (e.g. net_income prior_yy=125.784, eps_diluted prior_yy=2.22) that do not match the press release's own prior-year Q2 table (net income $112.404M, diluted EPS $1.97). This looks like a cross-period misjoin on the NDSN shard worth a dedicated backfill pass — flagging rather than silently trusting. All KPI deltas in this summary were instead computed directly from the primary document's own consolidated income statement and segment tables (three-months and six-months columns), which are internally consistent and tie out exactly (e.g. six-month net income $250,698 minus Q2 $117,316 = $133,382, matching the release's own Jan-31-YTD column). EPS and Adjusted-EPS q/q deltas are derived-arithmetic (six-month cumulative EPS minus the disclosed Q2 EPS) since Nordson's release does not separately restate a standalone Q1 diluted-EPS figure; this is a share-count-weighted approximation, not a line item the company states directly. Q2 GAAP net income and EPS were held back q/q and partially offset y/y by a one-time non-cash pension settlement charge (~$24.0M, annuitizing ~30% of the U.S. pension obligation) and a non-cash loss on minority investments — both excluded from the record $2.86 adjusted EPS. Full-year FY2026 guidance was raised (sales to $2,930-3,010M, adjusted EPS to $11.30-11.80) but the release does not restate the prior guidance range, so guidance.move='raised' reflects the company's own 'increasing full year guidance' language rather than a computed delta; Q3 FY2026 guidance is a fresh quarterly range (move='initiated').",
+  "drivers": [
+    { "metric": "Revenue", "direction": "up", "explanation": "Organic sales increased 7% driven by growth in all three segments, plus 3% favorable currency translation, partly offset by the previously announced divestiture and a small precision-agriculture acquisition (CapstanAG).", "basis": "company-disclosed" },
+    { "metric": "Operating profit", "direction": "up", "explanation": "Operating profit grew faster than gross profit because SG&A expenses were roughly flat year-over-year while gross profit rose 8.1%, producing operating leverage.", "basis": "derived-arithmetic" },
+    { "metric": "EBITDA (non-GAAP)", "direction": "up", "explanation": "All three segments grew EBITDA: Industrial Precision Solutions +9%, Medical and Fluid Solutions +3%, Advanced Technology Solutions +22%, the last driven by electronics dispense systems demand.", "basis": "company-disclosed" },
+    { "metric": "Net income", "direction": "down", "explanation": "Q2 earnings included a one-time, non-cash settlement charge to annuitize about 30% of the U.S. pension obligation and a non-cash loss on minority investments, which the company excludes from adjusted results.", "basis": "company-disclosed" },
+    { "metric": "Adjusted EPS (non-GAAP)", "direction": "up", "explanation": "Excluding the pension settlement charge, minority-investment loss, and acquisition-related amortization/costs, adjusted EPS rose 18% y/y to a second-quarter record, reflecting underlying operating growth.", "basis": "company-disclosed" },
+    { "metric": "overall", "direction": "up", "explanation": "Backlog was up 18% y/y with broad-based order entry across all segments; management cited this momentum, plus continued free-cash-flow conversion, as the basis for raising full-year sales and adjusted-EPS guidance.", "basis": "company-disclosed" }
+  ]
+}
