@@ -1,0 +1,120 @@
+{
+  "ticker": "ORCL US",
+  "period": "FY2026 Q2",
+  "reported_at": "2026-06-10",
+  "generated_at": "2026-08-11T11:45:44Z",
+  "headline": "Cloud demand surges, AI buildout compresses margins",
+  "depth": "filing",
+  "kpis": [
+    {
+      "label": "Revenue",
+      "value": "$19.18B",
+      "delta": "+20.6%",
+      "delta_basis": "y/y",
+      "direction": "up"
+    },
+    {
+      "label": "Gross profit",
+      "value": "$12.51B",
+      "delta": "+12.1%",
+      "delta_basis": "y/y",
+      "direction": "up"
+    },
+    {
+      "label": "EBITDA",
+      "value": "$9.66B",
+      "delta": "+41.5%",
+      "delta_basis": "y/y",
+      "direction": "up"
+    },
+    {
+      "label": "EBIT",
+      "value": "$6.81B",
+      "delta": "+32.7%",
+      "delta_basis": "y/y",
+      "direction": "up"
+    },
+    {
+      "label": "Operating income",
+      "value": "$6.96B",
+      "delta": "+34.0%",
+      "delta_basis": "y/y",
+      "direction": "up"
+    },
+    {
+      "label": "Net income",
+      "value": "$4.30B",
+      "delta": "+25.6%",
+      "delta_basis": "y/y",
+      "direction": "up"
+    },
+    {
+      "label": "EPS (basic)",
+      "value": "$1.47",
+      "delta": "+14.0%",
+      "delta_basis": "q/q",
+      "direction": "up"
+    },
+    {
+      "label": "EPS (diluted)",
+      "value": "$1.45",
+      "delta": "+14.2%",
+      "delta_basis": "q/q",
+      "direction": "up"
+    }
+  ],
+  "summary_short": "Oracle's fiscal Q4 2026 revenue rose 21% y/y to $19.2B on 47% cloud growth (Cloud Infrastructure up 93%), with GAAP diluted EPS of $1.45 and non-GAAP diluted EPS of $2.11; Remaining Performance Obligations jumped to $638B, up $85B sequentially, largely on prepaid AI infrastructure contracts.",
+  "summary_long": "Cloud revenue (IaaS+SaaS) grew 47% y/y to $9.9B, led by 93% growth in Cloud Infrastructure on AI training/inferencing demand; Cloud Applications grew 10%. Software license revenue kept declining (-2% y/y) as customers migrate on-premise workloads to the cloud. GAAP operating income rose 20% to $6.1B despite an $823M restructuring charge; non-GAAP operating income hit a record $8.6B (+22%). RPO reached $638B, up $85B q/q, mostly large prepaid or customer-supplied-hardware AI contracts. FY2026 operating cash flow rose 54% to $32.0B, but free cash flow was -$23.7B on $55.7B of annual AI-datacenter capex. Oracle guided Q1 FY2027 revenue growth of 27-29% y/y, reaffirmed $90B FY2027 revenue guidance, and raised FY2027 non-GAAP EPS guidance to $8.05.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/1341439/000119312526265848/orcl-ex99_1.htm",
+  "confidence_notes": "Regenerated under force-regenerate mode per operator instruction (Step-0 already-exists guard skipped) — no prior ORCL_US_FY2026_Q2.json existed on disk, so this write is a fresh compose rather than a literal overwrite. Ledger-labeling flag: the shard's period label \"FY2026 Q2\" does not match how the primary document itself frames this report — the press release is titled \"Oracle Announces Record Q4 and FY 2026 Results\" for the quarter ended May 31, 2026 (Oracle's real fiscal Q4, since Oracle's FY ends May 31). The prior ORCL event on this shard shows the same pattern (labeled \"FY2026 Q1\" for a quarter-end of 2026-02-28, which is actually Oracle's fiscal Q3) — this looks like a systematic 2-quarter labeling offset specific to this entity's shard, not an error in this run. All KPI figures below tie exactly to the filing (revenue, net income, basic/diluted EPS all match verbatim); only the period label is suspect, and it's left as-is (\"FY2026 Q2\") to match the resolver/shard/filename convention rather than silently relabeled — a fiscal-offset backfill for ORCL is a separate task. KPI-table caveat: the shard's operating_income_usd_m ($6.96B) and ebit_usd_m ($6.81B) don't equal either GAAP figure the release states (operating income $6.13B) or the non-GAAP figure ($8.6B) — the gap versus GAAP (~$822-823M) matches Q4's disclosed $823M restructuring-and-other charge almost exactly, suggesting the shard's Yahoo-sourced figures net that charge out. EPS deltas use q/q instead of y/y because the shard has no prior_yy value for eps_usd/eps_diluted_usd; the filing's own y/y comparison (basic EPS $1.22 in Q4 FY2025 vs $1.47 now, +20.5%) is available in the primary document but wasn't substituted in to keep the KPI table sourced purely from our own shard data. One-off note: Q4/FY2026 non-GAAP EPS includes one-time net investment gains (Ampere chip business sale + Bloom Energy warrants); excluding those, the release states Q4 non-GAAP EPS would be $2.03 (+20% USD) and FY2026 non-GAAP EPS would be $6.83 (+13% USD).",
+  "drivers": [
+    {
+      "metric": "Revenue",
+      "direction": "up",
+      "explanation": "Broad-based cloud demand: Cloud (IaaS+SaaS) revenue +47% y/y, led by Cloud Infrastructure +93% on AI training/inferencing demand; Cloud Applications +10%; Software revenue fell 2% on continued on-prem-to-cloud migration.",
+      "basis": "company-disclosed"
+    },
+    {
+      "metric": "Gross profit",
+      "direction": "up",
+      "explanation": "Gross profit grew slower than revenue because cost of cloud-and-software revenue rose 56% y/y (vs 21% revenue growth) as Oracle scales AI datacenter infrastructure — margin compression even as absolute profit rose.",
+      "basis": "derived-arithmetic"
+    },
+    {
+      "metric": "EBITDA",
+      "direction": "up",
+      "explanation": "Tracks the y/y gains in operating income and net income plus higher depreciation add-back from AI-datacenter buildout; the release does not itself break out or explain an EBITDA figure.",
+      "basis": "derived-arithmetic"
+    },
+    {
+      "metric": "EBIT",
+      "direction": "up",
+      "explanation": "Same underlying drivers as operating income — revenue growth outpacing total cost growth; not a metric the release discloses or explains directly, and this shard figure doesn't tie to either GAAP or non-GAAP operating income.",
+      "basis": "derived-arithmetic"
+    },
+    {
+      "metric": "Operating income",
+      "direction": "up",
+      "explanation": "GAAP operating income rose 20% to $6.1B on revenue growth and cost efficiency despite an $823M restructuring charge; non-GAAP operating income hit a record $8.6B (+22%). This KPI's $6.96B figure is Yahoo-sourced and doesn't equal either release figure — likely GAAP plus restructuring add-back.",
+      "basis": "company-disclosed"
+    },
+    {
+      "metric": "Net income",
+      "direction": "up",
+      "explanation": "Net income rose 26% y/y to $4.3B, tracking the operating income gain plus $675M of non-operating income (vs $20M a year ago); the release doesn't isolate a separate net-income-specific driver.",
+      "basis": "company-disclosed"
+    },
+    {
+      "metric": "EPS (diluted)",
+      "direction": "up",
+      "explanation": "Mirrors the net income increase; diluted share count grew only ~2% y/y, so per-share growth closely tracks net income growth.",
+      "basis": "derived-arithmetic"
+    },
+    {
+      "metric": "overall",
+      "direction": "up",
+      "explanation": "Release frames results around AI-driven cloud demand: RPO grew $85B q/q to $638B (up 363% y/y) on large AI contracts, Oracle Multicloud AI Database grew 404% in Q4, and management raised FY2027 non-GAAP EPS guidance to $8.05 while reaffirming $90B FY2027 revenue guidance.",
+      "basis": "company-disclosed"
+    }
+  ]
+}
