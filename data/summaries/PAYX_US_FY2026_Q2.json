@@ -1,0 +1,36 @@
+{
+  "ticker": "PAYX US",
+  "period": "FY2026 Q2",
+  "reported_at": "2026-06-24",
+  "generated_at": "2026-08-11T00:00:00.000Z",
+  "depth": "filing",
+  "headline": "Margins and profit surge as Paycor integration costs ease",
+  "kpis": [
+    { "label": "Revenue", "value": "$1.61B", "delta": "-11.2%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Revenue", "value": "$1.61B", "delta": "+12.5%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Operating income", "value": "$604.7M", "delta": "-23.6%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Operating income", "value": "$604.7M", "delta": "+40.3%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EPS", "value": "$1.17", "delta": "-25.0%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "EPS", "value": "$1.17", "delta": "+42.7%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Net income", "value": "$420.6M", "delta": "-24.9%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Net income", "value": "$420.6M", "delta": "+41.5%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Gross profit", "value": "$1.19B", "delta": "-13.8%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Gross profit", "value": "$1.19B", "delta": "+15.0%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EBITDA", "value": "$732.1M", "delta": "-20.3%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "EBITDA", "value": "$732.1M", "delta": "+35.9%", "delta_basis": "y/y", "direction": "up" }
+  ],
+  "summary_short": "Paychex's fiscal fourth-quarter revenue rose 12.5% y/y to $1.61B (down 11.2% q/q on normal seasonality), while operating income jumped 40.3% y/y to $604.7M and diluted EPS grew 42.7% y/y to $1.17, as Paycor acquisition-related integration costs eased.",
+  "summary_long": "Revenue grew 12.5% y/y to $1.61B (Management Solutions +14%, aided ~8pts by Paycor; PEO/Insurance +9%) but fell 11.2% q/q on normal fiscal-Q3 seasonality rolling off. Operating income rose 40.3% y/y to $604.7M as operating margin expanded to 37.7% from 30.2%, mainly on lower Paycor acquisition-related costs. Net income was $420.6M (+41.5% y/y); diluted EPS $1.17 (+42.7% y/y); adjusted diluted EPS $1.32 (+11% y/y). Fiscal-2026 operating cash flow was $2.6B; Paychex returned $2.2B to shareholders via $1.6B dividends and $611M buybacks. For fiscal 2027, guidance calls for total revenue growth of 5-6%, adjusted operating margin near 44%, and adjusted diluted EPS growth of 7-9%.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/723531/000119312526280314/payx-ex99_1.htm",
+  "confidence_notes": "Regenerated summary (forced refresh per explicit instruction — no summary file previously existed on disk for this ticker/period; this run created it fresh under force-regenerate mode). Fiscal-calendar flag: the primary release identifies this as Paychex's fiscal FOURTH quarter and full-year FY2026 results (three months ended May 31, 2026 — Paychex's fiscal year-end), but the shard's period label is 'FY2026 Q2', a calendar-quarter mislabel that does not reflect Paychex's actual fiscal calendar (true label would be FY2026 Q4). All four other events on this shard carry the same systematic offset (each stored period is two quarters behind the true fiscal quarter implied by its own _quarterEndDate). Not corrected here — the summary filename/period must match event.period per schema and resolver output; flagging as a backfill candidate rather than silently renaming. Our shard's EBITDA figure ($732.1M, Yahoo-sourced) does not reconcile with the release's own disclosed EBITDA ($719.1M) or Adjusted EBITDA ($729.7M) for the quarter — shown as-is per ledger discipline, discrepancy noted rather than corrected. FY2027 guidance (revenue growth, PEO/Insurance growth, interest on funds held, adjusted operating margin, tax rate, adjusted diluted EPS growth) is captured in summary_long only — it was not written to the event's guidance[] array because no sanctioned script exists in scripts/ for that write (tooling gap; apply-extended-metrics.mjs only writes extendedMetrics[]).",
+  "drivers": [
+    { "metric": "Revenue", "direction": "up", "explanation": "Management Solutions grew on higher HR product penetration, more client worksite employees, and Paycor's upmarket pricing; PEO/Insurance grew on more average worksite employees and higher PEO insurance revenue.", "basis": "company-disclosed" },
+    { "metric": "Revenue", "direction": "down", "explanation": "not explained in the release", "basis": "company-disclosed" },
+    { "metric": "Operating income", "direction": "up", "explanation": "Rose on revenue growth and lower acquisition-related integration costs versus the year-ago quarter, which included heavier Paycor deal costs; operating margin expanded to 37.7% from 30.2%.", "basis": "company-disclosed" },
+    { "metric": "Net income", "direction": "up", "explanation": "Tracks the operating income increase; effective tax rate ticked up slightly to 24.1% from 23.7% in the year-ago quarter.", "basis": "company-disclosed" },
+    { "metric": "EPS", "direction": "up", "explanation": "Growth outpaced net income growth because diluted shares outstanding fell to 358.2M from 362.3M a year ago, reflecting continued buybacks.", "basis": "derived-arithmetic" },
+    { "metric": "Gross profit", "direction": "up", "explanation": "Cost of service revenue rose just 6% y/y versus 12% revenue growth, expanding gross margin — arithmetic result of the release's own cost-of-service-revenue line, not separately narrated.", "basis": "derived-arithmetic" },
+    { "metric": "EBITDA", "direction": "up", "explanation": "Grew y/y on our figure, but our EBITDA ($732.1M) differs from the release's own disclosed EBITDA ($719.1M) / Adjusted EBITDA ($729.7M) for the quarter — see confidence_notes.", "basis": "derived-arithmetic" },
+    { "metric": "overall", "direction": "up", "explanation": "Management cited strong momentum, accelerating organic growth, continued Paycor upmarket integration, and new AI tooling (WISE) while returning $2.2B to shareholders in fiscal 2026 and issuing growth guidance across revenue, margin, and EPS for fiscal 2027.", "basis": "company-disclosed" }
+  ]
+}
