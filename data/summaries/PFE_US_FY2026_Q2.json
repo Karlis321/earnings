@@ -1,0 +1,38 @@
+{
+  "ticker": "PFE US",
+  "period": "FY2026 Q2",
+  "reported_at": "2026-08-04",
+  "generated_at": "2026-08-11T00:00:00.000Z",
+  "depth": "filing",
+  "headline": "Revenue grows on launches; GAAP loss from impairments",
+  "kpis": [
+    { "label": "Revenue", "value": "$15.03B", "delta": "+4.0%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Revenue", "value": "$15.03B", "delta": "+2.6%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EPS (diluted)", "value": "-$0.04", "delta": "-$0.51", "delta_basis": "q/q", "direction": "down" },
+    { "label": "EPS (diluted)", "value": "-$0.04", "delta": "-$0.55", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Net income", "value": "-$248M", "delta": "-$2,935M", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Net income", "value": "-$248M", "delta": "-$3,158M", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Cost of sales", "value": "$4.09B", "delta": "+15.3%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Cost of sales", "value": "$4.09B", "delta": "+8.3%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Gross profit", "value": "$10.94B", "delta": "+0.4%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Gross profit", "value": "$10.94B", "delta": "+0.6%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Operating income", "value": "$3.54B", "delta": "-17.1%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Operating income", "value": "$3.54B", "delta": "-6.1%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "EBITDA", "value": "$1.64B", "delta": "-70.0%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "EBITDA", "value": "$1.64B", "delta": "-69.3%", "delta_basis": "y/y", "direction": "down" }
+  ],
+  "summary_short": "Pfizer's Q2 2026 revenue rose 2.6% y/y to $15.03B, but a $4.3B non-cash intangible impairment drove GAAP diluted EPS to a loss of $(0.04) versus $0.51 a year ago, while Adjusted diluted EPS held at $0.77; full-year revenue guidance was raised $500M at the midpoint to $60.5-62.5B.",
+  "summary_long": "Revenue grew 2.6% y/y to $15.03B (+4.0% q/q), led by 18% operational growth in launched/acquired products — Eliquis +19%, Padcev +23%, Lorbrena +37% — while Paxlovid (-95%) and Comirnaty (-34%) fell as COVID demand faded. Cost of sales rose to 27.2% of revenue (+140bp) on mix and higher acquired-inventory amortization. GAAP net loss of $248M ($(0.04) diluted LPS) reflects $4.3B of non-cash intangible impairments, partly offset by a $1.87B ViiV-stake gain; Adjusted diluted EPS held at $0.77. Cash fell to $976M from $1.70B q/q after $4.9B of H1 dividends. FY2026 revenue guidance raised $500M at the midpoint to $60.5-62.5B; Adjusted EPS guidance reaffirmed at $2.80-3.00.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/78003/000007800326000094/pfe-6282026xex99.htm",
+  "confidence_notes": "Forced regeneration (this run was explicitly instructed to force-regenerate and skip the already-exists guard) — no summary file previously existed on disk for PFE US FY2026 Q2, so this is a fresh compose rather than an overwrite of prior content. Adjusted (non-GAAP) figures are Pfizer's own 'Adjusted' non-GAAP measures, distinct from GAAP Reported — do not conflate the $0.77 Adjusted diluted EPS with the $(0.04) GAAP diluted LPS in the kpis[] row. The Q2 2026 GAAP net loss is driven overwhelmingly by two non-cash intangible impairments ($3.8B sigvotatug vedotin IPR&D, $525M Oxbryta), not an operating-performance deterioration. FY2026 guidance (revenue raised, Adjusted EPS reaffirmed, Adjusted SI&A/R&D/tax-rate unchanged) is captured in summary_long only — not written to the event's guidance[] array, consistent with the PAYX_US_FY2026_Q2 precedent: no sanctioned script exists in scripts/ for that shard write (apply-extended-metrics.mjs only writes extendedMetrics[]), and direct shard edits for this fall outside the hard tooling rule. Pfizer's fiscal quarter for U.S. subsidiaries (three months ended June 28, 2026) runs on a slightly offset window versus non-U.S. subsidiaries (three months ended May 24, 2026) per the release's own footnote — no fiscal-offset relabeling needed since the calendar-quarter period label still applies.",
+  "drivers": [
+    { "metric": "Revenue", "direction": "up", "explanation": "18% operational growth in launched/acquired products (Eliquis +19%, Padcev +23%, Vyndaqel family +8%, Lorbrena +37%) offset a 95% Paxlovid and 34% Comirnaty decline as COVID demand faded.", "basis": "company-disclosed" },
+    { "metric": "Cost of sales", "direction": "up", "explanation": "Rose to 27.2% of revenue (+140bp) on an unfavorable sales-mix shift and higher amortization of the fair-value step-up of acquired inventory, primarily tied to the Oxbryta impairment.", "basis": "company-disclosed" },
+    { "metric": "Operating income", "direction": "down", "explanation": "Driven by $4.3B of non-cash intangible impairments — $3.8B for the sigvotatug vedotin IPR&D asset after unfavorable Phase 3 results, and $525M for Oxbryta after FDA found no relaunch path — partly offset by a $1.87B gain on the ViiV stake sale.", "basis": "company-disclosed" },
+    { "metric": "EBITDA", "direction": "down", "explanation": "Tracks the same intangible-impairment and legal-charge hit to Other (income)/deductions that drove operating income down; not a separately disclosed cause in the release.", "basis": "derived-arithmetic" },
+    { "metric": "Net income", "direction": "down", "explanation": "Pretax swung to a $653M loss from $3.04B income on the impairment and legal charges; a tax benefit ($407M) from the jurisdictional mix of losses partly offset the hit.", "basis": "company-disclosed" },
+    { "metric": "EPS (diluted)", "direction": "down", "explanation": "Tracks the net-income swing to a loss; diluted share count was little changed (5,699M vs 5,706M a year ago) so per-share and aggregate moves track closely.", "basis": "derived-arithmetic" },
+    { "metric": "Gross profit", "direction": "up", "explanation": "Roughly flat as 8.3% y/y cost-of-sales growth nearly offset 2.6% revenue growth — consistent with the release's own disclosed 140bp erosion in gross margin.", "basis": "derived-arithmetic" },
+    { "metric": "overall", "direction": "up", "explanation": "Management raised full-year revenue guidance $500M at the midpoint on stronger non-COVID demand, reaffirmed Adjusted EPS guidance, and announced $2.5B of additional 2027-2029 cost savings on top of existing programs.", "basis": "company-disclosed" }
+  ]
+}
