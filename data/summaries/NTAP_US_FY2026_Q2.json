@@ -1,0 +1,32 @@
+{
+  "ticker": "NTAP US",
+  "period": "FY2026 Q2",
+  "reported_at": "2026-05-28",
+  "generated_at": "2026-08-11T11:19:55Z",
+  "depth": "filing",
+  "headline": "Record revenue, margins, and cash flow to close the year",
+  "kpis": [
+    { "label": "Revenue (M)", "value": "$1,948M", "delta": "+13.7%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Revenue (M)", "value": "$1,948M", "delta": "+12.5%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Gross profit (M)", "value": "$1,365M", "delta": "+12.9%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Gross profit (M)", "value": "$1,365M", "delta": "+14.4%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Operating income (M)", "value": "$531M", "delta": "+23.2%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Operating income (M)", "value": "$531M", "delta": "+52.6%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Net income (M)", "value": "$404M", "delta": "+21.0%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Net income (M)", "value": "$404M", "delta": "+18.8%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EPS", "value": "$2.05", "delta": "+21.3%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "EPS", "value": "$2.05", "delta": "+22.8%", "delta_basis": "y/y", "direction": "up" }
+  ],
+  "summary_short": "NetApp's fiscal fourth-quarter revenue rose 12% y/y to $1,948M with record gross profit and operating income, as basic EPS climbed to $2.05 from $1.67 a year earlier.",
+  "summary_long": "NetApp's fiscal fourth-quarter revenue rose 12% y/y to $1,948M, led by record all-flash array revenue (+18% y/y to $1.2B) and record Public Cloud revenue (+11% y/y to $182M). Gross profit rose 14% y/y to $1,365M and operating income rose to $531M as total operating expenses were roughly flat y/y. Net income was $404M ($2.05 basic EPS, $2.03 diluted), both up double digits y/y. Free cash flow was $900M, up 41% y/y; NetApp returned $1.36B to shareholders via buybacks and dividends in FY2026. For Q1 FY2027 the company guided GAAP revenue to $1.75-$1.90B and GAAP EPS to $1.35-$1.45. Cash and investments stood at $3,584M.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/1002047/000119312526245196/ntap-ex99_1.htm",
+  "confidence_notes": "REGENERATED (force-regenerate mode) — this summary was produced by re-running /earnings from scratch, skipping the Step-0 already-exists guard; no prior NTAP_US_FY2026_Q2 summary was actually found on disk at compose time. PERIOD-LABEL FLAG: the shard's stored period for this event is 'FY2026 Q2' (join key, kept as-is per schema pattern and Step-0 target-matching), but the press release itself is explicitly titled 'Fourth Quarter and Fiscal Year 2026 Results' for the quarter ended April 24, 2026 — i.e. this is NetApp's true fiscal Q4 FY2026, not Q2 (NetApp's FY runs May-April; Q4 ends April). This looks like the fiscal-offset period-mislabeling bug class already documented in CLAUDE.md for other issuers, now also present on NTAP's shard — worth a backfill pass. Y/Y-DATA FLAG: resolver's stored prior_yy values for revenue/gross profit/operating income/net income/EPS were NOT used because they are corrupted by the same mislabeling bug — the SEC-verbatim rederive matched 'FY2025 Q2' by label and pulled a different real quarter's XBRL data (e.g. stored prior_yy revenue of $1,559M does not match this release's own stated Q4 FY25 comparative of $1,732M). Y/y deltas above instead use the prior-year GAAP figures stated directly in this release's own comparison columns (revenue $1,732M, gross profit $1,193M, operating income/'Income from operations' $348M, net income $340M, diluted EPS $1.65, basic EPS $1.67), which reconcile to the release's own quoted y/y growth rates (12%, 14%, 23%). Q/q deltas use the resolver's prior_qq values (FY2026 Q1 shard event), which are Yahoo-sourced by calendar date and not affected by the label-matching corruption. Operating income of $531M (our stored KPI) differs by $1M from the release's own 'Income from operations' line of $532M — immaterial rounding, not investigated further. Non-GAAP EPS ($2.43), non-GAAP net income ($483M), and other non-GAAP figures are captured separately in the event's extendedMetrics, not in the GAAP kpis array above, per ledger discipline.",
+  "drivers": [
+    { "metric": "Revenue (M)", "direction": "up", "explanation": "Growth was driven by record all-flash array revenue (+18% y/y to $1.2B) and record Public Cloud revenue (+11% y/y to $182M), per the release's own segment highlights.", "basis": "company-disclosed" },
+    { "metric": "Gross profit (M)", "direction": "up", "explanation": "Not explained in the release beyond the record all-flash and Public Cloud revenue growth already cited for the top line.", "basis": "company-disclosed" },
+    { "metric": "Operating income (M)", "direction": "up", "explanation": "Operating income grew faster than revenue because total operating expenses were roughly flat y/y ($833M vs $845M a year ago) while revenue rose 12%, per our own decomposition of the release's income statement.", "basis": "derived-arithmetic" },
+    { "metric": "Net income (M)", "direction": "up", "explanation": "Net income grew despite the effective tax rate rising to 22.0% from 4.0% a year ago (which had benefited from a resolution of income tax matters); operating income growth outweighed the higher tax expense.", "basis": "company-disclosed" },
+    { "metric": "EPS", "direction": "up", "explanation": "EPS growth tracks net income growth and also benefited from a lower diluted share count (199M vs 206M a year ago) following FY2026 buybacks.", "basis": "derived-arithmetic" },
+    { "metric": "overall", "direction": "up", "explanation": "NetApp issued initial Q1 FY2027 and full-FY2027 guidance alongside record FY2026 results across revenue, gross profit, operating income, and free cash flow, per CEO George Kurian's release quote.", "basis": "company-disclosed" }
+  ]
+}
