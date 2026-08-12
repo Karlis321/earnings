@@ -2,9 +2,9 @@
   "ticker": "BX US",
   "period": "FY2026 Q2",
   "reported_at": "2026-07-23",
-  "generated_at": "2026-08-10T15:00:00.000Z",
-  "depth": "kpi-only",
-  "headline": "Profit growth accelerates across income and equity lines",
+  "generated_at": "2026-08-12T11:54:40.000Z",
+  "depth": "filing",
+  "headline": "Earnings surge on record inflows and AI-fueled deployment",
   "kpis": [
     { "label": "EPS (Basic)", "value": "$1.54", "delta": "+85.5%", "delta_basis": "q/q", "direction": "up" },
     { "label": "EPS (Basic)", "value": "$1.54", "delta": "+57.1%", "delta_basis": "y/y", "direction": "up" },
@@ -25,8 +25,28 @@
     { "label": "Weighted diluted shares", "value": "799.9M shares", "delta": "+1.7%", "delta_basis": "q/q", "direction": "up" },
     { "label": "Weighted diluted shares", "value": "799.9M shares", "delta": "+2.2%", "delta_basis": "y/y", "direction": "up" }
   ],
-  "summary_short": "Blackstone reported Q2 FY2026 EPS of $1.54, up 85.5% q/q and 57.1% y/y, with revenue of $5.044 billion (+39.4% q/q, +35.9% y/y) and net income of $1.229 billion (+89.2% q/q, +60.8% y/y).",
-  "summary_long": "EPS (basic and diluted) reached $1.54, up 85.5% q/q from $0.83 and 57.1% y/y from $0.98. Revenue was $5.044 billion (+39.4% q/q, +35.9% y/y) and pre-tax income $2.808 billion (+93.0% q/q, +46.6% y/y). Net income rose to $1.229 billion (+89.2% q/q, +60.8% y/y; prior-period net income figures sourced from Yahoo timeseries rather than SEC-verbatim). Total cash was $2.507 billion (+2.4% q/q, +12.1% y/y) against long-term debt of $13.319 billion (-0.7% q/q, +9.7% y/y). Shareholders' equity was $9.015 billion (+7.7% q/q, +7.9% y/y) on 799.9 million weighted diluted shares (+1.7% q/q, +2.2% y/y). All figures are shard-verified KPIs; no drivers or guidance assessed at kpi-only depth.",
-  "source_url": "https://www.sec.gov/Archives/edgar/data/1393818/000119312526313250/0001193125-26-313250-index.htm",
-  "confidence_notes": "primary filing unreachable — KPI-only summary from verified shard data. REGENERATION: force-regenerated per explicit override of the Step-0 already-exists guard, overwriting the prior file on disk. The event's stored sourceLink (8-K filed 2026-06-23) resolves to Blackstone's preliminary intra-quarter realization-revenue estimate, not the Q2 2026 earnings release; resolve-edgar-exhibit.mjs correctly identified that filing's own EX-99.1 exhibit, but the exhibit itself predates the actual results by a month and contains no quarterly figures. The real results 8-K (items 2.02/9.01, accession 0001193125-26-313250, filed 2026-07-23) was located via the EDGAR CIK filing index, but the 3-fetch budget was exhausted diagnosing the stale sourceLink before its exhibit could be fetched, so it was not read. Per Step 3b, scripts/apply-extended-metrics.mjs was called with an empty extendedMetrics array since no filing text was read to extract sector KPIs from. Net income's q/q/y/y prior comparisons are sourced from Yahoo fundamentals-timeseries (provenance: wire) rather than SEC EDGAR like the current-period value and all other metrics' priors — a basis note, not a same-basis-surprise violation since no surprisePct is computed at kpi-only depth."
+  "summary_short": "Blackstone reported Q2 FY2026 EPS of $1.54 (basic and diluted), up 85.5% q/q and 57.1% y/y, as revenue reached $5.044 billion (+39.4% q/q, +35.9% y/y) on record quarterly inflows of $68.3 billion and cross-strategy appreciation.",
+  "summary_long": "Revenue rose to $5.044 billion (+39.4% q/q, +35.9% y/y) as Performance Allocations and Fee Related Earnings grew on $68.3 billion of quarterly inflows and cross-strategy appreciation, which lifted Net Accrued Performance Revenues to $7.5 billion. EPS reached $1.54 (+85.5% q/q, +57.1% y/y); net income growth (+89.2% q/q) outpaced the 22.9% rise in total expenses, expanding margins. CEO Schwarzman credited the quarter to leaning into the AI investment megatrend. Total AUM grew 11% y/y to $1.346 trillion. Cash was $2.507 billion against $13.319 billion of long-term debt; equity rose to $9.015 billion. Blackstone declared a $1.29/share dividend; the release included no forward guidance.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/1393818/000119312526313250/d153439dex991.htm",
+  "confidence_notes": "REGENERATION: force-regenerated per explicit override of the Step-0 already-exists guard, overwriting the prior kpi-only file on disk. The event's stored sourceLink (8-K filed 2026-06-23, accession 0001193125-26-279498) resolves via resolve-edgar-exhibit.mjs to that filing's own EX-99.1 exhibit, which turned out to be Blackstone's preliminary intra-quarter realization-revenue estimate dated June 23, 2026 — not the actual Q2 2026 earnings release, and it contains no quarterly financial figures. One WebSearch located the real results 8-K (accession 0001193125-26-313250, filed 2026-07-23); its EX-99.1 exhibit (d153439dex991.htm) was fetched and read, upgrading this summary from the prior run's kpi-only depth to full filing depth. All KPI values were cross-checked against the release's own GAAP income-statement tables and match exactly (revenue $5,043,978K, pretax income $2,808,452K, net income attributable to Blackstone Inc. $1,229,189K, EPS $1.54 — all confirmed verbatim). Blackstone is an alternative asset manager, not a depository bank, so it does not disclose NIM / CET1 / efficiency-ratio / charge-off figures — none of the registry's financials-sector extended metrics were extractable from this filing; two universal-set metrics (dividend per share, and Distributable Earnings per share as the closest available non-GAAP EPS analog) were captured instead via scripts/apply-extended-metrics.mjs.",
+  "drivers": [
+    {
+      "metric": "overall",
+      "direction": "up",
+      "explanation": "CEO Schwarzman attributed the quarter's growth to \"leaning into the artificial intelligence megatrend,\" saying it drove standout investment performance and record capital inflows across strategies.",
+      "basis": "company-disclosed"
+    },
+    {
+      "metric": "Revenue",
+      "direction": "up",
+      "explanation": "Appreciation across strategies led to higher Net Accrued Performance Revenues quarter-over-quarter, and Performance Allocations and Fee Related Earnings both grew on $68.3 billion of quarterly inflows, per the release.",
+      "basis": "company-disclosed"
+    },
+    {
+      "metric": "Net income",
+      "direction": "up",
+      "explanation": "Margin expansion is largely arithmetic: revenue grew 35.9% y/y while total expenses (compensation, G&A, interest, fund expenses) rose only 22.9% y/y per the release's GAAP income statement.",
+      "basis": "derived-arithmetic"
+    }
+  ]
 }
