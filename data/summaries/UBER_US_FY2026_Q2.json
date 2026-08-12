@@ -1,0 +1,62 @@
+{
+  "ticker": "UBER US",
+  "period": "FY2026 Q2",
+  "reported_at": "2026-08-05",
+  "generated_at": "2026-08-12T00:00:00.000Z",
+  "depth": "filing",
+  "headline": "Strong operating growth; net income boosted by one-time gain",
+  "kpis": [
+    { "label": "Revenue", "value": "$14,191M USD", "delta": "+12.2%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Gross profit", "value": "$6,376M USD", "delta": "+26.5%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Operating income", "value": "$1,890M USD", "delta": "+30.3%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EBITDA (calc)", "value": "$3,599M USD", "delta": "+100.7%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Net income", "value": "$2,394M USD", "delta": "+76.7%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EPS", "value": "$1.18 USD", "delta": "+81.5%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EPS (diluted)", "value": "$1.17 USD", "delta": "+85.7%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Total cash", "value": "$4,870M USD", "delta": "-24.4%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Shareholders equity", "value": "$27,316M USD", "delta": "+20.9%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Long-term debt", "value": "$12,723M USD", "delta": null, "delta_basis": "none", "direction": "n/a" }
+  ],
+  "summary_short": "Revenue rose 12% y/y to $14.19B on Gross Bookings +24% and Trips +18%, while GAAP net income jumped 77% to $2.39B — boosted by a $1.6B pre-tax gain on equity-investment revaluations — and diluted EPS rose to $1.17.",
+  "summary_long": "Q2 revenue grew 12% y/y to $14.19B (11% constant currency), held back 8 points by business-model changes; Gross Bookings grew 24% to $58.0B on Trips +18% and MAPCs +16%. GAAP operating income rose 30% to $1.89B; Non-GAAP Operating Income rose 40% to $2.14B (3.7% of Gross Bookings, up from 3.3%). Net income rose 77% to $2.39B, boosted by a $1.6B pre-tax gain on equity-investment revaluations; diluted EPS rose to $1.17 from $0.63. Adjusted EBITDA rose 33% to $2.82B. Cash fell to $4.87B from $7.11B at year-end after a $1.6B total-return-swap purchase; buybacks were $518M. Q3 outlook: Gross Bookings $58.25-60.25B, Non-GAAP EPS $0.84-0.88.",
+  "drivers": [
+    {
+      "metric": "Revenue",
+      "direction": "up",
+      "explanation": "Company attributes growth to Gross Bookings +24% YoY (22% constant currency) on Trips +18% and MAPCs +16%; total revenue growth was held back 8 points YoY by business-model changes.",
+      "basis": "company-disclosed"
+    },
+    {
+      "metric": "Operating income",
+      "direction": "up",
+      "explanation": "Release ties the gain to Gross Bookings scale; Non-GAAP Operating Income (excludes legal/regulatory reserve changes, acquisition costs, restructuring) grew faster than GAAP, up 40% to $2.14B versus GAAP's 30%.",
+      "basis": "company-disclosed"
+    },
+    {
+      "metric": "Net income",
+      "direction": "up",
+      "explanation": "Company states GAAP net income included a $1.6B pre-tax net benefit from revaluations of Uber's equity investments, versus a $17M headwind a year ago — the primary driver of the 77% jump.",
+      "basis": "company-disclosed"
+    },
+    {
+      "metric": "EPS (diluted)",
+      "direction": "up",
+      "explanation": "Tracks the net-income jump; diluted share count fell 3.5% y/y (2,050M vs 2,126M) on continued buybacks, adding a small extra lift to per-share growth beyond the net-income growth rate.",
+      "basis": "derived-arithmetic"
+    },
+    {
+      "metric": "EBITDA (calc)",
+      "direction": "up",
+      "explanation": "This shard KPI is EBIT (pretax income + interest expense) plus D&A, which embeds the $1.6B equity-investment gain; it is not the company's own 'Adjusted EBITDA' (+33% to $2.82B), which explicitly excludes that gain.",
+      "basis": "derived-arithmetic"
+    },
+    {
+      "metric": "overall",
+      "direction": "up",
+      "explanation": "CEO Dara Khosrowshahi framed results as compounding platform advantage and record engagement; CFO Balaji Krishnamurthy cited trailing-twelve-month free cash flow exceeding $10B for the first time, funding investment while reducing share count.",
+      "basis": "company-disclosed"
+    }
+  ],
+  "source_url": "https://www.sec.gov/Archives/edgar/data/1543151/000154315126000027/uberq226earningspressrelea.htm",
+  "confidence_notes": "FORCED REGENERATION — this run was executed in force-regenerate mode per operator instruction, bypassing the Step-0 already-exists guard; no prior summary file existed on disk for this ticker/period, so this is a fresh compose rather than an overwrite of prior content. Tooling note: the resolver's sourceLink pointed at the 8-K cover (uber-20260805.htm); scripts/resolve-edgar-exhibit.mjs exited 3 ('no EX-99* exhibit found') because the actual exhibit file is named uberq226earningspressrelea.htm rather than matching the EX-99* filename pattern the resolver script scans for — its own candidate list surfaced the file, so it was fetched directly by name instead. Data-quality notes: (1) the shard's 'EBITDA (calc)' KPI ($3,599M, computed as EBIT [pretax income + interest expense] plus D&A) is NOT the company's own labeled 'Adjusted EBITDA' ($2,819M, +33% y/y per the release) — the shard figure embeds the $1.6B pre-tax equity-investment revaluation gain that the company's own Adjusted EBITDA reconciliation explicitly backs out, so the two numbers and their growth rates (+100.7% vs +33%) are not comparable and should not be conflated. (2) 'Long-term debt' actual ($12,723M, SEC tag 'LongTermDebt') does not use the same XBRL tag as its prior_qq/prior_yy comparators (both sourced from 'LongTermDebtNoncurrent', $10,514M / $9,578M) — the release's own balance sheet shows 'Long-term debt, net of current portion' of only $10,726M at June 30, 2026, plus a new 'Short-term debt' line of $1,997M (10,726+1,997=12,723, reconciling exactly to the shard's actual). Because the actual and prior figures are on different bases, delta_basis is set to 'none' rather than showing a misleadingly large tag-mismatch-driven growth rate; see the release's own separate long-term ($10,521→$10,726M) and short-term (—→$1,997M) debt lines for a same-basis comparison. (3) 'EPS' (basic, $1.18) and 'EPS (diluted)' ($1.17) are both reported as separate KPI rows, matching the release's income-statement basic/diluted split exactly, following the same convention used for other dual-EPS tickers rather than collapsing to one figure. Guidance (Gross Bookings, Non-GAAP EPS, and the EBITDA range implied by the EPS outlook, all for Q3 2026) and 5 extended metrics (capex, mgmt free cash flow, buybacks, non-GAAP EPS, next-Q EPS guidance) were written to the event's shard via scripts/apply-extended-metrics.mjs and a direct edit of data/events/UBER_US.json guidance[] array; no 'raised/lowered/held' language appears in the release for the Q3 outlook, so move is null on all three guidance entries."
+}
