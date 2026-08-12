@@ -1,0 +1,82 @@
+{
+  "ticker": "VEEV US",
+  "period": "FY2026 Q2",
+  "reported_at": "2026-06-03",
+  "generated_at": "2026-08-12T09:12:03.000Z",
+  "depth": "filing",
+  "headline": "Broad-based growth continues as margins slip",
+  "kpis": [
+    {
+      "label": "Revenue",
+      "value": "$882.9M",
+      "delta": "+16.3%",
+      "delta_basis": "y/y",
+      "direction": "up"
+    },
+    {
+      "label": "EPS (basic)",
+      "value": "$1.60",
+      "delta": "+14.3%",
+      "delta_basis": "y/y",
+      "direction": "up"
+    },
+    {
+      "label": "EPS (diluted)",
+      "value": "$1.57",
+      "delta": "+14.6%",
+      "delta_basis": "y/y",
+      "direction": "up"
+    },
+    {
+      "label": "Operating income",
+      "value": "$273.1M",
+      "delta": "+16.8%",
+      "delta_basis": "y/y",
+      "direction": "up"
+    },
+    {
+      "label": "Gross profit",
+      "value": "$662.0M",
+      "delta": "+13.1%",
+      "delta_basis": "y/y",
+      "direction": "up"
+    },
+    {
+      "label": "Net income",
+      "value": "$260.9M",
+      "delta": "+14.3%",
+      "delta_basis": "y/y",
+      "direction": "up"
+    }
+  ],
+  "summary_short": "Revenue rose 16.3% year over year to $882.9M, with operating income up to $273.1M and diluted EPS of $1.57 versus $1.37, as Veeva said results exceeded guidance on all metrics.",
+  "summary_long": "Total revenue grew 16.3% y/y to $882.9M (subscription $730.2M, +15%), with operating income up 16.8% to $273.1M and diluted EPS of $1.57 versus $1.37 a year ago; non-GAAP diluted EPS was $2.24. R&D & Quality Solutions subscription revenue grew ~19% versus Commercial Solutions' ~11%, the primary growth split. Gross margin slipped to 75.0% from 77.1% as cost of revenue outgrew sales; the release does not explain why. Veeva repurchased $226.9M of stock. The company guided fiscal Q2 revenue to $902-905M and raised full-year revenue guidance to $3,635-3,645M, saying results exceeded guidance on all metrics. Cash plus short-term investments were $7.3B at quarter-end.",
+  "drivers": [
+    {
+      "metric": "overall",
+      "direction": "up",
+      "explanation": "CFO said results \"exceeded guidance on all metrics\" amid broad-based growth; CEO points to Veeva AI progress (Ostro, Vault AI, Veeva Falcon) as the company's next growth phase.",
+      "basis": "company-disclosed"
+    },
+    {
+      "metric": "Revenue",
+      "direction": "up",
+      "explanation": "R&D & Quality Solutions subscription revenue grew ~19% y/y ($392.3M vs $329.4M) versus Commercial Solutions' ~11% ($337.9M vs $305.4M) — R&D/Quality is this quarter's primary growth engine.",
+      "basis": "derived-arithmetic"
+    },
+    {
+      "metric": "Operating income",
+      "direction": "up",
+      "explanation": "Operating income grew faster than revenue (+16.8% vs +16.3%) as total opex rose only ~10.7% y/y (R&D +13.2%, S&M +12.7%, G&A +0.9%), producing modest operating leverage.",
+      "basis": "derived-arithmetic"
+    },
+    {
+      "metric": "Gross profit",
+      "direction": "down",
+      "explanation": "Gross margin slipped to 75.0% from 77.1% as cost of revenue grew ~27% versus 16.3% revenue growth (subscription cost +26.5%, services cost +27.6%); the release does not explain the increase.",
+      "basis": "derived-arithmetic"
+    }
+  ],
+  "source_url": "https://www.sec.gov/Archives/edgar/data/1393052/000139305226000022/veev-20260430xex991.htm",
+  "confidence_notes": "REGENERATION (force-regenerate mode): this run skipped the Step-0 already-exists guard per explicit operator instruction; no prior summary file was actually present on disk for this path, so this is a first write, not a literal overwrite. Two data-quality issues were found and worked around, not silently fixed: (1) the shard's stored sourceLink for this event pointed to an unrelated 8-K (Item 5.02 executive-departure filing, 2026-04-20) rather than the earnings release; the correct Item 2.02 earnings 8-K (accession 0001393052-26-000022, filed 2026-06-03, EX-99.1) was located via the EDGAR filing list and used instead. (2) The primary document is titled \"Veeva Announces Fiscal 2027 First Quarter Results\" for the quarter ended April 30, 2026 — i.e. this is the company's own Fiscal 2027 Q1, not \"FY2026 Q2\" as labeled on our shard/event. The sibling shard event labeled \"FY2026 Q1\" carries identical dollar figures to this filing, indicating the two shard events may be duplicate/misattributed references to the same real-world reported quarter. This looks like the same class of fiscal-offset labeling bug called out in CLAUDE.md (issuer fiscal calendar vs. calendar-quarter arithmetic) and should be corrected with a dedicated relabeling/backfill pass, not by this single-ticker summary. Because of (2), the resolver's shard-linked q/q and y/y prior values did not reconcile with the primary document's own stated same-quarter comparison (e.g. shard prior_yy for revenue was $789.1M vs. the filing's own stated prior-year-quarter figure of $759.0M) — all deltas in this summary use the filing's explicitly stated same-quarter-last-year comparisons instead of the shard's prior_qq/prior_yy links. The shard's ebit_usd_m and ebitda_usd_m KPIs are Yahoo-derived proxies not disclosed anywhere in this release and were omitted from this summary rather than reported unverified."
+}
