@@ -2,9 +2,9 @@
   "ticker": "CMCSA US",
   "period": "FY2026 Q2",
   "reported_at": "2026-07-23",
-  "generated_at": "2026-08-10T00:00:00Z",
-  "depth": "kpi-only",
-  "headline": "Profit rebounds q/q but trails a swollen year-ago quarter",
+  "generated_at": "2026-08-12T00:00:00Z",
+  "depth": "filing",
+  "headline": "Comcast splits off NBCUniversal as broadband keeps sliding",
   "kpis": [
     { "label": "Revenue", "value": "$29.94B", "delta": "-4.8%", "delta_basis": "q/q", "direction": "down" },
     { "label": "Revenue", "value": "$29.94B", "delta": "-1.2%", "delta_basis": "y/y", "direction": "down" },
@@ -35,8 +35,46 @@
     { "label": "Weighted diluted shares", "value": "3,570M", "delta": "-1.3%", "delta_basis": "q/q", "direction": "down" },
     { "label": "Weighted diluted shares", "value": "3,570M", "delta": "-4.2%", "delta_basis": "y/y", "direction": "down" }
   ],
-  "summary_short": "Revenue was $29.94B, down 4.8% q/q and 1.2% y/y, while net income fell to $3.53B (-68.3% y/y) as EBIT and EBITDA both dropped sharply against an outsized year-ago quarter.",
-  "summary_long": "Revenue $29.94B (-4.8% q/q, -1.2% y/y). Operating margin ~17.2% (+~410bps q/q, -~253bps y/y); gross margin ~72.0% (+~658bps q/q, -~303bps y/y). Diluted EPS $0.99 (+65.0% q/q, -66.8% y/y); net income $3.53B (+62.2% q/q, -68.3% y/y). Cash $7.66B (-19.1% q/q, -20.9% y/y); shareholders' equity $89.76B (+1.7% q/q, -7.3% y/y).",
-  "source_url": "https://www.sec.gov/Archives/edgar/data/1166691/000162828026049274/",
-  "confidence_notes": "primary filing unreachable — KPI-only summary from verified shard data. REGENERATED (force-regenerate run, 2026-08-10): this file replaces a prior summary that reached the same kpi-only conclusion; it was rebuilt fresh rather than copied, and this note documents the regeneration. Event sourceLink pointed to Comcast's June 29, 2026 8-K (Items 8.01/9.01, Acc-no 0000950103-26-009591) announcing the planned tax-free spin-off of NBCUniversal and Sky — its EX-99.1 exhibit was fetched and confirmed off-topic (no Q2 financial content, pure M&A announcement). EDGAR's 8-K filing list for CIK 0001166691 shows the actual earnings release is a separate 8-K filed 2026-07-23 (Items 2.02/9.01, Acc-no 0001628280-26-049274, ~1MB) matching the event date exactly, but locating and fetching its exhibit would have required 2 more SEC hits beyond the 3-fetch budget already spent chasing the mislabeled sourceLink, so it was not read; no drivers or guidance were assessed. source_url above points to that correct filing's accession folder (verified to exist via the filing list) rather than the wrong 8-K, so readers land in the right place even though the exhibit itself wasn't fetched this run. Flag for review: y/y comparisons for EBIT (-64.0%), EBITDA (-53.0%), pretax income (-68.5%), net income (-68.3%), and EPS (-66.8%/-66.9%) show unusually large declines versus Q2 2025 — consistent with a large one-time gain embedded in the year-ago quarter, unconfirmed under kpi-only depth. Recommend correcting the shard event's sourceLink to Acc-no 0001628280-26-049274 so future runs land on the right exhibit without burning the fetch budget."
+  "summary_short": "Revenue was $29.94B (-1.2% y/y, +4.7% on a pro forma basis) and Adjusted EPS was $1.04 (-16.7% y/y), while GAAP EPS fell to $0.99 largely because Q2 2025 included a $9.4B pretax gain from the Hulu stake sale; Comcast also announced plans to spin off NBCUniversal and Sky into an independent public company.",
+  "summary_long": "Revenue fell 1.2% y/y to $29.94B, though pro forma revenue (excluding Versant and the sold Sky Germany unit) rose 4.7%. Net income dropped to $3.53B from $11.12B mainly because the year-ago quarter included a $9.4B pretax gain on the Hulu stake sale; Adjusted EPS fell 16.7% to $1.04. Residential broadband kept losing customers (-167K) though the pace improved y/y, while domestic wireless added a record 448K lines and Business Services grew 3.7%. Peacock reached EBITDA profitability for the first time ($189M). Free cash flow was $4.6B; Comcast returned $2.1B to shareholders via dividends and buybacks, then paused repurchases after announcing plans to spin off NBCUniversal and Sky. Cash fell to $7.66B from $9.47B q/q on debt repayment.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/1166691/000162828026049274/ex991-6302026.htm",
+  "confidence_notes": "REGENERATED (force-regenerate run, 2026-08-12): this file replaces a prior kpi-only summary (generated 2026-08-10) with a fresh filing-depth read. That prior run correctly identified that this event's shard sourceLink points to Comcast's June 29, 2026 8-K (Acc-no 0000950103-26-009591, Items 8.01/9.01) announcing the planned tax-free spin-off of NBCUniversal and Sky, NOT the July 23, 2026 earnings 8-K matching this event's date — but it stopped short of fetching the correct document. This run: (1) fixed a gap in scripts/resolve-edgar-exhibit.mjs's exhibit-naming regex (it didn't recognize the Donnelley Financial no-separator 'ex9901' convention encoding Ex-99.01, distinct from the already-handled 'ex99d1' convention), which let it resolve the June 29 filing's own exhibit; (2) confirmed that exhibit (dp249094_ex9901.htm) is indeed the spin-off announcement, not earnings, consuming 2 of the 3-fetch budget; (3) used one WebSearch to locate the correct July 23, 2026 earnings-release exhibit at Acc-no 0001628280-26-049274 (ex991-6302026.htm) and fetched it as the 3rd/final fetch. Drivers and the y/y EPS/net-income/EBIT/EBITDA distortions are now explained by the filing itself (the $9.4B pretax / ~$7.1B after-tax Hulu-sale gain embedded in Q2 2025, per Table 5's reconciliation), resolving the prior run's 'unconfirmed under kpi-only depth' flag. No forward guidance was found in the release (grepped for guidance/outlook/reaffirm/forecast/expect/target/range — no matches); guidance array left empty, consistent with the panel's conditional-render contract. Recommend a follow-up fix to the shard event's sourceLink (data/events/CMCSA_US.json, FY2026 Q2) to point at Acc-no 0001628280-26-049274 instead of 0000950103-26-009591, so future runs land on the earnings exhibit directly without burning fetch budget on the mismatched corporate-action 8-K.",
+  "drivers": [
+    {
+      "metric": "Revenue",
+      "direction": "down",
+      "explanation": "Revenue decreased 1.2% y/y; on a pro forma basis excluding Versant and the divested Sky Germany operations, revenue rose 4.7%, reflecting underlying growth once separated businesses are stripped out.",
+      "basis": "company-disclosed"
+    },
+    {
+      "metric": "Net income",
+      "direction": "down",
+      "explanation": "Decline is mostly a comp issue: Q2 2025 net income included a $9.4B pretax ($7.1B after-tax) gain from the sale of Comcast's Hulu interest that did not recur this quarter.",
+      "basis": "company-disclosed"
+    },
+    {
+      "metric": "EPS (diluted)",
+      "direction": "down",
+      "explanation": "Same driver as net income - EPS fell 66.8% y/y because the year-ago period's Hulu-sale gain added about $1.90 to prior-year EPS per the company's own reconciliation table.",
+      "basis": "company-disclosed"
+    },
+    {
+      "metric": "EBITDA",
+      "direction": "down",
+      "explanation": "EBITDA declined y/y as growth in Business Services Connectivity and Content & Experiences (Studios, Media) was more than offset by a decline in Residential Connectivity & Platforms EBITDA.",
+      "basis": "company-disclosed"
+    },
+    {
+      "metric": "Cash",
+      "direction": "down",
+      "explanation": "Per the six-month cash-flow statement, financing activities used $11.3B YTD - mainly $7.3B of net debt repayment, $2.5B of buybacks and $2.4B of dividends - which outpaced operating cash flow and drew the cash balance down.",
+      "basis": "company-disclosed"
+    },
+    {
+      "metric": "overall",
+      "direction": "up",
+      "explanation": "Co-CEOs cited traction from the broadband go-to-market pivot, a record wireless quarter, continued Business Services growth and Peacock's first profitable quarter, alongside the newly announced plan to separate NBCUniversal and Sky into an independent public company.",
+      "basis": "company-disclosed"
+    }
+  ]
 }

@@ -96,6 +96,10 @@ function scoreExhibit(filename) {
   // filers): `ex99d1.htm` literally encodes "ex99.1" since old
   // EDGAR filenames couldn't carry a second dot.
   if (/ex[-_]?99d1(\D|$)/i.test(lower)) return 100;
+  // Donnelley Financial ("dp"-prefixed accession) no-separator,
+  // zero-padded convention: `dp249094_ex9901.htm` encodes "Ex-99.01"
+  // with the decimal point dropped entirely.
+  if (/ex[-_]?99[-_]?01(\D|$)/i.test(lower)) return 100;
   // Healthpeak/others: `ex99106302026.htm` — exhibit number immediately
   // followed by a MMDDYYYY date stamp before the extension, no separator.
   if (/ex[-_]?99[-_]?1\d{6,8}\.(?:htm|html)$/i.test(lower)) return 100;
