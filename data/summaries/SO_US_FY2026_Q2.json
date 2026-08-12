@@ -1,0 +1,41 @@
+{
+  "ticker": "SO US",
+  "period": "FY2026 Q2",
+  "reported_at": "2026-07-30",
+  "generated_at": "2026-08-12T06:27:17Z",
+  "depth": "filing",
+  "headline": "Earnings jump on utility investment, lower taxes; sales flat",
+  "kpis": [
+    { "label": "Revenue", "value": "$6,977M", "delta": "-16.9%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Revenue", "value": "$6,977M", "delta": "+0.1%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EPS (basic)", "value": "$1.03", "delta": "-14.9%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "EPS (basic)", "value": "$1.03", "delta": "+28.8%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EPS (diluted)", "value": "$1.03", "delta": "-14.2%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "EPS (diluted)", "value": "$1.03", "delta": "+30.4%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Operating income", "value": "$1,776M", "delta": "-12.0%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Operating income", "value": "$1,776M", "delta": "+0.7%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Gross profit", "value": "$3,577M", "delta": "-8.3%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Gross profit", "value": "$3,577M", "delta": "+2.5%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EBIT", "value": "$2,171M", "delta": "-7.4%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "EBIT", "value": "$2,171M", "delta": "+7.7%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EBITDA", "value": "$3,767M", "delta": "-4.0%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "EBITDA", "value": "$3,767M", "delta": "+8.7%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Net income", "value": "$1,174M", "delta": "-13.4%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Net income", "value": "$1,174M", "delta": "+33.4%", "delta_basis": "y/y", "direction": "up" }
+  ],
+  "summary_short": "Southern Company's Q2 2026 net income rose 33.4% y/y to $1,174M, and basic EPS gained 28.8% y/y to $1.03, while operating revenues were roughly flat y/y at $6,977M (+0.1%) but fell 16.9% q/q on normal winter-to-summer seasonality.",
+  "summary_long": "Second-quarter revenue of $6,977M was essentially flat y/y (+0.1%) but down 16.9% q/q on normal seasonal patterns; six-month revenue was up 4.2% to $15.4B. Operating income rose 0.7% y/y to $1,776M, while net income climbed 33.4% y/y to $1,174M and basic EPS gained 28.8% to $1.03 (diluted $1.03, +30.4%). Southern attributes the earnings growth to increased investment in its state-regulated utilities, customer usage and growth, higher equity-method earnings, and lower income taxes, partially offset by higher interest expense. Non-GAAP earnings excluding items were $1.13 per share versus $0.92 a year ago. No forward guidance was issued in the release; no balance-sheet metrics were disclosed in the earnings tables.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/92122/000009212226000056/ex99-pressreleaseq22026.htm",
+  "confidence_notes": "REGENERATION: this run force-regenerated SO_US_FY2026_Q2 per explicit operator instruction, skipping the Step 0 already-exists guard; the resolver reported summaryExists=false (no prior file was on disk), so this compose is a fresh write rather than an overwrite of a differing prior version. Revenue's large q/q swing (-16.9%, $6,977M vs $8,397M in Q1 2026) reflects normal utility seasonality (Q1 carries winter heating demand) and should not be read alongside the essentially flat y/y print (+0.1%) as a contradiction. Basic and diluted EPS are both $1.03 for the quarter — the release states 'dilution is not material in any period presented' — so the two KPI rows track almost identically but derive from separate SEC XBRL concepts (EarningsPerShareBasic vs EarningsPerShareDiluted). No guidance array entries were written: the release contains no company-issued forward numeric range or point value for revenue, EPS, capex, or any other metric — only standard forward-looking-statement risk-factor boilerplate — so data/events/SO_US.json's guidance array is untouched. Extended-metrics write-back: 1 metric was written via scripts/apply-extended-metrics.mjs — eps_non_gaap ($1.13 basic 'Excluding Items', universal set). capex_total, capex_adjusted, free_cash_flow_mgmt, buyback_qtr_usd, dividend_per_share, sale_of_assets_usd, guidance_revenue_next_q, and guidance_eps_next_q were omitted — none is disclosed in this earnings release (no capex, buyback, per-share dividend, or next-quarter guidance figures appear in the tables or narrative). SO's sectorTags is ['utilities'], which has no dedicated bucket in SECTOR_EXTENDED_METRICS, so only the universal set was in scope for this ticker.",
+  "drivers": [
+    { "metric": "overall", "direction": "up", "explanation": "Company attributes the quarter's earnings growth to investment in state-regulated utilities, customer usage and growth, and higher equity-method earnings, plus lower income taxes, partly offset by higher interest expense.", "basis": "company-disclosed" },
+    { "metric": "Revenue", "direction": "up", "explanation": "Revenue table shows non-fuel retail, wholesale, and other-electric revenue gains offsetting lower fuel-cost pass-through and natural-gas revenue, netting to a near-flat y/y total.", "basis": "derived-arithmetic" },
+    { "metric": "EPS (basic)", "direction": "up", "explanation": "EPS-bridge table attributes the y/y gain mainly to Traditional Electric Operating Companies (+20 cents, from retail sales, taxes, and AFUDC), partly offset by a larger share count (-4 cents).", "basis": "company-disclosed" },
+    { "metric": "EPS (diluted)", "direction": "up", "explanation": "Tracks basic EPS almost one-for-one since the release states dilution is not material in any period presented.", "basis": "company-disclosed" },
+    { "metric": "Operating income", "direction": "up", "explanation": "not explained in the release; the consolidated earnings table shows lower fuel/purchased-power and gas costs offsetting higher depreciation and non-fuel O&M, netting a small y/y gain.", "basis": "derived-arithmetic" },
+    { "metric": "Gross profit", "direction": "up", "explanation": "not explained in the release; SO's statement has no captioned gross-profit line — the KPI is revenue less fuel, gas, and other cost of sales, which improved on lower fuel and gas costs.", "basis": "derived-arithmetic" },
+    { "metric": "EBIT", "direction": "up", "explanation": "not explained in the release; EBIT tracks the same operating-income gain plus higher equity-method earnings and AFUDC disclosed above.", "basis": "derived-arithmetic" },
+    { "metric": "EBITDA", "direction": "up", "explanation": "not explained in the release; EBITDA growth follows the EBIT gain plus rising depreciation and amortization, which rose to $1,434M from $1,323M y/y.", "basis": "derived-arithmetic" },
+    { "metric": "Net income", "direction": "up", "explanation": "Net income growth of 33.4% y/y reflects the same disclosed drivers as the overall narrative: regulated-utility investment, customer growth, equity-method earnings, and lower income taxes.", "basis": "company-disclosed" }
+  ]
+}
