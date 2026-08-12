@@ -1,0 +1,33 @@
+{
+  "ticker": "VLO US",
+  "period": "FY2026 Q2",
+  "reported_at": "2026-07-30",
+  "generated_at": "2026-08-12T00:00:00Z",
+  "depth": "filing",
+  "headline": "Wide refining margins drive a blowout quarter",
+  "kpis": [
+    { "label": "Revenue", "value": "$44.48B", "delta": "+48.8%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Gross profit", "value": "$5.46B", "delta": "+346.8%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Operating income", "value": "$5.20B", "delta": "+421.2%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EBIT", "value": "$5.31B", "delta": "+390.5%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EBITDA", "value": "$6.05B", "delta": "+218.9%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Net income", "value": "$3.72B", "delta": "+421.0%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EPS (diluted)", "value": "$12.62", "delta": "+453.5%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Total cash", "value": "$7.87B", "delta": "+73.6%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Shareholders' equity", "value": "$25.00B", "delta": "+3.8%", "delta_basis": "y/y", "direction": "up" }
+  ],
+  "summary_short": "Valero's Q2 2026 revenue rose to $44.48B (+48.8% y/y, +37.4% q/q) as refining margin per barrel roughly doubled to $23.62 from $12.35 y/y, driving diluted EPS to $12.62 (+453.5% y/y) and net income to $3.72B (+421.0% y/y).",
+  "summary_long": "Refining operating income rose to $4.47B from $1.266B as USGC crack spreads widened sharply (ULS diesel-less-Brent $43.52 vs $14.79 y/y), lifting margin per barrel to $23.62 from $12.35. Renewable Diesel swung to $717M operating income (from a $79M loss) as margin per gallon rose to $2.52 from $0.22 on higher RIN prices; Ethanol operating income rose to $318M from $54M. Net income reached $3.72B ($12.62 diluted EPS), aided by a lower diluted share count (294M vs 312M). Cash rose to $7.87B from $4.54B y/y; total debt was $9.1B. Valero returned $2.6B to shareholders and declared a $1.20/share dividend. No forward guidance was issued; the $230M St. Charles FCC project remains on track for Q3 2026 startup.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/1035002/000162828026050822/a6302026exh9901earningsrel.htm",
+  "confidence_notes": "REGENERATION: this run was executed in explicit force-regenerate mode per operator instruction, bypassing the Step-0 already-exists guard. No VLO_US_FY2026_Q2.json summary actually existed on disk prior to this run (resolver reported summaryExists=false, confirmed by directory listing), so there was nothing to literally overwrite, but every figure below was derived fresh from the resolver's shard KPIs and the primary EX-99.1 press-release exhibit per the regeneration directive. Exhibit-resolution note: scripts/resolve-edgar-exhibit.mjs returned exit code 3 (\"no EX-99* exhibit found\") because Valero's exhibit filename (a6302026exh9901earningsrel.htm) doesn't match the script's expected ex99-style naming pattern, even though it was listed among the folder's five candidates and is unambiguously the Q2 2026 earnings-release exhibit (EX-99.01 per its own document header). Fetched it directly by filename rather than the 8-K cover page (vlo-20260730.htm), consistent with the exhibit-resolution intent of Step 1. All KPI actual/prior triples on the shard share consistent same-basis provenance per metric (either all Yahoo fundamentals-timeseries or all SEC-EDGAR regulatory), so no cross-basis surprise clearing applied; no analyst consensus estimate was present on the shard, so no beat/miss surprisePct is reported. Note EBIT ($5.31B, from pretax income + interest expense) differs from Operating income ($5.20B) due to $116M of other income, net, not included in the operating-income line — both are reported here as distinct metrics rather than conflated. The release's adjusted net income ($3.697B / $12.54 diluted EPS) excludes a small LIFO-liquidation benefit and Port Arthur Refinery fire expenses; the unadjusted GAAP figures ($3.72B / $12.62) are used as the primary KPI values to match the shard's SEC-sourced actuals.",
+  "drivers": [
+    { "metric": "Revenue", "direction": "up", "explanation": "Refining external revenue rose to $42.3B from $28.3B on far wider realized crack spreads (refining margin per barrel $23.62 vs $12.35 y/y); Renewable Diesel and Ethanol external revenue were roughly flat to modestly higher.", "basis": "company-disclosed" },
+    { "metric": "Operating income", "direction": "up", "explanation": "Refining segment operating income rose to $4.47B from $1.266B on the margin widening above; Renewable Diesel swung to $717M from a $79M loss as margin/gallon rose to $2.52 from $0.22 on higher RIN prices ($2.12 vs $1.09); Ethanol rose to $318M from $54M.", "basis": "company-disclosed" },
+    { "metric": "EBIT", "direction": "up", "explanation": "Tracks the same refining-margin and Renewable Diesel/Ethanol swing described for operating income, plus $116M of other income, net, which operating income excludes.", "basis": "derived-arithmetic" },
+    { "metric": "EBITDA", "direction": "up", "explanation": "Same segment margin drivers as operating income, before $723M of depreciation and amortization (down slightly from $786M y/y as Benicia Refinery D&A shifted to a shortened salvage-value schedule).", "basis": "derived-arithmetic" },
+    { "metric": "Net income", "direction": "up", "explanation": "Follows the operating-income improvement described above; the effective tax rate was 21% for the quarter, and the year-ago quarter carried no offsetting one-off items of comparable size.", "basis": "company-disclosed" },
+    { "metric": "EPS (diluted)", "direction": "up", "explanation": "Net income growth was amplified by a lower diluted share count (294M vs 312M y/y) from ongoing buybacks funded within the $2.6B of quarterly stockholder returns.", "basis": "derived-arithmetic" },
+    { "metric": "Total cash", "direction": "up", "explanation": "Net cash from operating activities was $5.6B (including a $706M working-capital benefit), funding $350M of capital investment and $2.6B of stockholder returns while cash still rose to $7.87B from $4.54B a year earlier.", "basis": "company-disclosed" },
+    { "metric": "overall", "direction": "up", "explanation": "CEO Lane Riggs attributed the quarter to \"excellent operations and commercial execution across all three of our business segments\"; no forward guidance was issued, and the $230M St. Charles FCC optimization project remains on track for Q3 2026 startup.", "basis": "company-disclosed" }
+  ]
+}
