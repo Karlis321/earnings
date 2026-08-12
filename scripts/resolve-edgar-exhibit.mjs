@@ -92,6 +92,11 @@ function scoreExhibit(filename) {
   // ABBV's `ex-991_earnings...`, generic `ex991.htm` / `ex-99-1.htm`, etc.
   if (/ex[-_]?99[-_]?1(\D|$)/i.test(lower)) return 100;
   if (/ex[-_]?991(\D|$)/i.test(lower)) return 100;
+  // EOG's convention: `exh99-1080426.htm` — an extra "h" after "ex"
+  // before the exhibit number, then a date-ish digit run before the
+  // extension (no delimiter between "1" and the digit run).
+  if (/ex[-_]?h99[-_]?1(\D|$)/i.test(lower)) return 100;
+  if (/ex[-_]?h99[-_]?1\d{4,8}\.(?:htm|html)$/i.test(lower)) return 100;
   // EDGAR's "d"-as-decimal-point convention (Donnelley/Merrill
   // filers): `ex99d1.htm` literally encodes "ex99.1" since old
   // EDGAR filenames couldn't carry a second dot.
