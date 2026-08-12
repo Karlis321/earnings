@@ -1,0 +1,51 @@
+{
+  "ticker": "SWKS US",
+  "period": "FY2026 Q2",
+  "reported_at": "2026-07-28",
+  "generated_at": "2026-08-12T00:00:00Z",
+  "depth": "filing",
+  "headline": "GAAP profit tumbles on deal costs as revenue holds steady",
+  "kpis": [
+    { "label": "Revenue", "value": "$934.8M", "delta": "-3.1%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Gross profit", "value": "$375.0M", "delta": "-6.5%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Operating income", "value": "$48.5M", "delta": "-56.1%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "EBITDA", "value": "$171.4M", "delta": "-26.9%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Net income", "value": "$33.9M", "delta": "-67.7%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "EPS (diluted)", "value": "$0.22", "delta": "-68.6%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Non-GAAP EPS (diluted)", "value": "$1.08", "delta": "-18.8%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Pretax income", "value": "$48.8M", "delta": "-56.4%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Cost of revenue", "value": "$559.8M", "delta": "-0.7%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Total cash", "value": "$790.0M", "delta": "-33.4%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Long-term debt", "value": "$496.9M", "delta": "+0.1%", "delta_basis": "y/y", "direction": "flat" }
+  ],
+  "summary_short": "Skyworks' revenue was roughly flat q/q at $934.8M (-3.1% y/y), while GAAP diluted EPS fell 68.6% y/y to $0.22 on higher acquisition-related and restructuring costs tied to the pending Qorvo combination; non-GAAP diluted EPS was $1.08.",
+  "summary_long": "Revenue was roughly flat q/q, down 3.1% y/y, at $934.8M; Mobile stayed steady while Broad Markets grew y/y on automotive and data-center strength. GAAP operating margin fell to 5.2% from 11.5% y/y, mostly on $25.7M of Qorvo-related acquisition expenses and $22.0M of restructuring charges; non-GAAP operating margin held at 19.4%. GAAP diluted EPS fell 68.6% y/y to $0.22; non-GAAP diluted EPS was $1.08 (-18.8% y/y). Cash fell to $790.0M from $1,413.3M q/q after a $500M debt repayment and $106.9M of dividends. The board approved a new $2B buyback and ended the quarterly dividend. Q4 guidance: revenue $1,010-$1,060M; non-GAAP EPS about $1.27 at the midpoint.",
+  "drivers": [
+    {
+      "metric": "overall",
+      "direction": "down",
+      "explanation": "CEO said revenue and earnings came in above expectations on consistent execution, with Mobile performing well on healthy demand and Broad Markets growing y/y on double-digit automotive and data-center gains.",
+      "basis": "company-disclosed"
+    },
+    {
+      "metric": "Operating income",
+      "direction": "down",
+      "explanation": "GAAP operating margin fell to 5.2% from 11.5% y/y mainly on $25.7M of Qorvo-acquisition-related expenses (vs $2.8M y/y) and $22.0M of restructuring charges, per the non-GAAP reconciliation table.",
+      "basis": "company-disclosed"
+    },
+    {
+      "metric": "Total cash",
+      "direction": "down",
+      "explanation": "Cash fell q/q mainly from a $500M debt repayment and $106.9M of dividends paid, per the cash flow statement; capex also rose to $87.1M from $61.4M y/y.",
+      "basis": "derived-arithmetic"
+    },
+    {
+      "metric": "Long-term debt",
+      "direction": "flat",
+      "explanation": "Long-term debt is essentially unchanged y/y; the quarter's $500M repayment (per the cash flow statement) reduced current/short-term debt, not the long-term balance.",
+      "basis": "derived-arithmetic"
+    }
+  ],
+  "source_url": "https://www.sec.gov/Archives/edgar/data/4127/000000412726000047/q3268-kex991earningsrelease.htm",
+  "confidence_notes": "REGENERATION: this run was executed in explicit force-regenerate mode per instruction (Step-0 already-exists guard bypassed); no valid prior summary existed on disk for this period, so this is a fresh compose rather than an overwrite of a previously-validated file. FISCAL-PERIOD LABEL MISMATCH: the shard labels this event 'FY2026 Q2' (eventDate 2026-07-28), but the primary filing (8-K EX-99.1, accession 0000004127-26-000047) explicitly states this is Skyworks' 'third fiscal quarter of 2026' for the period ended July 3, 2026 — i.e. FY2026 Q3 under the company's own fiscal calendar (fiscal year ends early October). This looks like a one-quarter-behind labeling bug upstream: the shard's separate event already labeled 'FY2026 Q3' (evt-cv7r43) is actually the not-yet-reported quarter (scheduledDate 2026-10-27, estimator revenue ~$1,036M, which matches this release's own Q4 guidance of $1,010-$1,060M). Kept this summary filed under the shard's existing 'FY2026 Q2' period label for ledger/automation consistency (scripts/apply-extended-metrics.mjs and the guidance array both match events by the period field), rather than silently renaming; flagging here per the fiscal-offset-issuer invariant for a future backfill to correct SWKS's shard period labels. The underlying KPI values from resolve-earnings-target.mjs (mix of SEC EDGAR XBRL and Yahoo fundamentals-timeseries provenance) reconcile exactly with this release's reported figures (revenue $934.8M, GAAP diluted EPS $0.22, operating income $48.5M all match verbatim) — only the period LABEL is wrong, not the underlying data. SOURCE FETCH: the event-level sourceLink pointed at the 8-K cover document (swks-20260727.htm); resolved via scripts/resolve-edgar-exhibit.mjs to the EX-99.1 press-release exhibit, which was fetched directly (one fetch total, well under budget). Non-GAAP figures use Skyworks' own normalized FY2026 non-GAAP tax rate of 10%, per the release's non-GAAP discussion section."
+}
