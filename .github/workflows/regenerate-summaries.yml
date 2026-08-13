@@ -13,6 +13,18 @@ name: regenerate-summaries
 # API calls, it doesn't itself invoke Claude Code).
 
 on:
+  # Auto-restart every 7 hours (UTC): 00:00, 07:00, 14:00, 21:00 UTC.
+  # Runs SP500 gap-fill with default inputs (source=sp500, start_at=0,
+  # blank limit = iterate whole pool with SKIP_IF_EXTENDED). Rationale:
+  # Anthropic Opus quota hits ~3-4h into any batch. Restarting every
+  # 7h picks up the tail as quota resets, without needing manual
+  # intervention. GitHub concurrency group `regenerate-summaries`
+  # ensures scheduled fires DON'T stomp on a still-running batch —
+  # new run queues behind current one (max 1 queued at a time).
+  # Note: 24h isn't divisible by 7, so gap between 21:00 and 00:00
+  # next day is only 3h. Acceptable — 4 firings/day is what we want.
+  schedule:
+    - cron: "0 0,7,14,21 * * *"
   workflow_dispatch:
     inputs:
       source:
