@@ -2,9 +2,9 @@
   "ticker": "INTU US",
   "period": "FY2026 Q2",
   "reported_at": "2026-05-20",
-  "generated_at": "2026-08-10T00:00:00.000Z",
-  "depth": "kpi-only",
-  "headline": "Seasonal tax-season ramp drives sharp profit growth",
+  "generated_at": "2026-08-13T00:00:00.000Z",
+  "depth": "filing",
+  "headline": "Tax-season strength drives a beat and a raised outlook",
   "kpis": [
     { "label": "Revenue", "value": "$8.56B", "delta": "+0.0%", "delta_basis": "q/q", "direction": "flat" },
     { "label": "Revenue", "value": "$8.56B", "delta": "+10.4%", "delta_basis": "y/y", "direction": "up" },
@@ -23,8 +23,34 @@
     { "label": "EPS (basic)", "value": "$11.10", "delta": "+0.0%", "delta_basis": "q/q", "direction": "flat" },
     { "label": "EPS (basic)", "value": "$11.10", "delta": "+10.0%", "delta_basis": "y/y", "direction": "up" }
   ],
-  "summary_short": "Intuit's Q2 FY2026 revenue was $8.56B (+10.4% y/y) and net income was $3.06B (+8.7% y/y), with diluted EPS of $11.09 (+10.7% y/y); the q/q comparisons for revenue, net income, operating income, and EPS render flat because of a shard data artifact, not genuine sequential flatness.",
-  "summary_long": "Revenue was $8.56B, up 10.4% y/y. Gross profit was $7.18B, up 99.1% q/q and 9.5% y/y; EBIT was $4.12B, up 344.1% q/q and 9.7% y/y — both reflecting Intuit's seasonal Q1-to-Q2 tax-season ramp. EBITDA was $4.33B, up 281.0% q/q and 9.5% y/y. Net income was $3.06B, up 8.7% y/y. Diluted EPS was $11.09, up 10.7% y/y; basic EPS was $11.10, up 10.0% y/y.",
-  "source_url": "https://www.sec.gov/Archives/edgar/data/896878/000089687826000024/",
-  "confidence_notes": "This is a forced regeneration (operator-requested) — Step-0's 'already exists' guard was intentionally skipped for this run; no prior INTU_US_FY2026_Q2.json existed on disk, so nothing was actually overwritten. primary filing unreachable — KPI-only summary — no filing was read; drivers and guidance not assessed. The event's stored sourceLink (intu-20260428.htm, accession 0000896878-26-000020) is an Item 5.02 executive-departure 8-K, not the earnings release — resolve-edgar-exhibit.mjs found no EX-99 exhibit in that accession. The EDGAR filing index for CIK 0000896878 shows the actual earnings 8-K (items 2.02/2.05/7.01/8.01/9.01, accession 0000896878-26-000024, filed 2026-05-20, matching this event's eventDate), but the 3-fetch budget (exhibit-resolver + cover-doc fetch + filing-index fetch) was exhausted before that filing could be retrieved — flagging for an irSources/sourceLink correction. source_url above points to that correct accession's filing-index folder (confirmed via the EDGAR browse-edgar listing) rather than the shard's stored, incorrect sourceLink. Separately, the shard's FY2026 Q1 event now carries SEC-verbatim values (revenue $8,558M, net income $3,064M, operating income $4,020M, diluted EPS $11.09, basic EPS $11.10 — all stamped asOf 2026-04-30) identical to this Q2 event's own actuals, so the q/q deltas reported above for Revenue, Net income, Operating income, and both EPS lines are a stale SEC-XBRL rederive artifact, not genuine sequential flatness — do not read them as a real plateau."
+  "summary_short": "Intuit's fiscal Q3 revenue rose 10% y/y to $8.56B and diluted EPS climbed 11% to $11.09, as the company raised full-year revenue guidance to $21.34-21.37B and announced a 17% workforce reduction with $300-340M in restructuring charges.",
+  "summary_long": "Revenue rose 10% y/y to $8.56B, driven by Global Business Solutions Online Ecosystem revenue +19% (QuickBooks Online Accounting +22%) and Consumer revenue +8% (TurboTax +7%, Credit Karma +15%). GAAP operating income grew 8% to $4.02B; GAAP diluted EPS was $11.09 (+11%), non-GAAP diluted EPS $12.80 (+10%). Intuit raised FY2026 revenue guidance to $21.34-21.37B and non-GAAP EPS guidance to $23.80-23.85. It repurchased $1.6B of stock, added an $8B buyback authorization, and raised its quarterly dividend 15% to $1.20/share. The company also announced a 17% workforce reduction with $300-340M in restructuring charges, mostly in fiscal Q4. Cash and investments were $6.8B against $6.2B debt.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/896878/000089687826000024/fy26q3earningspressrelease.htm",
+  "confidence_notes": "FORCE-REGENERATION (operator-requested): this run intentionally skipped Step 0's 'already exists' guard and overwrites the previous INTU_US_FY2026_Q2.json (a kpi-only summary generated 2026-08-10). This time the primary filing was successfully retrieved, upgrading depth to 'filing'. The shard's stored sourceLink (intu-20260428.htm, accession 0000896878-26-000020) is an Item 5.02 executive-departure 8-K, not the earnings release -- resolve-edgar-exhibit.mjs confirmed no EX-99 exhibit exists in that accession. The actual earnings press release (accession 0000896878-26-000024, exhibit 'fy26q3earningspressrelease.htm', filed 2026-05-20, matching this event's eventDate) was located via WebSearch (Rung 4) after Rung 1's stored link failed, then fetched directly; source_url above points to that verified exhibit rather than the shard's incorrect sourceLink. Separately, the shard's FY2026 Q1 sibling event carries revenue/net income/operating income/EPS-diluted/EPS-basic values identical to this Q2 event's own actuals -- a stale SEC-XBRL rederive artifact -- so the q/q deltas for those five KPIs above render as +0.0%/flat rather than a genuine sequential comparison; do not read them as a real plateau. Gross profit/EBIT/EBITDA (Yahoo-sourced, unaffected by that artifact) show the real, large sequential jump consistent with Intuit's seasonal tax-quarter ramp. Also note: this event's shard period label 'FY2026 Q2' corresponds to Intuit's own fiscal Q3 (quarter ended April 30, 2026, per the release's own heading) -- the shard's period numbering runs one behind Intuit's real fiscal-quarter labels, an apparent fiscal-offset labeling issue outside this run's scope.",
+  "drivers": [
+    {
+      "metric": "Revenue",
+      "direction": "up",
+      "explanation": "Growth driven by Online Ecosystem revenue +19% (QuickBooks Online Accounting +22%, Online Services +15%) and Consumer revenue +8% (TurboTax +7%, Credit Karma +15% on personal loans, auto insurance, home loans).",
+      "basis": "company-disclosed"
+    },
+    {
+      "metric": "Operating income",
+      "direction": "up",
+      "explanation": "Not itemized beyond overall revenue growth; operating income (+8%) grew slower than revenue (+10%) as selling/marketing (+11%) and R&D (+19%) both rose, implying modest margin compression.",
+      "basis": "derived-arithmetic"
+    },
+    {
+      "metric": "EPS (diluted)",
+      "direction": "up",
+      "explanation": "Tracks operating-income growth plus a lower diluted share count (276M vs 282M y/y, aided by $1.6B of buybacks this quarter) and higher interest/other income ($97M vs $32M y/y).",
+      "basis": "derived-arithmetic"
+    },
+    {
+      "metric": "overall",
+      "direction": "up",
+      "explanation": "Management attributes the quarter to its 'AI-driven expert platform strategy' scaling growth engines in assisted tax, money, and mid-market business (growing over 30%); CFO cites 'disciplined capital allocation' behind the raised guidance.",
+      "basis": "company-disclosed"
+    }
+  ]
 }
