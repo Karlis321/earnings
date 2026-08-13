@@ -2,9 +2,9 @@
   "ticker": "PCG US",
   "period": "FY2026 Q2",
   "reported_at": "2026-07-23",
-  "generated_at": "2026-08-11T00:00:00.000Z",
-  "depth": "kpi-only",
-  "headline": "Margins widen and profit grows, but debt keeps climbing",
+  "generated_at": "2026-08-13T00:00:00.000Z",
+  "depth": "filing",
+  "headline": "Profit rises on lower taxes, but debt keeps climbing",
   "kpis": [
     { "label": "Revenue", "value": "$5,902M", "delta": "+0.1%", "delta_basis": "y/y", "direction": "flat" },
     { "label": "Revenue", "value": "$5,902M", "delta": "-14.2%", "delta_basis": "q/q", "direction": "down" },
@@ -23,8 +23,58 @@
     { "label": "Shareholders' equity", "value": "$33,901M", "delta": "+8.7%", "delta_basis": "y/y", "direction": "up" },
     { "label": "Shareholders' equity", "value": "$33,901M", "delta": "+2.0%", "delta_basis": "q/q", "direction": "up" }
   ],
-  "summary_short": "PG&E reported Q2 FY2026 revenue of $5,902M, essentially flat y/y (+0.1%) but down 14.2% q/q; net income rose 38.6% y/y to $761M and diluted EPS climbed to $0.33 from $0.24 a year ago, though both eased back from a stronger first quarter.",
-  "summary_long": "Revenue of $5,902M was roughly flat y/y (+0.1%) but fell 14.2% q/q from a stronger first quarter. Operating income rose 15.2% y/y to $1,263M and EBITDA gained 4.0% y/y to $2,532M, pointing to margin expansion on flat revenue, though both slipped versus the prior quarter. Net income climbed 38.6% y/y to $761M; diluted EPS rose to $0.33 from $0.24. Cash of $972M nearly doubled y/y (+96.8%) but declined 14.1% q/q. Long-term debt rose to $61,768M, up 14.4% y/y and 2.7% q/q.",
-  "source_url": "https://www.sec.gov/Archives/edgar/data/1004980/000100498026000048/",
-  "confidence_notes": "primary filing unreachable — KPI-only summary from verified shard data. REGENERATION: this run was executed in explicit force-regenerate mode per instruction, bypassing the Step-0 already-exists guard; no PCG_US_FY2026_Q2.json summary actually existed on disk prior to this run (resolver reported summaryExists=false and summaryReady=false), so there was nothing to overwrite, but this compose is a fresh run per that instruction rather than a reuse of any prior version. Data-quality flag: the shard's stored event.sourceLink (SEC 8-K, acc-no 0001193125-26-279461, filed 2026-06-23, https://www.sec.gov/Archives/edgar/data/1004980/000119312526279461/d110415d8k.htm) is NOT the earnings release — it is a bank credit-agreement amendment (Item 1.01/8.01: Utility and Corporation revolving-credit amendments), confirmed by resolve-edgar-exhibit.mjs finding no EX-99 exhibit, only EX-10.1/EX-10.2. That fetch plus the exhibit-resolution attempt consumed 2 of the 3-fetch budget. A subsequent EDGAR browse-edgar fetch (3rd/final fetch) located the actual Q2 FY2026 10-Q — acc-no 0001004980-26-000048, filed 2026-07-23, exactly matching the shard's eventDate — but the fetch budget was exhausted before that document itself could be retrieved and read. Per the Step 0.5 downgrade rule this composes kpi-only from the resolver's shard KPIs rather than skipping; no drivers or guidance are assessed. source_url above points to the verified real 10-Q accession folder (observed via the EDGAR filing-index listing, not fabricated) rather than reusing the mismatched shard sourceLink or falling back to a Google search — a future filing-depth re-run should fetch the primary document at that accession and, ideally, correct event.sourceLink on the shard. All KPI actual/prior triples share consistent same-family provenance per metric (Yahoo fundamentals-timeseries for revenue/operating income/EBITDA/net income; SEC EDGAR regulatory for EPS/cash/debt/equity), so no cross-basis surprise issue applies. Step 3b (extended metrics) was executed with an empty array per instruction, since no filing text was read this run to extract sector KPIs from."
+  "summary_short": "PG&E reported Q2 FY2026 revenue of $5,902M, essentially flat y/y (+0.1%) but down 14.2% q/q; net income rose 38.6% y/y to $761M on a sharply lower tax provision, and diluted EPS climbed to $0.33 from $0.24 a year ago, though both eased back from a stronger first quarter.",
+  "summary_long": "Revenue of $5,902M was flat y/y — $201M more electricity-cost pass-through offset by $180M less interim WMCE rate relief — and fell 14.2% q/q. Operating income rose 15.2% y/y to $1,263M as O&M expense fell 11%, outpacing higher electricity costs. Net income climbed 38.6% y/y to $761M, boosted by a $100M drop in the tax provision (effective rate -7.8%) from generation-related deductions; diluted EPS rose to $0.33 from $0.24. Cash of $972M nearly doubled y/y but fell q/q. Long-term debt rose to $61,768M as PG&E funds its $12.4B 2026 capex plan with debt, not new equity.",
+  "drivers": [
+    {
+      "metric": "Revenue",
+      "direction": "flat",
+      "explanation": "Q2 revenue was roughly flat y/y: about $201M more cost-of-electricity pass-through revenue was largely offset by roughly $180M less interim rate relief under the 2023 WMCE proceeding.",
+      "basis": "company-disclosed"
+    },
+    {
+      "metric": "Operating income",
+      "direction": "up",
+      "explanation": "Y/y growth reflects an 11% ($317M) drop in operating & maintenance expense, mostly from $180M less previously-deferred WMCE expense recognized in the prior-year quarter, outpacing higher pass-through electricity costs.",
+      "basis": "company-disclosed"
+    },
+    {
+      "metric": "Net income",
+      "direction": "up",
+      "explanation": "The income tax provision fell $100M y/y in Q2, driven by increased deductions for costs attributable to electric generation, pushing the effective tax rate to -7.8% and lifting net income faster than operating income.",
+      "basis": "company-disclosed"
+    },
+    {
+      "metric": "Diluted EPS",
+      "direction": "up",
+      "explanation": "EPS growth tracks net income: the same generation-related tax deductions that cut the tax provision also boosted income available to common shareholders.",
+      "basis": "derived-arithmetic"
+    },
+    {
+      "metric": "Total cash",
+      "direction": "up",
+      "explanation": "not explained in the release",
+      "basis": "company-disclosed"
+    },
+    {
+      "metric": "Long-term debt",
+      "direction": "up",
+      "explanation": "Six-month interest expense rose 4% y/y due to the issuance of additional long-term debt, as PG&E funds its 2026 capex plan (est. $12.4B) via debt while planning no common equity issuance through 2030.",
+      "basis": "company-disclosed"
+    },
+    {
+      "metric": "Shareholders' equity",
+      "direction": "up",
+      "explanation": "Equity growth is explained by six-month net income available to common ($1,591M) exceeding common and preferred dividends declared over the same period.",
+      "basis": "derived-arithmetic"
+    },
+    {
+      "metric": "overall",
+      "direction": "up",
+      "explanation": "The approved 2023 WMCE final decision continues to flow into results, while wildfire-fund amortization (accelerated on SCE's Eaton Fire disclosure) and ongoing rate-case proceedings remain the key forward risks.",
+      "basis": "company-disclosed"
+    }
+  ],
+  "confidence_notes": "REGENERATION: this run was executed in explicit force-regenerate mode per instruction, overwriting the prior PCG_US_FY2026_Q2.json (which was a kpi-only summary; the resolver reported summaryReady=true going into this run). This time the primary 10-Q was successfully read: the shard's event.sourceLink (SEC 8-K, acc-no 0001193125-26-279461, filed 2026-06-23) is confirmed NOT the earnings release — resolve-edgar-exhibit.mjs found no EX-99 exhibit, only EX-10.1/EX-10.2 (a bank credit-agreement amendment). Falling to Rung 3, the EDGAR filing index for CIK 1004980 was fetched and the actual Q2 FY2026 10-Q (acc-no 0001004980-26-000048, filed 2026-07-23, matching the shard eventDate) was located and fetched — this consumed the full 3-fetch budget (exhibit-resolve, index, 10-Q) with zero WebSearches used. KPI actual/prior triples are unchanged from the prior run and remain same-basis per metric (Yahoo fundamentals-timeseries for revenue/operating income/EBITDA/net income; SEC EDGAR regulatory for EPS/cash/debt/equity) — no cross-basis surprise issue applies. Drivers and guidance below are extracted from the 10-Q's MD&A and Note 6 (Equity), not from a press release, since PG&E's actual earnings-release 8-K/EX-99 was not located within budget. Two guidance items were written to the event shard: FY2026 capex of $12.4B (single point, MD&A Investing Activities) and a long-term dividend-payout-ratio target of ~20% of core earnings by 2028 (Note 6). Two extended metrics were written via apply-extended-metrics.mjs: capex_total ($6,323M, six-month YTD cash-flow-statement figure, not a discrete quarterly number) and dividend_per_share ($0.05, declared May 21 2026 for the quarter's record date). event.sourceLink on the shard still points at the mismatched credit-agreement 8-K; a future run should correct it to the 10-Q accession above, but that is out of scope for this compose.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/1004980/000100498026000048/pcg-20260630.htm"
 }
