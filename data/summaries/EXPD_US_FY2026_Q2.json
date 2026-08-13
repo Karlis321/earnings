@@ -1,0 +1,35 @@
+{
+  "ticker": "EXPD US",
+  "period": "FY2026 Q2",
+  "reported_at": "2026-06-30",
+  "generated_at": "2026-08-13T00:00:00Z",
+  "depth": "filing",
+  "headline": "Tech-driven airfreight boom fuels a blowout quarter",
+  "kpis": [
+    { "label": "Revenue", "value": "$3.50B", "delta": "+32.1%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Gross profit", "value": "$430.7M", "delta": "+23.9%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Operating income", "value": "$349.6M", "delta": "+41.1%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EBITDA", "value": "$362.3M", "delta": "+38.5%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Net income", "value": "$266.2M", "delta": "+45.0%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EPS (diluted)", "value": "$2.03", "delta": "+51.5%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Operating cash flow", "value": "$178.6M", "delta": "-0.3%", "delta_basis": "y/y", "direction": "flat" },
+    { "label": "Total cash", "value": "$1.03B", "delta": "-10.8%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Shareholders' equity", "value": "$2.12B", "delta": "-3.5%", "delta_basis": "y/y", "direction": "down" }
+  ],
+  "summary_short": "Expeditors' Q2 2026 revenue rose to $3.50B (+32.1% y/y) as airfreight revenue jumped 57% on AI-infrastructure-driven tech demand, driving diluted EPS to $2.03 (+51.5% y/y) and net income to $266.2M (+45.0% y/y).",
+  "summary_long": "Airfreight revenue rose 57% as tech customers ramped AI-infrastructure shipments, while ocean freight grew just 5% as buy/sell rates only began recovering late in the quarter after three quarters of declines. Customs brokerage rose 27% on rising clearance complexity and road-freight/warehousing demand. Salaries rose 22% on higher incentive pay and a $25M Global Technology restructuring charge (of ~$27M total planned). Operating income rose 41% to $349.6M and net income rose 45% to $266.2M ($2.03 diluted EPS). Operating cash flow was flat at $178.6M. The company repurchased $354.9M of stock and declared a $0.81/share semi-annual dividend; cash fell to $1.03B and equity to $2.12B on buybacks. No formal guidance was issued; 2026 capex is estimated at ~$60M.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/746515/000119312526334457/expd-20260630.htm",
+  "confidence_notes": "REGENERATION: this run was executed in explicit force-regenerate mode per operator instruction, bypassing the Step-0 already-exists guard. No EXPD_US_FY2026_Q2.json summary actually existed on disk prior to this run (resolver reported summaryExists=false, confirmed by directory listing), so there was nothing to literally overwrite, but every figure below was derived fresh from the resolver's shard KPIs and the primary 10-Q filing per the regeneration directive. sourceLink.url pointed directly at the 10-Q main document (expd-20260630.htm), not an 8-K cover page, so the exhibit-resolution shortcut (resolve-edgar-exhibit.mjs) did not apply and was not invoked. Event-date note: the shard's eventDate (2026-06-30, source 'yahoo-earnings-chart-reportedDate') is the fiscal quarter-end, not the actual report/filing date — EDGAR shows this 10-Q was filed 2026-08-05, and the shard's own scheduledDate (2026-08-04) is a closer proxy for the true report date. reported_at is kept at the shard's eventDate per the resolver contract; flagging this quarter-end-vs-filing-date mismatch for a future eventDate re-derivation pass rather than silently changing it. Yahoo-sourced EBIT ($349.618M) matches SEC-sourced Operating income exactly, so EBIT is omitted from the KPI table as a non-additive duplicate rather than a discrepancy. No analyst consensus estimate was present in the resolver's kpis object (actuals only), so no beat/miss surprisePct is reported anywhere in this summary. The company issues no formal forward revenue/EPS guidance (consistent with its historical practice); the only explicit forward figures in the filing are the ~$60M FY2026 capex estimate and the ~$27M total expected Global Technology restructuring charge ($25M already recognized in Q2), both captured on the event's guidance[] array with move:null since the filing does not characterize either as raised/lowered/held/initiated relative to a prior figure.",
+  "drivers": [
+    { "metric": "Revenue", "direction": "up", "explanation": "Airfreight services revenue rose 57% on 44% higher average sell rates and 14% higher tonnage from strong technology-sector AI-infrastructure demand; ocean freight and customs brokerage/road-freight also grew.", "basis": "company-disclosed" },
+    { "metric": "Gross profit", "direction": "up", "explanation": "Tracks the same revenue mix shift toward higher-rate airfreight and customs brokerage/road-freight services described for Revenue.", "basis": "derived-arithmetic" },
+    { "metric": "Operating income", "direction": "up", "explanation": "Revenue growth outpaced expense growth despite a $25M Global Technology restructuring charge and higher incentive-driven salary costs (headcount +4%); a $16M gain on a property sale also aided other expenses.", "basis": "company-disclosed" },
+    { "metric": "EBITDA", "direction": "up", "explanation": "Follows the same operating-income drivers before depreciation and amortization.", "basis": "derived-arithmetic" },
+    { "metric": "Net income", "direction": "up", "explanation": "Followed the operating-income improvement; the effective tax rate fell to 25.4% from 28.7% y/y on a smaller unfavorable impact from international subsidiaries.", "basis": "company-disclosed" },
+    { "metric": "EPS (diluted)", "direction": "up", "explanation": "Net income growth was amplified by a lower diluted share count (131.4M vs 136.6M y/y) from ongoing buybacks ($354.9M repurchased this quarter).", "basis": "derived-arithmetic" },
+    { "metric": "Operating cash flow", "direction": "flat", "explanation": "Company states cash from operating activities was $179 million in both Q2 2026 and Q2 2025 — explicitly described as comparable between periods.", "basis": "company-disclosed" },
+    { "metric": "Total cash", "direction": "down", "explanation": "Cash used in financing activities rose to $474M (from $340M y/y) on higher buybacks and dividends, outpacing operating cash generation.", "basis": "company-disclosed" },
+    { "metric": "Shareholders' equity", "direction": "down", "explanation": "$354.9M of quarterly buybacks plus dividends reduced equity by more than net income added it.", "basis": "derived-arithmetic" },
+    { "metric": "overall", "direction": "up", "explanation": "Management attributed the quarter to strong AI-infrastructure-driven technology demand across airfreight, road freight, and warehousing/distribution, plus early signs of ocean-rate recovery after three quarters of declines.", "basis": "company-disclosed" }
+  ]
+}
