@@ -384,53 +384,14 @@ structured feeds don't carry) and write them onto the event's
      `frontend/lib/extendedMetricsRegistry.ts`.
 
 2. For each metric in the set, scan the primary document (already
-   in `./fetched/`) for a labeled value. **You MUST attempt every
-   metric in the target set — no silent skipping.**
-
-   Explicit search terms per universal metric (grep the extracted
-   .txt with `extract-doc-text.mjs --grep` if needed):
-   - `capex_total` → "capital expenditures", "purchases of property",
-     "additions to property, plant", "acquisition of property",
-     "payments for property"
-   - `capex_adjusted` → "adjusted capex", "adjusted capital
-     expenditures" (only if labeled as adjusted)
-   - `free_cash_flow_mgmt` → "free cash flow", "FCF", "management's
-     definition"
-   - `buyback_qtr_usd` → "repurchases of common stock", "treasury
-     stock repurchases", "share repurchase", "buyback"
-   - `dividend_per_share` → "$X.XX per share dividend", "declared a
-     dividend of", "quarterly dividend"
-   - `sale_of_assets_usd` → "proceeds from sales of", "divestiture",
-     "sale of businesses"
-   - `eps_non_gaap` → "non-GAAP EPS", "adjusted EPS", "adjusted
-     diluted earnings per share"
-   - `guidance_revenue_next_q` → "outlook", "guidance", "next
-     quarter", "expects revenue"
-   - `guidance_eps_next_q` → same as revenue but for EPS
-
-   Extraction rules:
-   - Numeric-table hit → confidence 0.9-1.0, extract as-is
+   in `./fetched/`) for a labeled value. Rules:
+   - Numeric-table hit → confidence 0.9-1.0
    - Prose extraction with explicit "$X million" / "N%" callout →
      confidence 0.7-0.9
-   - YTD-only disclosure (Apple-style condensed cash flow shows
-     only 9-month totals): capture the YTD value and mark
-     `source.section` as "<period> · YTD" — do NOT skip. A YTD
-     value labeled as YTD is vastly more useful than nothing.
-   - Below 0.7 confidence, or requires arithmetic to derive → SKIP,
-     but note it in the payload's `_skipped` array with the reason
-     (see step 3 below).
+   - Below 0.7 or requires interpretation/computation → SKIP
    - Guidance metrics (`_next_q`): capture low + high when range;
-     midpoint only if single point given.
-   - Genuinely not disclosed anywhere in the filing → OMIT the
-     entry, but record the search-term you used in `_omitted` (see
-     step 3 below).
-
-   **Empty extendedMetrics is a QUALITY FAILURE for any large-cap
-   filing.** A typical 10-Q or 8-K from an SP500 issuer discloses
-   at LEAST dividend_per_share, capex_total, and buyback_qtr_usd
-   (even if YTD-only). If your final payload has 0 entries on an
-   SP500 filing, you missed something — re-scan the cash flow
-   statement and dividend declaration sections before finishing.
+     midpoint only if single point given
+   - No hit → omit the entry (do not write `value: null`)
 
 3. Every stored entry MUST carry:
    ```
@@ -453,13 +414,9 @@ structured feeds don't carry) and write them onto the event's
    The script reads the JSON payload, locates the event, sets
    `event.extendedMetrics = [...]`, writes the shard.
 
-5. Extraction is MANDATORY when depth === "filing". Never invent a
-   value — no hit = omit. But before omitting, verify you actually
-   scanned for the metric's search terms (from step 2 above). For
-   SP500 issuers, expect at LEAST 3 entries in the final payload
-   (typically dividend_per_share + capex_total + buyback_qtr_usd).
-   Fewer than 3 on an SP500 filing → re-scan the cash flow
-   statement and dividend section before applying.
+5. Extraction is BEST-EFFORT. Empty extendedMetrics array is fine
+   if the filing didn't disclose anything from the set. Never
+   invent a value — no hit = omit.
 
 ## Step 4 — Validate + commit + push
 
