@@ -2,9 +2,9 @@
   "ticker": "WDAY US",
   "period": "FY2026 Q2",
   "reported_at": "2026-05-21",
-  "generated_at": "2026-08-13T10:11:00.000Z",
-  "depth": "kpi-only",
-  "headline": "Margins widen and profit climbs, but net income slips",
+  "generated_at": "2026-08-13T12:00:00.000Z",
+  "depth": "filing",
+  "headline": "Margins widen sharply, but net income dips",
   "kpis": [
     { "label": "Revenue", "value": "$2,542M", "delta": "+8.3%", "delta_basis": "y/y", "direction": "up" },
     { "label": "Gross profit", "value": "$1,938M", "delta": "+13.8%", "delta_basis": "y/y", "direction": "up" },
@@ -14,8 +14,40 @@
     { "label": "Net income", "value": "$222M", "delta": "-2.6%", "delta_basis": "y/y", "direction": "down" },
     { "label": "Diluted EPS", "value": "$0.87", "delta": "+3.6%", "delta_basis": "y/y", "direction": "up" }
   ],
-  "summary_short": "Workday reported FY2026 Q2 revenue of $2,542M, up 8.3% y/y, with operating income up 36.3% y/y to $338M even as net income slipped 2.6% y/y to $222M.",
-  "summary_long": "Revenue rose 8.3% y/y to $2,542M, about flat q/q. Gross profit increased 13.8% y/y to $1,938M. Operating income grew 36.3% y/y to $338M, near a 13.3% margin, roughly flat q/q. EBIT rose 188.6% y/y to $381M and EBITDA rose 119.0% y/y to $473M. Diluted EPS was $0.87, up 3.6% y/y, flat q/q. Net income of $222M fell 2.6% y/y, flat q/q.",
-  "source_url": "https://www.sec.gov/Archives/edgar/data/1327811/000132781126000024/0001327811-26-000024-index.htm",
-  "confidence_notes": "primary filing unreachable — KPI-only summary from verified shard data. Force-regeneration was requested for this run; no summary previously existed on disk for WDAY US FY2026 Q2, so this is a first-time generation rather than an overwrite. The shard's originally stored sourceLink pointed at an unrelated 8-K (filed 2026-04-24, items 9.01 only with an EX-10.1 exhibit, no earnings content); the correct earnings 8-K (items 2.02 and 9.01, filed 2026-05-21, accession 0001327811-26-000024) was identified via the EDGAR CIK browse list, matching the shard's eventDate exactly, but its press-release exhibit filename could not be resolved within the 3-fetch budget, so source_url above points to that filing's index page rather than the exhibit body. EBIT (+188.6% y/y) and EBITDA (+119.0% y/y) grew much faster than operating income (+36.3% y/y) per the shard data; no filing was read to explain the gap."
+  "summary_short": "Workday reported FY2026 Q2 revenue of $2,542M and diluted EPS of $0.87, with operating income up 36.3% y/y to $338M (31.8% non-GAAP operating margin) even as GAAP net income slipped 2.6% y/y to $222M on the shard's recorded comparison basis.",
+  "summary_long": "Total revenue was $2,542M, with subscription revenue of $2,354M up 14.3% y/y per the release's own comparison. The year-ago quarter's operating income was depressed by a $166M restructuring charge that did not recur, so non-GAAP operating margin rose to 31.8% from 30.2%. Free cash flow was $616M, up from $421M. Workday repurchased $1.6B of stock (~12.0M shares) and held $4.35B in cash and marketable securities at quarter-end. Management raised full-year FY2027 non-GAAP operating margin guidance to 30.5% while reiterating subscription revenue guidance of $9.925B-$9.950B, and guided Q2 FY2027 subscription revenue to $2.455B, up 13%.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/1327811/000132781126000024/wday-04302026x991.htm",
+  "confidence_notes": "Force-regeneration requested for this run — this OVERWRITES a prior kpi-only summary for WDAY US FY2026 Q2 (that file itself incorrectly claimed no summary previously existed). This run reached full filing depth: the shard's stored sourceLink pointed at 8-K accession 0001327811-26-000019 (filed 2026-04-24, item 9.01 only, no EX-99 exhibit) which is NOT the earnings release. The correct earnings 8-K (items 2.02 and 9.01, accession 0001327811-26-000024, filed 2026-05-21, matching this event's eventDate exactly) was located via the EDGAR CIK browse list, and its EX-99.1 exhibit (wday-04302026x991.htm) was fetched and read directly. Ledger inconsistency found and NOT corrected here (per 'note, don't massage'): this release's own income statement reports 'three months ended April 30, 2025' figures of revenue $2,240M, operating income $39M (depressed by a $166M restructuring charge), net income $68M, and diluted EPS $0.25 — but the shard's sibling event labeled 'FY2025 Q2' (eventDate 2025-04-30) currently stores actuals of revenue $2,348M, operating income $248M, net income $228M, and diluted EPS $0.84, each carrying asOf=2025-07-31 from an SEC-XBRL rederive pass, i.e. apparently a different quarter's figures than what that event's own eventDate implies. This KPI table above uses the resolver's stored prior_yy values per the standard /earnings procedure, so the y/y deltas shown (+8.3% revenue, +36.3% operating income, -2.6% net income, +3.6% diluted EPS) do not match what the filing's own comparison column would imply (+13.5% revenue and much larger swings for operating income and net income given the year-ago restructuring charge). This looks like a fiscal-period-matching defect on WDAY's shard (Workday's non-calendar Jan 31 fiscal year-end); flagging for a future backfill pass rather than hand-correcting it here.",
+  "drivers": [
+    {
+      "metric": "overall",
+      "direction": "up",
+      "explanation": "CEO said Workday is \"ready for this AI moment,\" citing a strong core business and agentic AI adoption across HR, finance, and IT.",
+      "basis": "company-disclosed"
+    },
+    {
+      "metric": "overall",
+      "direction": "up",
+      "explanation": "Free cash flow rose to $616M from $421M and Workday repurchased $1.6B of stock (~12.0M shares) during the quarter.",
+      "basis": "company-disclosed"
+    },
+    {
+      "metric": "Revenue",
+      "direction": "up",
+      "explanation": "CFO cited \"ongoing customer adoption across our platform\" and 14.3% y/y subscription revenue growth as the driver of total revenue growth.",
+      "basis": "company-disclosed"
+    },
+    {
+      "metric": "Operating income",
+      "direction": "up",
+      "explanation": "The year-ago quarter included a $166M restructuring charge that did not recur this quarter, lifting reported operating income and non-GAAP margin by comparison.",
+      "basis": "company-disclosed"
+    },
+    {
+      "metric": "Net income",
+      "direction": "down",
+      "explanation": "Provision for income taxes rose to $133M from $35M and other income fell to $17M from $64M in the filing's own comparison, offsetting higher pretax income.",
+      "basis": "derived-arithmetic"
+    }
+  ]
 }
