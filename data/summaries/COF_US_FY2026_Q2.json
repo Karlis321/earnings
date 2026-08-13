@@ -2,19 +2,35 @@
   "ticker": "COF US",
   "period": "FY2026 Q2",
   "reported_at": "2026-07-21",
-  "generated_at": "2026-08-12T00:00:00.000Z",
-  "depth": "kpi-only",
-  "headline": "Profitability rebounds sharply as revenue accelerates",
+  "generated_at": "2026-08-13T12:00:00.000Z",
+  "depth": "filing",
+  "headline": "Profitability rebounds as credit costs ease",
   "kpis": [
     { "label": "Revenue", "value": "$15.85B", "delta": "+4.1%", "delta_basis": "q/q", "direction": "up" },
     { "label": "Revenue", "value": "$15.85B", "delta": "+26.9%", "delta_basis": "y/y", "direction": "up" },
     { "label": "Net income", "value": "$3.02B", "delta": "+38.9%", "delta_basis": "q/q", "direction": "up" },
     { "label": "Net income", "value": "$3.02B", "delta": "+$7.30B", "delta_basis": "y/y", "direction": "up" },
     { "label": "EPS (diluted)", "value": "$4.73", "delta": "+41.6%", "delta_basis": "q/q", "direction": "up" },
-    { "label": "EPS (diluted)", "value": "$4.73", "delta": "+$13.31", "delta_basis": "y/y", "direction": "up" }
+    { "label": "EPS (diluted)", "value": "$4.73", "delta": "+$13.31", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Non-interest expense", "value": "$9.0B", "delta": "+7%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Provision for credit losses", "value": "$3.0B", "delta": "-$1.1B", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Total deposits", "value": "$484.3B", "delta": "-1%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Net interest margin", "value": "8.01%", "delta": "+14bps", "delta_basis": "q/q", "direction": "up" },
+    { "label": "CET1 ratio", "value": "13.7%", "delta": null, "delta_basis": "none", "direction": "n/a" },
+    { "label": "Efficiency ratio", "value": "57.05%", "delta": null, "delta_basis": "none", "direction": "n/a" }
   ],
-  "summary_short": "Capital One reported Q2 FY2026 revenue of $15.85B (+4.1% q/q, +26.9% y/y) and net income of $3.02B, a sharp swing from a $4.28B net loss a year ago; diluted EPS was $4.73 versus an $8.58 per-share loss in Q2 2025.",
-  "summary_long": "Revenue was $15.85B, up 4.1% q/q and up 26.9% y/y. Net income was $3.02B, up 38.9% q/q and a reversal from a $4.28B net loss in Q2 2025. Diluted EPS was $4.73, up 41.6% q/q and versus an $8.58 per-share loss a year ago. No margin, cash-position, or balance-sheet figures are available on the verified shard for this period.",
-  "source_url": "https://www.sec.gov/Archives/edgar/data/927628/000092762826000084/cof-20260721.htm",
-  "confidence_notes": "This is a forced regeneration (operator-requested) that overwrites the prior COF_US_FY2026_Q2.json — Step-0's 'already exists' guard was intentionally skipped for this run. primary filing unreachable — KPI-only summary — no filing was read; drivers and guidance not assessed. The event's sourceLink (SEC accession 0000927628-26-000084, filed 2026-07-21) was resolved via resolve-edgar-exhibit.mjs to EX-99.1, but that exhibit is Capital One's monthly credit-card charge-off/delinquency metrics table for June 2026, not a quarterly earnings press release. A fetch of the accession's directory index and the 8-K cover page confirmed the filing's sole purpose (Item 7.01) is the monthly metrics disclosure — no other exhibit is present. The 3-fetch budget was exhausted confirming this (exhibit-resolver + directory index + 8-K cover), so this summary is composed entirely from verified SEC-XBRL/Yahoo shard KPIs rather than a read filing. The true Q2 FY2026 earnings press release was not located within budget — flagging for a future irSources correction. Step 3b (extended metrics) was run per operator instruction with an empty result set, since no earnings-filing text was read this run."
+  "summary_short": "Capital One reported Q2 FY2026 net income of $3.02B ($4.73 diluted EPS), up 38.9% q/q, as revenue grew 4.1% to $15.85B and provision for credit losses fell $1.1B to $3.0B on a $662M reserve release.",
+  "summary_long": "Revenue rose 4.1% q/q and 26.9% y/y to $15.85B. Net income of $3.02B (+38.9% q/q) reversed a $4.28B net loss a year earlier; diluted EPS was $4.73 (adjusted $5.81 excluding $0.60/share acquisition amortization, $0.36 Discover integration, and $0.12 Brex integration costs). Net interest margin widened 14bp to 8.01%; efficiency ratio was 57.05% (51.38% adjusted). Provision for credit losses fell $1.1B to $3.0B, including a $662M reserve release against $3.6B of net charge-offs. Non-interest expense rose 7% on higher marketing and operating costs. Period-end deposits fell 1% to $484.3B; loans held for investment rose 2% to $457.2B. CET1 ratio was a preliminary 13.7%. No forward guidance was issued in the release.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/927628/000092762826000083/ex991q22026earningsrelease.htm",
+  "confidence_notes": "FORCE-REGENERATE: this summary was produced under an operator override that intentionally skipped Step 0's summaryReady guard, overwriting the prior COF_US_FY2026_Q2.json (a kpi-only fallback that had given up after exhausting its fetch budget on the wrong filing). This run traced EDGAR's 8-K filing list and found the shard's stored sourceLink (accession 0000927628-26-000084) actually points to Capital One's separate monthly credit-card-metrics 8-K (Items 7.01/9.01), not the earnings release — that accession's sole exhibit is a June 2026 credit-metrics table. The true Q2 FY2026 earnings 8-K is accession 0000927628-26-000083 (Items 2.02/9.01); its EX-99.1 (ex991q22026earningsrelease.htm) was fetched and read in full for this depth=filing summary. The shard's sourceLink field should be corrected in a follow-up pass. CET1 ratio (13.7%) is explicitly labeled preliminary and subject to change per the release. Adjusted (non-GAAP) diluted EPS of $5.81 differs from reported GAAP EPS of $4.73 due to acquisition amortization and Discover/Brex integration costs (see EPS driver). ROTCE and net charge-off ratio are not disclosed in the press release itself (they live in the 2.5MB EX-99.2 financial supplement, not fetched given the fetch-budget constraint) and are omitted from kpis/extendedMetrics rather than estimated. No company-issued forward guidance was found in the release.",
+  "drivers": [
+    { "metric": "overall", "direction": "up", "explanation": "Company cites solid top-line growth and strong credit performance, noting the 14-month Discover integration is going well, per the CEO's quote.", "basis": "company-disclosed" },
+    { "metric": "Revenue", "direction": "up", "explanation": "not explained in the release", "basis": "company-disclosed" },
+    { "metric": "Net income", "direction": "up", "explanation": "Derived from the same release: revenue growth plus a $1.1B q/q decline in provision for credit losses, partly offset by 7% higher non-interest expense.", "basis": "derived-arithmetic" },
+    { "metric": "EPS (diluted)", "direction": "up", "explanation": "Reported EPS of $4.73 vs. adjusted $5.81 reflects $0.60/share acquisition amortization, $0.36 Discover integration costs, and $0.12 Brex integration costs, per the release's adjusting-items table.", "basis": "company-disclosed" },
+    { "metric": "Non-interest expense", "direction": "up", "explanation": "Release attributes the 7% q/q increase to an 11% rise in marketing spend and a 6% rise in operating expenses.", "basis": "company-disclosed" },
+    { "metric": "Provision for credit losses", "direction": "down", "explanation": "Release breaks the $1.1B q/q decline into a $662M loan-loss reserve release against $3.6B of net charge-offs this quarter.", "basis": "company-disclosed" },
+    { "metric": "Net interest margin", "direction": "up", "explanation": "not explained in the release", "basis": "company-disclosed" },
+    { "metric": "Total deposits", "direction": "down", "explanation": "not explained in the release", "basis": "company-disclosed" }
+  ]
 }
