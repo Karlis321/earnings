@@ -2,9 +2,9 @@
   "ticker": "INCY US",
   "period": "FY2026 Q2",
   "reported_at": "2026-07-28",
-  "generated_at": "2026-08-10T11:40:00.000Z",
-  "depth": "kpi-only",
-  "headline": "Revenue and margins accelerate sharply across the board",
+  "generated_at": "2026-08-13T09:12:34.000Z",
+  "depth": "filing",
+  "headline": "Broad-based growth lifts revenue; guidance raised",
   "kpis": [
     { "label": "Revenue", "value": "$1.674B", "delta": "+31.5%", "delta_basis": "q/q", "direction": "up" },
     { "label": "Revenue", "value": "$1.674B", "delta": "+37.7%", "delta_basis": "y/y", "direction": "up" },
@@ -23,8 +23,46 @@
     { "label": "EPS (diluted)", "value": "$2.81", "delta": "+91.2%", "delta_basis": "q/q", "direction": "up" },
     { "label": "EPS (diluted)", "value": "$2.81", "delta": "+37.7%", "delta_basis": "y/y", "direction": "up" }
   ],
-  "summary_short": "Revenue of $1.674B was up 31.5% q/q and 37.7% y/y; diluted EPS of $2.81 rose 91.2% q/q and 37.7% y/y.",
-  "summary_long": "Revenue reached $1.674B, up 31.5% q/q and 37.7% y/y. Gross margin expanded to 93.7% (+194bp q/q, +21bp y/y) and net margin rose to 35.0% (+1,115bp q/q, +166bp y/y). Operating income of $700M rose 132.6% q/q and 32.1% y/y. Diluted EPS of $2.81 increased 91.2% q/q and 37.7% y/y, in line with net income growth of 93.1% q/q and 44.6% y/y.",
-  "source_url": "https://www.sec.gov/Archives/edgar/data/879169/000087916926000053/incy-20260728.htm",
-  "confidence_notes": "primary filing unreachable — KPI-only summary from verified shard data. Regeneration run (force-regenerate mode; Step-0 already-exists guard bypassed per operator instruction) — no prior summary file actually existed on disk for this ticker/period. The event's stored sourceLink (https://www.sec.gov/Archives/edgar/data/879169/000087916926000048/incy-20260706.htm, filed 2026-07-06) is a data-quality mismatch: it is Incyte's 8-K announcing completion of the Vega Therapeutics acquisition, not the Q2 2026 earnings release. The correct earnings 8-K (accession 0000879169-26-000053, filed 2026-07-28, items 2.02/9.01, exhibit incy-q22026xexx991.htm) was located via the EDGAR CIK filing list, but the 3-fetch budget (wrong sourceLink fetch, EDGAR CIK browse, exhibit-resolve call) was exhausted before that exhibit's content could be fetched — downgraded to kpi-only per Step 0.5. source_url above points to the correct 8-K cover for future runs; the shard's stored sourceLink should be corrected separately."
+  "summary_short": "Revenue of $1.674B rose 31.5% q/q and 37.7% y/y, with GAAP diluted EPS of $2.81 up 91.2% q/q and 37.7% y/y, partly aided by a one-time $246M non-cash CMS-related accrual reversal on Opzelura.",
+  "summary_long": "Total revenue reached $1.674B (+31.5% q/q, +37.7% y/y), driven by broad-based growth across Jakafi (+7% y/y), Opzelura (+173% y/y, including a $246M one-time non-cash CMS-related accrual reversal), Niktimvo (+67% y/y), Monjuvi/Minjuvi (+72% y/y) and Zynyz (+460% y/y). GAAP operating income of $700M rose 132.6% q/q and 32.1% y/y; net income of $586M and diluted EPS of $2.81 increased 93.1%/91.2% q/q and 44.6%/37.7% y/y. R&D (+4%) and SG&A (+6%) expenses grew y/y on continued late-stage investment and commercial spend. Incyte raised full-year 2026 total net sales guidance to $5.13-5.26B and operating-expense guidance, reflecting the CMS benefit and the pending Vega Therapeutics IPR&D charge. Cash and marketable securities rose to $4.5B from $3.6B at year-end 2025.",
+  "drivers": [
+    {
+      "metric": "Revenue",
+      "direction": "up",
+      "explanation": "Net sales grew across every marketed product plus a $246M one-time non-cash Opzelura accrual reversal tied to a CMS settlement on the line-extension rebate rule.",
+      "basis": "company-disclosed"
+    },
+    {
+      "metric": "Gross profit",
+      "direction": "up",
+      "explanation": "Gross profit growth outpaced revenue growth q/q and roughly tracked it y/y because cost of sales (+33% y/y) grew slower than total revenue (+38% y/y).",
+      "basis": "derived-arithmetic"
+    },
+    {
+      "metric": "Operating income",
+      "direction": "up",
+      "explanation": "Operating income rose on higher revenue including the Opzelura CMS benefit, and the 2025 comparison quarter carried a $242M contract dispute settlement charge that depressed the prior base.",
+      "basis": "company-disclosed"
+    },
+    {
+      "metric": "Net income",
+      "direction": "up",
+      "explanation": "Net income growth exceeded operating income growth y/y partly from a swing to a $9.8M net equity-investment gain versus a $4.2M loss a year earlier, per the release's own reconciliation table.",
+      "basis": "derived-arithmetic"
+    },
+    {
+      "metric": "EPS (diluted)",
+      "direction": "up",
+      "explanation": "Diluted EPS growth (+37.7% y/y) trails net income growth (+44.6% y/y) because diluted share count rose about 4.8% y/y to 208.2M shares.",
+      "basis": "derived-arithmetic"
+    },
+    {
+      "metric": "overall",
+      "direction": "up",
+      "explanation": "CEO cited broad-based sales growth across every marketed product, continued pipeline progress, and the recent latarcibart acquisition as positioning the company for its next growth phase.",
+      "basis": "company-disclosed"
+    }
+  ],
+  "source_url": "https://www.sec.gov/Archives/edgar/data/879169/000087916926000053/incy-q22026xexx991.htm",
+  "confidence_notes": "Regeneration run (force-regenerate mode; Step-0 already-exists guard bypassed per operator instruction) — this OVERWRITES a prior kpi-only summary that was itself correct but downgraded because its fetch budget ran out before reaching the exhibit. This run reached the actual press release and upgrades depth to \"filing\". Data-quality fix: the event's stored sourceLink pointed to Incyte's 8-K announcing completion of the Vega Therapeutics acquisition (accession 0000879169-26-000048, filed 2026-07-06), not the Q2 2026 earnings release. The correct earnings 8-K is accession 0000879169-26-000053 (filed 2026-07-28, items 2.02/9.01, exhibit incy-q22026xexx991.htm) — the shard's sourceLink has been corrected to this URL as part of this run. Two figures in the resolver's KPI set are Yahoo-derived rather than filing-verbatim and diverge slightly from the release's GAAP statement: operating_income_usd_m (shard $700.389M vs release's stated GAAP operating income of $697.898M) and ebit_usd_m ($752.096M, which doesn't reconcile cleanly to the release's $751.514M pretax income line) — both differences are under 0.5% and don't change any delta's rounded percentage, but are flagged since net_income_usd_m and eps_diluted_usd DO match the release exactly ($585.605M and $2.81). Growth rates for revenue and Opzelura specifically are inflated by a one-time $246M non-cash CMS-related accrual reversal — the release states net sales excluding that benefit grew a more modest 17% y/y, a materially different figure from the 37-40% headline growth. Raised FY2026 guidance (total net sales, Opzelura, Hematology/Oncology net sales, GAAP and non-GAAP opex) has been written to the event's guidance[] array in data/events/INCY_US.json; Jakafi net sales guidance was explicitly left unchanged (\"held\")."
 }
