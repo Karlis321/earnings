@@ -1,0 +1,35 @@
+{
+  "ticker": "WFC US",
+  "period": "FY2026 Q2",
+  "reported_at": "2026-07-14",
+  "generated_at": "2026-08-13T00:00:00Z",
+  "depth": "filing",
+  "headline": "Profit jumps on broad growth as buybacks continue",
+  "kpis": [
+    { "label": "Revenue", "value": "$22,622M", "delta": "+9%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Revenue", "value": "$22,622M", "delta": "+5%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Net income", "value": "$6,407M", "delta": "+17%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Net income", "value": "$6,407M", "delta": "+22%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Diluted EPS", "value": "$2.00", "delta": "+25%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Diluted EPS", "value": "$2.00", "delta": "+25%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Basic EPS", "value": "$2.02", "delta": "+25.5%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Pretax income", "value": "$8,047M", "delta": "+25.0%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Total cash & equivalents", "value": "$201,461M", "delta": "+4.3%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Long-term debt", "value": "$182,139M", "delta": "+3.3%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Short-term debt", "value": "$25,168M", "delta": "-86.6%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Shareholders' equity", "value": "$180,190M", "delta": "-0.5%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Diluted shares outstanding", "value": "3,074.6M", "delta": "-5.9%", "delta_basis": "y/y", "direction": "down" }
+  ],
+  "summary_short": "Wells Fargo's Q2 2026 net income rose 17% y/y (22% q/q) to $6,407M on 9% y/y revenue growth to $22,622M, with diluted EPS up 25% y/y to $2.00, helped by a $132M discrete tax benefit and continued share buybacks.",
+  "summary_long": "Revenue rose 9% y/y to $22,622M as net interest income grew 5% on lower deposit costs and balance-sheet growth while noninterest income rose 13% on venture-capital gains and higher advisory/investment-banking fees. Net income climbed 17% y/y (22% q/q) to $6,407M, aided by expense discipline (efficiency ratio improved to 60% from 64%) and a $132M discrete tax benefit. Diluted EPS rose 25% y/y to $2.00. Credit quality stayed strong: net charge-offs fell 11% y/y and provision for credit losses declined 9%. Wells Fargo repurchased $3.0B of stock in the quarter and expects to raise its Q3 dividend 11% to $0.50/share, up from $0.45. CET1 ratio was 10.3%, down from 11.1% a year ago.",
+  "drivers": [
+    { "metric": "Revenue", "direction": "up", "explanation": "Net interest income rose 5% on lower deposit costs and balance-sheet growth; noninterest income rose 13% on venture-capital gains and higher advisory/investment-banking fees.", "basis": "company-disclosed" },
+    { "metric": "Net income", "direction": "up", "explanation": "Broad-based revenue growth and expense discipline (efficiency ratio improved to 60%) drove profit higher, plus a $132M discrete tax benefit from resolving prior-period tax matters.", "basis": "company-disclosed" },
+    { "metric": "Diluted EPS", "direction": "up", "explanation": "EPS grew faster than net income (25% vs 17% y/y) because diluted shares outstanding fell 5.9% y/y on continued buybacks, adding extra per-share lift.", "basis": "derived-arithmetic" },
+    { "metric": "Pretax income", "direction": "up", "explanation": "Pretax income rose as provision for credit losses fell 9% y/y on strong consumer and commercial credit quality, letting revenue growth flow through to pretax profit.", "basis": "company-disclosed" },
+    { "metric": "Short-term debt", "direction": "down", "explanation": "not explained in the release", "basis": "company-disclosed" },
+    { "metric": "overall", "direction": "up", "explanation": "CEO Scharf cited EPS growth of 25% y/y, positive operating leverage, strong credit quality, and 12% y/y average loan growth as broad-based momentum across all four operating segments.", "basis": "company-disclosed" }
+  ],
+  "source_url": "https://www.sec.gov/Archives/edgar/data/72971/000007297126000288/wfc2qer07-14x26ex991xrelea.htm",
+  "confidence_notes": "FORCE-REGENERATION: this summary was generated in force-regenerate mode per explicit instruction, with Step 0's already-exists guard intentionally skipped; no WFC_US_FY2026_Q2.json previously existed on disk (resolve-earnings-target.mjs reported summaryExists=false), so this run is a first-time generation rather than a true overwrite, though the force-regen path was followed as instructed. EXHIBIT RESOLUTION: the shard's sourceLink pointed at the 8-K cover document (wfc-20260714.htm); scripts/resolve-edgar-exhibit.mjs correctly resolved it to the EX-99.1 press-release exhibit (wfc2qer07-14x26ex991xrelea.htm), which was fetched directly rather than the cover page. LEDGER DISCREPANCY: the shard's stored kpis.revenue_usd_m.prior_yy (Yahoo fundamentals-timeseries, $20,569M) does not match the press release's own Q2 2025 comparative total revenue of $20,822M (a $253M gap) — the release separately discloses a $253 million one-time gain from the merchant-services joint-venture acquisition in Q2 2025, which may explain the difference if the shard figure excludes it, but this is not confirmed by the document. This summary uses the release's own y/y revenue figure ($20,822M, +9%) rather than the shard's Yahoo-sourced prior, per ledger discipline (prefer the primary document over a wire aggregate when both are available). Basic EPS, pretax income, cash, long-term/short-term debt, shareholders' equity, and diluted shares all reconcile against resolve-earnings-target.mjs's SEC-verbatim kpis object and are not separately broken out in the press release table (10-Q/XBRL sourced). Short-term debt fell 86.6% y/y ($187,995M to $25,168M) — a large swing not addressed anywhere in the press release narrative; flagged as an open data-quality item rather than explained away. All financial results in the release are labeled preliminary pending the Form 10-Q. STEP 3B: extracted 8 extended metrics at >=0.75 confidence from the release's numeric tables (buyback dollars, implied prior dividend/share, NIM, efficiency ratio, CET1, ROTCE, net charge-off ratio, provision for credit losses); dividend_per_share ($0.45) is inferred from the CEO's statement that Q3's dividend rises 'to $0.50 per common share...up from $0.45 per share', read as the Q2 2026 rate, at confidence 0.75; no adjusted/non-GAAP EPS, capex, FCF, or next-quarter revenue/EPS guidance figures appeared in this release, so those universal-set metrics were omitted per the no-hit-no-invent rule. GUIDANCE: the Q3 2026 dividend increase to $0.50/share (from $0.45, +11%) is explicitly company-stated forward guidance and was written to the event shard's guidance[] array with move='raised'; no other forward guidance (revenue, EPS, loan growth) was given in this release."
+}
