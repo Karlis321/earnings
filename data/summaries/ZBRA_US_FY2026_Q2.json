@@ -1,0 +1,35 @@
+{
+  "ticker": "ZBRA US",
+  "period": "FY2026 Q2",
+  "reported_at": "2026-08-04",
+  "generated_at": "2026-08-13T17:05:00.000Z",
+  "depth": "filing",
+  "headline": "Zebra posts a record quarter, raises its full-year outlook",
+  "kpis": [
+    { "label": "Revenue", "value": "$1.56B", "delta": "+4.1%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Revenue", "value": "$1.56B", "delta": "+20.4%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Gross profit", "value": "$825M", "delta": "+33.9%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Operating income", "value": "$321M", "delta": "+75.4%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Net income", "value": "$233M", "delta": "+108.0%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EPS diluted (GAAP)", "value": "$4.85", "delta": "+78.3%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "EPS diluted (GAAP)", "value": "$4.85", "delta": "+121.5%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EBITDA", "value": "$377M", "delta": "+83.0%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Total cash", "value": "$157M", "delta": "-82.0%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Total debt", "value": "$2.78B", "delta": "+27.2%", "delta_basis": "y/y", "direction": "up" }
+  ],
+  "summary_short": "Zebra's Q2 2026 net sales rose 20.4% y/y to $1,557M (9.2% organic) with broad-based growth across both segments, and net income more than doubled to $233M ($4.85 diluted GAAP EPS) as gross margin expanded 540bp to 53.0% on IEEPA tariff recoveries and favorable FX.",
+  "summary_long": "Second-quarter net sales rose 20.4% y/y to $1,557M (9.2% organic), with Connected Frontline +25.9% reported and Asset Visibility & Automation +13.5%. Gross margin expanded 540bp y/y to 53.0%, driven primarily by $73M of IEEPA tariff recoveries and favorable foreign-currency effects. Operating expenses rose to $504M on acquisition-related amortization and integration costs. Net income more than doubled to $233M ($4.85 diluted EPS; non-GAAP $6.35). The company raised full-year 2026 guidance: sales growth to 14%-16%, adjusted EBITDA margin to 23.5%-24.0%, and non-GAAP diluted EPS to $20.75-$21.25, with free cash flow expected above $1 billion. Cash fell to $157M on $268M of quarterly buybacks; total debt rose to $2,776M.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/877212/000162828026052158/zbraex99120260704.htm",
+  "confidence_notes": "REGENERATION: this run was invoked in force-regenerate mode with the Step-0 'already exists' guard explicitly skipped. Note: no prior ZBRA_US_FY2026_Q2.json summary actually existed on disk before this run (resolver reported summaryExists=false) — this is a first-time compose, not a literal overwrite, despite the force-regen framing of the request. Source-link correction: the event's stored sourceLink pointed to the 8-K cover document (zbra-20260804.htm), which is a stub pointing at Exhibit 99.1; resolve-edgar-exhibit.mjs resolved the actual press release at zbraex99120260704.htm, which is what this summary and the guidance array cite. EBITDA note: the shard's stored prior-year EBITDA ($206M, Yahoo fundamentals-timeseries provenance) differs from the company's own GAAP-to-non-GAAP reconciliation for Q2 2025 ($226M non-GAAP EBITDA per the release's own table); the y/y EBITDA delta above (+83.0%) uses the shard's stored prior value per ledger discipline (never substituting a different provenance mid-calculation), so treat it as directionally correct but not exactly reconciled to the release's own $226M base. 'Total debt' KPI (SEC XBRL LongTermDebt tag, $2,776M) matches the release's own stated 'total debt of $2,776 million'; note the balance sheet's current portion ($2,275M) plus noncurrent ($493M) sums to $2,768M, an immaterial $8M classification/rounding gap versus the combined XBRL figure, not investigated further. IEEPA tariff recoveries ($73M, of which $14M received in-quarter) are cited by the company as a primary driver of the quarter's 540bp gross-margin expansion — a partly one-time item, not a structural margin gain.",
+  "drivers": [
+    { "metric": "Revenue", "direction": "up", "explanation": "Broad-based growth across both segments; organic net sales +9.2% y/y (CF +7.5%, AVA +11.4%), with acquisitions/dispositions and FX adding roughly 11 points to consolidated reported growth.", "basis": "company-disclosed" },
+    { "metric": "Gross profit", "direction": "up", "explanation": "Gross margin rose to 53.0% from 47.6% y/y primarily due to IEEPA tariff recoveries and favorable foreign currency exchange.", "basis": "company-disclosed" },
+    { "metric": "Operating income", "direction": "up", "explanation": "Gross profit growth outpaced the rise in operating expenses, which increased to $504M on amortization of intangibles and costs tied to acquired businesses.", "basis": "company-disclosed" },
+    { "metric": "Net income", "direction": "up", "explanation": "Reflects the flow-through of higher gross profit from tariff recoveries and FX, partly offset by higher operating expenses from acquired-business amortization and integration costs.", "basis": "derived-arithmetic" },
+    { "metric": "EPS diluted (GAAP)", "direction": "up", "explanation": "Driven by higher net income plus a lower diluted share count (48.1M vs 51.3M y/y) from continued buybacks.", "basis": "derived-arithmetic" },
+    { "metric": "EBITDA", "direction": "up", "explanation": "Follows the same operating-income drivers (tariff recoveries, FX, revenue growth) plus depreciation and amortization add-backs.", "basis": "derived-arithmetic" },
+    { "metric": "Total cash", "direction": "down", "explanation": "Cash fell from $872M to $157M y/y mainly on $568M of first-half share repurchases and financing activity, even as six-month operating cash flow was $387M and free cash flow $361M.", "basis": "company-disclosed" },
+    { "metric": "Total debt", "direction": "up", "explanation": "Total debt rose to $2,776M after $325M of new debt issuance in the first half of 2026.", "basis": "company-disclosed" },
+    { "metric": "overall", "direction": "up", "explanation": "Record quarter with broad-based growth; the company raised full-year 2026 guidance to 14%-16% sales growth, 23.5%-24.0% adjusted EBITDA margin, and $20.75-$21.25 non-GAAP diluted EPS.", "basis": "company-disclosed" }
+  ]
+}
