@@ -1,0 +1,36 @@
+{
+  "ticker": "BPOP US",
+  "period": "FY2026 Q2",
+  "reported_at": "2026-07-23",
+  "generated_at": "2026-08-14T00:00:00.000Z",
+  "depth": "filing",
+  "headline": "Popular posts a record quarter despite a one-off charge-off",
+  "kpis": [
+    { "label": "Net income", "value": "$278.2M", "delta": "+13.2%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Net income", "value": "$278.2M", "delta": "+32.2%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EPS (basic)", "value": "$4.35", "delta": "+15.1%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "EPS (basic)", "value": "$4.35", "delta": "+40.8%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EPS (diluted)", "value": "$4.35", "delta": "+15.1%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "EPS (diluted)", "value": "$4.35", "delta": "+40.8%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Pretax income", "value": "$324.0M", "delta": "+10.7%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Pretax income", "value": "$324.0M", "delta": "+25.4%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Total cash", "value": "$375.0M", "delta": "-5.0%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Total cash", "value": "$375.0M", "delta": "-8.8%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Shareholders' equity", "value": "$6.43B", "delta": "+1.9%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Shareholders' equity", "value": "$6.43B", "delta": "+8.0%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Weighted diluted shares", "value": "63.9M", "delta": "-1.5%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Weighted diluted shares", "value": "63.9M", "delta": "-6.1%", "delta_basis": "y/y", "direction": "down" }
+  ],
+  "summary_short": "Popular's Q2 2026 net income rose 13% q/q and 32% y/y to $278M ($4.35 diluted EPS) as net interest income grew 3.5% q/q to $693M and ROTCE improved to 17.02% from 15.46%, though net charge-offs jumped to a 1.05% ratio (0.33% excluding a $71M one-off commercial charge-off).",
+  "summary_long": "Net interest income rose 3.5% q/q to $693M on higher securities and commercial-loan income; NIM flat at 3.66%. Non-interest income grew 8% to $181M on card fees. Provision for credit losses fell $10M q/q to $66M, even as a $71M one-off commercial charge-off pushed NCOs to 1.05% (0.33% ex-item). Opex rose 3% on profit-sharing and incentive accruals. CET1 rose to 16.08%; the company repurchased $125M of stock, exhausted its $500M buyback authorization, and announced a new $1B authorization plus a dividend hike to $0.90/share. Management raised FY2026 NII growth guidance (8%-9%, from 5%-7%), narrowed the tax-rate outlook lower, and widened NCO guidance. CEO Ferrer will retire August 31, 2026, succeeded by CFO García.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/763901/000076390126000013/bpop-exx991.htm",
+  "confidence_notes": "REGENERATION: this run was invoked in force-regenerate mode with the Step-0 'already exists' guard explicitly skipped. No prior BPOP_US_FY2026_Q2.json summary actually existed on disk before this run (resolver reported summaryExists=false) — this is a first-time compose, not a literal overwrite, despite the force-regen framing of the request. Source-link correction: the event's stored sourceLink (https://www.sec.gov/Archives/edgar/data/763901/000119312526263044/d46942d8k.htm) is NOT the earnings release — it is an unrelated 8-K (Item 8.01) disclosing a third-party (Evertec) cybersecurity incident affecting BPPR customer data, filed 2026-06-09, before the Q2 2026 quarter even closed. resolve-edgar-exhibit.mjs correctly found no EX-99 exhibit on that filing (exit 3) because it isn't an earnings 8-K at all. The actual Q2 2026 earnings release (Items 2.02/7.01/9.01) was located via the EDGAR company filing list at accession 0000763901-26-000013, filed 2026-07-23, exhibit bpop-exx991.htm — that document is what this summary and extendedMetrics cite; the shard's sourceLink should be corrected in a follow-up pass. reported_at above (2026-07-23) is the actual filing/report date rather than the shard's eventDate (2026-06-30, a fiscal-quarter-end placeholder) per the /earnings 'prefer authoritative date, note mismatch' rule. Credit-quality note: the 1.05% consolidated NCO ratio (44bp q/q increase) is driven almost entirely by a single $71M commercial charge-off; the release itself states the NCO ratio would be 0.33% excluding that item — treat the reported ratio as distorted by a one-off, not a trend change. EPS basic and diluted are identical ($4.35) in all three periods shown per the company's own tables (no dilutive effect this quarter).",
+  "drivers": [
+    { "metric": "Net income", "direction": "up", "explanation": "Higher net interest income and lower loan-loss provision, partly offset by higher operating expenses tied to profit-sharing and incentive accruals.", "basis": "company-disclosed" },
+    { "metric": "Pretax income", "direction": "up", "explanation": "Net interest income +$23M q/q and non-interest income +$15M q/q outweighed a $17M rise in operating expenses.", "basis": "derived-arithmetic" },
+    { "metric": "Total cash", "direction": "down", "explanation": "Not explained in the release as a discrete cause; release does not reconcile the cash line item beyond capital-return activity noted for equity.", "basis": "company-disclosed" },
+    { "metric": "Shareholders' equity", "direction": "up", "explanation": "Driven by net income, partially offset by common stock repurchases and dividends paid during the quarter.", "basis": "company-disclosed" },
+    { "metric": "Weighted diluted shares", "direction": "down", "explanation": "Reflects continued common stock repurchases, including $125M bought back in Q2 2026 alone.", "basis": "derived-arithmetic" },
+    { "metric": "overall", "direction": "up", "explanation": "Record quarter with NII growth, fee income growth, and improved ROTCE (17.02%), raising FY2026 NII and non-interest income guidance, though a one-off $71M charge-off inflated the NCO ratio and CEO Ferrer announced his retirement effective August 31, 2026.", "basis": "company-disclosed" }
+  ]
+}
