@@ -58,10 +58,14 @@ async function main() {
   const pool = new Set([...tierA]);
 
   // Build the CANDIDATE POOL — same universe filter both scopes share.
+  // Only excludes types that structurally can't produce an earnings
+  // summary: developer/ETF (not earnings-reporting) and pre-listing
+  // (no historical filings). Everything else is fair game — including
+  // dormant names (may still trickle a delayed filing) and foreign-
+  // filer ADRs (BABA-style; report on 6-K/20-F, but /earnings can
+  // still summarize when a release is present).
   for (const e of reg.entities ?? []) {
     if (e.securityType !== "operating") continue;
-    if (e.dormant) continue;
-    if (e.secFilerType === "foreign") continue;
     if (e.secFilerType === "pre-listing") continue;
 
     if (SCOPE === "indexed") {
