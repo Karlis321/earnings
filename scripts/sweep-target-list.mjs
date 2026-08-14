@@ -52,10 +52,13 @@ function daysBack(iso, ref) {
 
 async function main() {
   const reg = JSON.parse(await fs.readFile(path.join(ROOT, "data", "entity-registry.json"), "utf-8"));
-  const covered = JSON.parse(await fs.readFile(path.join(ROOT, "data", "covered.json"), "utf-8"));
 
-  const tierA = new Set(covered.tickers ?? []);
-  const pool = new Set([...tierA]);
+  // Freshness-based due list only — every earnings-reporting ticker
+  // that has a report in the last RECENT_DAYS days AND lacks a summary
+  // for that period is candidate. Covered-tier is NOT auto-included;
+  // covered names still get processed when they actually report (the
+  // freshness filter picks them up like any other ticker).
+  const pool = new Set();
 
   // Build the CANDIDATE POOL — same universe filter both scopes share.
   // Only excludes types that structurally can't produce an earnings
@@ -143,12 +146,7 @@ async function main() {
   // and yesterday's reporters before older ones. Then apply LIMIT.
   due.sort((a, b) => b.lastEventDate.localeCompare(a.lastEventDate));
   const dueTickers = due.slice(0, LIMIT).map((d) => d.ticker);
-
-  // Always include covered-tier — Tier A is 17 names, always inspected.
-  // Union with due-reporters + dedupe. Cap the FINAL output too so
-  // the covered set doesn't inflate past LIMIT.
-  const out = [...new Set([...tierA, ...dueTickers])].sort();
-  process.stdout.write(JSON.stringify(out.slice(0, LIMIT)));
+  process.stdout.write(JSON.stringify(dueTickers.sort()));
 }
 
 main().catch((e) => { console.error(e); process.exit(1); });
