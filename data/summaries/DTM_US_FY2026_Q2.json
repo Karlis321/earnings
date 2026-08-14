@@ -1,0 +1,36 @@
+{
+  "ticker": "DTM US",
+  "period": "FY2026 Q2",
+  "reported_at": "2026-06-30",
+  "generated_at": "2026-08-14T15:28:47.000Z",
+  "depth": "filing",
+  "headline": "Revenue and EBITDA grow, but a higher tax rate hits earnings",
+  "kpis": [
+    { "label": "Revenue", "value": "$343M", "delta": "+2.1%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Revenue", "value": "$343M", "delta": "+11.0%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Net income", "value": "$112M", "delta": "-13.8%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Net income", "value": "$112M", "delta": "+4.7%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EPS diluted (GAAP)", "value": "$1.09", "delta": "-14.2%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "EPS diluted (GAAP)", "value": "$1.09", "delta": "+4.8%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EBITDA", "value": "$283M", "delta": "+0.0%", "delta_basis": "q/q", "direction": "flat" },
+    { "label": "EBITDA", "value": "$283M", "delta": "+11.9%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Operating income", "value": "$173M", "delta": "+4.2%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Operating income", "value": "$173M", "delta": "+11.6%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Total cash", "value": "$172M", "delta": "+132.4%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Long-term debt", "value": "$3,326M", "delta": "+0.2%", "delta_basis": "y/y", "direction": "flat" }
+  ],
+  "summary_short": "DT Midstream's Q2 2026 revenue rose 2.1% q/q and 11.0% y/y to $343M, but net income attributable fell 13.8% q/q to $112M ($1.09 diluted EPS) on lower equity-method earnings and a higher effective tax rate, even as EBITDA held flat q/q at $283M.",
+  "summary_long": "Second-quarter revenue rose to $343M (+2.1% q/q, +11.0% y/y), with Gathering segment growth (Blue Union and Appalachia MVP-related volumes) offsetting a modest Pipeline segment revenue decline. Operating income rose to $173M (+4.2% q/q, +11.6% y/y). Net income attributable to DT Midstream fell to $112M (-13.8% q/q, +4.7% y/y; diluted EPS $1.09) as equity-method earnings from Millennium and NEXUS fell $10M and the effective tax rate rose to 32% from 24%. EBITDA held flat q/q at $283M, up 11.9% y/y. Cash rose to $172M after a $150M Guardian Term Loan funded a repurchase of $150M of senior notes; long-term debt was flat at $3,326M with no maturities until 2029. The filing states no quantified full-year guidance.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/1842022/000184202226000009/dtm-20260630.htm",
+  "confidence_notes": "REGENERATION: this run was invoked in force-regenerate mode with the Step-0 'already exists' guard explicitly skipped, per explicit instruction. Note: no prior DTM_US_FY2026_Q2.json summary actually existed on disk before this run (resolver reported summaryExists=false) — this is a first-time compose, not a literal overwrite, despite the force-regen framing of the request. KPI provenance note: operating_income_usd_m's current-quarter value ($173M) is Yahoo fundamentals-timeseries-sourced while its q/q prior ($166M) is SEC-EDGAR-sourced (OperatingIncomeLoss); both reconcile exactly to the 10-Q's own segment table ($173M Q2 2026 vs $166M Q1 2026), so the mixed provenance carries no inconsistency here. This 10-Q discloses no non-GAAP EPS, no share buybacks, and no quantified forward guidance (revenue/EPS/capex ranges) — Step 3b's universal extended-metrics set is limited to capex_total ($105M, Q2 2026 segment total) and dividend_per_share ($0.880); guidance_revenue_next_q and guidance_eps_next_q were omitted (not populated with nulls) per the omit-on-no-hit rule. DTM's registry sectorTags (energy, oil-gas) map to E&P production metrics (production_boe_d, realized oil/gas price, lifting cost, netback, hedge P&L) that don't apply to a fee-based pipeline/gathering business with no hydrocarbon production — none had a filing hit, so none were extracted.",
+  "drivers": [
+    { "metric": "Revenue", "direction": "up", "explanation": "Gathering revenue rose $12M q/q on higher Blue Union and Appalachia (MVP expansion) volumes, more than offsetting a $2M Pipeline revenue decline from lower LEAP short-term contract and OFO fee revenue.", "basis": "company-disclosed" },
+    { "metric": "Net income", "direction": "down", "explanation": "Pipeline segment equity earnings from Millennium and NEXUS fell $10M on lower seasonal contract revenue and higher opex, and the effective tax rate rose to 32% from 24%, partly offset by a stronger Gathering result.", "basis": "company-disclosed" },
+    { "metric": "EPS diluted (GAAP)", "direction": "down", "explanation": "Tracks the q/q net income decline; diluted share count was essentially unchanged (102.6M vs 102.7M).", "basis": "derived-arithmetic" },
+    { "metric": "EBITDA", "direction": "flat", "explanation": "Held flat q/q as Gathering segment revenue growth was offset by higher operation-and-maintenance and depreciation expense at Blue Union and other Gathering assets.", "basis": "derived-arithmetic" },
+    { "metric": "Operating income", "direction": "up", "explanation": "Gathering segment revenue growth outpaced a $4M rise in O&M expense from higher Blue Union production-related costs, lifting consolidated operating income.", "basis": "company-disclosed" },
+    { "metric": "Total cash", "direction": "up", "explanation": "Cash rose after Guardian's $150M term loan issuance funded a $150M repurchase of 2029/2031 senior notes, alongside six-month operating cash flow of $502M.", "basis": "company-disclosed" },
+    { "metric": "Long-term debt", "direction": "flat", "explanation": "New $150M Guardian Term Loan proceeds were used to repurchase $150M of senior notes, leaving net long-term debt essentially unchanged y/y.", "basis": "company-disclosed" },
+    { "metric": "overall", "direction": "up", "explanation": "Company reiterates its natural gas-centric growth strategy across Pipeline (LEAP, Stonewall, Washington 10) and Gathering (Blue Union, Appalachia, Ohio Utica, Tioga) expansions, backed by ~$1.2B of available liquidity and no debt maturities until 2029; the filing gives no quantified full-year guidance.", "basis": "company-disclosed" }
+  ]
+}
