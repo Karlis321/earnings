@@ -1,0 +1,20 @@
+{
+  "ticker": "APLD US",
+  "period": "FY2026 Q2",
+  "reported_at": "2026-07-29",
+  "generated_at": "2026-08-14T11:48:22.000Z",
+  "depth": "filing",
+  "headline": "Data-center revenue surges while losses persist",
+  "kpis": [
+    { "label": "EPS (diluted)", "value": "-$0.39", "delta": "-8.3%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "EPS (diluted)", "value": "-$0.39", "delta": "-62.5%", "delta_basis": "y/y", "direction": "down" }
+  ],
+  "summary_short": "Applied Digital's shard-tracked diluted EPS for this event was -$0.39, a loss that widened 8.3% q/q and 62.5% y/y.",
+  "summary_long": "The fetched primary for this event is Applied Digital's Form 10-K for the fiscal year ended May 31, 2026 — full fiscal-year revenue rose to $611.3M from $228.6M in FY2025, driven by the Polaris Forge 1 HPC data-center leasing ramp (one hyperscale customer was 59% of revenue). The Cloud Services business was divested to Ekso Bionics in May 2026. Full-year net loss attributable to common stockholders was $250.3M vs $233.7M in FY2025; capex totaled roughly $2.9B on data-center construction. Adjusted (non-GAAP) diluted EPS from continuing operations was $0.11 for the fiscal year. No revenue or EPS guidance for a future period was stated in the filing.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/1144879/000114487926000048/apld-20260531.htm",
+  "confidence_notes": "REGENERATION RUN: force-regenerated per operator instruction (Step-0 already-exists guard skipped); note no prior APLD_US_FY2026_Q2.json actually existed on disk before this run. PERIOD-LABEL MISMATCH (flagging, not correcting): the resolver labels this event 'FY2026 Q2' with eventDate 2026-05-31, but the fetched primary (accession 0001144879-26-000048, filed 2026-07-29) is explicitly Applied Digital's ANNUAL REPORT (10-K) for the fiscal year ended May 31, 2026 — i.e. fiscal year-end/Q4 scope, not Q2. Cross-checking the shard's own sequence (FY2026 Q1 eventDate 2026-02-28, FY2025 Q4 eventDate 2025-11-30, FY2025 Q3 eventDate 2025-08-31, FY2025 Q2 eventDate 2025-05-31) shows every quarter boundary offset from APLD's real fiscal calendar (FY end May 31 → real Q4 = Mar-May), consistent with the calendar-quarter-vs-fiscal-quarter mislabeling pattern documented in CLAUDE.md's fiscal-offset invariant, on a ticker not yet on that list's known-affected set. reported_at above uses the filing's actual filing date (2026-07-29) rather than the shard's quarter-end eventDate placeholder (2026-05-31), per the Step-0 'more authoritative date' rule. KPI values (EPS -$0.39 and its q/q, y/y priors) are the shard's stored values, used unmodified per ledger discipline — they were not reconciled against or replaced by this annual filing's own full-year EPS ($(0.91) GAAP / $0.11 non-GAAP), which cannot be honestly decomposed into a single quarter from this document alone. Drivers and the extendedMetrics entries below (capex_total, eps_non_gaap) are FULL FISCAL-YEAR figures from this 10-K, explicitly marked as such, not quarterly.",
+  "drivers": [
+    { "metric": "EPS (diluted)", "direction": "down", "explanation": "Not explained in the release for this specific shard-labeled quarter — the fetched filing is APLD's FY2026 annual report (year ended May 31, 2026), not a Q2-specific document, so no quarter-scoped cause is stated.", "basis": "company-disclosed" },
+    { "metric": "overall", "direction": "up", "explanation": "Full fiscal-year revenue growth was driven by the Polaris Forge 1 HPC data-center leasing ramp, with one hyperscale customer at 59% of revenue; the Cloud Services segment was divested to Ekso Bionics in May 2026.", "basis": "company-disclosed" }
+  ]
+}
