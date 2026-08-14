@@ -1,0 +1,35 @@
+{
+  "ticker": "CNA US",
+  "period": "FY2026 Q2",
+  "reported_at": "2026-08-03",
+  "generated_at": "2026-08-14T14:10:34.000Z",
+  "depth": "filing",
+  "headline": "Investment income cushions weaker underwriting results",
+  "kpis": [
+    { "label": "EPS (basic)", "value": "$1.18", "delta": "+7.3%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EPS (diluted)", "value": "$1.18", "delta": "+7.3%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Revenue", "value": "$3,829M", "delta": "+3.0%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Pretax income", "value": "$405M", "delta": "+6.6%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Net income", "value": "$321M", "delta": "+7.4%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Total cash", "value": "$339M", "delta": "-9.1%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Long-term debt", "value": "$2,973M", "delta": "+20.1%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Shareholders' equity", "value": "$11,186M", "delta": "+4.9%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Weighted diluted shares", "value": "271.7M", "delta": "-0.2%", "delta_basis": "y/y", "direction": "flat" }
+  ],
+  "summary_short": "CNA's Q2 2026 net income rose 7% y/y to $321M ($1.18 diluted EPS) as net investment losses shrank to $3M from $36M, while core income fell to $324M from $335M on a P&C combined ratio that widened to 96.5% from 94.1%.",
+  "summary_long": "Net income rose 7% y/y to $321M ($1.18 diluted EPS) as net investment losses shrank to $3M from $36M, even as core income fell to $324M from $335M. P&C core income declined to $426M as the combined ratio widened to 96.5% from 94.1% (underlying combined ratio 94.2% vs 91.7%) on higher loss ratios across segments, despite net investment income rising to $461M. Net written premiums grew 4% on record new business of $718M. Corporate & Other's core loss narrowed to $92M from $114M despite a $77M after-tax legacy mass-tort charge. Net investment income overall rose to $701M on higher limited-partnership and fixed-income returns. Stockholders' equity was $11.2B; the board declared a $0.48/share dividend. No numeric forward guidance was given.",
+  "drivers": [
+    { "metric": "Net income", "direction": "up", "explanation": "GAAP net income rose mainly because net investment losses shrank to $3M from $36M in the prior-year quarter, per the core-income reconciliation table.", "basis": "company-disclosed" },
+    { "metric": "EPS (basic)", "direction": "up", "explanation": "Tracks net income's 7.4% y/y rise; weighted-average diluted shares were essentially flat, down 0.2% y/y.", "basis": "derived-arithmetic" },
+    { "metric": "EPS (diluted)", "direction": "up", "explanation": "Tracks net income's 7.4% y/y rise; weighted-average diluted shares were essentially flat, down 0.2% y/y.", "basis": "derived-arithmetic" },
+    { "metric": "Revenue", "direction": "up", "explanation": "Net earned premiums grew 3% y/y and net investment income rose $39M on higher limited-partnership/common-stock returns and fixed-income yields, per the release.", "basis": "company-disclosed" },
+    { "metric": "Pretax income", "direction": "up", "explanation": "Higher net investment income and smaller net investment losses more than offset a weaker P&C underwriting result, whose combined ratio widened 2.4 points y/y.", "basis": "derived-arithmetic" },
+    { "metric": "Total cash", "direction": "down", "explanation": "not explained in the release", "basis": "company-disclosed" },
+    { "metric": "Long-term debt", "direction": "up", "explanation": "not explained in the release", "basis": "company-disclosed" },
+    { "metric": "Shareholders' equity", "direction": "up", "explanation": "not explained in the release for the y/y direction; the release only discusses the sequential (vs year-end 2025) decline, attributed to dividends paid and higher net unrealized investment losses, partly offset by net income.", "basis": "company-disclosed" },
+    { "metric": "Weighted diluted shares", "direction": "flat", "explanation": "not explained in the release; no buyback activity was disclosed this quarter.", "basis": "company-disclosed" },
+    { "metric": "overall", "direction": "up", "explanation": "CEO cited disciplined growth, record new business ($718M, +11%), and strong investment income, while flagging a $77M after-tax legacy mass-tort charge in Corporate & Other and a still-conservative underlying loss ratio of 64.1%.", "basis": "company-disclosed" }
+  ],
+  "source_url": "https://www.sec.gov/Archives/edgar/data/21175/000002117526000043/q22026exhibit991.htm",
+  "confidence_notes": "REGENERATION: this run was invoked in force-regenerate mode with the Step-0 'already exists' guard explicitly skipped per instructions; no CNA_US_FY2026_Q2.json (or any CNA summary) was actually present on disk prior to this run (summaryExists=false per the resolver), so this write is a fresh compose, not a true overwrite of prior content. Ledger note: the release's own net income ($321M vs $299M PY), diluted EPS ($1.18 vs $1.10), and net investment-loss reconciliation ($3M vs $36M) all match the shard's SEC-verbatim KPI values exactly. Basis note: shareholders' equity is UP 4.9% y/y per the shard KPI (used as the displayed delta_basis here), but the release itself only characterizes a DIFFERENT comparison -- a 4% DECREASE from year-end 2025 (sequential), attributed to dividends paid and an increase in net unrealized investment losses, partly offset by net income -- both figures are correct on their own basis and are not in conflict. Sector-metric note: registry sectorTags for CNA are 'financials'/'financial-services', but the registry's financials-sector extended-metric set (NIM, CET1 ratio, ROTCE, net charge-off ratio, deposits balance, provision for credit losses) is bank-specific and none are disclosed by this P&C/life insurer (CNA reports combined ratio, loss ratio, and core ROE instead, which don't map cleanly to the defined ROTCE metric since CNA's 'core return on equity' uses equity excluding AOCI, not tangible equity ex-goodwill/intangibles) -- none of the sector-specific set were extracted. Only universal-set hits (core/non-GAAP diluted EPS of $1.19, quarterly dividend of $0.48/share) populate extendedMetrics. No numeric forward guidance (revenue/EPS/production range) for any future period was given in this release, so no guidance[] entries were written to the shard."
+}
