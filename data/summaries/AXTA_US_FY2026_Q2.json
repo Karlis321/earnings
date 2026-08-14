@@ -1,0 +1,39 @@
+{
+  "ticker": "AXTA US",
+  "period": "FY2026 Q2",
+  "reported_at": "2026-07-29",
+  "generated_at": "2026-08-14T12:30:00.000Z",
+  "depth": "filing",
+  "headline": "Sales rebound sequentially as merger costs squeeze profit",
+  "kpis": [
+    { "label": "Revenue", "value": "$1,346M", "delta": "+7.3%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Revenue", "value": "$1,346M", "delta": "+3.1%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Gross profit", "value": "$465M", "delta": "+11.8%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Gross profit", "value": "$465M", "delta": "+1.8%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Gross margin", "value": "34.5%", "delta": "+1.3ppt", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Gross margin", "value": "34.5%", "delta": "-0.5ppt", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Operating income", "value": "$167M", "delta": "+14.4%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Operating income", "value": "$167M", "delta": "-13.5%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "EBITDA", "value": "$247M", "delta": "+12.8%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "EBITDA", "value": "$247M", "delta": "-5.7%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Net income", "value": "$89M", "delta": "-1.1%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Net income", "value": "$89M", "delta": "-18.3%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "EPS diluted (GAAP)", "value": "$0.41", "delta": "-2.4%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "EPS diluted (GAAP)", "value": "$0.41", "delta": "-18.0%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "EPS basic (GAAP)", "value": "$0.42", "delta": "0.0%", "delta_basis": "q/q", "direction": "flat" },
+    { "label": "EPS basic (GAAP)", "value": "$0.42", "delta": "-16.0%", "delta_basis": "y/y", "direction": "down" }
+  ],
+  "summary_short": "Axalta's Q2 2026 revenue rose to $1,346M, up 3.1% y/y and 7.3% q/q, while net income fell to $89M (-18.3% y/y) as $31M of AkzoNobel merger-related costs weighed on results.",
+  "summary_long": "Net sales rose 3.1% y/y and 7.3% q/q to $1,346M, driven by favorable FX translation and contributions from recent Performance Coatings acquisitions, partially offset by lower North America volumes. Gross margin expanded 130bp q/q to 34.5% but fell 50bp y/y. Operating income rose 14.4% q/q but fell 13.5% y/y to $167M as other operating charges jumped to $42M, including $31M of merger and acquisition costs tied to the proposed AkzoNobel combination (shareholder vote August 5, 2026; expected close late 2026/early 2027). Net income fell 18.3% y/y to $89M; diluted EPS was $0.41. The company prepaid $125M of 2029 Term Loans; cash fell to $633M from $657M at year-end. No new guidance was issued in this filing.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/1616862/000162828026050466/axta-20260630.htm",
+  "confidence_notes": "REGENERATION: this run was invoked in force-regenerate mode with the Step-0 'already exists' guard explicitly skipped, per instruction. Note: no prior AXTA_US_FY2026_Q2.json summary actually existed on disk before this run (resolver reported summaryExists=false) — this is a first-time compose, not a literal overwrite, despite the force-regen framing of the request. Report-date correction: the shard's stored eventDate (2026-06-30) is a quarter-end placeholder, not the real filing date; this summary's reported_at uses the actual 10-Q filing date (2026-07-29) per the sourceLink metadata and the filing's own EDGAR index entry — flagged here per the Step-0 mismatch-note rule. Basis clarification on EBITDA: the shard's ebitda_usd_m KPI ($247M, Yahoo fundamentals-timeseries, unadjusted) is NOT the same figure as the company's own segment-level Adjusted EBITDA, which sums to $305M for the quarter (Performance Coatings $218M + Mobility Coatings $87M, both company-disclosed and reconciled for restructuring/M&A addbacks in the 10-Q). The two are different bases (unadjusted trailing calc vs management's addback-adjusted segment metric) — not a data error, just not directly comparable. The shard's ebit_usd_m KPI ($171M) was excluded from this summary's KPI table because it reflects a different construction (pretax income + interest expense, ≈$134M + $37M) than the company's own GAAP operating income line ($167M) already included; including both risked implying they're the same metric. No company-issued forward guidance (revenue, EPS, capex, or otherwise) appears anywhere in this 10-Q — guidance array is intentionally empty, not an omission.",
+  "drivers": [
+    { "metric": "overall", "direction": "up", "explanation": "Results reflect the pending all-stock Merger with AkzoNobel (shareholder vote Aug 5, 2026, expected close late 2026/early 2027), which drove $31M of Q2 merger-related costs recognized in other operating charges.", "basis": "company-disclosed" },
+    { "metric": "Revenue", "direction": "up", "explanation": "Increase driven by favorable currency translation (Euro, Mexican Peso, Chinese Yuan, Brazilian Real) and contributions from recent Performance Coatings acquisitions, partially offset by lower North America volumes.", "basis": "company-disclosed" },
+    { "metric": "Gross margin", "direction": "up", "explanation": "Gross margin expansion q/q is not separately reconciled in the release beyond the revenue and cost-of-sales driver lists; treated as a derived readout of those two lines.", "basis": "derived-arithmetic" },
+    { "metric": "Operating income", "direction": "down", "explanation": "Other operating charges rose $30M y/y to $42M, primarily $31M of merger and acquisition costs tied to the proposed AkzoNobel deal.", "basis": "company-disclosed" },
+    { "metric": "EBITDA", "direction": "down", "explanation": "Follows the same operating-income pressure from merger costs; not separately explained by the company beyond the segment Adjusted EBITDA discussion.", "basis": "derived-arithmetic" },
+    { "metric": "Net income", "direction": "down", "explanation": "Tracks the lower operating income; partially offset by an $8M drop in interest expense from lower debt following the $125M term-loan prepayment.", "basis": "company-disclosed" },
+    { "metric": "EPS diluted (GAAP)", "direction": "down", "explanation": "Follows from lower net income; weighted average diluted share count also fell slightly (214.7M vs 218.3M y/y) but did not offset the profit decline.", "basis": "derived-arithmetic" }
+  ]
+}
