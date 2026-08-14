@@ -1,0 +1,40 @@
+{
+  "ticker": "CRBG US",
+  "period": "FY2026 Q2",
+  "reported_at": "2026-08-04",
+  "generated_at": "2026-08-14T14:32:11.000Z",
+  "depth": "filing",
+  "headline": "Net loss narrows sharply as core operating income softens",
+  "kpis": [
+    { "label": "Revenue", "value": "$3.91B", "delta": "-1.3%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Revenue", "value": "$3.91B", "delta": "+43.6%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Pre-tax income", "value": "$52M", "delta": "-46.4%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Pre-tax income", "value": "$52M", "delta": "loss→profit", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Net income", "value": "$2M", "delta": "loss→profit", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Net income", "value": "$2M", "delta": "loss→profit", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EPS basic (GAAP)", "value": "-$0.04", "delta": "+63.6%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "EPS basic (GAAP)", "value": "-$0.04", "delta": "+96.7%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EPS diluted (GAAP)", "value": "-$0.04", "delta": "+63.6%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "EPS diluted (GAAP)", "value": "-$0.04", "delta": "+96.7%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Total cash", "value": "$358M", "delta": "-5.3%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Total cash", "value": "$358M", "delta": "+20.9%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Short-term debt", "value": "$1.25B", "delta": null, "delta_basis": "none", "direction": "n/a" },
+    { "label": "Short-term debt", "value": "$1.25B", "delta": "+1137.6%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Shareholders' equity", "value": "$10.65B", "delta": "-1.4%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Shareholders' equity", "value": "$10.65B", "delta": "-13.4%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Weighted diluted shares", "value": "454.2M", "delta": "-4.1%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Weighted diluted shares", "value": "454.2M", "delta": "-17.5%", "delta_basis": "y/y", "direction": "down" }
+  ],
+  "summary_short": "Corebridge's Q2 2026 net loss available to common shareholders narrowed to $16M ($0.04/share) from $660M ($1.20/share) a year ago, while adjusted operating income fell 21% y/y to $664M as shareholders approved the pending Equitable merger on July 30.",
+  "summary_long": "Net loss available to common shareholders narrowed to $16M ($0.04/share diluted) from $660M ($1.20/share) a year ago, driven mainly by lower realized investment losses, partly offset by unfavorable market-risk-benefit fair-value changes and higher interest credited to policyholders. Adjusted pre-tax operating income (APTOI) fell 21% y/y to $664M (-2% ex-variable investment income) on higher policyholder benefits and interest credited, partly offset by higher premiums and investment income. Premiums and deposits fell 13% y/y to $9.1B on lower fixed-annuity sales. The company returned $412M to shareholders ($300M buybacks, $112M dividends) and declared a $0.25/share dividend. Shareholders approved the pending Equitable merger on July 30. No forward guidance was found in the release.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/1889539/000188953926000137/corebridgefinancial-pressr.htm",
+  "confidence_notes": "REGENERATION: this run was invoked in force-regenerate mode with the Step-0 'already exists' guard explicitly skipped, producing a fresh summary that overwrites any existing file on disk. Note: no prior CRBG_US_FY2026_Q2.json summary actually existed on disk before this run (resolver reported summaryExists=false) — this is a first-time compose, not a literal overwrite, despite the force-regen framing of the request. Exhibit resolution: the event's stored sourceLink pointed to the 8-K cover document (crbg-20260804.htm); scripts/resolve-edgar-exhibit.mjs found no exhibit named EX-99* on the filing (exit code 3), but the filing index listed corebridgefinancial-pressr.htm as the only other substantive document in the accession folder, which was fetched directly and used for this summary and the Step 3b extendedMetrics entries. Net income vs. release headline: the SEC-verbatim NetIncomeLoss KPI shows +$2M total net income, while the release's own headline metric — 'net loss available to common shareholders' — was -$16M; the ~$18M gap is preferred-stock dividends deducted before the per-common-share calculation (EPS -$0.04 reconciles to the -$16M figure, not the +$2M SEC tag). Both figures are legitimate same-basis SEC/company data, not a data-quality issue — just two different net-income concepts, so both are kept on the shard with their own deltas. Short-term debt: ShortTermBorrowings rose from $101M y/y to $1,250M; the release's narrative text does not explain this line item, so no driver is asserted for it. Weighted diluted shares fell 17.5% y/y (550.3M→454.2M), consistent with the $300M of Q2 buybacks disclosed in the release, not a one-off. No forward guidance was found in the release (Rung 1 filing); guidance array left untouched/empty. Step 3b sector metrics: entity sectorTags are ['financials','financial-services'], but the registry's 'financials' extended-metric set (NIM, CET1 ratio, ROTCE, net charge-off ratio, deposits balance, provision for credit losses) is bank-specific and none of those exact concepts are disclosed in this life-insurer release; only the universal-set hits (non-GAAP EPS, buyback, dividend/share) were captured.",
+  "drivers": [
+    { "metric": "Revenue", "direction": "up", "explanation": "Revenue's y/y growth reflects lower realized investment losses versus Q2 2025's elevated losses plus higher premiums and net investment income; the release does not separately explain the small q/q dip.", "basis": "derived-arithmetic" },
+    { "metric": "Net income", "direction": "up", "explanation": "Net loss narrowed to $16M from $660M a year ago, driven mainly by lower realized losses, partly offset by unfavorable changes in market risk benefit fair value and higher interest credited to policyholders.", "basis": "company-disclosed" },
+    { "metric": "Pre-tax income", "direction": "up", "explanation": "Swung to a $52M pre-tax profit from a $608M pre-tax loss a year ago; the release ties the after-tax net-loss narrowing behind this to lower realized investment losses.", "basis": "derived-arithmetic" },
+    { "metric": "EPS basic (GAAP)", "direction": "up", "explanation": "Loss per share narrowed to $0.04 from $1.20 a year ago, tracking the net-loss narrowing described above and aided by a 17.5% y/y drop in diluted share count from continued buybacks.", "basis": "derived-arithmetic" },
+    { "metric": "Shareholders' equity", "direction": "down", "explanation": "not explained in the release", "basis": "company-disclosed" },
+    { "metric": "overall", "direction": "up", "explanation": "CEO Marc Costantini called Q2 execution strong and said shareholder approval of the Equitable merger on July 30 was a \"pivotal milestone\" toward final execution and value creation.", "basis": "company-disclosed" }
+  ]
+}
