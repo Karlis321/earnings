@@ -1,0 +1,35 @@
+{
+  "ticker": "BURL US",
+  "period": "FY2026 Q2",
+  "reported_at": "2026-05-28",
+  "generated_at": "2026-08-14T00:00:00.000Z",
+  "depth": "filing",
+  "headline": "Sales and margins grow, sequential dip is normal seasonality",
+  "kpis": [
+    { "label": "Revenue", "value": "$2,856.5M", "delta": "-21.68%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Revenue", "value": "$2,856.5M", "delta": "+14.08%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Gross profit", "value": "$1,261.7M", "delta": "-20.90%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Gross profit", "value": "$1,261.7M", "delta": "+14.81%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Operating income", "value": "$167.7M", "delta": "-59.24%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Operating income", "value": "$167.7M", "delta": "+20.55%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EBITDA", "value": "$263.8M", "delta": "-53.60%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "EBITDA", "value": "$263.8M", "delta": "+9.69%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Net income", "value": "$114.7M", "delta": "-63.04%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Net income", "value": "$114.7M", "delta": "+13.80%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EPS (diluted)", "value": "$1.79", "delta": "-63.02%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "EPS (diluted)", "value": "$1.79", "delta": "+13.29%", "delta_basis": "y/y", "direction": "up" }
+  ],
+  "summary_short": "Burlington's Q1 FY2026 revenue rose 14.1% y/y to $2,856.5M (down 21.7% q/q against the holiday quarter), with net income up 13.8% y/y to $114.7M and diluted EPS up 13.3% y/y to $1.79 as gross margin expanded to 44.1%.",
+  "summary_long": "Revenue grew 14.1% y/y to $2,856.5M on 127 net new/non-comparable stores plus 6% comparable-store sales growth, though it fell 21.7% q/q against Burlington's much larger holiday quarter. Gross margin expanded to 44.1% (from 43.8%) on better merchandise margin and freight costs. SG&A held flat at 34.7% of sales; a $15.3M inducement charge tied to a March 2026 convertible-note exchange was a one-off drag on operating income, which still rose 20.5% y/y to $167.7M. Net income rose 13.8% y/y to $114.7M and diluted EPS 13.3% y/y to $1.79. Cash fell to $747.4M (from $1,232.5M at fiscal year-end) after $193.6M of capex and $134.3M of treasury-share purchases. No new company guidance was given in this 10-Q.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/1579298/000119312526245274/burl-20260502.htm",
+  "confidence_notes": "REGENERATION: this run was invoked in force-regenerate mode with the Step-0 'already exists' guard explicitly skipped, per instructions. Note: the resolver reports summaryExists=false and no prior BURL_US_FY2026_Q2.json existed on disk before this run — this is a first-time compose, not a literal overwrite, despite the force-regen framing. Fiscal-period mislabel found: Burlington's own 10-Q repeatedly calls this 'the first quarter of Fiscal 2026' (period ended May 2, 2026; fiscal year runs Feb-Jan), but the shard/resolver label this event 'FY2026 Q2' with a quarter-end placeholder eventDate of 2026-04-30 — an off-by-one-quarter mislabel versus the company's own fiscal numbering, the same class of bug CLAUDE.md's 'Fiscal-offset issuers' invariant describes, though Burlington isn't on that doc's known-affected list. Kept the resolver's 'FY2026 Q2' label here (it matches the shard/filename/summaryPath already on file) rather than unilaterally relabeling the shard, which is out of scope for a single-ticker run. reported_at date note: set to 2026-05-28 (the 10-Q's SEC filing date) rather than the shard's quarter-end placeholder eventDate of 2026-04-30, per Step 0's 'prefer a more authoritative date' rule — no separate earnings 8-K was located/fetched (only the 10-Q, per the fetch budget), so 2026-05-28 is the most authoritative public date available. Seasonality flag: every q/q delta above is steeply negative (revenue -21.7%, net income -63.0%, etc.) because the prior quarter is Burlington's Nov-Jan holiday quarter, which is always its largest — this is normal seasonal step-down, not a business deterioration; the y/y comps (+9% to +21%) are the cleaner read and the headline is written to avoid implying a slowdown. Buyback figure distinction: the cash-flow statement's 'Purchase of treasury shares' of $134.3M (cited in summary_long) blends $80.8M of open-market repurchases under the publicly announced program with $53.5M of tax-withholding share purchases (per the stockholders'-equity statement, Note 2); the extendedMetrics buyback_qtr_usd entry captures only the $80.8M program figure, matching the registry's 'prefer equity statement' guidance.",
+  "drivers": [
+    { "metric": "Revenue", "direction": "up", "explanation": "Net sales rose 14.1% on $196.9M from 127 net new/non-comparable stores opened since Q1 FY2025 plus 6% comparable-store sales growth adding $155.3M, per the MD&A.", "basis": "company-disclosed" },
+    { "metric": "Gross profit", "direction": "up", "explanation": "Gross margin rose to 44.1% from 43.8%, which the filing attributes primarily to improved merchandise margin and lower freight costs.", "basis": "company-disclosed" },
+    { "metric": "Operating income", "direction": "up", "explanation": "SG&A held flat at 34.7% of sales as occupancy and sourcing-cost gains offset higher incentive pay and marketing; a $15.3M note-exchange inducement charge was a one-off drag.", "basis": "company-disclosed" },
+    { "metric": "EBITDA", "direction": "up", "explanation": "Not separately explained for the GAAP figure; management's own Adjusted EBITDA (up $38.2M) cites higher sales and improved gross margin as the cause, which likely applies here too.", "basis": "derived-arithmetic" },
+    { "metric": "Net income", "direction": "up", "explanation": "Rose on higher sales and increased gross margin rate, per management's own stated reason, despite the $15.3M debt-inducement charge and a $0.8M impairment charge.", "basis": "company-disclosed" },
+    { "metric": "EPS (diluted)", "direction": "up", "explanation": "Follows net income's rise; diluted share count was nearly flat (64.1M vs 64.0M y/y), so almost all of the per-share gain reflects the net-income increase.", "basis": "derived-arithmetic" },
+    { "metric": "overall", "direction": "up", "explanation": "Management frames the quarter as sales- and merchandise-margin-driven growth, with product-sourcing costs improving 30bp and its chase-the-trend buying strategy supporting flexibility amid a value-conscious, cost-pressured consumer.", "basis": "company-disclosed" }
+  ]
+}
