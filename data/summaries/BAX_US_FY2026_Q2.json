@@ -1,0 +1,40 @@
+{
+  "ticker": "BAX US",
+  "period": "FY2026 Q2",
+  "reported_at": "2026-07-30",
+  "generated_at": "2026-08-14T00:00:00Z",
+  "depth": "filing",
+  "headline": "Broad-based sales growth as profit rebounds sharply",
+  "kpis": [
+    { "label": "Revenue", "value": "$2,960M", "delta": "+9.6%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Revenue", "value": "$2,960M", "delta": "+5.3%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Gross profit", "value": "$1,032M", "delta": "+15.8%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Gross profit", "value": "$1,032M", "delta": "+4.1%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Gross margin", "value": "34.9%", "delta": "+1.9ppt", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Gross margin", "value": "34.9%", "delta": "-0.4ppt", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Operating income", "value": "$217M", "delta": "+229%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Operating income", "value": "$217M", "delta": "+13.6%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EBITDA", "value": "$474M", "delta": "+53.4%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "EBITDA", "value": "$474M", "delta": "+2.6%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Net income", "value": "$126M", "delta": "+$141M", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Net income", "value": "$126M", "delta": "+38.5%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EPS diluted (GAAP)", "value": "$0.24", "delta": "+$0.27", "delta_basis": "q/q", "direction": "up" },
+    { "label": "EPS diluted (GAAP)", "value": "$0.24", "delta": "+33.3%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Cost of revenue", "value": "$1,928M", "delta": "+6.0%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Total cash", "value": "$2,150M", "delta": "+27.5%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Short-term debt", "value": "$0M", "delta": "-100%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Shareholders' equity", "value": "$6,206M", "delta": "-15.2%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Weighted diluted shares", "value": "518M", "delta": "+0.8%", "delta_basis": "y/y", "direction": "up" }
+  ],
+  "summary_short": "Baxter's Q2 2026 revenue rose to $2,960M, up 5.3% y/y and 9.6% q/q, while net income rebounded to $126M ($0.24 diluted) from a $15M loss in Q1 2026, even as underlying (ex-special-items) gross margin fell 210bp y/y on higher manufacturing costs and mix.",
+  "summary_long": "Revenue grew 5.3% y/y and 9.6% q/q to $2,960M, with both segments contributing: Medical Products & Therapies +7% on Advanced Surgery and firmer infusion demand, Healthcare Systems & Technologies +4% on patient-monitoring backlog execution. GAAP gross margin was 34.9%, down from 35.3% y/y; excluding special items it fell 210bp y/y on higher manufacturing/supply costs and mix, partly offset by ~$75M of IEEPA tariff refunds in cost of sales. Net income rebounded to $126M ($0.24 diluted) from a $15M Q1 loss, helped by a smaller special-items drag and a 15% effective tax rate. Cash rose to $2,150M; no shares were repurchased and the dividend held at $0.01/share. No new forward guidance appears in this 10-Q.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/10456/000162828026051118/bax-20260630.htm",
+  "confidence_notes": "REGENERATION: this run was invoked in force-regenerate mode per explicit operator instruction, with the Step-0 'already exists' guard explicitly skipped. Note: no prior BAX_US_FY2026_Q2.json summary actually existed on disk before this run (resolver reported summaryExists=false) — this is a first-time compose, not a literal overwrite, despite the force-regen framing of the request. Report-date correction: the shard's stored eventDate (2026-06-30) is a quarter-end placeholder, not the real filing date; this summary's reported_at uses the actual 10-Q filing date (2026-07-30) per the sourceLink metadata, flagged here per the Step-0 mismatch-note rule. Basis note: the shard's ebit_usd_m KPI ($235M, Yahoo fundamentals-timeseries) was excluded from this summary's KPI table because it does not match the company's own GAAP 'Operating income' line ($217M, confirmed in the 10-Q's income statement and segment-reconciliation table) already included — including both risked implying they're the same metric. The 'Gross margin' q/q delta (+1.9ppt) is derived-arithmetic from the shard's gross_profit_usd_m/revenue_usd_m KPIs (Baxter's own MD&A only discusses y/y ratio comparisons, not sequential); the y/y figures (34.9% vs 35.3%, -0.4ppt) match the company's own stated GAAP gross margin ratios exactly. Basic and diluted GAAP EPS are both $0.24 this quarter (EPS diluted row shown; basic omitted as duplicate). Baxter's quarterly dividend was already cut to $0.01/share (from $0.17 a year ago) prior to this quarter — not new news in this filing, held flat this quarter with no share repurchases. No company-issued forward guidance (revenue, EPS, capex, or otherwise) appears anywhere in this 10-Q — guidance array is intentionally left unpopulated on the event shard, not an omission.",
+  "drivers": [
+    { "metric": "Revenue", "direction": "up", "explanation": "Growth was broad-based: Medical Products & Therapies +7% (Advanced Surgery +12% on hemostats/sealants volume; Infusion Therapies & Platforms +6% on pharmacy-compounding demand and a weak prior-year IV solutions comp), Healthcare Systems & Technologies +4% (Care & Connectivity Solutions +6% on U.S. patient-support-system backlog execution).", "basis": "company-disclosed" },
+    { "metric": "Gross margin", "direction": "down", "explanation": "Excluding special items, gross margin fell 210bp y/y on higher manufacturing and supply costs (including indirect costs newly capitalized into inventory post-Kidney-Care separation) and unfavorable mix, partly offset by ~$75M of IEEPA tariff refunds booked to cost of sales in Q2.", "basis": "company-disclosed" },
+    { "metric": "Operating income", "direction": "up", "explanation": "Sequential rebound from Q1's depressed $66M tracks the $259M q/q revenue increase; the filing itself only discusses y/y comparisons; a specific q/q special-items reconciliation is not disclosed.", "basis": "derived-arithmetic" },
+    { "metric": "Net income", "direction": "up", "explanation": "Tracks the operating-income rebound; also aided by a 15% effective tax rate in Q2 versus 22% for the six-month period, partly offset by higher interest expense on senior notes issued in Q4 2025.", "basis": "company-disclosed" },
+    { "metric": "EBITDA", "direction": "up", "explanation": "Not separately explained by the company; tracks the same revenue and operating-income drivers.", "basis": "derived-arithmetic" }
+  ]
+}
