@@ -1,0 +1,39 @@
+{
+  "ticker": "DBX US",
+  "period": "FY2026 Q1",
+  "reported_at": "2026-05-08",
+  "generated_at": "2026-08-14T00:00:00.000Z",
+  "depth": "filing",
+  "headline": "Revenue holds steady while note refinancing dents net income",
+  "kpis": [
+    { "label": "Revenue", "value": "$629.5M", "delta": "-1.1%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Revenue", "value": "$629.5M", "delta": "+0.8%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Gross profit", "value": "$501.4M", "delta": "-1.3%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Operating income", "value": "$172.8M", "delta": "-6.0%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Net income", "value": "$114.5M", "delta": "-23.8%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "EPS diluted (GAAP)", "value": "$0.48", "delta": "+11.6%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "EPS diluted (GAAP)", "value": "$0.48", "delta": "-5.9%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "EBITDA", "value": "$211.9M", "delta": "-4.5%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Operating cash flow", "value": "$204.5M", "delta": "+33.0%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Total cash", "value": "$1.21B", "delta": "+28.1%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Cost of revenue", "value": "$128.1M", "delta": "+9.8%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Stockholders' deficit", "value": "-$2.01B", "delta": "-$936M", "delta_basis": "y/y", "direction": "down" }
+  ],
+  "summary_short": "Dropbox's Q1 2026 revenue was $629.5M, up 0.8% y/y but down 1.1% q/q, as gross margin slipped to 80% from 81% and net income fell 23.8% y/y to $114.5M on higher interest expense from a newly fully-drawn $2.0B term loan.",
+  "summary_long": "Revenue grew 0.8% y/y to $629.5M on Individual-plan growth and favorable FX, offsetting the planned wind-down of FormSwift; paying users slipped to 18.09M from 18.16M y/y on the same FormSwift decision. Gross margin fell to 80% from 81% as infrastructure costs rose 9.8% on a data-center refresh. Operating income fell 6.0% y/y to $172.8M as opex outpaced the gross-profit decline. Net income dropped 23.8% y/y to $114.5M on $22.1M higher interest expense from the now-fully-drawn $2.0B term loan, which funded the $695.8M payoff of matured 2026 convertible notes. Dropbox repurchased $370M of stock in the quarter (no dividend); cash rose to $1.21B. Total ARR was $2.56B, up slightly q/q and y/y. No forward guidance was given in this filing.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/1467623/000146762326000031/dbx-20260331.htm",
+  "confidence_notes": "REGENERATION: this run was invoked in force-regenerate mode with the Step-0 'already exists' guard explicitly skipped, producing a fresh summary that overwrites any prior DBX_US_FY2026_Q1.json on disk. The resolver actually reported summaryExists=false, so this is a first-time compose rather than a literal overwrite, despite the force-regen framing of the request. Source note: the event's sourceLink pointed directly at the filed 10-Q (dbx-20260331.htm, form 10-Q), not an 8-K cover document, so no EX-99.1 exhibit-resolution step was applicable — fetched and read the 10-Q directly. Date note: the shard's stored eventDate (2026-03-31) is the fiscal quarter-end, not the actual filing date; reported_at above uses the 10-Q signature page's filing date (2026-05-08) as the more authoritative date, per the resolver's date-preference rule. This is a 10-Q, not an earnings press release; it discloses no explicit forward-looking numeric guidance range for revenue, EPS, or capex, so nothing was written to the event's guidance array. All KPI y/y deltas reconcile to the filing's own stated percentages (revenue +0.8%, cost of revenue +9.8%); EBITDA, EPS, and q/q deltas are independently computed from the same-basis SEC/Yahoo figures already on the shard. Total ARR figures cited in summary/extendedMetrics use the nominal-FX table, not Dropbox's separate constant-currency table.",
+  "drivers": [
+    { "metric": "Revenue", "direction": "up", "explanation": "Growth from Individual plans and a favorable FX impact, partly offset by the strategic decision to reduce FormSwift investment ahead of its planned 2026 wind-down.", "basis": "company-disclosed" },
+    { "metric": "Gross profit", "direction": "down", "explanation": "Cost of revenue rose 9.8% on higher infrastructure costs from the data-center refresh cycle and third-party hosting fees, outpacing the 0.8% revenue gain.", "basis": "company-disclosed" },
+    { "metric": "Operating income", "direction": "down", "explanation": "Gross profit declined while R&D rose $5.8M on higher headcount and G&A rose $3.7M on a one-off prior-year tax-reserve release, partially offset by a $5.1M cut to sales & marketing.", "basis": "company-disclosed" },
+    { "metric": "Net income", "direction": "down", "explanation": "Interest expense rose $22.1M as the term loan facility became fully drawn, and the tax provision rose $7.7M on the One Big Beautiful Bill Act impact and lower stock-comp tax benefits.", "basis": "company-disclosed" },
+    { "metric": "EPS diluted (GAAP)", "direction": "down", "explanation": "Net income fell 23.8% y/y, but the decline in diluted EPS was smaller because weighted-average diluted shares fell about 20% y/y from continued buybacks.", "basis": "derived-arithmetic" },
+    { "metric": "EBITDA", "direction": "down", "explanation": "Tracks the same operating-income pressure — higher infrastructure and opex costs against roughly flat revenue — partially offset by the D&A add-back.", "basis": "derived-arithmetic" },
+    { "metric": "Operating cash flow", "direction": "up", "explanation": "Rose $50.7M y/y mainly because the prior-year quarter included one-time cash outflows for a lease-termination fee and 2024 workforce-reduction payments that didn't recur.", "basis": "company-disclosed" },
+    { "metric": "Total cash", "direction": "up", "explanation": "Financing activities added $46.2M net, driven by $1.2B in new term-loan proceeds that funded the $695.8M payoff of maturing 2026 convertible notes and $370M of buybacks.", "basis": "company-disclosed" },
+    { "metric": "Cost of revenue", "direction": "up", "explanation": "An $11.4 million increase in infrastructure costs, including data-center refresh equipment, facilities costs, and third-party hosting fees.", "basis": "company-disclosed" },
+    { "metric": "Stockholders' deficit", "direction": "down", "explanation": "The deficit widened as $370M of share repurchases and RSU tax-withholding cash outflows exceeded the quarter's net income.", "basis": "derived-arithmetic" },
+    { "metric": "overall", "direction": "flat", "explanation": "Revenue and Total ARR held roughly flat as Individual-plan growth offset the FormSwift wind-down, while refinancing the maturing 2026 notes through a fully-drawn term loan pushed net income and diluted EPS lower y/y.", "basis": "company-disclosed" }
+  ]
+}
