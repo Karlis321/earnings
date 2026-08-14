@@ -32,7 +32,7 @@ const ROOT = path.resolve(__dirname, "..");
 
 const SCOPE = process.env.SCOPE === "indexed" ? "indexed" : "all";
 const NOFILTER = process.env.NOFILTER === "1";
-const RECENT_DAYS = Number(process.env.RECENT_DAYS ?? 4);
+const RECENT_DAYS = Number(process.env.RECENT_DAYS ?? 7);
 // Claude Code's --max-turns 100 (bumped from 30 on 2026-08-04) caps
 // how many tickers a single /sweep run can process. 30 leaves headroom:
 // ~1 setup turn + 30 resolve calls + (0.25 * 30 * 8 turns/summary) ≈
@@ -104,10 +104,10 @@ async function main() {
   const byTicker = new Map((idx.entries ?? []).map((e) => [e.ticker, e]));
 
   // Second pre-filter: build the set of (ticker, period) pairs that
-  // already have a summary file on disk. If a ticker's latest period
-  // is already summarized, drop it from the sweep — /earnings would
-  // early-out on the summaryReady guard anyway. This shrinks the
-  // work list to ONLY tickers that need real work.
+  // already have BOTH a summary file AND populated extendedMetrics
+  // on their latest event. A ticker is "done" only when both are true;
+  // if the summary exists but extendedMetrics is missing/empty, it
+  // still needs a sweep pass to run Step 3b.
   //
   // Filename convention (per .claude/commands/earnings.md):
   //   data/summaries/<TICKER_SLUG>_<PERIOD_SLUG>.json
@@ -128,17 +128,37 @@ async function main() {
     return `${tSlug}_${pSlug}`;
   }
 
+  // Check per-ticker shard for populated extendedMetrics on the latest
+  // event. This is the third condition (in addition to fresh + summary):
+  // a ticker with a summary but empty extendedMetrics still needs work.
+  async function hasPopulatedExtendedMetrics(ticker) {
+    const shardPath = path.join(
+      ROOT, "data", "events",
+      ticker.replace(/\s+/g, "_").replace(/[^A-Z0-9_.-]/gi, "_") + ".json",
+    );
+    try {
+      const shard = JSON.parse(await fs.readFile(shardPath, "utf-8"));
+      const events = Array.isArray(shard) ? shard : (shard.events ?? []);
+      const latest = events
+        .filter((e) => e.eventDate)
+        .sort((a, b) => (b.eventDate ?? "").localeCompare(a.eventDate ?? ""))[0];
+      return Array.isArray(latest?.extendedMetrics) && latest.extendedMetrics.length > 0;
+    } catch {
+      return false;
+    }
+  }
+
   const due = [];
   for (const t of pool) {
     const row = byTicker.get(t);
     if (!row?.lastEventDate) continue;
     const gap = daysBack(row.lastEventDate, today);
     if (gap < 0 || gap > RECENT_DAYS + 2) continue;
-    // Skip if this exact (ticker, latestPeriod) already has a
-    // summary on disk.
-    if (row.lastPeriod && existingSummaries.has(summaryKey(t, row.lastPeriod))) {
-      continue;
-    }
+    const hasSummary = row.lastPeriod && existingSummaries.has(summaryKey(t, row.lastPeriod));
+    const hasMetrics = await hasPopulatedExtendedMetrics(t);
+    // Skip only when BOTH the summary file exists AND extendedMetrics
+    // has ≥1 entry on the latest event. Missing either → include.
+    if (hasSummary && hasMetrics) continue;
     due.push({ ticker: t, lastEventDate: row.lastEventDate });
   }
 
