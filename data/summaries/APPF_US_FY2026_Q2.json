@@ -1,0 +1,37 @@
+{
+  "ticker": "APPF US",
+  "period": "FY2026 Q2",
+  "reported_at": "2026-07-23",
+  "generated_at": "2026-08-14T11:49:19.000Z",
+  "depth": "filing",
+  "headline": "AppFolio's growth accelerates, guidance raised",
+  "kpis": [
+    { "label": "Revenue", "value": "$281.1M", "delta": "+7.2%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Revenue", "value": "$281.1M", "delta": "+19.3%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Gross profit", "value": "$178.5M", "delta": "+17.6%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Operating income", "value": "$53.0M", "delta": "+30.8%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EBITDA", "value": "$58.5M", "delta": "+24.9%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Net income", "value": "$41.5M", "delta": "+15.5%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EPS diluted (GAAP)", "value": "$1.17", "delta": "-0.8%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "EPS diluted (GAAP)", "value": "$1.17", "delta": "+18.2%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Total cash", "value": "$217.4M", "delta": "+195.9%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Shareholders' equity", "value": "$526.1M", "delta": "+15.5%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Weighted diluted shares", "value": "35.5M", "delta": "-2.1%", "delta_basis": "y/y", "direction": "down" }
+  ],
+  "summary_short": "AppFolio's Q2 2026 revenue rose 19.3% y/y to $281.1M, with GAAP operating margin expanding to 18.8% from 17.2% and net income up 15.5% y/y to $41.5M; the company raised full-year revenue and operating-margin guidance.",
+  "summary_long": "Revenue grew 19.3% y/y to $281.1M; total units under management rose 8% y/y to 9.6 million. GAAP operating income rose 30.8% to $53.0M (18.8% margin, up from 17.2%), as total operating expenses grew 17.0% y/y, slower than revenue. Non-GAAP operating income rose 24% to $76.2M (27.1% margin). Net income rose 15.5% y/y to $41.5M ($1.17 diluted EPS; $1.71 non-GAAP), with the effective tax rate rising to 23.6% from 14.3%. Operating cash flow was $87.6M (31.2% of revenue) versus $52.6M a year ago. Cash rose to $217.4M from $107.0M at year-end on investment maturities. AppFolio raised full-year 2026 guidance: revenue to $1.117-$1.127B and non-GAAP operating margin to 26.5%-28.0%.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/1433195/000143319526000056/appfq22026exhibit991.htm",
+  "confidence_notes": "REGENERATION: this run was invoked in force-regenerate mode with the Step-0 'already exists' guard explicitly skipped. Note: no prior APPF_US_FY2026_Q2.json summary actually existed on disk before this run (resolver reported summaryExists=false) — this is a first-time compose, not a literal overwrite, despite the force-regen framing of the request. Source-link correction: the event's stored sourceLink (appf-20260626.htm, filed 2026-07-01) is NOT the earnings release — resolve-edgar-exhibit.mjs confirmed it has no EX-99 exhibit, and reading it showed it is an unrelated Item 5.02 8-K about board-of-directors retirements/appointments. The actual Q2 2026 earnings press release is a different filing entirely (accession 0001433195-26-000056, filed 2026-07-23) and was located via one WebSearch, then fetched from https://www.sec.gov/Archives/edgar/data/1433195/000143319526000056/appfq22026exhibit991.htm, which is what this summary and the guidance array cite. Reported-date correction: the shard's eventDate (2026-06-30) is the fiscal quarter-end placeholder, not the actual report date; this summary uses the press release's own dateline (2026-07-23) as reported_at per Step 0's authoritative-date preference. KPI reconciliation: every KPI value from resolve-earnings-target.mjs (revenue $281.124M, net income $41.544M, EPS $1.17, cash $217.401M, equity $526.142M, diluted shares 35.461M) matches this press release's own GAAP tables exactly — same-basis, no cross-provenance concerns. 'Operating income' and 'EBITDA' KPIs are both derived from the same 'Income from operations' line ($52.977M); the shard's separate ebit_usd_m/operating_income_usd_m fields are true duplicates and only one row is shown here. This release is GAAP-tables-only with no MD&A narrative section, so driver explanations below are mostly derived-arithmetic decompositions of our own KPI data rather than company-stated causes; where the release states no reason, drivers say so explicitly rather than inferring one.",
+  "drivers": [
+    { "metric": "Revenue", "direction": "up", "explanation": "Release states revenue grew 19% y/y to $281M and total units under management grew 8% y/y to 9.6M, but does not attribute revenue growth specifically to unit growth, pricing, or mix.", "basis": "company-disclosed" },
+    { "metric": "Gross profit", "direction": "up", "explanation": "Gross profit dollars rose 17.6% y/y, trailing revenue's 19.3% growth, because cost of revenue grew faster (+22.4%) than revenue — implying modest gross-margin compression not called out in the release.", "basis": "derived-arithmetic" },
+    { "metric": "Operating income", "direction": "up", "explanation": "Total costs and operating expenses grew 17.0% y/y, slower than revenue's 19.3% growth even though cost of revenue itself grew faster (+22.4%); the net effect is the disclosed operating-margin expansion to 18.8% from 17.2%.", "basis": "derived-arithmetic" },
+    { "metric": "EBITDA", "direction": "up", "explanation": "Not separately explained in the release; EBITDA (operating income plus D&A) rose 24.9% y/y, tracking the operating-income improvement.", "basis": "derived-arithmetic" },
+    { "metric": "Net income", "direction": "up", "explanation": "Reflects the operating-income gain, partly offset by a higher effective tax rate (23.6% vs 14.3% a year ago); not explained further in the release.", "basis": "derived-arithmetic" },
+    { "metric": "EPS diluted (GAAP)", "direction": "up", "explanation": "Diluted EPS rose 18.2% y/y on higher net income, only partly offset by a lower diluted share count (35.461M vs 36.204M) from prior buybacks.", "basis": "derived-arithmetic" },
+    { "metric": "Total cash", "direction": "up", "explanation": "Cash rose to $217.4M from $107.0M at year-end as $140.2M of investment securities matured or were sold in H1 2026, partly offset by $125.0M of share repurchases (all in Q1; Q2 buyback was nil); not framed as a single cause in the release.", "basis": "derived-arithmetic" },
+    { "metric": "Shareholders' equity", "direction": "up", "explanation": "Not explained in the release; growth is consistent with retained net income accumulation net of buybacks and other equity items.", "basis": "derived-arithmetic" },
+    { "metric": "Weighted diluted shares", "direction": "down", "explanation": "Share count declined y/y on buybacks; the cash-flow statement shows $125.0M repurchased in H1 2026 but none of it in Q2 itself.", "basis": "company-disclosed" },
+    { "metric": "overall", "direction": "up", "explanation": "AppFolio raised full-year 2026 guidance to $1.117-$1.127B revenue and 26.5%-28.0% non-GAAP operating margin, citing continued customer momentum and AI adoption on its platform.", "basis": "company-disclosed" }
+  ]
+}
