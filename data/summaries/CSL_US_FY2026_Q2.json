@@ -1,0 +1,36 @@
+{
+  "ticker": "CSL US",
+  "period": "FY2026 Q2",
+  "reported_at": "2026-07-30",
+  "generated_at": "2026-08-14T00:00:00.000Z",
+  "depth": "filing",
+  "headline": "Carlisle grows above market, raises full-year outlook",
+  "kpis": [
+    { "label": "Revenue", "value": "$1.57B", "delta": "+49.3%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Revenue", "value": "$1.57B", "delta": "+8.3%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Gross profit", "value": "$568M", "delta": "+5.0%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Operating income", "value": "$353M", "delta": "+5.2%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Net income", "value": "$255M", "delta": "-0.2%", "delta_basis": "y/y", "direction": "flat" },
+    { "label": "EPS diluted (GAAP)", "value": "$6.30", "delta": "+7.1%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EBITDA", "value": "$410M", "delta": "+5.8%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Total cash", "value": "$665M", "delta": "+872.7%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Long-term debt", "value": "$2.89B", "delta": "+52.4%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Shareholders' equity", "value": "$1.62B", "delta": "-23.7%", "delta_basis": "y/y", "direction": "down" }
+  ],
+  "summary_short": "Carlisle's Q2 2026 revenue rose 8.3% y/y to $1.57B (7.9% organic) on above-market volume growth and re-roofing demand, with continuing-operations diluted EPS up 8% to $6.36, even as Middle East-driven petrochemical and freight cost inflation compressed gross margin to 36.2% from 37.3%.",
+  "summary_long": "Q2 revenue rose 8.3% y/y (7.9% organic) to $1,570.3M on above-market volume growth, re-roofing demand, and pre-buying ahead of price increases. Gross margin fell to 36.2% from 37.3% as petrochemical and freight cost inflation, driven by Middle East-related oil prices, outpaced April/July price hikes. CWT's adjusted EBITDA margin still rose 380bp q/q on automation and in-house polystyrene capacity gains. Net income was roughly flat at $255.2M as higher interest expense on 2025 notes and a higher tax rate offset operating gains. Carlisle raised full-year 2026 revenue guidance to mid-single-digit growth with margins about flat, and lifted its buyback target to $1.2B. Cash fell to $665.3M after $500M of first-half buybacks; long-term debt rose to $2.89B.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/790051/000079005126000037/csl-20260630.htm",
+  "confidence_notes": "REGENERATION: this run was invoked in force-regenerate mode with the Step-0 'already exists' guard explicitly skipped. Note: no prior CSL_US_FY2026_Q2.json summary actually existed on disk before this run (resolver reported summaryExists=false) — this is a first-time compose, not a literal overwrite, despite the force-regen framing of the request. reported_at uses the 10-Q's actual filing date (2026-07-30) rather than the shard's stored eventDate (2026-06-30), which is the fiscal quarter-end placeholder, not a real report date. EPS basis note: the shard's 'EPS diluted (GAAP)' KPI ($6.30) is TOTAL diluted EPS including a $0.06 discontinued-operations loss; the company's own headline figure ('$6.36, up 8%') is diluted EPS from CONTINUING OPERATIONS ONLY — both are cited in this summary but should not be conflated. EBITDA note: the shard's Yahoo-derived EBITDA ($409.8M) differs slightly from the company's own non-GAAP adjusted EBITDA ($412.0M, which adds back restructuring/legal/M&A costs); the y/y delta uses the shard's Yahoo-basis figure on both sides per ledger discipline. Total cash's y/y move (+872.7%) is a base-effect artifact, not a real liquidity swing: June 2025 cash was unusually depressed ($68.4M) after $700M of concurrent H1 2025 buybacks and acquisition spending. Revenue and EPS q/q swings (+49.3%/+103%, the latter not shown as a KPI row) reflect Carlisle's normal seasonality (Q2 is the stronger roofing season vs Q1), not sequential acceleration. The release's full-year 2026 revenue guidance raise is qualitative ('mid-single-digit growth' with margins 'approximately flat') with no exact numeric range stated, so it was NOT captured as a formal event.guidance[] entry (only the explicit, numeric $1.2 billion full-year buyback target raise was captured there, via apply-guidance.mjs).",
+  "drivers": [
+    { "metric": "Revenue", "direction": "up", "explanation": "Above-market volume growth in both segments plus solid re-roofing demand and customer pre-buying ahead of April/July/August price increases; 8.3% reported growth was 7.9% organic.", "basis": "company-disclosed" },
+    { "metric": "Gross profit", "direction": "up", "explanation": "Grew in dollars but margin fell 110bp to 36.2% as petrochemical raw-material and freight cost inflation from Middle East oil price spikes outpaced Q2 price increases.", "basis": "company-disclosed" },
+    { "metric": "Operating income", "direction": "up", "explanation": "Grew with revenue despite margin pressure; CCM held 28.6% operating margin and CWT 10.7%, both 'in line with expectations' even as input costs outpaced pricing realization.", "basis": "company-disclosed" },
+    { "metric": "Net income", "direction": "flat", "explanation": "Roughly flat y/y as operating-income gains were offset by $12.7M higher interest expense from 2025 notes issuance and a higher effective tax rate (22.8% vs 21.0%).", "basis": "company-disclosed" },
+    { "metric": "EPS diluted (GAAP)", "direction": "up", "explanation": "Rose mainly on a lower diluted share count (40.5M vs 43.4M y/y) from continued buybacks ($250M repurchased in Q2), even as net income was roughly flat.", "basis": "derived-arithmetic" },
+    { "metric": "EBITDA", "direction": "up", "explanation": "Follows the same operating-income drivers; company's own adjusted EBITDA margin was 26.2%, down from 26.9% y/y, as cost inflation outpaced pricing.", "basis": "company-disclosed" },
+    { "metric": "Total cash", "direction": "up", "explanation": "Y/y comparison is a low-base effect: Q2 2025 cash was depressed by $700M of concurrent buybacks and acquisition spending, not an underlying liquidity trend.", "basis": "derived-arithmetic" },
+    { "metric": "Long-term debt", "direction": "up", "explanation": "Reflects $1.0 billion of senior notes issued August 2025 (5.25% due 2035, 5.55% due 2040); no new borrowing occurred in H1 2026.", "basis": "company-disclosed" },
+    { "metric": "Shareholders' equity", "direction": "down", "explanation": "Declined as $500M of H1 2026 share repurchases plus dividends exceeded net income added to retained earnings.", "basis": "derived-arithmetic" },
+    { "metric": "overall", "direction": "up", "explanation": "Carlisle raised full-year 2026 revenue guidance to mid-single-digit growth with operating and adjusted EBITDA margins approximately flat, and raised its full-year buyback target to $1.2 billion.", "basis": "company-disclosed" }
+  ]
+}
