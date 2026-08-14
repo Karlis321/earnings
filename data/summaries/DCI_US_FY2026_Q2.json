@@ -1,0 +1,30 @@
+{
+  "ticker": "DCI US",
+  "period": "FY2026 Q2",
+  "reported_at": "2026-04-30",
+  "generated_at": "2026-08-14T00:00:00.000Z",
+  "depth": "filing",
+  "headline": "Profit rebounds as prior-year impairment charge fades",
+  "kpis": [
+    { "label": "Revenue", "value": "$995.1M", "delta": "+5.8%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Gross profit", "value": "$333.4M", "delta": "+3.6%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Operating income", "value": "$155.3M", "delta": "+77.7%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EBITDA", "value": "$185.4M", "delta": "+58.1%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EBITDA", "value": "$185.4M", "delta": "+24.5%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "EBIT", "value": "$161.3M", "delta": "+74.0%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EBIT", "value": "$161.3M", "delta": "+29.8%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Net income", "value": "$118.1M", "delta": "+104.4%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EPS diluted", "value": "$1.00", "delta": "+108.2%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EPS basic", "value": "$1.02", "delta": "+108.2%", "delta_basis": "y/y", "direction": "up" }
+  ],
+  "summary_short": "Donaldson's net sales rose 5.8% y/y to $995.1M and net earnings more than doubled to $118.1M (diluted EPS $1.00 vs $0.48) as operating income jumped to $155.3M from $87.4M, mainly because last year's quarter absorbed a $62.0M intangible impairment that didn't recur.",
+  "summary_long": "Net sales rose 5.8% y/y to $995.1M: Mobile Solutions +8.1% (Aftermarket demand), Life Sciences +12.7% (Food & Beverage, Disk Drive), plus $25.4M favorable FX, partly offset by Industrial Solutions -0.6% (Aerospace & Defense supply-chain constraints). Gross margin fell to 33.5% from 34.2% on $9.1M of costs tied to relocating Power Generation production, partly offset by pricing gains. Operating income rose to $155.3M from $87.4M and net earnings to $118.1M from $57.8M, mainly because last year's quarter carried a $62.0M intangible impairment that didn't recur. Diluted EPS was $1.00 vs $0.48. No new guidance was issued. Cash was $204.1M; long-term debt fell to $591.6M ahead of the $828.7M Facet acquisition, which closed May 4, 2026.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/29644/000002964426000052/dci-20260430.htm",
+  "confidence_notes": "Regeneration run (force-regenerate mode invoked per instruction; Step-0 'already exists' guard skipped). No DCI_US_FY2026_Q2.json existed on disk beforehand (resolver reported summaryExists=false), so this is a first-time compose despite the force-regen framing. TWO shard data-quality issues surfaced while composing and are flagged rather than silently propagated: (1) Period-label mismatch — the fetched 10-Q's own text ('Nine Months Ended April 30' throughout) and DEI XBRL tag ('2026Q3') identify this filing as Donaldson's fiscal Q3 (three months ended April 30, 2026; FY ends July 31, so Q1=Aug-Oct, Q2=Nov-Jan, Q3=Feb-Apr), not fiscal Q2 as the shard labels it — consistent with the documented fiscal-offset invariant (calendar-quarter arithmetic vs. the entity's actual fiscal calendar). Filed here under the resolver-given label 'FY2026 Q2' / filename DCI_US_FY2026_Q2.json to stay consistent with the shard and event.period; flagging for a backfill review of DCI's period labels. (2) q/q duplicate-value bug — the shard's designated q/q comparator event (period 'FY2026 Q1', eventDate 2026-01-31) carries SEC-sourced revenue/operating income/gross profit/net income/EPS values IDENTICAL to this quarter's actuals ($995.1M/$155.3M/$333.4M/$118.1M/$1.00/$1.02) — a duplicate-ingest artifact, not real prior-quarter data. q/q deltas for those six metrics are reported as delta_basis='none' rather than a fabricated flat/zero change. EBITDA/EBIT (Yahoo fundamentals-timeseries provenance) had genuinely distinct q/q comparators and were used as-is. (3) y/y correction — the resolver's cached prior_yy for operating_income_usd_m ($148.2M) does not match the primary document, which states three-months-ended-April-30-2025 operating income of $87.4M; used the primary document's $87.4M instead (shard should be corrected in a follow-up backfill). All other KPI values and priors were cross-checked against the fetched 10-Q and matched. No forward guidance (revenue/EPS/capex ranges) was disclosed in this 10-Q. The Facet Filtration acquisition (~$828.7M cash) closed May 4, 2026 — a subsequent event in fiscal Q4, noted for context but not part of this quarter's results.",
+  "drivers": [
+    { "metric": "overall", "direction": "up", "explanation": "Op income and net earnings jumped mainly because Q3 FY2025 absorbed a one-time $62.0M non-cash intangible impairment (bioprocessing, Life Sciences) that did not recur this quarter.", "basis": "company-disclosed" },
+    { "metric": "Revenue", "direction": "up", "explanation": "Growth came from Mobile Solutions (+8.1%, Aftermarket demand) and Life Sciences (+12.7%, Food & Beverage and Disk Drive), plus $25.4M favorable FX; Industrial Solutions dipped 0.6% on Aerospace & Defense supply-chain constraints and project timing.", "basis": "company-disclosed" },
+    { "metric": "Gross profit", "direction": "up", "explanation": "Gross profit rose on higher volume, but margin fell to 33.5% from 34.2% on $9.1M of costs tied to relocating Power Generation production to a new site, partly offset by pricing gains and favorable mix.", "basis": "company-disclosed" },
+    { "metric": "Net income", "direction": "up", "explanation": "Net earnings more than doubled, driven by the absence of last year's $62.0M impairment charge and higher operating income, partially offset by higher interest expense from a higher average debt level.", "basis": "company-disclosed" }
+  ]
+}
