@@ -1,0 +1,38 @@
+{
+  "ticker": "ATI US",
+  "period": "FY2026 Q2",
+  "reported_at": "2026-08-06",
+  "generated_at": "2026-08-14T00:00:00.000Z",
+  "depth": "filing",
+  "headline": "Aerospace strength lifts margins, raises full-year outlook",
+  "kpis": [
+    { "label": "Revenue", "value": "$1,261M", "delta": "+9.5%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Revenue", "value": "$1,261M", "delta": "+10.6%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Gross profit", "value": "$310M", "delta": "+17.8%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Gross profit", "value": "$310M", "delta": "+27.8%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Operating income", "value": "$220M", "delta": "+34.3%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Operating income", "value": "$220M", "delta": "+36.6%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Net income", "value": "$151M", "delta": "+27.7%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Net income", "value": "$151M", "delta": "+50.0%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EPS diluted", "value": "$1.09", "delta": "+28.2%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "EPS diluted", "value": "$1.09", "delta": "+55.7%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Total cash", "value": "$783M", "delta": "+94.9%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Total cash", "value": "$783M", "delta": "+145.0%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Short-term debt", "value": "$384M", "delta": "+1055.4%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Short-term debt", "value": "$384M", "delta": "+113.9%", "delta_basis": "y/y", "direction": "up" }
+  ],
+  "summary_short": "ATI's Q2 2026 revenue rose 10.6% y/y to $1,261M, above the high end of its own guidance, with operating income up 36.6% y/y to $220M and diluted EPS up 55.7% y/y to $1.09, while the company raised its full-year adjusted EBITDA, EPS, and free-cash-flow guidance.",
+  "summary_long": "Revenue rose 10.6% y/y to $1,261M, driven by a 13% rise in aerospace & defense sales (commercial jet engines +10% y/y, defense +90% y/y). Gross profit rose 27.8% y/y to $310M and operating income rose 36.6% y/y to $220M; adjusted EBITDA margin expanded 440bp y/y to 22.6%. GAAP diluted EPS rose 55.7% y/y to $1.09 (adjusted EPS $1.23, +66% y/y), including a $9.9M gain on an AA&S facility sale. Cash rose to $783M after $450M of new senior notes; the company repurchased $50M of stock. ATI raised FY2026 adjusted EBITDA guidance to $1,135M-$1,185M (from $1,010M-$1,060M), adjusted EPS to $4.90-$5.18 (from $4.20-$4.48), and adjusted free cash flow to $550M-$600M (from $465M-$525M), citing pricing, mix, and rising capacity.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/1018963/000162828026053856/form8-kq22026ex991.htm",
+  "confidence_notes": "REGENERATION: this run was invoked in force-regenerate mode with the Step-0 'already exists' guard explicitly skipped per instruction. Note: no prior ATI_US_FY2026_Q2.json summary actually existed on disk before this run (resolver reported summaryExists=false) — this is a first-time compose, not a literal overwrite, despite the force-regen framing of the request. Source note: the Step-0 sourceLink pointed at the 8-K cover page (ati-20260806.htm); scripts/resolve-edgar-exhibit.mjs resolved it to the EX-99.1 press release (form8-kq22026ex991.htm), which was fetched and used for this summary instead of the cover stub. Rounding note: the release states sales +10% q/q / +11% y/y and diluted EPS +56% y/y (its own rounding); this summary's KPI deltas are computed from the unrounded SEC EDGAR figures, giving +9.5%/+10.6%/+55.7% respectively — a rounding difference, not a data discrepancy. Short-term debt jumped to $384M from $33M q/q (+1055.4%), coincident with $450M of senior notes issued during H1 2026 per the cash-flow statement; the release does not explain the current-vs-long-term debt classification shift, so that driver is marked 'not explained in the release.' Guidance note: Q3 2026 and raised FY2026 guidance for Adjusted EBITDA, Adjusted EPS, and Adjusted Free Cash Flow were written to the event shard's guidance[] array — FY2026 entries marked move='raised' per the release's explicit 'we are again raising our full-year guidance' language (prior ranges captured in each Fact's locator); Q3 2026 entries marked move='initiated' since no prior Q3 2026 range exists on this shard. Extended-metrics note: capex ($68.6M) and buyback ($50M) figures are quarterly per explicit prose disclosure, not YTD; backlog ($4.4B) is from the CEO quote, not a financial-statement line.",
+  "drivers": [
+    { "metric": "Revenue", "direction": "up", "explanation": "Sales rose 11% y/y (per the release) driven by a 13% increase in aerospace & defense sales; within that, commercial jet engine sales rose 10% y/y and defense sales rose 90% y/y on higher demand and pricing.", "basis": "company-disclosed" },
+    { "metric": "Gross profit", "direction": "up", "explanation": "Not explained directly at the consolidated level; HPMC segment EBITDA margin rose 40bp y/y to 24.1% on higher volume and favorable jet-engine pricing, and AA&S segment EBITDA margin rose 930bp y/y to 23.7% on higher pricing and mix plus a one-time gain.", "basis": "derived-arithmetic" },
+    { "metric": "Operating income", "direction": "up", "explanation": "AA&S segment EBITDA rose to $147.6M (23.7% of sales), including a $9.9M gain on the sale of a closed manufacturing facility plus higher pricing and favorable mix; HPMC segment EBITDA rose to $153.5M on higher volume and favorable jet-engine nickel pricing, partly offset by higher manufacturing and period costs.", "basis": "company-disclosed" },
+    { "metric": "Net income", "direction": "up", "explanation": "Includes a $9.9 million ($0.06/share) gain from the sale of a previously closed AA&S manufacturing facility; special items (start-up/transaction, transformation, restructuring costs, and AR-sale losses) reduced net income by $18.7 million after tax in the quarter.", "basis": "company-disclosed" },
+    { "metric": "EPS diluted", "direction": "up", "explanation": "Follows net income growth of 50% y/y; diluted share count fell slightly to 138.3M from 143.1M y/y aided by $50M of quarterly buybacks, and the $9.9M asset-sale gain added $0.06 per share.", "basis": "derived-arithmetic" },
+    { "metric": "Total cash", "direction": "up", "explanation": "Cash rose to $783.0 million driven by $450 million of senior notes proceeds and $223.4 million of net financing inflow year-to-date, partly offset by $125.0 million of treasury stock purchases; the quarter itself generated $131.8 million of operating cash flow.", "basis": "company-disclosed" },
+    { "metric": "Short-term debt", "direction": "up", "explanation": "not explained in the release", "basis": "company-disclosed" },
+    { "metric": "overall", "direction": "up", "explanation": "Management cites results above the high end of Q2 guidance, 37% y/y adjusted EBITDA growth on 11% sales growth, a record $4.4 billion backlog (+18% y/y), and continued portfolio shift toward higher-margin aerospace, defense and specialty energy exposure supporting the raised full-year outlook.", "basis": "company-disclosed" }
+  ]
+}
