@@ -1,0 +1,41 @@
+{
+  "ticker": "AVT US",
+  "period": "FY2026 Q2",
+  "reported_at": "2026-08-05",
+  "generated_at": "2026-08-14T15:30:00.000Z",
+  "depth": "filing",
+  "headline": "Record quarter for Avnet as margins expand across the board",
+  "kpis": [
+    { "label": "Revenue", "value": "$8.30B", "delta": "+47.7%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Revenue", "value": "$8.30B", "delta": "+16.5%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Operating income margin (GAAP)", "value": "2.8%", "delta": "+147bps", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Operating income margin (GAAP)", "value": "2.8%", "delta": "-11bps", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Adjusted operating margin", "value": "3.8%", "delta": "+129bps", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Adjusted operating margin", "value": "3.8%", "delta": "+73bps", "delta_basis": "q/q", "direction": "up" },
+    { "label": "EPS diluted (GAAP)", "value": "$1.49", "delta": "+2028.6%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EPS diluted (GAAP)", "value": "$1.49", "delta": "+30.7%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "EPS diluted (Adjusted)", "value": "$2.28", "delta": "+181.5%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EPS diluted (Adjusted)", "value": "$2.28", "delta": "+54.1%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Net income (GAAP)", "value": "$126.6M", "delta": "+1979.4%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Net income (GAAP)", "value": "$126.6M", "delta": "+34.2%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Inventory days", "value": "71 days", "delta": "-6 days", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Cash and cash equivalents", "value": "$155.4M", "delta": "-19.2%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Total debt", "value": "$3.21B", "delta": "+20.7%", "delta_basis": "y/y", "direction": "up" }
+  ],
+  "summary_short": "Avnet's fiscal Q4 2026 sales hit a record $8,295.4M, up 47.7% y/y and 16.5% q/q, with adjusted diluted EPS of $2.28 (+181.5% y/y) as Electronic Components (4.1% margin) and Farnell (9.0% margin) both posted record segment operating margins.",
+  "summary_long": "Fourth-quarter sales hit a record $8,295.4M, up 47.7% y/y and 16.5% q/q, with growth across every EC region and Farnell. GAAP operating margin expanded 147bp y/y to 2.8% (though it slipped 11bp q/q); adjusted operating margin rose 129bp y/y to 3.8%, with EC at a record 4.1% and Farnell at a record 9.0%. GAAP diluted EPS was $1.49 versus $0.07 a year ago; adjusted diluted EPS was $2.28, up 181.5% y/y and grew 3.8x faster than sales. Inventory days fell 6 q/q to 71. Cash fell to $155.4M from $192.4M y/y while total debt rose to $3,212.8M, after the year's $633.75M convertible-notes issuance and $550M note repayment. Avnet guided Q1 FY2027 sales to $9.00B-$9.30B and adjusted diluted EPS to $2.80-$2.90.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/8858/000000885826000066/avt-20260805xex99d1.htm",
+  "confidence_notes": "REGENERATION: this run was invoked in force-regenerate mode with the Step-0 'already exists' guard explicitly skipped. Note: no prior AVT_US_FY2026_Q2.json summary actually existed on disk before this run (resolver reported summaryExists=false) — this is a first-time compose, not a literal overwrite, despite the force-regen framing of the request. Source-link correction: the event's stored sourceLink pointed to the 8-K cover document (avt-20260805x8k.htm), a stub pointing at Exhibit 99.1; resolve-edgar-exhibit.mjs resolved the actual press release at avt-20260805xex99d1.htm, which is what this summary and the guidance array cite. EPS basis correction: the shard's resolver-supplied eps_usd KPI (current value $2.28, Yahoo earningsChart, which is Avnet's adjusted/non-GAAP diluted EPS) carries prior_qq ($1.15, SEC EDGAR EarningsPerShareBasic — a GAAP basic figure) and prior_yy ($0.07, Yahoo fundamentals-timeseries — a GAAP diluted figure) from different, non-adjusted bases. Rather than compute a cross-basis delta, this summary uses the release's own same-basis reconciliation table twice: GAAP diluted EPS ($1.49 vs $0.07 y/y, $1.14 q/q) and Adjusted diluted EPS ($2.28 vs $0.81 y/y, $1.48 q/q) as two separate KPI rows. Net income and Total debt deltas (y/y and q/q for net income; y/y for total debt, which sums short-term + long-term debt from the balance sheet) are this run's own arithmetic on the release's disclosed period-end figures, not company-stated percentages — flagged as derived, not company-computed. Cash-flow-derived extendedMetrics (capex, buybacks) reflect full fiscal-year 2026 totals, not an isolated Q4 figure, because the release's condensed cash-flow statement discloses only annual columns, no quarterly breakout.",
+  "drivers": [
+    { "metric": "overall", "direction": "up", "explanation": "CEO cites disciplined execution and operating leverage: profitability grew more than 2.5x the rate of sales growth; momentum building across all regions, end markets and customer segments.", "basis": "company-disclosed" },
+    { "metric": "Revenue", "direction": "up", "explanation": "Sequential and year-over-year sales growth across all Electronic Components regions and Farnell, per the release's highlights.", "basis": "company-disclosed" },
+    { "metric": "Operating income margin (GAAP)", "direction": "up", "explanation": "Adjusted operating income grew 2.6x faster than sales per the release; the 11bp q/q margin dip is not explained in the release.", "basis": "company-disclosed" },
+    { "metric": "Adjusted operating margin", "direction": "up", "explanation": "EC margin reached a record 4.1% and Farnell a record 9.0%, both flagged in the release alongside record segment sales.", "basis": "company-disclosed" },
+    { "metric": "EPS diluted (GAAP)", "direction": "up", "explanation": "Follows from higher net income ($126.6M vs $6.1M in the prior-year quarter, which was near breakeven pretax).", "basis": "derived-arithmetic" },
+    { "metric": "EPS diluted (Adjusted)", "direction": "up", "explanation": "Grew 3.8 times greater than sales year over year, per the release, on margin expansion plus a lower diluted share count.", "basis": "company-disclosed" },
+    { "metric": "Net income (GAAP)", "direction": "up", "explanation": "Tracks the operating-income improvement on record sales; not separately explained beyond the margin discussion in the release.", "basis": "derived-arithmetic" },
+    { "metric": "Inventory days", "direction": "down", "explanation": "EC inventory days fell 5 to under 65 and Farnell fell 10 to under 200, per the release; no specific cause given.", "basis": "company-disclosed" },
+    { "metric": "Cash and cash equivalents", "direction": "down", "explanation": "Full fiscal year net cash used in operating activities was $280.9M as receivables (+$2.61B) and inventory (+$918M) growth outpaced the $2.61B rise in payables.", "basis": "derived-arithmetic" },
+    { "metric": "Total debt", "direction": "up", "explanation": "Debt rose after $633.75M of convertible notes issued and a $270.2M term-loan draw during fiscal 2026, partly offset by $550M of note repayments.", "basis": "company-disclosed" }
+  ]
+}
