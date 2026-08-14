@@ -1,0 +1,37 @@
+{
+  "ticker": "BEPC US",
+  "period": "FY2026 Q2",
+  "reported_at": "2026-07-31",
+  "generated_at": "2026-08-14T00:00:00Z",
+  "depth": "filing",
+  "headline": "Revenue climbs, losses narrow as remeasurement charges ease",
+  "kpis": [
+    { "label": "Revenue", "value": "$1,076M", "delta": "+21.9%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Revenue", "value": "$1,076M", "delta": "+13.0%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Gross profit", "value": "$623M", "delta": "+33.1%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Gross profit", "value": "$623M", "delta": "+4.0%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Operating income", "value": "$277M", "delta": "+116.4%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Operating income", "value": "$277M", "delta": "+9.1%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EBITDA", "value": "-$60M", "delta": "+$1,596M", "delta_basis": "q/q", "direction": "up" },
+    { "label": "EBITDA", "value": "-$60M", "delta": "+$644M", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EBIT", "value": "-$361M", "delta": "+$1,589M", "delta_basis": "q/q", "direction": "up" },
+    { "label": "EBIT", "value": "-$361M", "delta": "+$662M", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Net loss", "value": "-$785M", "delta": "+$1,401M", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Net loss", "value": "-$785M", "delta": "+$662M", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EPS diluted (GAAP)", "value": "-$4.33", "delta": "+$7.65", "delta_basis": "q/q", "direction": "up" },
+    { "label": "EPS diluted (GAAP)", "value": "-$4.33", "delta": "+$3.52", "delta_basis": "y/y", "direction": "up" }
+  ],
+  "summary_short": "BEPC's Q2 2026 revenue rose to $1,076M, up 13.0% y/y and 21.9% q/q, while the net loss narrowed to $785M from $1,447M a year ago and $2,186M last quarter, mainly on smaller non-cash remeasurement charges tied to BEPC's exchangeable shares.",
+  "summary_long": "Revenue grew 13.0% y/y and 21.9% q/q to $1,076M on higher realized pricing, strong European solar generation and favorable FX, partly offset by recently completed asset sales and weak U.S./Colombia hydrology. Direct operating costs rose faster (+28.3% y/y) on higher Colombian power-purchase pass-throughs, but operating income still grew 9.1% y/y to $277M on lower depreciation. The $785M net loss (vs $1,447M a year ago) is almost entirely non-cash IFRS remeasurement of BEPC's exchangeable/class A.2 shares and the partnership's interest in BRHC, which shrank alongside a smaller unit-price increase than a year ago. Available liquidity rose to $5,127M. The board raised the quarterly distribution to $0.392/unit, targeting 5%-9% annual distribution growth. No new company guidance appears in this filing.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/1791863/000179186326000014/bepcq22026-ex992.htm",
+  "confidence_notes": "REGENERATION: this run was invoked in force-regenerate mode per explicit operator instruction, with the Step-0 'already exists' guard explicitly skipped. Note: no prior BEPC_US_FY2026_Q2.json summary actually existed on disk before this run (resolver reported summaryExists=false) — this is a first-time compose, not a literal overwrite, despite the force-regen framing of the request. Report-date correction: the shard's stored eventDate (2026-06-30) is the fiscal quarter-end, not the filing date; this summary's reported_at uses the 6-K's actual filing/furnishing date (2026-07-31, per the cover page's 'Date: July 31, 2026' signature block and the resolver's sourceLink.filingDate), per the Step-0 mismatch-note rule. Net-loss correction: the shard's net_income_usd_m KPI (-$790M, Yahoo fundamentals-timeseries) was replaced in this summary with the filing's own verbatim consolidated net loss of -$785M (Part 2 income table and the Adjusted EBITDA reconciliation's 'Total' column), a $5M/0.6% discrepancy likely from Yahoo's own FX/rounding conversion. The corrected -$785M figure is internally consistent with the shard's own EBIT (-$361M) and EBITDA (-$60M) values via exact arithmetic (-785 + 387 interest expense + 37 income tax = -361; -361 + 301 depreciation = -60), which the uncorrected -$790M figure would not satisfy — this cross-check is the basis for preferring the filing value. Prior-period (q/q, y/y) net-loss comparatives are left as the shard's own stored values; the y/y prior (-$1,447M) already matches the filing's SEC-sourced figure exactly and the delta (+$662M) matches the filing's own stated variance verbatim. EPS is BEPC-corporate-level (-$4.33 this quarter), not the much smaller BEP partnership per-LP-unit figure shown in the MD&A's 'Selected Quarterly Information' table (-$0.37) — the two aren't comparable because BEPC's own outstanding share count is tiny relative to the partnership's LP units, so the same consolidated remeasurement swings produce a far larger per-share number at the BEPC level. No explicit forward guidance (revenue, capex, or production range) for a specific period appears in this filing; the 12%-15% total-return target, 70% FFO payout ratio and 5%-9% annual distribution growth are standing long-term targets restated from prior filings, not new-period guidance, so guidance[] is intentionally left unpopulated on the event shard.",
+  "drivers": [
+    { "metric": "Revenue", "direction": "up", "explanation": "Higher realized pricing, strong same-store solar generation in Europe, and favorable FX were partially offset by recently completed asset sales and unfavorable hydrology at the U.S. and Colombia hydro businesses.", "basis": "company-disclosed" },
+    { "metric": "Gross profit", "direction": "up", "explanation": "Revenue growth (+$124M y/y) outpaced the $100M y/y rise in direct operating costs, which the company attributes mainly to higher Colombian power purchases passed through to customers and FX translation.", "basis": "derived-arithmetic" },
+    { "metric": "Operating income", "direction": "up", "explanation": "Revenue gains and $18M lower y/y depreciation (from completed asset sales) outweighed higher direct operating and management service costs; the filing does not state an operating-income figure directly.", "basis": "derived-arithmetic" },
+    { "metric": "Net loss", "direction": "up", "explanation": "Narrower loss is attributed almost entirely to smaller remeasurement charges on BEPC's exchangeable/class A.2 shares and on the partnership's interest in BRHC, tied to a smaller y/y increase in unit price.", "basis": "company-disclosed" },
+    { "metric": "EBIT", "direction": "up", "explanation": "Not separately explained by the company; tracks the same net-loss narrative once interest and tax are added back.", "basis": "derived-arithmetic" },
+    { "metric": "EBITDA", "direction": "up", "explanation": "Not separately explained by the company; tracks the EBIT and net-loss narrative once depreciation is added back.", "basis": "derived-arithmetic" },
+    { "metric": "overall", "direction": "up", "explanation": "Board raised the quarterly distribution over 5% to $0.392/unit, citing forecasted contributions from recently commissioned projects and cash yield on recent acquisitions net of dispositions.", "basis": "company-disclosed" }
+  ]
+}
