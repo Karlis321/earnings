@@ -807,6 +807,12 @@
               "actualFamily": "yahoo-timeseries",
               "estimateFamily": "yahoo-chart",
               "clearedAt": "2026-08-13T05:10:38.082Z"
+            },
+            {
+              "value": -11.586386460851775,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-08-14T05:06:05.863Z"
             }
           ]
         },
@@ -1138,6 +1144,12 @@
               "actualFamily": "yahoo-timeseries",
               "estimateFamily": "yahoo-chart",
               "clearedAt": "2026-08-13T05:10:38.082Z"
+            },
+            {
+              "value": -630.3075221238937,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-08-14T05:06:05.863Z"
             }
           ]
         },
@@ -1469,6 +1481,12 @@
               "actualFamily": "yahoo-timeseries",
               "estimateFamily": "yahoo-chart",
               "clearedAt": "2026-08-13T05:10:38.082Z"
+            },
+            {
+              "value": -316.6666666666667,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-08-14T05:06:05.863Z"
             }
           ]
         },
@@ -1582,13 +1600,13 @@
       "kind": "earnings",
       "period": "FY2026 Q2",
       "scheduledDate": "2026-08-16",
-      "eventDate": null,
+      "eventDate": "2026-08-13",
       "timing": null,
       "expectation": "unset",
       "guidanceMove": null,
-      "freshness": "stale",
-      "provenance": "estimator-median-gap",
-      "provenanceAsOf": "2026-08-13T04:47:37.301Z",
+      "freshness": "fresh",
+      "provenance": "yahoo-earnings-chart",
+      "provenanceAsOf": "2026-08-14T04:43:07.563Z",
       "cadence": "quarterly",
       "metrics": [
         {
@@ -1620,7 +1638,7 @@
           "key": "eps_usd",
           "displayLabel": "EPS",
           "isHeadline": true,
-          "surprisePct": null,
+          "surprisePct": -128.99999999999997,
           "estimate": {
             "value": -0.07,
             "unit": "USD",
@@ -1638,15 +1656,28 @@
             "high": -0.04,
             "numberOfAnalysts": 2
           },
-          "actual": null,
+          "actual": {
+            "value": -0.1603,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/LUNR/earnings-history",
+              "label": "Yahoo · earningsChart",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-06-30",
+            "fetchedAt": "2026-08-14T04:43:07.563Z",
+            "method": "yahoo",
+            "confidence": 0.8
+          },
           "prior": null
         }
       ],
       "guidance": [],
       "reaction": {
         "benchmark": "SPX",
-        "baselineDate": null,
-        "baselineClose": null,
+        "baselineDate": "2026-08-13",
+        "baselineClose": 17.559999465942383,
         "points": [
           {
             "horizon": "d1",
@@ -1654,7 +1685,8 @@
             "excessReturn": null,
             "benchmark": "SPX",
             "computedAt": null,
-            "populatesOn": "2026-10-02"
+            "populatesOn": null,
+            "status": "pending"
           },
           {
             "horizon": "d3",
@@ -1662,7 +1694,8 @@
             "excessReturn": null,
             "benchmark": "SPX",
             "computedAt": null,
-            "populatesOn": "2026-10-04"
+            "populatesOn": null,
+            "status": "pending"
           },
           {
             "horizon": "w1",
@@ -1670,7 +1703,8 @@
             "excessReturn": null,
             "benchmark": "SPX",
             "computedAt": null,
-            "populatesOn": "2026-10-06"
+            "populatesOn": null,
+            "status": "pending"
           },
           {
             "horizon": "m1",
@@ -1678,7 +1712,8 @@
             "excessReturn": null,
             "benchmark": "SPX",
             "computedAt": null,
-            "populatesOn": "2026-10-22"
+            "populatesOn": null,
+            "status": "pending"
           }
         ]
       },
@@ -2046,11 +2081,106 @@
             "provenance": "regulatory",
             "time": "2026-04-16T20:32:29.000Z",
             "kind": "edgar"
+          },
+          {
+            "id": "pr-lunr-828026056821indexhtm",
+            "headline": "10-Q  - Quarterly report [Sections 13 or 15(d)]",
+            "url": "https://www.sec.gov/Archives/edgar/data/1844452/000162828026056821/0001628280-26-056821-index.htm",
+            "source": "SEC EDGAR filings",
+            "provenance": "regulatory",
+            "time": "2026-08-13T21:09:57.000Z",
+            "kind": "edgar"
+          },
+          {
+            "id": "pr-lunr-828026056476indexhtm",
+            "headline": "8-K  - Current report",
+            "url": "https://www.sec.gov/Archives/edgar/data/1844452/000162828026056476/0001628280-26-056476-index.htm",
+            "source": "SEC EDGAR filings",
+            "provenance": "regulatory",
+            "time": "2026-08-13T11:35:43.000Z",
+            "kind": "edgar"
+          },
+          {
+            "id": "pr-lunr-390026088540indexhtm",
+            "headline": "4  - Statement of changes in beneficial ownership of securities",
+            "url": "https://www.sec.gov/Archives/edgar/data/1844452/000121390026088540/0001213900-26-088540-index.htm",
+            "source": "SEC EDGAR filings",
+            "provenance": "regulatory",
+            "time": "2026-08-12T23:00:03.000Z",
+            "kind": "edgar"
           }
         ],
         "engineStatus": []
       },
-      "scheduledDateSource": "roll-stale-shells/median-gap"
+      "scheduledDateSource": "roll-stale-shells/median-gap",
+      "eventDateSource": "yahoo-earnings-chart-reportedDate",
+      "sourceLink": {
+        "url": "https://finance.yahoo.com/quote/LUNR/earnings-history",
+        "kind": "fallback"
+      }
+    },
+    {
+      "id": "evt-sjyatd",
+      "ticker": "LUNR US",
+      "kind": "earnings",
+      "period": "FY2026 Q3",
+      "scheduledDate": "2026-11-12",
+      "eventDate": null,
+      "timing": null,
+      "expectation": "unset",
+      "guidanceMove": null,
+      "freshness": "stale",
+      "provenance": "estimator-median-gap",
+      "provenanceAsOf": "2026-08-14T05:04:03.763Z",
+      "cadence": "quarterly",
+      "metrics": [],
+      "guidance": [],
+      "reaction": {
+        "benchmark": "SPX",
+        "baselineDate": null,
+        "baselineClose": null,
+        "points": [
+          {
+            "horizon": "d1",
+            "absReturn": null,
+            "excessReturn": null,
+            "benchmark": "SPX",
+            "computedAt": null,
+            "populatesOn": "2026-11-15"
+          },
+          {
+            "horizon": "d3",
+            "absReturn": null,
+            "excessReturn": null,
+            "benchmark": "SPX",
+            "computedAt": null,
+            "populatesOn": "2026-11-17"
+          },
+          {
+            "horizon": "w1",
+            "absReturn": null,
+            "excessReturn": null,
+            "benchmark": "SPX",
+            "computedAt": null,
+            "populatesOn": "2026-11-19"
+          },
+          {
+            "horizon": "m1",
+            "absReturn": null,
+            "excessReturn": null,
+            "benchmark": "SPX",
+            "computedAt": null,
+            "populatesOn": "2026-12-05"
+          }
+        ]
+      },
+      "sources": {
+        "windowStart": "2026-11-10",
+        "windowEnd": "2026-12-17",
+        "capturedAt": null,
+        "items": [],
+        "engineStatus": []
+      }
     }
   ]
 }
