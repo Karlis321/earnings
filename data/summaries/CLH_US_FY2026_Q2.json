@@ -1,0 +1,41 @@
+{
+  "ticker": "CLH US",
+  "period": "FY2026 Q2",
+  "reported_at": "2026-06-30",
+  "generated_at": "2026-08-14T00:00:00.000Z",
+  "depth": "filing",
+  "headline": "Clean Harbors posts record profits as margins expand",
+  "kpis": [
+    { "label": "Revenue", "value": "$1.74B", "delta": "+18.9%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Revenue", "value": "$1.74B", "delta": "+11.9%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Gross profit", "value": "$609M", "delta": "+36.7%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Gross profit", "value": "$609M", "delta": "+17.9%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Operating income", "value": "$269M", "delta": "+126.1%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Operating income", "value": "$269M", "delta": "+27.9%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EBIT", "value": "$273M", "delta": "+119.0%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "EBIT", "value": "$273M", "delta": "+27.1%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EBITDA", "value": "$395M", "delta": "+64.2%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "EBITDA", "value": "$395M", "delta": "+19.2%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Net income", "value": "$170M", "delta": "+169.7%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Net income", "value": "$170M", "delta": "+34.3%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EPS basic (GAAP)", "value": "$3.23", "delta": "+169.2%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "EPS basic (GAAP)", "value": "$3.23", "delta": "+36.3%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EPS diluted (GAAP)", "value": "$3.22", "delta": "+170.6%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "EPS diluted (GAAP)", "value": "$3.22", "delta": "+36.4%", "delta_basis": "y/y", "direction": "up" }
+  ],
+  "summary_short": "Clean Harbors' Q2 2026 revenue rose 11.9% y/y to $1,735.0M, with net income up 34.3% y/y to $170.5M ($3.22 diluted EPS) as SKSS segment Adjusted EBITDA margin nearly doubled to 33.4% from 19.4% and Environmental Services margin also expanded.",
+  "summary_long": "Q2 2026 revenue rose 11.9% y/y to $1,735.0M, led by Environmental Services (+7.7%) on Technical Services growth including a $30M+ PFAS filtration project, and SKSS (+40.8%) on higher oil-product pricing. Adjusted EBITDA rose 21.6% y/y to $409.0M as margin expanded 190bp to 23.6%, with SKSS margin nearly doubling to 33.4%. Net income rose 34.3% y/y to $170.5M ($3.22 diluted EPS). Clean Harbors raised FY2026 net capex guidance to $490-550M for added growth investments. Cash fell to $408.4M after $357.6M spent on the Depot Connect International and Terra Nova acquisitions; it repurchased $25.0M of stock in the quarter with $549.4M remaining under its buyback authorization.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/822818/000082281826000034/clh-20260630.htm",
+  "confidence_notes": "REGENERATION: this run was invoked in force-regenerate mode with the Step-0 'already exists' guard explicitly skipped. Note: no prior CLH_US_FY2026_Q2.json summary actually existed on disk before this run (resolver reported summaryExists=false) — this is a first-time compose, not a literal overwrite, despite the force-regen framing of the request. Source: the resolver's sourceLink already pointed directly at the 10-Q main document (clh-20260630.htm), not an 8-K cover, so no exhibit-resolution step was needed. EBITDA note: the shard's stored 'ebitda_usd_m' ($394.8M, Yahoo fundamentals-timeseries provenance, computed as EBIT + D&A) does not reconcile to the company's own non-GAAP 'Adjusted EBITDA' of $409.0M for Q2 2026, which also adds back stock-based compensation ($14.8M), environmental-liability accretion ($3.5M) and other non-operating items; the KPI deltas above use the shard's stored EBIT/EBITDA values per ledger discipline, while the summary narrative cites the company's own Adjusted EBITDA figure explicitly as such. Capex guidance: the filing states the FY2026 net capex range was raised 'during the second quarter of 2026' but does not restate the specific prior range in this document, so the guidance entry's 'raised' move is recorded without a verbatim prior-range quote.",
+  "drivers": [
+    { "metric": "Revenue", "direction": "up", "explanation": "Environmental Services direct revenue +7.7% y/y on Technical Services growth (incl. a $30M+ PFAS filtration project) and Safety-Kleen core/Field & Emergency Response growth; SKSS direct revenue +40.8% y/y on higher base/blended oil and used-oil pricing.", "basis": "company-disclosed" },
+    { "metric": "Gross profit", "direction": "up", "explanation": "Revenue growth of 11.9% outpaced total cost-of-revenue growth of 9.0%, mechanically expanding consolidated gross margin.", "basis": "derived-arithmetic" },
+    { "metric": "Operating income", "direction": "up", "explanation": "Environmental Services revenue grew faster than its cost of revenue and gross margins expanded in the quarter; SKSS cost of revenue also improved as a % of revenue on higher product pricing.", "basis": "company-disclosed" },
+    { "metric": "EBIT", "direction": "up", "explanation": "Follows the same revenue-outpacing-cost dynamic described for operating income.", "basis": "derived-arithmetic" },
+    { "metric": "EBITDA", "direction": "up", "explanation": "Follows the same operating-income drivers plus a $121.8M depreciation and amortization add-back.", "basis": "derived-arithmetic" },
+    { "metric": "Net income", "direction": "up", "explanation": "Higher operating income (+$58.6M y/y) flowed through after a higher tax provision (+$16.0M, driven by higher pre-tax income) and roughly flat net interest expense.", "basis": "derived-arithmetic" },
+    { "metric": "EPS basic (GAAP)", "direction": "up", "explanation": "Tracks net income growth (+34.3% y/y) with share count little changed year over year.", "basis": "derived-arithmetic" },
+    { "metric": "EPS diluted (GAAP)", "direction": "up", "explanation": "Tracks net income growth (+34.3% y/y) with diluted share count little changed year over year.", "basis": "derived-arithmetic" },
+    { "metric": "overall", "direction": "up", "explanation": "Broad-based growth and margin expansion across both segments; the company raised FY2026 net capex guidance to $490-550M to fund growth investments including a solvent de-asphalting unit, fleet expansion and data-center assets.", "basis": "company-disclosed" }
+  ]
+}
