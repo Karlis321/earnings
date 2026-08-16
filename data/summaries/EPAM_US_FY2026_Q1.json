@@ -1,10 +1,10 @@
 {
   "ticker": "EPAM US",
   "period": "FY2026 Q1",
-  "reported_at": "2026-03-31",
-  "generated_at": "2026-08-16T16:42:38.000Z",
-  "depth": "kpi-only",
-  "headline": "Growth holds up but sequential margins compress",
+  "reported_at": "2026-05-07",
+  "generated_at": "2026-08-16T00:00:00.000Z",
+  "depth": "filing",
+  "headline": "Growth holds, margins widen, buybacks power EPS higher",
   "kpis": [
     { "label": "Revenue", "value": "$1,400.1M", "delta": "-0.5%", "delta_basis": "q/q", "direction": "down" },
     { "label": "Revenue", "value": "$1,400.1M", "delta": "+7.6%", "delta_basis": "y/y", "direction": "up" },
@@ -27,13 +27,63 @@
     { "label": "Total cash", "value": "$1,037.0M", "delta": "-20.0%", "delta_basis": "q/q", "direction": "down" },
     { "label": "Total cash", "value": "$1,037.0M", "delta": "-11.6%", "delta_basis": "y/y", "direction": "down" },
     { "label": "Long-term debt", "value": "$165.0M", "delta": "+559.1%", "delta_basis": "q/q", "direction": "up" },
-    { "label": "Long-term debt", "value": "$165.0M", "delta": "+558.5%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Long-term debt", "value": "$165.0M", "delta": "+558.4%", "delta_basis": "y/y", "direction": "up" },
     { "label": "Shareholders' equity", "value": "$3,431.1M", "delta": "-6.7%", "delta_basis": "q/q", "direction": "down" },
     { "label": "Shareholders' equity", "value": "$3,431.1M", "delta": "-5.8%", "delta_basis": "y/y", "direction": "down" },
     { "label": "Weighted diluted shares", "value": "54.2M", "delta": "-5.4%", "delta_basis": "y/y", "direction": "down" }
   ],
-  "summary_short": "Revenue was $1,400.1M, up 7.6% y/y though down 0.5% q/q; net margin compressed roughly 190bp sequentially while diluted EPS rose 18.8% y/y on a smaller share count.",
-  "summary_long": "Revenue was $1,400.1M, +7.6% y/y and -0.5% q/q. Gross margin was 27.7% (+85bp y/y, -235bp q/q); operating margin 8.3% (+71bp y/y, -226bp q/q). Diluted EPS was $1.52, +18.8% y/y and -23.2% q/q, aided by a 5.4% y/y reduction in diluted share count. Operating cash flow swung to -$36.4M from +$24.2M a year ago; cash fell to $1,037.0M from $1,296.1M q/q.",
-  "source_url": "https://www.sec.gov/Archives/edgar/data/1352010/000135201026000026/0001352010-26-000026-index.html",
-  "confidence_notes": "primary filing unreachable — KPI-only summary from verified shard data. REGENERATION: this run was executed in force-regenerate mode per operator request (Step-0 'already exists' guard skipped); no prior summary file was actually found on disk, so this is a first-write rather than a true overwrite. Data-quality flag: the event shard's sourceLink pointed to SEC accession 0001352010-26-000024 (filed 2026-04-01, Items 5.02/9.01 — an executive RSU-grant 8-K), which contains no earnings content; the actual FY2026 Q1 results appear to be in accession 0001352010-26-000026 (filed 2026-05-07, Items 2.02/9.01) per the EDGAR company filing index, but the 3-fetch budget was exhausted confirming and reaching this before it could be read, so source_url above points to that corrected accession's index rather than the (wrong) shard sourceLink. Long-term debt rose sharply q/q ($25.0M→$165.0M) and operating cash flow swung negative; both are unexplained without the filing and should be revisited at filing depth. eps_usd basis note: prior_qq value (1.99) is Yahoo-sourced while current/prior_yy are SEC-sourced (same-basis surprise rule not applied here since no surprisePct is computed in this summary)."
+  "summary_short": "Revenue was $1,400.1M, up 7.6% y/y (3.7% organic constant-currency) though down 0.5% q/q; GAAP operating margin expanded to 8.3% from 7.6% y/y while diluted EPS rose 18.8% y/y to $1.52, aided by a 5.4% smaller diluted share count from ongoing buybacks.",
+  "summary_long": "Revenue rose 7.6% y/y to $1,400.1M (3.7% organic constant-currency, aided by a ~3.9pp FX tailwind) but fell 0.5% q/q. GAAP operating margin improved to 8.3% from 7.6% y/y (non-GAAP 14.3% vs 13.5%); diluted EPS was $1.52, +18.8% y/y, helped by a 5.4% smaller diluted share count after $324M of Q1 buybacks, including a $300M accelerated repurchase. Operating cash flow swung to -$36.4M from +$24.2M y/y, not explained in the release. Cash fell to $1,037.0M from $1,296.1M q/q, mainly the buyback spend. For FY2026, EPAM now guides revenue growth to 4.0%-6.5%, GAAP diluted EPS to $8.29-$8.59; full-year GAAP/non-GAAP operating-margin ranges (10%-11% / 15%-16%) were held unchanged.",
+  "drivers": [
+    {
+      "metric": "overall",
+      "direction": "up",
+      "explanation": "CEO Balazs Fejes called Q1 a strong start to the year, citing steady execution and continued momentum on the company's AI-native and AI-foundational transformation initiatives.",
+      "basis": "company-disclosed"
+    },
+    {
+      "metric": "Revenue",
+      "direction": "up",
+      "explanation": "Reported revenue growth of 7.6% y/y included a favorable FX effect of roughly 3.9 points; stripping that out, organic constant-currency growth was 3.7%, with no inorganic contribution.",
+      "basis": "company-disclosed"
+    },
+    {
+      "metric": "Operating income",
+      "direction": "up",
+      "explanation": "GAAP operating margin rose to 8.3% from 7.6% y/y (non-GAAP 14.3% vs 13.5%); the GAAP-to-non-GAAP bridge widened on higher stock-based comp, cost-optimization charges and Ukraine humanitarian support per the release's reconciliation table.",
+      "basis": "company-disclosed"
+    },
+    {
+      "metric": "EPS (diluted)",
+      "direction": "up",
+      "explanation": "Diluted EPS growth of 18.8% y/y outpaced net income's 12.3% rise because diluted shares outstanding fell 5.4% y/y, consistent with the quarter's $324M of buybacks including a $300M accelerated repurchase.",
+      "basis": "derived-arithmetic"
+    },
+    {
+      "metric": "Total cash",
+      "direction": "down",
+      "explanation": "Cash fell about $259M q/q mainly because the company spent $324 million on share repurchases in the quarter, including $300 million for the previously announced accelerated share repurchase.",
+      "basis": "company-disclosed"
+    },
+    {
+      "metric": "Operating cash flow",
+      "direction": "down",
+      "explanation": "not explained in the release; the document reports the swing to operating cash use from operating cash generation a year ago without stating a cause.",
+      "basis": "company-disclosed"
+    },
+    {
+      "metric": "Long-term debt",
+      "direction": "up",
+      "explanation": "not explained in the release; the increase from $25.0 million to $165.0 million between Q4 2025 and Q1 2026 has no stated cause in the document.",
+      "basis": "company-disclosed"
+    },
+    {
+      "metric": "Shareholders' equity",
+      "direction": "down",
+      "explanation": "Derived from the balance sheet: equity fell to $3.431 billion from $3.677 billion q/q as $324 million of share repurchases retiring stock outweighed $82.5 million of net income added.",
+      "basis": "derived-arithmetic"
+    }
+  ],
+  "source_url": "https://www.sec.gov/Archives/edgar/data/1352010/000135201026000026/exhibit99_q1x2026.htm",
+  "confidence_notes": "REGENERATION: this run was executed in force-regenerate mode per operator request, overwriting the prior kpi-only summary for EPAM US FY2026 Q1. Sourcing correction: the shard's Step-0 sourceLink pointed to SEC accession 0001352010-26-000024 (filed 2026-04-01, Items 5.02/9.01 — an executive RSU-grant 8-K with no earnings content, the same issue flagged by the prior kpi-only run). This run confirmed via the EDGAR filing index that the actual Q1 2026 earnings release is accession 0001352010-26-000026 (filed 2026-05-07, Item 2.02/9.01) and fetched its EX-99.1 exhibit directly, upgrading this summary from kpi-only to filing depth. reported_at is set to 2026-05-07 (the real 8-K filing date) rather than the shard's eventDate placeholder of 2026-03-31 (fiscal quarter-end) — flagging this mismatch per Step 0 guidance; the shard's own eventDate field was not modified. eps_usd basis note: prior_qq (1.99) is Yahoo-sourced while current and prior_yy are SEC-sourced (no surprisePct is computed in this summary, so the same-basis rule doesn't apply). Guidance: full-year revenue-growth and EPS ranges use 'now expects' language signalling a change from a prior guide, but the release does not restate the prior range's numbers, so move is left null rather than guessed as raised/lowered; full-year GAAP/non-GAAP operating-margin and non-GAAP tax-rate guidance use 'continues to expect' language and are marked held; Q2 2026 guidance is marked initiated as the first disclosure of that quarter. The release narrates only y/y comparisons — q/q moves (the long-term debt jump from $25.0M to $165.0M, and the operating cash flow swing to -$36.4M) are not explained in the primary document and are flagged as such in drivers[]. Total cash of $1,036.959M matches the balance sheet's cash-and-equivalents line; the release's headline $1.043B figure additionally includes restricted cash — not a discrepancy, just a different aggregate."
 }
