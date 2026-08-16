@@ -1,0 +1,33 @@
+{
+  "ticker": "ENPH US",
+  "period": "FY2026 Q2",
+  "reported_at": "2026-07-28",
+  "generated_at": "2026-08-16T16:20:00.000Z",
+  "depth": "filing",
+  "headline": "Enphase returns to profit as tariff refunds boost margins",
+  "kpis": [
+    { "label": "Revenue", "value": "$291.9M", "delta": "-19.6%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Revenue", "value": "$291.9M", "delta": "+3.2%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Gross profit", "value": "$175.0M", "delta": "+2.7%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Operating income", "value": "$52.5M", "delta": "+41.8%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Operating income", "value": "$52.5M", "delta": "+$82.1M", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Net income", "value": "$36.1M", "delta": "-2.6%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Net income", "value": "$36.1M", "delta": "+$43.5M", "delta_basis": "q/q", "direction": "up" },
+    { "label": "EPS diluted (GAAP)", "value": "$0.27", "delta": "-3.6%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "EPS diluted (GAAP)", "value": "$0.27", "delta": "+$0.33", "delta_basis": "q/q", "direction": "up" },
+    { "label": "EBITDA", "value": "$82.4M", "delta": "+30.6%", "delta_basis": "y/y", "direction": "up" }
+  ],
+  "summary_short": "Enphase's Q2 2026 revenue fell 19.6% y/y to $291.9M on lower IQ Battery shipments and pricing, but gross margin jumped to 60.0% on $45.4M of IEEPA tariff refunds, driving net income to $36.1M ($0.27 diluted EPS) from a $7.4M net loss in Q1 2026.",
+  "summary_long": "Second-quarter net revenues fell 19.6% y/y to $291.9M, driven by a 40% drop in IQ Battery MWh shipped and lower product pricing, partly offset by a 4% rise in microinverter units sold. U.S. revenue fell on the expired Section 25D residential tax credit; European revenue fell on soft demand and delayed purchasing. Gross margin rose to 60.0% (+13.1ppt y/y) largely from $45.4M of IEEPA tariff refunds, partially offset by lower IQ Battery volume absorption. Operating expenses fell on 2026 restructuring savings. Net income was $36.1M (EPS $0.27), rebounding from a $7.4M net loss in Q1 2026. No new guidance was issued in this 10-Q. Cash and marketable securities fell $592.5M y/y after the $632.5M payoff of the Notes due 2026.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/1463101/000146310126000081/enph-20260630.htm",
+  "confidence_notes": "REGENERATION: this run was invoked in force-regenerate mode with the Step-0 'already exists' guard explicitly skipped, per task instruction. Note: no prior ENPH_US_FY2026_Q2.json summary actually existed on disk before this run (resolver reported summaryExists=false) — this is a first-time compose, not a literal overwrite, despite the force-regen framing of the request. Date correction: the shard's stored eventDate (2026-06-30) is the fiscal-quarter-end placeholder, not the actual filing date; this summary's reported_at uses the 10-Q's real EDGAR filing date (2026-07-28) per the 'real report dates, not quarter-end' rule — the shard's eventDate field itself was not touched. Tariff-refund note: $45.4M of IEEPA tariff refunds (from Section 122 duties the U.S. Supreme Court ruled invalid in February 2026) drove the bulk of Q2's 13.1ppt gross-margin expansion and the swing to net income — a partly one-time item tied to unresolved litigation (the government has appealed the Court of International Trade's ruling on the Section 122 remedy), not a structural margin gain; new Section 301 tariffs (10%-12.5%, effective July 2026) create fresh uncertainty for future quarters. Net income was $36.1M, down 2.6% y/y (essentially flat) even though it swung from a $7.4M net loss in Q1 2026 — both facts are true and both rows are reported above (q/q and y/y). The resolver's shard KPIs exposed 'eps_usd' and 'eps_diluted_usd' as identical duplicate values ($0.27); only one EPS row is used here to avoid double-counting. No forward guidance was found in this 10-Q — guidance is typically disclosed in the earnings press release/8-K rather than the 10-Q itself, so the shard's guidance array was left untouched (empty).",
+  "drivers": [
+    { "metric": "Revenue", "direction": "down", "explanation": "Revenue fell 20% y/y on a 40% drop in IQ Battery MWh shipped and lower pricing, partly offset by a 4% rise in microinverter units sold; U.S. revenue also hurt by the expired Section 25D residential tax credit.", "basis": "company-disclosed" },
+    { "metric": "Gross profit", "direction": "up", "explanation": "Gross margin rose 13.1ppt y/y to 60.0%, primarily from $45.4M of IEEPA tariff refunds, partially offset by unfavorable fixed-cost absorption on lower IQ Battery shipment volume.", "basis": "company-disclosed" },
+    { "metric": "Operating income", "direction": "up", "explanation": "Follows the gross-margin expansion from tariff refunds, plus lower opex from 2026 restructuring actions that cut personnel-related costs across R&D, sales and G&A.", "basis": "derived-arithmetic" },
+    { "metric": "Net income", "direction": "up", "explanation": "Swung to a $36.1M profit from a $7.4M Q1 loss on the same tariff-refund and lower-opex drivers as operating income; roughly flat y/y since last year's quarter didn't carry these one-off items.", "basis": "derived-arithmetic" },
+    { "metric": "EPS diluted (GAAP)", "direction": "up", "explanation": "Mirrors net income, swinging to $0.27 from a $0.06 Q1 loss; a higher Q2 income tax provision ($25.8M, on a rate catch-up adjustment) partly offset pre-tax income growth.", "basis": "derived-arithmetic" },
+    { "metric": "EBITDA", "direction": "up", "explanation": "Same drivers as operating income (tariff refunds, lower opex) plus D&A add-back; EBITDA swung from $7.6M in Q1 to $82.4M in Q2.", "basis": "derived-arithmetic" },
+    { "metric": "overall", "direction": "up", "explanation": "The quarter turned on a one-time item: $45.4M of IEEPA tariff refunds lifted margins, driving the swing from a Q1 loss to a solid Q2 profit even as revenue kept falling y/y on soft IQ Battery demand. No guidance was issued in the 10-Q.", "basis": "company-disclosed" }
+  ]
+}
