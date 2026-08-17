@@ -1,0 +1,40 @@
+{
+  "ticker": "EXP US",
+  "period": "FY2026 Q2",
+  "reported_at": "2026-06-30",
+  "generated_at": "2026-08-17T15:00:00.000Z",
+  "depth": "filing",
+  "headline": "Record revenue, but higher costs squeeze earnings",
+  "kpis": [
+    { "label": "Revenue", "value": "$651.0M", "delta": "+35.9%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Revenue", "value": "$651.0M", "delta": "+2.6%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Gross profit", "value": "$161.2M", "delta": "-13.1%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Operating income", "value": "$141.0M", "delta": "-14.4%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "EBITDA", "value": "$187.8M", "delta": "-10.7%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Net income", "value": "$102.1M", "delta": "-17.2%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "EPS diluted", "value": "$3.29", "delta": "+72.3%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "EPS diluted", "value": "$3.29", "delta": "-12.5%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Operating cash flow", "value": "$154.4M", "delta": "+13.0%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Capex", "value": "$120.8M", "delta": "+58.7%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Total cash", "value": "$233.5M", "delta": "-21.6%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Total cash", "value": "$233.5M", "delta": "+291.0%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Long-term debt", "value": "$1.74B", "delta": "+34.5%", "delta_basis": "y/y", "direction": "up" }
+  ],
+  "summary_short": "Revenue for the quarter ended June 30, 2026 rose 2.6% y/y to a record $651.0M, but net income fell 17.2% y/y to $102.1M and diluted EPS declined 12.5% y/y to $3.29 as higher operating costs — including unplanned downtime at Eagle Materials' Mountain Cement plant — outpaced higher sales volume.",
+  "summary_long": "Revenue rose 2.6% y/y to a record $651.0M on higher volume, partly offset by lower prices. Cost of goods sold rose 9% on higher operating costs across all four segments, cutting gross margin to 25% from 29% and gross profit 13.1% y/y. Cement operating earnings fell on unplanned Mountain Cement downtime and higher maintenance costs; Gypsum Wallboard earnings fell 21% on lower prices. Net income fell 17.2% y/y to $102.1M ($3.29 diluted EPS) on lower gross profit and higher net interest expense tied to November 2025 note issuance. Eagle Materials guided fiscal 2027 capex to $490M-$525M for Mountain Cement and Duke, Oklahoma expansions. Cash fell to $233.5M after $120.8M of capex and $83.8M of buybacks; long-term debt rose to $1.74B.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/918646/000119312526323823/exp-20260630.htm",
+  "confidence_notes": "REGENERATION: this run was invoked in force-regenerate mode with the Step-0 'already exists' guard explicitly skipped. Note: no prior EXP_US_FY2026_Q2.json summary actually existed on disk before this run (resolver reported summaryExists=false) — this is a first-time compose, not a literal overwrite, despite the force-regen framing of the request. Fiscal-period label note: Eagle Materials' fiscal year ends March 31; the company itself labels this filing's quarter (ended June 30, 2026) as 'fiscal 2027 first quarter,' while this shard's existing period-labeling convention (calendar-quarter arithmetic on the report-end date) stores it as 'FY2026 Q2' — flagging per the fiscal-offset-issuer principle rather than renaming the shard's established period series (all prior EXP US events use the same calendar-arithmetic convention). Provenance note: EBITDA/EBIT/gross-profit/operating-income/net-income/revenue KPIs are Yahoo fundamentals-timeseries provenance (not yet SEC-verbatim-rederived for this filing); EPS and balance-sheet/cash-flow KPIs are SEC EDGAR XBRL, same-basis. Total cash rose 291% y/y off an unusually low $59.7M base a year ago; the swing reflects retained proceeds from the $750M 5.000% Senior Notes issued in November 2025, not a change in this quarter's operating performance.",
+  "drivers": [
+    { "metric": "Revenue", "direction": "up", "explanation": "Higher Sales Volume added $19.8M to Revenue, partially offset by lower gross sales prices, which reduced Revenue by about $3.5M.", "basis": "company-disclosed" },
+    { "metric": "Gross profit", "direction": "down", "explanation": "Higher operating costs ($25.7M) and lower gross sales prices ($3.5M) outweighed higher Sales Volume ($4.8M); gross margin fell to 25% from 29%.", "basis": "company-disclosed" },
+    { "metric": "Operating income", "direction": "down", "explanation": "Follows the gross-profit decline, only partly cushioned by a $0.6M drop in corporate G&A from lower salary and incentive compensation.", "basis": "derived-arithmetic" },
+    { "metric": "EBITDA", "direction": "down", "explanation": "Tracks the operating-income decline plus D&A add-back; same cost pressures (higher operating costs, lower gross sales prices) drove the move.", "basis": "derived-arithmetic" },
+    { "metric": "Net income", "direction": "down", "explanation": "Company attributes the decline in pre-tax earnings primarily to lower Gross Profit and lower Equity in Earnings of the Joint Venture, plus higher net interest expense.", "basis": "company-disclosed" },
+    { "metric": "EPS diluted", "direction": "down", "explanation": "y/y decline follows lower net income, partly offset by a smaller diluted share count (31.1M vs 32.8M) from continued buybacks.", "basis": "derived-arithmetic" },
+    { "metric": "Operating cash flow", "direction": "up", "explanation": "Higher cash flow from working-capital changes ($13.3M) and noncash items ($25.6M), partially offset by $21.2M lower Operating Earnings.", "basis": "company-disclosed" },
+    { "metric": "Capex", "direction": "up", "explanation": "Increase primarily related to the modernization and expansion of the Mountain Cement facility in Wyoming.", "basis": "company-disclosed" },
+    { "metric": "Total cash", "direction": "up", "explanation": "y/y increase reflects retained proceeds from the $750M Senior Unsecured Notes issued in November 2025, partly drawn down this quarter for capex and buybacks.", "basis": "derived-arithmetic" },
+    { "metric": "Long-term debt", "direction": "up", "explanation": "Reflects the $750M 5.000% Senior Unsecured Notes due 2036 issued November 13, 2025, partly offset by scheduled Term Loan repayments.", "basis": "company-disclosed" },
+    { "metric": "overall", "direction": "down", "explanation": "Company calls the quarter 'generally strong' with record revenue, but higher operating costs — including unplanned Mountain Cement downtime — and softer Gypsum Wallboard pricing pressured margins and net income.", "basis": "company-disclosed" }
+  ]
+}
