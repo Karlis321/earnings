@@ -18,6 +18,7 @@ import {
 } from "@/components/primitives/ShareEmailButton";
 import { api } from "@/lib/apiClient";
 import { urlHash } from "@/lib/itemDedupe";
+import { INGESTABLE_HOSTS } from "@/server/lib/documentIngest";
 import type { Document } from "@/lib/types";
 
 // Source viewer with three tiers:
@@ -112,27 +113,15 @@ export function SourceViewer() {
     return () => clearTimeout(t);
   }, [open, url, doc.status]);
 
-  const PROXIED_HOSTS = new Set([
-    "www.sec.gov",
-    "sec.gov",
-    "www.federalreserve.gov",
-    "federalreserve.gov",
-    "www.ecb.europa.eu",
-    "ecb.europa.eu",
-    "www.bankofengland.co.uk",
-    "capstonecopper.com",
-    "www.capstonecopper.com",
-    "hudbayminerals.com",
-    "www.hudbayminerals.com",
-    "centuryaluminum.com",
-    "www.centuryaluminum.com",
-    "silvercrestmetals.com",
-    "www.silvercrestmetals.com",
-  ]);
+  // Single source of truth: any host the server is willing to proxy
+  // (INGESTABLE_HOSTS) can be embedded inline. Previously this list
+  // was hardcoded shorter here, so globenewswire/prnewswire/businesswire/
+  // finance.yahoo primary releases fell through to direct-iframe and
+  // got X-Frame-Options-blocked into the "Open at publisher" fallback.
   const shouldProxy = (() => {
     if (!isReal) return false;
     try {
-      return PROXIED_HOSTS.has(new URL(url).host.toLowerCase());
+      return INGESTABLE_HOSTS.has(new URL(url).host.toLowerCase());
     } catch {
       return false;
     }
