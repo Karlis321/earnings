@@ -1,0 +1,37 @@
+{
+  "ticker": "HII US",
+  "period": "FY2026 Q2",
+  "reported_at": "2026-07-30",
+  "generated_at": "2026-08-17T00:00:00.000Z",
+  "depth": "filing",
+  "headline": "Shipbuilding growth drives a profit beat, cash draws down",
+  "kpis": [
+    { "label": "Revenue", "value": "$3.42B", "delta": "+10.3%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Revenue", "value": "$3.42B", "delta": "+10.9%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Gross profit", "value": "$431M", "delta": "+9.1%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Operating income", "value": "$210M", "delta": "+28.8%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Net income", "value": "$208M", "delta": "+36.8%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EPS diluted (GAAP)", "value": "$5.27", "delta": "+39.1%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "EPS diluted (GAAP)", "value": "$5.27", "delta": "+36.5%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EBITDA", "value": "$360M", "delta": "+25.9%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Total cash", "value": "$12M", "delta": "-94.4%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Long-term debt", "value": "$2.70B", "delta": "+0.1%", "delta_basis": "y/y", "direction": "flat" },
+    { "label": "Shareholders equity", "value": "$5.31B", "delta": "+8.8%", "delta_basis": "y/y", "direction": "up" }
+  ],
+  "summary_short": "Revenue rose 10.9% y/y to $3.42B on higher shipbuilding volumes at Newport News and Ingalls, while diluted EPS climbed 36.5% y/y to $5.27 as operating income improved across all three segments and total cash fell to $12M from $216M last quarter.",
+  "summary_long": "Newport News revenue grew 15% y/y to $1.85B on higher carrier and submarine volumes plus contract incentives; segment operating income rose 35% to $111M. Ingalls revenue grew 17% to $845M on higher amphibious-ship volumes; operating income rose 7% to $58M. Mission Technologies revenue fell 4% to $760M on lower All-Domain and Global Security volumes, but operating income rose to $55M from $36M on higher JV equity income. Consolidated operating income rose 29% y/y to $210M; diluted EPS rose 36.5% to $5.27. Six-month operating cash flow swung to a $421M use on working-capital timing, pulling cash to $12M; long-term debt held flat near $2.70B; equity grew to $5.31B. Backlog reached $57.3B; FY2026 capex guided to 1.0%-1.5% plus 3.0%-3.5% of revenue.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/1501585/000150158526000047/hii-20260630.htm",
+  "confidence_notes": "REGENERATION: this run was invoked in force-regenerate mode with the Step-0 'already exists' guard explicitly skipped; no prior HII_US_FY2026_Q2.json summary actually existed on disk before this run (resolver reported summaryExists=false), so this is a first-time compose despite the force-regen framing. Reported_at uses the 10-Q's actual filing/signature date (2026-07-30) rather than the shard's quarter-end eventDate placeholder (2026-06-30) per the 'real report dates, not quarter-end' preference rule. GAAP operating income reconciles from company-disclosed segment operating income (Ingalls $58M + Newport News $111M + Mission Technologies $55M = $224M) less an $8M Operating FAS/CAS Adjustment and $6M non-current state income taxes -- a routine defense-contractor CAS/FAS presentation quirk, not a data error. Free-cash-flow and operating-cash-flow figures captured in extendedMetrics are six-month YTD (the 10-Q's cash-flow statement does not break out a discrete Q2 column); marked as YTD in the metric's section field. Total cash fell to $12M from $216M q/q mainly on a $956M unfavorable swing in trade working capital (billing timing across programs) per the release's own MD&A -- not flagged by management as a liquidity concern given its stated 12-month funding outlook.",
+  "drivers": [
+    { "metric": "Revenue", "direction": "up", "explanation": "Broad-based volume growth: Newport News +15% y/y on higher aircraft-carrier and submarine volumes; Ingalls +17% y/y on higher amphibious-assault-ship volumes; partially offset by a 4% y/y decline at Mission Technologies on lower All-Domain Operations and Global Security volumes.", "basis": "company-disclosed" },
+    { "metric": "Gross profit", "direction": "up", "explanation": "Not explained in the release; no consolidated gross-margin narrative is given.", "basis": "company-disclosed" },
+    { "metric": "Operating income", "direction": "up", "explanation": "Derived from disclosed segment operating income (Ingalls $58M + Newport News $111M + Mission Technologies $55M = $224M) less an $8M Operating FAS/CAS Adjustment and $6M non-current state income taxes.", "basis": "derived-arithmetic" },
+    { "metric": "Net income", "direction": "up", "explanation": "Reflects the higher operating income above plus a lower effective tax rate (18.1% vs 19.1% y/y), which the filing attributes to income-tax benefits from stock-award settlement activity.", "basis": "company-disclosed" },
+    { "metric": "EPS diluted (GAAP)", "direction": "up", "explanation": "Driven by the net-income gain described above against a roughly flat diluted share count (39.5M vs 39.4M y/y).", "basis": "derived-arithmetic" },
+    { "metric": "EBITDA", "direction": "up", "explanation": "Follows the same operating-income and net-income drivers above plus depreciation/amortization add-back; not separately reconciled in the release.", "basis": "derived-arithmetic" },
+    { "metric": "Total cash", "direction": "down", "explanation": "Six-month operating cash flow swung to a $421M use (from $428M provided a year earlier), which the filing attributes to an unfavorable $956M change in trade working capital driven by the timing of billings across programs.", "basis": "company-disclosed" },
+    { "metric": "Long-term debt", "direction": "flat", "explanation": "Not explained in the release; debt held roughly flat near $2.70B with no new issuance or repayment activity called out for the quarter.", "basis": "company-disclosed" },
+    { "metric": "Shareholders equity", "direction": "up", "explanation": "Derived from the equity statement: six-month net earnings of $357M against $2.76/share of declared dividends (~$109M), plus other comprehensive income, with no share repurchases in the period.", "basis": "derived-arithmetic" },
+    { "metric": "overall", "direction": "up", "explanation": "Broad shipbuilding volume growth plus aircraft-carrier contract incentives drove a sharp profit and EPS beat; Mission Technologies revenue dipped modestly but its income rose on joint-venture equity income. Backlog grew to $57.3B, and FY2026 capex guidance calls for 1.0%-1.5% (maintenance) plus 3.0%-3.5% (discretionary) of revenue.", "basis": "company-disclosed" }
+  ]
+}
