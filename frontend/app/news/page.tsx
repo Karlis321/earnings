@@ -12,10 +12,20 @@ import {
 import { BasketToggle } from "@/components/primitives/BasketToggle";
 import clsx from "clsx";
 
+// /api/news emits the v2 normalized shape (title/publisher) since the
+// newsNormalize.ts refactor; older cached responses may still emit
+// v1 (headline/source). Support both so the rendering never renders
+// an undefined title slot when the boundary catches a stale response.
 interface NewsItem {
-  headline: string;
+  // v2 shape (current):
+  title?: string;
+  publisher?: string;
+  articleType?: "news" | "opinion";
+  // v1 shape (retained for pre-normalizer fetches):
+  headline?: string;
+  source?: string;
+  // shared fields:
   url: string;
-  source: string;
   category: string;
   time: string | null;
 }
@@ -166,7 +176,11 @@ export default function NewsPage() {
         </Panel>
       ) : (
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-          {filtered.map((it, i) => (
+          {filtered.map((it, i) => {
+            // Read v2 fields with v1 fallback so both API shapes render.
+            const headline = it.title ?? it.headline ?? "(untitled)";
+            const source = it.publisher ?? it.source ?? "unknown";
+            return (
             <article
               key={i}
               className="cursor-pointer rounded-panel border border-bd bg-s1 p-4 transition-colors hover:bg-hover"
@@ -176,8 +190,8 @@ export default function NewsPage() {
                   item: {
                     id: `n-${i}`,
                     url: it.url,
-                    headline: it.headline,
-                    source: it.source,
+                    headline,
+                    source,
                     provenance:
                       it.category === "wire"
                         ? "wire"
@@ -185,7 +199,7 @@ export default function NewsPage() {
                         ? "regulatory"
                         : "news",
                     time: it.time ?? new Date().toISOString(),
-                    articleType: it.category === "analysis" ? "opinion" : "news",
+                    articleType: it.articleType ?? (it.category === "analysis" ? "opinion" : "news"),
                     engine: "google",
                     language: "en",
                     hosted: false,
@@ -196,31 +210,32 @@ export default function NewsPage() {
             >
               <div className="mb-2 flex items-start justify-between gap-3">
                 <div className="text-[14px] font-medium leading-[1.4] text-tx">
-                  {it.headline}
+                  {headline}
                 </div>
                 <BasketToggle
                   id={`news-${it.url}`}
-                  headline={it.headline}
+                  headline={headline}
                   url={it.url}
-                  source={it.source}
+                  source={source}
                 />
               </div>
               <div className="flex flex-wrap items-center justify-between gap-2 text-[11.5px] text-tx-mid">
                 <div className="flex items-center gap-2">
-                  <span className="font-medium text-brand-fg">{it.source}</span>
+                  <span className="font-medium text-brand-fg">{source}</span>
                   <span>·</span>
                   <span>{CATEGORY_LABELS[it.category] ?? it.category}</span>
                   <span>·</span>
                   <span>{fmtRelative(it.time)}</span>
                 </div>
                 <ShareEmailButton
-                  {...shareArticleProps(it.headline, it.url, it.source)}
+                  {...shareArticleProps(headline, it.url, source)}
                   variant="ghost"
                   label="Share now"
                 />
               </div>
             </article>
-          ))}
+          );
+          })}
           {filtered.length === 0 && (
             <div className="col-span-full p-8 text-center text-[13px] text-tx-mid">
               No items {query ? `matching "${query}"` : ""} in this category.
