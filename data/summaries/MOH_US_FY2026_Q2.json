@@ -1,0 +1,37 @@
+{
+  "ticker": "MOH US",
+  "period": "FY2026 Q2",
+  "reported_at": "2026-07-23",
+  "generated_at": "2026-08-17T00:00:00.000Z",
+  "depth": "filing",
+  "headline": "Membership erosion and a tougher cost trend squeeze margins",
+  "kpis": [
+    { "label": "Revenue", "value": "$10,874M", "delta": "-4.8%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Gross profit", "value": "$929M", "delta": "-20.4%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Operating income", "value": "$145M", "delta": "+74.7%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Operating income", "value": "$145M", "delta": "-61.1%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Net income", "value": "$60M", "delta": "+328.6%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Net income", "value": "$60M", "delta": "-76.5%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "EPS diluted (GAAP)", "value": "$1.19", "delta": "-74.9%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "EBITDA", "value": "$185M", "delta": "+51.6%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "EBITDA", "value": "$185M", "delta": "-57.1%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Cash", "value": "$4,985M", "delta": "-6.2%", "delta_basis": "q/q", "direction": "down" }
+  ],
+  "summary_short": "Molina's FY2026 Q2 diluted EPS fell to $1.19 from $4.75 a year ago as total revenue slipped 4.8% y/y to $10,874M and the consolidated medical care ratio rose 180bp to 92.2%; sequentially, net income of $60M rebounded from Q1's impairment-depressed $14M.",
+  "summary_long": "Premium revenue fell 6% y/y as membership dropped 14% to 4.9M (Medicaid market contraction, the Virginia contract's expiration, and Marketplace attrition), partly offset by rate updates. Consolidated MCR rose 180bp to 92.2%, pushing operating income down to $145M from $373M. The six-month total carries a $93M Q1 impairment tied to Molina's planned 2027 MAPD exit, which explains net income's q/q jump from Q1's impairment-depressed $14M to $60M. Cash fell to $4,985M from $5,314M at Q1-end; no buybacks were made in H1 2026. Guidance: Medicaid membership 4.5M, Medicare 230,000, Marketplace 250,000 by year-end 2026, plus a ~$1B FY2027 Marketplace premium decline as it re-prices toward target margins.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/1179929/000117992926000039/moh-20260630.htm",
+  "confidence_notes": "REGENERATION: this run was invoked in force-regenerate mode with the Step-0 'already exists' guard explicitly skipped. No prior MOH_US_FY2026_Q2.json summary actually existed on disk (resolver reported summaryExists=false), so this is a first-time compose despite the force-regen framing of the request. Date note: the resolver's eventDate (2026-06-30) is the fiscal quarter-end placeholder carried on this yahoo-timeseries-provenance event, not the real filing date; reported_at above uses the more authoritative filing date (2026-07-23) from the sourceLink's EDGAR accession metadata, per the real-report-dates rule — the event shard's eventDate field was not altered here. EPS: basic and diluted both print $1.19 this quarter (small dilutive share effect, ~51.1M vs 51.3M weighted shares) so only one EPS row is reported. Guidance captured is limited to explicit year-end 2026 membership targets and a FY2027 Marketplace premium outlook stated in the MD&A's 'Business Trends' section — no numeric full-year revenue or EPS guidance range is disclosed anywhere in this 10-Q, so no guidance rows were written for revenue_usd_m or eps_usd. move is null on all four guidance entries because the filing does not state whether these targets are new, raised, lowered, or reaffirmed versus a prior statement.",
+  "drivers": [
+    { "metric": "Revenue", "direction": "down", "explanation": "Premium revenue fell 6% y/y as membership dropped 14% to 4.9M — Medicaid market contraction, the Virginia contract's expiration, and Marketplace attrition — partly offset by rate updates.", "basis": "company-disclosed" },
+    { "metric": "Gross profit", "direction": "down", "explanation": "Consolidated MCR rose 180bp y/y to 92.2% as all three segments faced a tougher medical-cost environment, compressing the premium-to-cost spread on top of the lower revenue base.", "basis": "company-disclosed" },
+    { "metric": "Operating income", "direction": "down", "explanation": "Y/y decline reflects lower premium revenue and the higher MCR; the six-month total also carries a $93M impairment tied to Molina's planned 2027 MAPD exit, recorded in Q1.", "basis": "company-disclosed" },
+    { "metric": "Operating income", "direction": "up", "explanation": "Q/q rebound from Q1's $83M mainly reflects that Q1 absorbed the one-time $93M MAPD-exit impairment; Q2 carried no comparable charge.", "basis": "derived-arithmetic" },
+    { "metric": "Net income", "direction": "down", "explanation": "Tracks operating income's y/y decline from lower premium revenue and higher MCR; the effective tax rate also rose to 33.5% from 21.5% on nondeductible items against a smaller pretax base.", "basis": "company-disclosed" },
+    { "metric": "Net income", "direction": "up", "explanation": "Q/q increase from Q1's impairment-depressed $14M — Q2 carried no comparable one-time charge.", "basis": "derived-arithmetic" },
+    { "metric": "EPS diluted (GAAP)", "direction": "down", "explanation": "Follows net income's y/y decline; diluted weighted-average share count was little changed (51.3M vs 53.7M shares).", "basis": "derived-arithmetic" },
+    { "metric": "EBITDA", "direction": "up", "explanation": "Not explained in the release — Molina does not disclose EBITDA as a company metric; the q/q increase mirrors the swing away from Q1's impairment charge.", "basis": "company-disclosed" },
+    { "metric": "EBITDA", "direction": "down", "explanation": "Not explained in the release — Molina does not disclose EBITDA as a company metric; the y/y decline mirrors lower operating income.", "basis": "company-disclosed" },
+    { "metric": "Cash", "direction": "down", "explanation": "Not explained in the release as a discrete quarterly driver; six-month operating cash flow was a positive $788M on receivable/payable timing, versus a $112M use a year ago.", "basis": "company-disclosed" },
+    { "metric": "overall", "direction": "down", "explanation": "Management frames the quarter around 'a challenging medical cost environment' and 14% y/y membership attrition — Medicaid contraction, the Virginia contract loss, and Marketplace re-pricing — as the core drags.", "basis": "company-disclosed" }
+  ]
+}
