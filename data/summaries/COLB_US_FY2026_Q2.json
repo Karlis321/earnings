@@ -2,9 +2,9 @@
   "ticker": "COLB US",
   "period": "FY2026 Q2",
   "reported_at": "2026-07-23",
-  "generated_at": "2026-08-16T19:27:56.000Z",
-  "depth": "kpi-only",
-  "headline": "Profit rises on a larger share base as liquidity tightens",
+  "generated_at": "2026-08-17T01:00:02.000Z",
+  "depth": "filing",
+  "headline": "Profit rises as merger synergies land, credit holds steady",
   "kpis": [
     { "label": "Net income", "value": "$208M", "delta": "+8.3%", "delta_basis": "q/q", "direction": "up" },
     { "label": "Net income", "value": "$208M", "delta": "+36.5%", "delta_basis": "y/y", "direction": "up" },
@@ -17,8 +17,46 @@
     { "label": "Weighted diluted shares", "value": "286.5M", "delta": "-1.9%", "delta_basis": "q/q", "direction": "down" },
     { "label": "Weighted diluted shares", "value": "286.5M", "delta": "+36.4%", "delta_basis": "y/y", "direction": "up" }
   ],
-  "summary_short": "Net income rose to $208M, up 8.3% q/q and 36.5% y/y; diluted EPS was $0.73, up 10.6% q/q but flat y/y as weighted diluted shares outstanding grew 36.4% y/y to 286.5M.",
-  "summary_long": "Net income was $208M, up 8.3% q/q and 36.5% y/y. Diluted EPS was $0.73, up 10.6% q/q but unchanged y/y, as weighted diluted shares grew 36.4% y/y to 286.5M (down 1.9% q/q). Total cash fell to $1.77B, down 15.7% q/q and 8.9% y/y. Shareholders' equity was $7.55B, up 41.4% y/y but down 1.5% q/q.",
-  "source_url": "https://www.sec.gov/Archives/edgar/data/887343/000088734326000165/0000887343-26-000165-index.htm",
-  "confidence_notes": "primary filing unreachable — KPI-only summary from verified shard data. REGENERATION (force-regenerate mode): this run overwrites a prior summary already on disk for this ticker/period, recomposed fresh rather than edited. The shard's stored sourceLink (accession 0000887343-26-000159, filed 2026-07-01) is an 8-K that only announces the DATE of the Q2 2026 earnings release/call, not the results themselves — resolve-edgar-exhibit.mjs resolved its EX-99.1 to that same save-the-date press release. EDGAR's filing index for CIK 887343 shows the actual results 8-K is accession 0000887343-26-000165, filed 2026-07-23 (Items 2.02 and 7.01, 9 MB with likely an investor presentation exhibit). Locating the correct filing (via resolve-edgar-exhibit + the wrong exhibit fetch + the EDGAR filing-list browse) consumed the full 3-fetch budget, leaving none to retrieve and read it — this summary is composed entirely from resolve-earnings-target.mjs's verified SEC-XBRL shard KPIs, no filing narrative was read. reported_at (2026-07-23) uses the EDGAR filing-list date rather than the shard's eventDate (2026-06-30, a quarter-end placeholder). The 41.4% y/y jump in shareholders' equity and 36.4% y/y increase in diluted share count are large enough to suggest a merger or capital raise, but no cause is asserted here since no filing narrative was read. Step 3b (extended metrics) was run with an empty array for the same reason — no filing text was available to extract non-GAAP/operational KPIs from."
+  "summary_short": "Net income rose to $208M, up 8.3% q/q and 36.5% y/y, as diluted EPS of $0.73 held flat y/y against a 36.4% larger diluted share count from the Pacific Premier acquisition; NIM held near 3.93% and credit costs stayed contained.",
+  "summary_long": "Net income was $208M (+8.3% q/q, +36.5% y/y); diluted EPS $0.73 was flat y/y as the Pacific Premier deal lifted diluted shares 36.4% to 286.5M. NII fell $5M q/q to $589M as NIM slipped 3bp to 3.93%, mostly interest-income reversals, not core repricing. Non-interest expense fell $19M q/q on lower merger costs as cost synergies completed. Credit quality improved: charge-offs eased to 0.25% of average loans, provision held at $27M. Cash fell to $1.77B (-15.7% q/q) on planned brokered-deposit runoff; the company repurchased $199M of stock and paid a $0.37 dividend. No new numeric guidance was issued.",
+  "drivers": [
+    {
+      "metric": "Net income",
+      "direction": "up",
+      "explanation": "Growth reflects lower non-interest expense (merger costs down $19M q/q) and higher non-interest income, partially offset by a $5M net-interest-income decline from rate reversals and balance-sheet deleveraging.",
+      "basis": "company-disclosed"
+    },
+    {
+      "metric": "Diluted EPS",
+      "direction": "flat",
+      "explanation": "Y/y EPS held flat as net income rose 36.5% but diluted share count grew 36.4% from shares issued in the Pacific Premier acquisition, diluting per-share gains.",
+      "basis": "derived-arithmetic"
+    },
+    {
+      "metric": "Total cash",
+      "direction": "down",
+      "explanation": "Cash and equivalents fell to $1.77B on planned balance-sheet optimization; total available liquidity remained $25.6B (39% of assets) including off-balance-sheet lines.",
+      "basis": "company-disclosed"
+    },
+    {
+      "metric": "Shareholders' equity",
+      "direction": "down",
+      "explanation": "Equity fell q/q as $199M of buybacks and dividends exceeded net income growth, and AOCI widened to $(310)M on higher unrealized securities losses.",
+      "basis": "company-disclosed"
+    },
+    {
+      "metric": "Weighted diluted shares",
+      "direction": "up",
+      "explanation": "Share count jumped 36% y/y from shares issued in the Pacific Premier acquisition (closed August 2025); q/q count fell 1.9% on $199M of buybacks reducing shares outstanding.",
+      "basis": "company-disclosed"
+    },
+    {
+      "metric": "overall",
+      "direction": "up",
+      "explanation": "Management called results a reflection of disciplined execution, citing commercial loan growth, completed Pacific Premier cost synergies, and continued balance-sheet optimization; no numeric guidance was issued for future periods.",
+      "basis": "company-disclosed"
+    }
+  ],
+  "source_url": "https://www.sec.gov/Archives/edgar/data/887343/000088734326000165/colb-20260630ex991earnings.htm",
+  "confidence_notes": "REGENERATION (force-regenerate mode): this run overwrites a prior kpi-only summary already on disk for this ticker/period, recomposed fresh at filing depth. reported_at (2026-07-23) uses the release's actual filing date rather than the shard's eventDate (2026-06-30, a quarter-end placeholder), per Step 0's guidance to prefer the more authoritative date. The shard's stored sourceLink (accession 0000887343-26-000159, filed 2026-07-01) is a stale/wrong 8-K that only announces the DATE of the Q2 2026 results release, not the results themselves — resolving its EX-99.1 exhibit surfaced that same save-the-date press release, not the earnings release. The correct results 8-K is accession 0000887343-26-000165 (filed 2026-07-23, Items 2.02/7.01/9.01), located via the EDGAR filing-list browse for CIK 887343 and confirmed by matching its EX-99.1 press-release figures against the shard's SEC-XBRL KPIs (net income $208M, diluted EPS $0.73, cash $1.77B, equity $7.55B all reconcile exactly). GAAP diluted EPS ($0.73) differs from operating/non-GAAP diluted EPS ($0.76); operating net income was $217M vs GAAP $208M — see event.extendedMetrics.eps_non_gaap. No explicit forward-looking numeric guidance range was given in the release (only a reference to an already-completed cost-savings target), so guidance[] was left empty."
 }
