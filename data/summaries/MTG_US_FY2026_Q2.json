@@ -1,0 +1,37 @@
+{
+  "ticker": "MTG US",
+  "period": "FY2026 Q2",
+  "reported_at": "2026-07-29",
+  "generated_at": "2026-08-17T00:00:00.000Z",
+  "depth": "filing",
+  "headline": "Rising delinquency losses trim earnings; buybacks lift EPS",
+  "kpis": [
+    { "label": "Net premiums earned", "value": "$238M", "delta": "-3%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Revenue", "value": "$295M", "delta": "-0.6%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Revenue", "value": "$295M", "delta": "-3%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Pretax income", "value": "$230M", "delta": "+11.2%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Pretax income", "value": "$230M", "delta": "-7%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Net income", "value": "$182M", "delta": "+10.2%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Net income", "value": "$182M", "delta": "-5%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "EPS diluted (GAAP)", "value": "$0.86", "delta": "+13.2%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "EPS diluted (GAAP)", "value": "$0.86", "delta": "+6%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Cash", "value": "$207M", "delta": "-11.8%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Cash", "value": "$207M", "delta": "-29.7%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Shareholders' equity", "value": "$5,013M", "delta": "-0.5%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Shareholders' equity", "value": "$5,013M", "delta": "-2.7%", "delta_basis": "y/y", "direction": "down" }
+  ],
+  "summary_short": "MGIC's FY2026 Q2 net income fell 5% y/y to $182M as net premiums earned dropped 3% to $238M and losses incurred, net swung to a $11.0M charge from a $2.8M benefit a year ago; diluted EPS still rose 6% y/y to $0.86 on a 11% smaller diluted share count from buybacks.",
+  "summary_long": "Net premiums earned fell on higher ceded premiums under the QSR reinsurance program (ceded share of IIF rose to 76.2% from 71.1%), pushing net premium yield down to 31.3bp from 33.0bp. Losses incurred, net rose to $11.0M (4.6% loss ratio) from a $2.8M benefit, as new delinquency notices and higher severity outpaced favorable reserve development from cures tied to home-price appreciation. Underwriting expenses fell 13% y/y. MGIC bought back 6.6M shares in Q2 ($369.2M YTD) and paid a $0.15/share dividend, raised to $0.17/share for Q3; $806.0M of authorization remains. NIW rose to $17.8B from $16.4B; management expects full-year 2026 NIW and premium yield relatively flat versus 2025, with no numeric guidance disclosed.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/876437/000087643726000028/mtg-20260630.htm",
+  "confidence_notes": "REGENERATION: this run was invoked in force-regenerate mode with the Step-0 'already exists' guard explicitly skipped. No prior MTG_US_FY2026_Q2.json summary actually existed on disk (resolver reported summaryExists=false and summaryReady=false), so this is a first-time compose despite the force-regen framing of the request. The resolver's eventDate (2026-06-30) is the fiscal quarter-end placeholder carried on this yahoo-timeseries-provenance event; reported_at above uses the more authoritative 10-Q filing date (2026-07-29) from the sourceLink's EDGAR accession metadata — the event shard's eventDate field was not altered here. Revenue, pretax income, net income and EBIT KPI values from resolve-earnings-target.mjs (mix of SEC-verbatim and Yahoo fundamentals-timeseries provenance) match the 10-Q's own Summary Results of Operations table exactly, so no cross-basis concerns. EPS: basic ($0.87) and diluted ($0.86) differ by $0.01; only diluted is reported per KPI convention. Guidance is limited to qualitative statements ('relatively flat' NIW and premium yield for full-year 2026) with no numeric range given, so no entries were written to the event's guidance[] array.",
+  "drivers": [
+    { "metric": "Net premiums earned", "direction": "down", "explanation": "Decrease for the quarter and six months was primarily driven by an increase in ceded premiums written under the QSR reinsurance transactions.", "basis": "company-disclosed" },
+    { "metric": "Revenue", "direction": "down", "explanation": "Tracks the net premiums earned decline plus a 3% drop in net investment income; total revenue fell 3% y/y and 1% q/q.", "basis": "derived-arithmetic" },
+    { "metric": "Pretax income", "direction": "down", "explanation": "Decrease in net income and adjusted operating income was primarily due to an increase in losses incurred, net and a decrease in net premiums earned, partially offset by lower underwriting expenses.", "basis": "company-disclosed" },
+    { "metric": "Pretax income", "direction": "up", "explanation": "Q/q improvement reflects lower losses incurred, net in Q2 versus Q1's larger share of the six-month $44.2M total.", "basis": "derived-arithmetic" },
+    { "metric": "Net income", "direction": "down", "explanation": "Follows the pretax income decline; effective tax rate also eased to 20.8% from 21.8%, partially offsetting.", "basis": "company-disclosed" },
+    { "metric": "EPS diluted (GAAP)", "direction": "up", "explanation": "Diluted EPS rose despite lower net income primarily due to decreases in the number of diluted weighted shares outstanding (210.9M vs 238.0M a year ago) from ongoing buybacks.", "basis": "company-disclosed" },
+    { "metric": "Cash", "direction": "down", "explanation": "Not broken out as a discrete quarterly driver in the release; six-month financing activities used $466.3M, mainly for share repurchases ($377.0M) and dividends ($66.8M).", "basis": "company-disclosed" },
+    { "metric": "overall", "direction": "down", "explanation": "The current-year loss ratio rose to 4.6% from a net benefit a year ago on new delinquency notices and higher severity, while favorable prior-year reserve development (home-price-driven cures) partly offset the hit.", "basis": "company-disclosed" }
+  ]
+}
