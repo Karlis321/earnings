@@ -1,4 +1,8 @@
 "use client";
+// v2-shape read path (title/publisher with v1 headline/source fallback) —
+// see dfebd110f. This comment is here to invalidate the Vercel build
+// cache's content-hash for this file after the previous deploy failed
+// to pick up the earlier edit.
 
 import { useEffect, useMemo, useState } from "react";
 import { Panel } from "@/components/primitives";
