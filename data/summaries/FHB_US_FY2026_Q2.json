@@ -1,0 +1,22 @@
+{
+  "ticker": "FHB US",
+  "period": "FY2026 Q2",
+  "reported_at": "2026-06-30",
+  "generated_at": "2026-08-17T06:39:12Z",
+  "depth": "kpi-only",
+  "headline": "Earnings edge higher while cash reserves shrink sharply",
+  "kpis": [
+    { "label": "Revenue", "value": "$231.3M", "delta": "+6.3%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EPS (diluted)", "value": "$0.60", "delta": "+3.4%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EPS (basic)", "value": "$0.60", "delta": "+3.4%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Pretax income", "value": "$95.2M", "delta": "+8.1%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Net income", "value": "$73.4M", "delta": "+0.2%", "delta_basis": "y/y", "direction": "flat" },
+    { "label": "Total cash", "value": "$1,012.5M", "delta": "-27.6%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Shareholders' equity", "value": "$2,826.0M", "delta": "+4.9%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Weighted diluted shares", "value": "122.3M", "delta": "-2.8%", "delta_basis": "y/y", "direction": "down" }
+  ],
+  "summary_short": "First Hawaiian's diluted EPS was $0.60 (+3.4% y/y) as revenue rose 6.3% y/y to $231.3M and net income was roughly flat at $73.4M, while total cash fell 27.6% y/y to $1,012.5M.",
+  "summary_long": "Revenue rose 6.3% y/y to $231.3M. Net income was $73.4M, up 0.2% y/y (essentially flat); net margin was 31.7% versus 33.7% a year earlier, down about 195bp. Pretax income rose 8.1% y/y to $95.2M. Diluted EPS was $0.60, up 3.4% y/y. Weighted diluted shares fell 2.8% y/y to 122.3M. Total cash fell 27.6% y/y to $1,012.5M. Shareholders' equity rose 4.9% y/y to $2,826.0M.",
+  "source_url": "https://www.google.com/search?q=%22FHB+US%22+%22FY2026+Q2%22+earnings",
+  "confidence_notes": "REGENERATION: this run was executed in explicit force-regenerate mode with the Step-0 already-exists/summaryReady guard intentionally bypassed; no prior summary file for FHB US FY2026 Q2 actually existed on disk (summaryExists=false), so this is a fresh write rather than a literal overwrite, but the depth decision and all figures below were independently re-derived this run per the operator's regeneration instruction. SOURCE-LADDER FINDINGS (this run): the shard's event-level sourceLink (kind=filing, https://www.sec.gov/Archives/edgar/data/36377/000110465926083898/tm2620283d5_8k.htm, filingDate 2026-07-15) is an 8-K cover document. scripts/resolve-edgar-exhibit.mjs found no EX-99.* exhibit in that accession (only ex10-1 and ex2-1), so the cover page itself was fetched directly and confirmed to be First Hawaiian's Agreement and Plan of Reorganization and Merger with TriCo Bancshares (dated 2026-07-12) — a corporate-actions 8-K unrelated to Q2 2026 earnings. Fell through to the EDGAR CIK filing index for CIK 0000036377: identified the actual earnings release as an 8-K filed 2026-07-13, items 2.02/7.01/8.01/9.01 'Results of Operations and Financial Condition', Acc-no 0001104659-26-082853, size 5MB. This is almost certainly the correct primary document, but the 3-fetch budget (1 exhibit-resolve + 1 wrong-cover fetch + 1 EDGAR-index fetch) was fully spent identifying it before it could be opened and read. Per Step 0.5, downgraded to kpi-only rather than exceed budget. LEAD FOR NEXT RUN: fetch https://www.sec.gov/Archives/edgar/data/36377/000110465926082853/ (accession folder index) directly as the first action, then resolve-edgar-exhibit against it — this skips the two wasted fetches this run spent on the shard's misleading sourceLink.url (which should also be corrected on the shard to point at accession 0001104659-26-082853 instead of 0001104659-26-083898). primary filing unreachable — KPI-only summary from verified shard data. All KPI values and y/y priors are taken verbatim from resolve-earnings-target.mjs's shard data (mix of SEC EDGAR XBRL and Yahoo fundamentals-timeseries provenance for net_income_usd_m's priors); no drivers or guidance are assessed at this depth. Net income y/y delta of +0.2% is within rounding of flat given mixed-provenance priors. Step 3b extended-metrics extraction was invoked per explicit run instruction and produced an empty array because no genuine earnings filing was read this run — the only document fetched (the TriCo merger-agreement 8-K) discloses no financials/banking KPIs (NIM, CET1, ROTCE, etc.) to extract."
+}
