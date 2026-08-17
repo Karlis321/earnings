@@ -44,12 +44,44 @@ export function SourceViewer() {
   const [anchorFound, setAnchorFound] = useState<boolean | null>(null);
   const hostedRef = useRef<HTMLDivElement | null>(null);
 
-  const url = open?.kind === "item" ? open.item.url : open?.source.url ?? "";
+  const rawUrl = open?.kind === "item" ? open.item.url : open?.source.url ?? "";
   const label = open?.kind === "item" ? open.item.source : open?.source.label ?? "";
   const provenance =
     open?.kind === "item" ? open.item.provenance : open?.source.provenance;
   const title = open?.kind === "item" ? open.item.headline : "Fact source";
   const locator = open?.kind === "fact" ? open.source.locator : null;
+
+  // Google News redirector URLs (news.google.com/rss/articles/<base64>)
+  // don't render in an iframe — Google blocks embedding via
+  // X-Frame-Options. If the cron-time resolver silently failed for an
+  // item, the shard still has the redirector URL even though the
+  // publisher label already reads "Yahoo Finance" / "Reuters" / etc.
+  // Resolve at click-time via /api/news/resolve, then feed the final URL
+  // to the iframe/proxy pipeline.
+  const isGnews = (() => {
+    if (!rawUrl.startsWith("http")) return false;
+    try { return new URL(rawUrl).host.toLowerCase() === "news.google.com"; }
+    catch { return false; }
+  })();
+  const [resolvedUrl, setResolvedUrl] = useState<string>(rawUrl);
+  useEffect(() => {
+    setResolvedUrl(rawUrl);
+    if (!isGnews || !open) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const r = await fetch(
+          `/api/news/resolve?url=${encodeURIComponent(rawUrl)}`,
+          { cache: "no-store" },
+        );
+        if (!r.ok) return;
+        const j = (await r.json()) as { resolved?: string; changed?: boolean };
+        if (!cancelled && j.resolved && j.changed) setResolvedUrl(j.resolved);
+      } catch { /* keep rawUrl */ }
+    })();
+    return () => { cancelled = true; };
+  }, [rawUrl, isGnews, open]);
+  const url = resolvedUrl;
 
   const isReal = !!url && url !== "#" && url.startsWith("http");
 
