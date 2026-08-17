@@ -1,0 +1,40 @@
+{
+  "ticker": "LBRDK US",
+  "period": "FY2026 Q2",
+  "reported_at": "2026-07-29",
+  "generated_at": "2026-08-17T18:30:00.000Z",
+  "depth": "filing",
+  "headline": "Charter write-down drives Liberty Broadband to a steep loss",
+  "kpis": [
+    { "label": "Revenue", "value": "$0M", "delta": null, "delta_basis": "none", "direction": "n/a" },
+    { "label": "Net income", "value": "-$2,125M", "delta": "-$2,508M", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Basic EPS", "value": "-$14.86", "delta": "-$17.54", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Diluted EPS", "value": "-$14.86", "delta": "-$17.54", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Pretax income", "value": "-$2,792M", "delta": "-$3,165M", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Operating income", "value": "-$4M", "delta": "+$6M", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EBIT", "value": "-$2,769M", "delta": "-$3,170M", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Total cash", "value": "$43M", "delta": "-15.7%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Long-term debt", "value": "$1,223M", "delta": "-52.3%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Short-term debt", "value": "$864M", "delta": "-10.5%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Shareholders' equity", "value": "$3,748M", "delta": "-36.5%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Weighted diluted shares", "value": "144M", "delta": "+0.0%", "delta_basis": "q/q", "direction": "flat" }
+  ],
+  "summary_short": "Liberty Broadband posted a $2,125M net loss (diluted EPS $(14.86)) in Q2 2026 after a $3.0B other-than-temporary impairment on its Charter equity stake, driven by a sustained decline in Charter's share price. Operating loss narrowed to $4M from $10M a year earlier.",
+  "summary_long": "Net loss was $2,125M (diluted EPS $(14.86)) versus $383M net income a year ago, driven by a $3.0B other-than-temporary impairment on the Charter equity investment after a sustained Charter share-price decline; share of affiliate losses swung to $(2,653)M from $345M. Operating (G&A) loss narrowed to $4M from $10M on lower professional fees tied to the pending Charter merger. Interest expense fell to $23M on lower rates and April 2026 retirement of the 2053 debentures. Total debt fell to $1,223M from $1,746M at year-end after a new $359M Charter loan and Charter share-repurchase proceeds repaid $617M of margin-loan borrowings. Cash fell to $43M; equity fell to $3,748M, chiefly reflecting the impairment. No company guidance was issued.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/1611983/000110465926088133/lbrda-20260630x10q.htm",
+  "confidence_notes": "FORCE-REGENERATED SUMMARY: this run was executed under an explicit force-regenerate directive, bypassing the normal Step-0 already-exists guard; no prior LBRDK_US_FY2026_Q2.json existed on disk at run time, so this is a fresh write rather than a true overwrite. reported_at uses the 10-Q's own filing date (2026-07-29) per the real-report-date rule rather than the shard's quarter-end placeholder eventDate (2026-06-30). Revenue is $0M in both the current and prior (Q1 2026) quarters because Liberty Broadband is purely an equity-method holding company for its Charter stake following the July 2025 GCI Divestiture (GCI is now presented as discontinued operations); the shard's prior_yy figure of $261M is GCI's pre-divestiture consolidated revenue and is not on the same basis, so the y/y delta is marked 'none'/'n/a' rather than a misleading percentage. Net income and EPS y/y comparisons have a smaller but real version of the same distortion: Q2 2025's totals of $383M net income and $2.68 basic/diluted EPS (the shard's prior_yy values) include $27M / $0.19 per share of now-defunct GCI discontinued-operations earnings; the like-for-like continuing-operations comparison from the filing's own income statement is $356M / $2.49 per share for Q2 2025 — still swamped by the current quarter's $3.0B impairment-driven loss, but noted for ledger accuracy rather than corrected in the KPI row. The shard's long_term_debt_usd_m ($1,223M) is actually the 10-Q debt note's 'Total debt' principal, not the noncurrent portion: per that same note, of the $1,223M total, $864M (Margin Loan Facility, matching the shard's own short_term_debt_usd_m) is classified as current and only $359M (the new Charter Loan Facility) is truly long-term — flagged as a ledger inconsistency in the underlying SEC XBRL tag capture, left uncorrected here per the same-basis rule. The resolver's ebitda_usd_m is identical to ebit_usd_m in every period (no depreciation & amortization on this holding company's own books), so the duplicate 'EBITDA' row is omitted from kpis in favor of 'EBIT' alone. No numeric forward guidance was found in the filing — Liberty Broadband issues no revenue/EPS outlook of its own; the only forward-looking cash item was a non-binding management expectation of roughly $40M of full-year-2026 interest payments and $5M of preferred dividends, which is a liquidity note, not guidance.",
+  "drivers": [
+    { "metric": "overall", "direction": "down", "explanation": "Results were dominated by a $3.0 billion other-than-temporary impairment on the Charter equity stake after a sustained decline in Charter's share price; the pending Charter combination and Cox-related terms are unchanged.", "basis": "company-disclosed" },
+    { "metric": "Net income", "direction": "down", "explanation": "Swing to loss reflects the $3.0 billion Charter equity-investment impairment, which pushed share of affiliate results from a gain to a large loss.", "basis": "company-disclosed" },
+    { "metric": "Basic EPS", "direction": "down", "explanation": "Tracks the net-income swing to loss on a roughly unchanged weighted-average share count.", "basis": "derived-arithmetic" },
+    { "metric": "Diluted EPS", "direction": "down", "explanation": "Tracks the net-income swing to loss on a roughly unchanged weighted-average diluted share count.", "basis": "derived-arithmetic" },
+    { "metric": "Pretax income", "direction": "down", "explanation": "Same Charter-impairment driver as net income, ahead of a tax benefit recognized in the quarter.", "basis": "derived-arithmetic" },
+    { "metric": "Operating income", "direction": "up", "explanation": "G&A expense fell versus the prior-year quarter due to lower professional service fees tied to the pending Charter merger process.", "basis": "company-disclosed" },
+    { "metric": "EBIT", "direction": "down", "explanation": "Moves with pretax income plus interest expense; both dominated by the Charter equity-investment impairment.", "basis": "derived-arithmetic" },
+    { "metric": "Total cash", "direction": "down", "explanation": "Six-month cash fell as debt repayments and operating outflows outweighed investing inflows from Charter's repurchase of Charter shares held by Liberty.", "basis": "derived-arithmetic" },
+    { "metric": "Long-term debt", "direction": "down", "explanation": "Total debt fell after retiring the 2053 exchangeable debentures and using a new Charter Loan Facility plus Charter share-repurchase proceeds to pay down margin-loan borrowings.", "basis": "company-disclosed" },
+    { "metric": "Short-term debt", "direction": "down", "explanation": "Current debt (Margin Loan Facility) declined on partial repayments during the quarter, funded in part by the new Charter Loan Facility.", "basis": "company-disclosed" },
+    { "metric": "Shareholders' equity", "direction": "down", "explanation": "Decline is chiefly explained by the quarter's $2,125 million net loss flowing into retained earnings; no buybacks or common dividends occurred.", "basis": "derived-arithmetic" },
+    { "metric": "Weighted diluted shares", "direction": "flat", "explanation": "Not explained in the release — share count was essentially unchanged, and repurchases of Liberty Broadband's own stock remained restricted by the Merger Agreement.", "basis": "company-disclosed" }
+  ]
+}
