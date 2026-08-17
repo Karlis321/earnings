@@ -1,0 +1,36 @@
+{
+  "ticker": "GWRE US",
+  "period": "FY2026 Q2",
+  "reported_at": "2026-06-05",
+  "generated_at": "2026-08-17T18:00:00.000Z",
+  "depth": "filing",
+  "headline": "Underlying growth accelerates as FX swing sinks GAAP profit",
+  "kpis": [
+    { "label": "Revenue", "value": "$372.5M", "delta": "+26.9%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Gross profit", "value": "$236.6M", "delta": "+29.5%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Operating income", "value": "$30.6M", "delta": "+585.8%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EPS diluted (GAAP)", "value": "$0.19", "delta": "-64.8%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "EPS basic (GAAP)", "value": "$0.20", "delta": "-63.6%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "EBIT", "value": "$23.1M", "delta": "-70.4%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "EBIT", "value": "$23.1M", "delta": "-55.9%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "EBITDA", "value": "$30.3M", "delta": "-64.3%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "EBITDA", "value": "$30.3M", "delta": "-48.0%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Net income", "value": "$16.5M", "delta": "-72.6%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Net income", "value": "$16.5M", "delta": "-64.2%", "delta_basis": "y/y", "direction": "down" }
+  ],
+  "summary_short": "Guidewire's revenue for the quarter ended April 30, 2026 rose 26.9% y/y to $372.5M with ARR up to $1,147M, but GAAP net income fell 64.2% y/y to $16.5M ($0.19 diluted EPS) as other income swung to an $18.9M expense from $34.1M of income on a foreign-currency reversal.",
+  "summary_long": "Revenue rose 26.9% y/y to $372.5M on cloud-transition and new subscription agreements; ARR reached $1,147M, up from $1,041M. Gross margin expanded to 64% from 62% as subscription/support revenue outpaced infrastructure and personnel costs. Operating income jumped to $30.6M from $4.5M (margin 8% vs 1%) as revenue growth outpaced a 16% rise in operating expenses. GAAP net income still fell 64.2% y/y to $16.5M ($0.19 diluted EPS) because other income swung to an $18.9M expense from $34.1M of income on a $52.9M FX swing, and the effective tax rate rose to 17% from 6%. The company repurchased $392.4M of stock over nine months, with $240.5M left under its new $500M buyback authorization. No forward guidance was given.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/1528396/000152839626000027/gwre-20260430.htm",
+  "confidence_notes": "REGENERATION: this run was invoked in force-regenerate mode with the Step-0 'already exists' guard explicitly skipped. Note: resolver reported summaryExists=false — no prior GWRE_US_FY2026_Q2.json actually existed on disk before this run, so this is a first-time compose despite the force-regen framing. Date correction: the shard's stored eventDate (2026-04-30) is the fiscal quarter-end, not the actual filing date; reported_at above uses the 10-Q's actual SEC accession filing date (2026-06-05) per the 'real report dates, not quarter-end' convention. Fiscal-period-label flag: Guidewire's fiscal year ends July 31, so the three/nine months ended April 30, 2026 covered by this filing is properly the company's fiscal Q3 2026 (Q1=Aug-Oct, Q2=Nov-Jan, Q3=Feb-Apr); this event is nonetheless filed under our shard's 'FY2026 Q2' label — flagging as a possible period-mapping issue for review, not corrected here. Ledger inconsistency: the resolver's kpis object returned identical actual and prior_qq values (to 3 decimals) for revenue_usd_m, gross_profit_usd_m, operating_income_usd_m, eps_usd, and eps_diluted_usd — almost certainly a shard/resolver data artifact rather than a genuinely flat sequential quarter, so q/q deltas for those five metrics are omitted here rather than reporting a fabricated 0% change. By contrast ebit_usd_m/ebitda_usd_m/net_income_usd_m (Yahoo fundamentals-timeseries provenance) carry genuinely distinct q/q values and are reported as-is, but note these Yahoo-derived EBIT/EBITDA figures do not reconcile with the company's own reported GAAP operating income (SEC EDGAR 10-Q: $30.637M, up sharply both q/q-flat-per-anomaly and y/y) — treat the EBIT/EBITDA q/q and y/y trend direction with caution; not further investigated. Non-GAAP diluted EPS ($0.82, see extendedMetrics) differs materially from GAAP diluted EPS ($0.19); the gap is primarily stock-based compensation, amortization of intangibles, and a non-GAAP add-back of a $20.1 million unrealized foreign-currency loss.",
+  "drivers": [
+    { "metric": "Revenue", "direction": "up", "explanation": "Subscription revenue rose $65.7M y/y on cloud transition agreements provisioned since April 2025, new subscription agreements, and renewals/extensions at fully ramped annual fees.", "basis": "company-disclosed" },
+    { "metric": "Gross profit", "direction": "up", "explanation": "Gross margin rose to 64% from 62% because growth in subscription and support revenue continued to outpace increases in cloud infrastructure and personnel costs.", "basis": "company-disclosed" },
+    { "metric": "Operating income", "direction": "up", "explanation": "Revenue grew 27% while total operating expenses rose only 16% (R&D +21%, S&M +18%, G&A +5%), lifting operating margin to 8% from 1%.", "basis": "derived-arithmetic" },
+    { "metric": "EPS diluted (GAAP)", "direction": "down", "explanation": "Tracks the net income decline; diluted share count was little changed (85.1M vs 85.9M y/y) despite in-quarter buybacks.", "basis": "derived-arithmetic" },
+    { "metric": "EPS basic (GAAP)", "direction": "down", "explanation": "Same driver as diluted EPS: net income fell while basic share count was roughly flat y/y (84.2M vs 84.0M).", "basis": "derived-arithmetic" },
+    { "metric": "EBIT", "direction": "down", "explanation": "not explained in the release — this is a third-party (Yahoo) EBIT computation, not a company-disclosed line item, and its decline does not reconcile with GAAP operating income, which rose over the same periods.", "basis": "company-disclosed" },
+    { "metric": "EBITDA", "direction": "down", "explanation": "not explained in the release — same third-party computation issue as EBIT; does not reconcile with the company's reported operating income trend.", "basis": "company-disclosed" },
+    { "metric": "Net income", "direction": "down", "explanation": "Other income (expense) swung to an $18.9M expense from $34.1M of income, primarily a $20.1M foreign-currency loss versus a $34.2M gain a year ago; effective tax rate also rose to 17% from 6%.", "basis": "company-disclosed" },
+    { "metric": "overall", "direction": "up", "explanation": "Core operating metrics (revenue, gross margin, operating income) improved sharply, but a one-quarter FX reversal in other income and a higher tax rate dragged GAAP net income down; no forward guidance was included in this 10-Q.", "basis": "company-disclosed" }
+  ]
+}
