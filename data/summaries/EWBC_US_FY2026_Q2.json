@@ -1,0 +1,38 @@
+{
+  "ticker": "EWBC US",
+  "period": "FY2026 Q2",
+  "reported_at": "2026-07-21",
+  "generated_at": "2026-08-17T03:59:29.000Z",
+  "depth": "filing",
+  "headline": "Record revenue and loan growth push profit higher",
+  "kpis": [
+    { "label": "Revenue", "value": "$791.1M", "delta": "+2.2%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Revenue", "value": "$791.1M", "delta": "+12.5%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Pretax income", "value": "$467.5M", "delta": "+2.2%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Pretax income", "value": "$467.5M", "delta": "+16.2%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Net income", "value": "$363.7M", "delta": "+1.7%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Net income", "value": "$363.7M", "delta": "+17.2%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EPS diluted (GAAP)", "value": "$2.63", "delta": "+2.3%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "EPS diluted (GAAP)", "value": "$2.63", "delta": "+17.4%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EPS basic (GAAP)", "value": "$2.65", "delta": "+2.3%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "EPS basic (GAAP)", "value": "$2.65", "delta": "+17.8%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Total cash", "value": "$5,088.9M", "delta": "+14.6%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Total cash", "value": "$5,088.9M", "delta": "+15.4%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Shareholders' equity", "value": "$9,245.9M", "delta": "+2.7%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Shareholders' equity", "value": "$9,245.9M", "delta": "+12.7%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Diluted shares outstanding", "value": "138.3M", "delta": "-0.4%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Diluted shares outstanding", "value": "138.3M", "delta": "-0.4%", "delta_basis": "y/y", "direction": "down" }
+  ],
+  "summary_short": "East West Bancorp's Q2 2026 net income rose 17% year-over-year to $363.7 million, or $2.63 per diluted share, on record total revenue of $791.1 million, record loans of $59.0 billion, and record deposits of $70.1 billion.",
+  "summary_long": "Net interest income rose 2% q/q and 11% y/y to $684.7 million on loan and securities growth, while net interest margin held near flat at 3.43% (-6bp q/q, +8bp y/y). Noninterest income hit a record $106.5 million on higher lending and deposit fees, offsetting a pullback in wealth-management fees from Q1's record base. Expenses rose 4% q/q on OREO costs and deposit-insurance assessments, nudging the efficiency ratio to 36.7% from 36.2%. Credit provision fell to $33 million from $36 million, though net charge-offs rose to $27 million (0.19% of average loans) from $12 million. Equity grew 3% q/q to $9.2 billion; CET1 rose to 15.44%. No forward guidance is given in this release.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/1069157/000106915726000041/ewbc9918k6302026.htm",
+  "confidence_notes": "REGENERATION: this run was invoked in force-regenerate mode with the Step-0 'already exists' guard explicitly skipped, per explicit instruction. Note: no prior EWBC_US_FY2026_Q2.json summary actually existed on disk before this run (resolver reported summaryExists=false) — this is a first-time compose, not a literal overwrite, despite the force-regen framing of the request. Source resolution note: the event shard's stored sourceLink pointed at the 8-K cover document (ewbc-20260721.htm), which is a stub that only references its exhibits; scripts/resolve-edgar-exhibit.mjs could not auto-match an EX-99* filename pattern for this filer (exit 3, 'no EX-99* exhibit found'), but its printed candidate list included ewbc9918k6302026.htm — decodable as ex-99.1 8-K 6/30/2026 — which was fetched directly and confirmed to be the Q2 2026 earnings press release. Reconciliation note: the 'Total cash' KPI ($5,088.9M, SEC XBRL CashAndCashEquivalentsAtCarryingValue) is ~$12.4M lower than the release's own balance-sheet line 'Cash and cash equivalents, and deposits with banks' ($5,101.3M) — likely a difference in what each tag scopes in as 'deposits with banks'; both are SEC-sourced and the gap is immaterial (0.2%). Dividend note: the release declares a $0.80/share dividend for Q3 2026 (payable Aug 17, 2026) alongside these Q2 2026 results — this is a forward per-share declaration for the NEXT quarter, not Q2's own dividend, so it was not captured as a q2-period 'dividend_per_share' extended metric to avoid mislabeling the period; it also does not constitute numeric forward guidance on revenue/EPS/opex; the guidance[] array is intentionally empty. Extended metrics (Step 3b): entity sectorTags ('financials', 'financial-services') mapped to the bank KPI set; 7 of 7 sector-specific metrics (NIM, efficiency ratio, CET1, ROTCE, net charge-off ratio, deposits balance, provision for credit losses) were extractable at high confidence from numeric tables, plus 2 of the universal set (non-GAAP/adjusted diluted EPS from Table 12's reconciliation, and a $0 buyback since the release explicitly states no shares were repurchased in the quarter). capex_total/capex_adjusted/free_cash_flow_mgmt/sale_of_assets_usd/guidance_revenue_next_q/guidance_eps_next_q were omitted — a bank earnings release carries no cash-flow statement or numeric forward guidance section, so there was no hit for any of them.",
+  "drivers": [
+    { "metric": "Revenue", "direction": "up", "explanation": "Net interest income grew on loan and securities balance growth funded partly by noninterest-bearing deposit gains; noninterest income hit a record on higher lending, loan-servicing and deposit-related fees.", "basis": "company-disclosed" },
+    { "metric": "Net income", "direction": "up", "explanation": "Higher net interest income and record noninterest income were partly offset by higher noninterest expense (OREO costs, deposit-insurance assessments) and a higher effective tax rate versus the first quarter.", "basis": "company-disclosed" },
+    { "metric": "EPS diluted (GAAP)", "direction": "up", "explanation": "Tracks net income's q/q and y/y gains almost one-for-one, since diluted share count was roughly flat both periods.", "basis": "derived-arithmetic" },
+    { "metric": "Total cash", "direction": "up", "explanation": "Not explained in the release; the balance sheet reports the quarter-end cash position without addressing what drove the increase.", "basis": "company-disclosed" },
+    { "metric": "Shareholders' equity", "direction": "up", "explanation": "Growth is consistent with retained earnings (+$252.6M, matching net income less roughly $110M of dividends paid) partly offset by a modestly wider AFS-securities unrealized-loss position within accumulated other comprehensive loss.", "basis": "derived-arithmetic" },
+    { "metric": "overall", "direction": "up", "explanation": "Record net interest income, revenue, loans and deposits in Q2 2026; management cites 17% tangible-common-equity returns and 14% tangible-book-value growth y/y, with credit quality stable despite a modest uptick in net charge-offs and nonperforming assets.", "basis": "company-disclosed" }
+  ]
+}
