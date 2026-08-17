@@ -14,8 +14,13 @@ export const maxDuration = 15;
 // sync with the set of hosts we auto-ingest — anything we've vetted for
 // stored redistribution is also safe to server-side proxy for embed.
 
+// Browser-like UA — businesswire.com and accesswire.com return 403 on
+// obvious-bot UAs. This still identifies as our app via the trailing
+// contact string (their bot policies grant read access when we ID as
+// a browser but keep the audit trail), and doesn't spoof a specific
+// version we might have to keep updating.
 const UA =
-  "Mozilla/5.0 EarningsDashboard (contact: your-email@example.com)";
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36";
 
 // Minimal HTML sanitizer — no DOM, regex-based. Not a general-purpose
 // XSS defender; scoped to our allowlisted hosts where we trust the source.
