@@ -11,7 +11,6 @@ import {
   ReactionChart,
   ReactionRow,
   Panel,
-  SourceItemCard,
   SurprisePill,
 } from "@/components/primitives";
 import { SecurityPriceChart } from "./SecurityPriceChart";
@@ -397,32 +396,13 @@ export function OperatingDetail({ entity, events }: Props) {
           ticker={entity.ticker}
           displayName={entity.displayName}
         />
-        <Panel
-          eyebrow="Latest sources"
-          padded={false}
-        >
-          <div className="flex items-center justify-between border-b border-bd px-4 py-3 text-[12px] text-tx-mid">
-            <span>
-              Window {primary.sources.windowStart} → {primary.sources.windowEnd}
-            </span>
-            <Link
-              href={`/s/${encodeURIComponent(entity.ticker)}/e/${primary.id}`}
-              className="text-brand-hi hover:text-brand-fg"
-            >
-              All {primary.sources.items.length} →
-            </Link>
-          </div>
-          <div className="flex flex-col gap-3 p-4">
-            {primary.sources.items.slice(0, 3).map((it) => (
-              <SourceItemCard key={it.id} item={it} />
-            ))}
-            {primary.sources.items.length === 0 && (
-              <div className="p-4 text-center text-[13px] text-tx-mid">
-                No sources captured yet in the window.
-              </div>
-            )}
-          </div>
-        </Panel>
+        {/* "Latest sources" panel removed — it duplicated CompanyNewsPanel
+            (both show recent news items) but rendered shard-frozen
+            sources.items without the server-side ticker-alias filter that
+            /api/news applies. Result: cross-ticker wire noise leaked
+            through (e.g. AB InBev / Iran conflict items showing on
+            unrelated pages). The full event-scoped source list is still
+            reachable via the "All N →" link on the event detail page. */}
       </div>
       </div>
     </div>
