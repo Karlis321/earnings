@@ -64,8 +64,10 @@ export function SourceViewer() {
     catch { return false; }
   })();
   const [resolvedUrl, setResolvedUrl] = useState<string>(rawUrl);
+  const [gnewsUnresolved, setGnewsUnresolved] = useState<boolean>(false);
   useEffect(() => {
     setResolvedUrl(rawUrl);
+    setGnewsUnresolved(false);
     if (!isGnews || !open) return;
     let cancelled = false;
     (async () => {
@@ -74,10 +76,22 @@ export function SourceViewer() {
           `/api/news/resolve?url=${encodeURIComponent(rawUrl)}`,
           { cache: "no-store" },
         );
-        if (!r.ok) return;
+        if (!r.ok) {
+          // Google News uses JS-based redirects now; server-side follow
+          // can't unwind them. Flag the URL so the render path skips the
+          // iframe attempt (which would show "refused to connect") and
+          // routes directly to a "Open at Google News" link-out — the
+          // user's browser handles the JS redirect naturally on click.
+          if (!cancelled) setGnewsUnresolved(true);
+          return;
+        }
         const j = (await r.json()) as { resolved?: string; changed?: boolean };
-        if (!cancelled && j.resolved && j.changed) setResolvedUrl(j.resolved);
-      } catch { /* keep rawUrl */ }
+        if (cancelled) return;
+        if (j.resolved && j.changed) setResolvedUrl(j.resolved);
+        else setGnewsUnresolved(true);
+      } catch {
+        if (!cancelled) setGnewsUnresolved(true);
+      }
     })();
     return () => { cancelled = true; };
   }, [rawUrl, isGnews, open]);
@@ -230,6 +244,8 @@ export function SourceViewer() {
               <RefreshCw size={14} className="mr-2 animate-spin" />
               Checking hosted archive…
             </div>
+          ) : gnewsUnresolved ? (
+            <GnewsFallback url={url} label={label} />
           ) : isReal ? (
             <div className="relative flex-1 overflow-hidden rounded-panel border border-bd bg-s1">
               {iframeStatus !== "blocked" ? (
@@ -352,6 +368,36 @@ function HostedRender({
         className="hosted-doc flex-1 overflow-auto rounded-panel border border-bd bg-s1 p-6 text-[14px] leading-[1.55] text-tx"
         dangerouslySetInnerHTML={{ __html: doc.html }}
       />
+    </div>
+  );
+}
+
+function GnewsFallback({ url, label }: { url: string; label: string }) {
+  return (
+    <div className="flex h-full min-h-[420px] flex-col items-center justify-center gap-4 p-8 text-center">
+      <ExternalLink size={22} className="text-brand-fg" />
+      <div className="max-w-[52ch]">
+        <div className="text-[15px] font-semibold text-tx">
+          Google News hosts this article behind a JS redirect
+        </div>
+        <p className="mt-2 text-[13px] leading-[1.5] text-tx-mid">
+          {label || "This item"} lives on{" "}
+          <code>news.google.com</code>, which uses a JavaScript-based
+          redirect to the real publisher's page. That redirect can't
+          run inside an iframe, so we open it directly instead — click
+          the button and Google News will forward you to the actual
+          article in a new tab.
+        </p>
+      </div>
+      <a
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex h-9 items-center gap-2 rounded-button bg-brand px-4 text-[13px] font-medium text-white shadow-[0_1px_2px_rgba(10,37,64,0.08),0_2px_6px_rgba(47,127,255,0.24)] hover:bg-brand-hi"
+      >
+        <ExternalLink size={13} />
+        Open at Google News
+      </a>
     </div>
   );
 }
