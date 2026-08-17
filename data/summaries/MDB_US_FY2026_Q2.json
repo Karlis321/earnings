@@ -1,0 +1,30 @@
+{
+  "ticker": "MDB US",
+  "period": "FY2026 Q2",
+  "reported_at": "2026-04-30",
+  "generated_at": "2026-08-17T00:00:00.000Z",
+  "depth": "filing",
+  "headline": "MongoDB returns to profit as Atlas growth outruns costs",
+  "kpis": [
+    { "label": "Revenue", "value": "$687.6M", "delta": "+16.3%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Gross profit", "value": "$496.2M", "delta": "+18.1%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Operating income", "value": "-$24.8M", "delta": "+62.0%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Net income", "value": "$4.4M", "delta": "+$51.5M", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EPS diluted (GAAP)", "value": "$0.05", "delta": "+$0.51", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EBITDA", "value": "$18.8M", "delta": "-34.1%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "EBITDA", "value": "$18.8M", "delta": "+$42.0M", "delta_basis": "y/y", "direction": "up" }
+  ],
+  "summary_short": "MongoDB's FY2026 Q2 revenue rose 16.3% y/y to $687.6M, and the company swung to net income of $4.4M from a $47.0M loss a year ago as Atlas consumption growth (net ARR expansion rate 121%) lifted overall gross margin to 72%.",
+  "summary_long": "Revenue grew 16.3% y/y to $687.6M, led by a $134.7M rise in subscription revenue as large existing customers expanded Atlas usage (net ARR expansion rate 121%). Overall gross margin rose to 72%, though subscription gross margin slipped to 75% on faster-growing Atlas infrastructure costs. Sales & marketing, R&D, and G&A expenses all rose on higher personnel, commissions, and software costs, but revenue growth outpaced them, narrowing the operating loss to $24.8M from $65.3M a year ago. Net income swung to $4.4M from a $47.0M loss, aided by $33.6M of gains on non-marketable securities. The company repurchased $100.0M of stock and held $2.4B in cash and short-term investments; remaining performance obligations stood at $1,458.6M. No forward guidance is disclosed.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/1441816/000162828026039150/mdb-20260430.htm",
+  "confidence_notes": "REGENERATION: this run was invoked in force-regenerate mode with the Step-0 'already exists' guard explicitly skipped. No prior MDB_US_FY2026_Q2.json summary actually existed on disk (resolver reported summaryExists=false), so this is a first-time compose despite the force-regen framing of the request. Shard data-quality note: the FY2026 Q1 event on this ticker's shard (eventDate 2026-01-31) carries SEC-verbatim actual values for revenue, operating income, EPS (diluted and basic), net income, and gross profit that are identical to this FY2026 Q2 event's values (asOf 2026-04-30 on both) — evidence that a rederive-sec-xbrl pass mistakenly overwrote the Q1 event's real (superseded, Yahoo-timeseries) figures with the Q2 XBRL snapshot. Because of this, q/q deltas for those five metrics were not computed here (they would show a false 0.0% change); only y/y deltas are reported for them. EBITDA is Yahoo fundamentals-timeseries provenance (not SEC-verbatim) with an intact, distinct q/q prior value, so both its q/q and y/y deltas are reported as-is. Net income and EPS y/y deltas are expressed as dollar swings, not percentages, because the prior-year base was negative (loss) and the current value is positive — a percentage change across a sign flip is not meaningful. No forward guidance is disclosed anywhere in this 10-Q (Item 2 MD&A contains only generic risk-factor boilerplate about the existence of a guidance practice, no numeric ranges for this filing), so nothing was written to the event's guidance array.",
+  "drivers": [
+    { "metric": "Revenue", "direction": "up", "explanation": "Subscription revenue grew $134.7M, primarily from increased Atlas consumption by large existing customers, reflected in a net ARR expansion rate of 121%.", "basis": "company-disclosed" },
+    { "metric": "Gross profit", "direction": "up", "explanation": "Overall gross margin rose to 72%, but subscription gross margin fell to 75% as Atlas third-party cloud infrastructure costs grew faster than revenue.", "basis": "company-disclosed" },
+    { "metric": "Operating income", "direction": "up", "explanation": "Sales & marketing, R&D, and G&A expenses all rose on higher personnel, commissions, travel, and software costs, but revenue and gross-profit growth outpaced them, narrowing the operating loss.", "basis": "company-disclosed" },
+    { "metric": "Net income", "direction": "up", "explanation": "Reflects the narrower operating loss plus $33.6M of realized and unrealized gains on non-marketable securities, partly offset by a $4.4M tax provision.", "basis": "derived-arithmetic" },
+    { "metric": "EPS diluted (GAAP)", "direction": "up", "explanation": "Follows the swing to net income; diluted weighted-average share count was little changed (81.6M vs 81.1M shares y/y).", "basis": "derived-arithmetic" },
+    { "metric": "EBITDA", "direction": "up", "explanation": "Not explained in the release — MongoDB does not disclose EBITDA as a company metric; this figure is a Yahoo fundamentals-timeseries calculation.", "basis": "company-disclosed" },
+    { "metric": "overall", "direction": "up", "explanation": "Second straight profitable GAAP quarter, driven by Atlas consumption expansion (121% net ARR expansion) and cost discipline; the board continued its buyback, repurchasing $100.0M of stock.", "basis": "company-disclosed" }
+  ]
+}
