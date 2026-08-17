@@ -1,0 +1,23 @@
+{
+  "ticker": "LAZ US",
+  "period": "FY2026 Q2",
+  "reported_at": "2026-06-30",
+  "generated_at": "2026-08-17T07:55:59.000Z",
+  "depth": "filing",
+  "headline": "Earnings plunge on a tax-rate spike and rising pay costs",
+  "kpis": [
+    { "label": "EPS", "value": "$0.03", "delta": "-96.9%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "EPS", "value": "$0.03", "delta": "-94.6%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "EPS diluted", "value": "$0.03", "delta": "-96.7%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "EPS diluted", "value": "$0.03", "delta": "-94.2%", "delta_basis": "y/y", "direction": "down" }
+  ],
+  "summary_short": "Lazard's Q2 2026 diluted EPS fell to $0.03 from $0.52 a year ago as net income attributable to Lazard dropped 91% y/y to $4.8M, even as net revenue rose 1% y/y to $807.7M.",
+  "summary_long": "Net revenue rose 1% y/y to $807.7M: Asset Management net revenue jumped 20% on higher average AUM and management fees (+23%), while Financial Advisory net revenue fell 9% on fewer completed M&A fees. Compensation expense rose 8% to $562.4M, lifting the adjusted comp ratio to 69.9% from 65.5%; non-compensation expense rose 13% on Campbell Lutyens deal costs. Operating income fell 60% to $37.6M. The effective tax rate jumped to 63.5% from 34.1% on a first-quarter share-based-compensation tax catch-up and geographic mix, driving net income attributable to Lazard down 91% to $4.8M (diluted EPS $0.03). Subsequent to quarter-end, the board declared a $0.50/share dividend and added $200M of buyback authorization.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/1311370/000131137026000022/laz-20260630.htm",
+  "confidence_notes": "REGENERATION: this run was invoked in force-regenerate mode with the Step-0 'already exists' guard explicitly skipped, per instruction. Note: no prior LAZ_US_FY2026_Q2.json summary actually existed on disk before this run (resolver reported summaryExists=false) — this is a first-time compose, not a literal overwrite, despite the force-regen framing of the request. CROSS-BASIS SURPRISE SUPPRESSED: the shard's eps_usd metric carries a parked _crossBasisSurprise of -91.5% (actual family 'yahoo-timeseries' vs estimate family 'yahoo-chart') — correctly cleared per the same-basis surprise rule, so no surprisePct/vs-guidance delta is shown here. TAX-RATE DRIVER: the 63.5% effective tax rate (vs 34.1% Q2 2025) reflects, per the filing, the tax impact of share-based incentive compensation that vested in the first quarter plus a shift in the geographic mix of earnings — not a single isolated cause. SUBSEQUENT EVENTS: the $0.50/share quarterly dividend and the $200M buyback-authorization increase were both declared July 22, 2026 — after the June 30 quarter-end but before the 10-Q filing date (July 28, 2026) — captured here as Note 12 subsequent events, not as Q2-period activity. EXTENDED METRICS PERIOD CAVEATS: capex_total ($6.11M) and sale_of_assets_usd ($3.56M) are Six-Months-Ended-June-30-2026 YTD cash-flow-statement figures (the 10-Q does not disclose a quarter-only capex or asset-sale line), not Q2-only; provision_credit_losses ($1.52M) is Lazard's CECL allowance provision against Financial Advisory fee receivables, not a bank-style loan-loss provision — Lazard is an advisory/asset-management firm, not a depository institution, so the mapped 'financials' sector metric set is only a partial fit here (CET1, NIM, deposits, and net charge-offs are not disclosed and were correctly omitted). No formal forward guidance (revenue/EPS ranges) is given in this 10-Q, so the guidance array is empty.",
+  "drivers": [
+    { "metric": "overall", "direction": "down", "explanation": "Net revenue grew 1% as 20% growth in Asset Management fees offset a 9% decline in Financial Advisory fees, but comp expense grew faster than revenue and a tax-rate spike to 63.5% left net income down 91% and diluted EPS at $0.03.", "basis": "company-disclosed" },
+    { "metric": "EPS", "direction": "down", "explanation": "Basic EPS fell to $0.03 from $0.98 q/q and $0.56 y/y as net income attributable to Lazard dropped 91% y/y to $4.8M on higher compensation expense and a 63.5% effective tax rate versus 34.1% a year earlier.", "basis": "company-disclosed" },
+    { "metric": "EPS diluted", "direction": "down", "explanation": "Diluted EPS fell to $0.03 from $0.91 q/q and $0.52 y/y for the same reasons as basic EPS — a comp ratio increase to 69.9% and a tax-rate spike to 63.5% from 34.1%.", "basis": "company-disclosed" }
+  ]
+}
