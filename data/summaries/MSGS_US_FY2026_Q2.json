@@ -1,0 +1,37 @@
+{
+  "ticker": "MSGS US",
+  "period": "FY2026 Q2",
+  "reported_at": "2026-08-13",
+  "generated_at": "2026-08-17T10:00:00.000Z",
+  "depth": "filing",
+  "headline": "Fourth-quarter results swing to profit on Knicks title run",
+  "kpis": [
+    { "label": "Revenue", "value": "$278.7M", "delta": "-35.5%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Revenue", "value": "$278.7M", "delta": "+36.7%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EPS diluted (GAAP)", "value": "$1.16", "delta": "swung to a profit", "delta_basis": "q/q", "direction": "up" },
+    { "label": "EPS diluted (GAAP)", "value": "$1.16", "delta": "swung to a profit", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Operating income", "value": "$32.2M", "delta": "swung to a profit", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Adjusted operating income", "value": "$39.6M", "delta": "swung to a profit", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Total cash", "value": "$164.5M", "delta": "+53.7%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Total cash", "value": "$164.5M", "delta": "+13.8%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Long-term debt", "value": "$242M", "delta": "0.0%", "delta_basis": "q/q", "direction": "flat" },
+    { "label": "Long-term debt", "value": "$242M", "delta": "-9.4%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Short-term debt", "value": "$16.5M", "delta": "-31.3%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Shareholders' equity", "value": "-$263.3M", "delta": "+$18.1M", "delta_basis": "y/y", "direction": "up" }
+  ],
+  "summary_short": "Madison Square Garden Sports's fiscal Q4 2026 revenue rose 36.7% y/y to $278.7M on record playoff-related revenue from the Knicks' NBA Championship run, and the company swung to diluted EPS of $1.16 from a $(0.07) loss a year ago.",
+  "summary_long": "Fiscal Q4 2026 revenue rose 36.7% y/y to $278.7M (full year $1,153.8M, +11%), driven by a $66.9M jump in playoff-related revenue as the Knicks won the NBA Championship, plus higher national media-rights fees (+$7.2M), partly offset by lower local media-rights fees (-$3.5M) under amended MSG Networks agreements. Operating income swung to $32.2M from a $(22.6)M loss; adjusted operating income was $39.6M. Diluted EPS was $1.16 versus $(0.07) a year ago. Cash rose to $164.5M (+13.8% y/y); long-term debt held flat q/q at $242M ($25M lower y/y); the stockholders' deficit narrowed to $(263.3)M. No formal guidance was issued; the company still expects to complete the Rangers spin-off by end of October 2026.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/1636519/000162828026056478/msgsportscorpex991forearni.htm",
+  "confidence_notes": "REGENERATION: this run was invoked in force-regenerate mode with the Step-0 'already exists' guard explicitly skipped; resolver reported summaryExists=false so no prior file was actually on disk to overwrite, but the run followed the force-regenerate procedure throughout (a fresh compose, not a guard bypass in practice). Period-label mismatch: the shard/resolver label this event 'FY2026 Q2', but the press release itself is titled 'Fiscal 2026 Fourth Quarter and Full-Year Results' for the period ended June 30, 2026 (MSGS's fiscal year ends June 30) — this looks like the same fiscal-offset labeling issue CLAUDE.md flags for other issuers (Japanese banks, SAP, STX, etc.), though MSGS isn't yet in that known-affected list; the shard's period sequence appears to lag the true fiscal quarter by two labels across its history. 'period'/'reported_at' above are kept as 'FY2026 Q2' / 2026-08-13 to match the schema's requirement that period equal event.period and reported_at equal event.eventDate; all KPI values are the real fiscal-Q4/FY2026 figures from the filing regardless of the label — this mislabeling is a shard-level issue out of scope for a single-ticker summary and should be fixed at the source (event period assignment), not papered over here. Revenue gap: the shard's revenue_usd_m metric on this event carries only a Yahoo consensus estimate ($226.4M) with actual:null, so the Revenue KPI above is sourced directly from this press release ($278,745 thousand actual), not from resolve-earnings-target's kpis object. EPS basis note: the q/q comparator (-$0.83, sourced 'SEC EDGAR · 10-Q · EarningsPerShareBasic' for the prior quarter) is a Basic EPS figure being compared against this quarter's Diluted EPS ($1.16); the two bases are close enough in magnitude that the 'swung to a profit' direction is unaffected, but the two aren't a strict same-basis pair. No forward financial guidance (revenue/EPS/capex) was found in the release, so guidance[] is left empty; the only forward statement is the non-financial target of completing the Rangers spin-off by end of October 2026, pending board approval and other conditions.",
+  "drivers": [
+    { "metric": "Revenue", "direction": "up", "explanation": "Playoff-related revenue rose $66.9M as the Knicks won the 2025-26 NBA Championship (vs an Eastern Conference Finals exit a year ago); national media-rights fees also rose on the NBA's new media deals, partly offset by lower local MSG Networks rights fees.", "basis": "company-disclosed" },
+    { "metric": "Operating income", "direction": "up", "explanation": "Revenue growth drove the swing to profit, partly offset by higher SG&A (+21% y/y, largely playoff-related plus $2.9M of spin-off transaction costs) and higher direct operating expenses (+3%, mostly playoff costs).", "basis": "company-disclosed" },
+    { "metric": "Adjusted operating income", "direction": "up", "explanation": "Tracks operating income; the same revenue growth and expense offsets apply before add-backs for depreciation, share-based comp, restructuring and deferred-comp remeasurement.", "basis": "company-disclosed" },
+    { "metric": "EPS diluted (GAAP)", "direction": "up", "explanation": "Follows the operating income swing plus a $5.8M favorable swing in miscellaneous income, partly offset by a higher tax expense as pretax income turned positive.", "basis": "derived-arithmetic" },
+    { "metric": "Total cash", "direction": "up", "explanation": "Cash rose as $62.7M of full-year operating cash flow exceeded $49.1M of financing outflows and $2.2M of investing outflows; the release doesn't break out financing outflows by use.", "basis": "derived-arithmetic" },
+    { "metric": "Long-term debt", "direction": "down", "explanation": "Not explained in the release; the $25M year-over-year decline isn't attributed to a specific repayment in this exhibit's text.", "basis": "company-disclosed" },
+    { "metric": "Short-term debt", "direction": "down", "explanation": "Not explained in the release; current debt fell to $16.5M from $24.0M a year ago with no MD&A commentary provided in this exhibit.", "basis": "company-disclosed" },
+    { "metric": "Shareholders' equity", "direction": "up", "explanation": "Deficit narrowed as the accumulated deficit improved to $(129.9)M from $(137.6)M on positive net income, and treasury stock fell to $(149.9)M from $(158.5)M.", "basis": "derived-arithmetic" },
+    { "metric": "overall", "direction": "up", "explanation": "Fiscal 2026 was highlighted by the Knicks' NBA Championship win; the company continues to target completing the Rangers spin-off by end of October 2026, pending board approval and other conditions.", "basis": "company-disclosed" }
+  ]
+}
