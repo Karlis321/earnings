@@ -2,9 +2,9 @@
   "ticker": "GME US",
   "period": "FY2026 Q2",
   "reported_at": "2026-04-30",
-  "generated_at": "2026-08-17T07:03:40.000Z",
-  "depth": "kpi-only",
-  "headline": "Net income surges as revenue cools from last quarter",
+  "generated_at": "2026-08-17T14:01:56.000Z",
+  "depth": "filing",
+  "headline": "Record profit driven by one-time gains, not core operations",
   "kpis": [
     { "label": "Revenue", "value": "$835.3M", "delta": "-24.4%", "delta_basis": "q/q", "direction": "down" },
     { "label": "Revenue", "value": "$835.3M", "delta": "+14.0%", "delta_basis": "y/y", "direction": "up" },
@@ -21,8 +21,40 @@
     { "label": "EPS (Basic)", "value": "$0.87", "delta": "+200.0%", "delta_basis": "q/q", "direction": "up" },
     { "label": "EPS (Basic)", "value": "$0.87", "delta": "+770.0%", "delta_basis": "y/y", "direction": "up" }
   ],
-  "summary_short": "GameStop reported Q2 FY2026 revenue of $835.3M, down 24.4% q/q but up 14.0% y/y, while net income jumped to $389.6M, up 204.6% q/q and 769.6% y/y.",
-  "summary_long": "Revenue of $835.3M fell 24.4% sequentially from $1,104.3M but rose 14.0% year-over-year from $732.4M. Gross profit of $340.3M was down 12.0% q/q and up 34.6% y/y, while operating income of $138.7M fell 4.3% q/q but grew 461.5% y/y. Net income of $389.6M rose 204.6% q/q and 769.6% y/y, far outpacing operating income growth — the gap is not explained by KPI data alone. Diluted EPS of $0.66 rose 200.0% q/q and 633.3% y/y. This is a KPI-only summary; no filing was read, so drivers of the net-income divergence from operating income are not assessed.",
-  "source_url": "https://www.google.com/search?q=%22GME+US%22+%22FY2026+Q2%22+earnings",
-  "confidence_notes": "FORCED REGENERATION (force-regenerate mode): this file was regenerated from scratch this run, overwriting any prior version. primary filing unreachable — KPI-only summary from verified shard data. Ledger inconsistency found and NOT used: the shard's stored sourceLink (SEC accession 0001193125-26-202468, https://www.sec.gov/Archives/edgar/data/1326380/000119312526202468/d138475d8k.htm) resolves via EX-99.1 to GameStop's non-binding proposal letter to acquire eBay (items 7.01/8.01/9.01, filed 2026-05-04) -- this is NOT an earnings release and carries no Item 2.02. The actual FY2026 Q2 earnings 8-K is very likely SEC accession 0001326380-26-000020 (items 2.02/7.01/9.01, filed 2026-06-02, consistent with an April 30, 2026 quarter-end) but could not be fetched within this run's 3-fetch budget, which was already spent resolving the exhibit, fetching the wrong exhibit, and querying the EDGAR filing index to identify the correct filing. KPIs above come solely from the shard's yahoo-timeseries data; drivers, guidance, and the large net-income-vs-operating-income divergence (likely a non-operating item) are not assessed. Recommend a follow-up pass to correct the shard's sourceLink to the June 2 filing and re-run at filing depth."
+  "summary_short": "GameStop's net sales were $835.3M, up 14.0% y/y but down 24.4% q/q, while net income of $389.6M (+769.6% y/y, a company record) was driven mainly by a $268.4M unrealized gain on its eBay-related derivative position rather than core operations.",
+  "summary_long": "Net sales of $835.3M rose 14.0% y/y but fell 24.4% q/q, as collectibles grew to 41.8% of sales mix from 28.9% a year ago, offsetting hardware and software declines. SG&A fell to $201.6M from $228.1M, and the prior-year's $35.5M asset impairment did not recur, lifting GAAP operating income to $143.3M from a $10.8M loss. Net income of $389.6M, the highest in company history, was driven mainly by a $268.4M unrealized gain on eBay-related derivatives and $83.7M of net interest income on its $8.4B cash pile, not operating improvement. The board authorized a new $2.0B buyback through 2029. No forward guidance was issued.",
+  "drivers": [
+    {
+      "metric": "overall",
+      "direction": "up",
+      "explanation": "Record net income was driven by collectibles growth, lower SG&A, and large one-time gains on eBay-related derivatives and interest income, not by core retail operating leverage.",
+      "basis": "company-disclosed"
+    },
+    {
+      "metric": "Revenue",
+      "direction": "up",
+      "explanation": "Net sales grew 14% year-over-year, driven by collectibles; hardware and software categories both declined as a share of sales mix.",
+      "basis": "company-disclosed"
+    },
+    {
+      "metric": "Operating Income",
+      "direction": "up",
+      "explanation": "SG&A fell to $201.6M from $228.1M, and a $35.5M prior-year asset impairment (Canada/France divestitures) did not recur, versus a $4.6M net impairment reversal this quarter.",
+      "basis": "company-disclosed"
+    },
+    {
+      "metric": "Net Income",
+      "direction": "up",
+      "explanation": "Driven mainly by a $268.4M unrealized gain on eBay-related derivative options, $83.7M of net interest income, and a $1.1M digital-asset gain, not by operating results.",
+      "basis": "company-disclosed"
+    },
+    {
+      "metric": "EBITDA",
+      "direction": "up",
+      "explanation": "The shard's operating-income-plus-D&A EBITDA proxy ($143.2M) differs sharply from the release's own reconciliation ($427.2M unadjusted / $163.4M adjusted), which includes the one-time derivative and digital-asset gains excluded here.",
+      "basis": "derived-arithmetic"
+    }
+  ],
+  "source_url": "https://www.sec.gov/Archives/edgar/data/1326380/000132638026000020/a991-fy26q1earningsrelease.htm",
+  "confidence_notes": "FORCED REGENERATION (force-regenerate mode): this file was regenerated from scratch this run, overwriting the prior kpi-only version. Filing depth achieved this run. Exhibit-routing issue found: the shard's stored sourceLink (SEC accession 0001193125-26-202468) resolves via EX-99.1 to GameStop's non-binding eBay-acquisition proposal letter, NOT an earnings release. The actual earnings 8-K is SEC accession 0001326380-26-000020 (filed 2026-06-02, EX-99.1 'a991-fy26q1earningsrelease.htm'), fetched and read this run in place of the shard's stored link; recommend a follow-up correcting data/events/GME_US.json's sourceLink for this event. PERIOD-LABEL DISCREPANCY: this filing is explicitly titled 'GameStop Discloses First Quarter 2026 Results' for the '13 Weeks Ended May 2, 2026' -- i.e. GameStop's fiscal Q1 2026 -- but the shard/resolver label this event 'FY2026 Q2' with eventDate 2026-04-30 (a quarter-end-adjacent placeholder, not the true June 2, 2026 filing date). reported_at is set to 2026-04-30 to match the schema's required equality with event.eventDate, per the shard's current (likely mislabeled) assignment; recommend a follow-up correcting the shard's period label and eventDate to FY2026 Q1 / 2026-06-02. Methodology note: shard-stored operating_income_usd_m ($138.7M) and ebitda_usd_m ($143.2M) are a Yahoo-derived 'ex-impairment, +D&A' proxy that differs from the release's own GAAP operating income ($143.3M, includes a $4.6M net impairment reversal) and its EBITDA reconciliation ($427.2M unadjusted / $163.4M adjusted) -- the KPI array above uses the shard values per procedure; see drivers for the reconciliation. No forward guidance was issued in this release, so guidance[] was left untouched."
 }
