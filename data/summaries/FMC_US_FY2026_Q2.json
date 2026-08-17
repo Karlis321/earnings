@@ -3,8 +3,8 @@
   "period": "FY2026 Q2",
   "reported_at": "2026-07-29",
   "generated_at": "2026-08-17T00:00:00.000Z",
-  "depth": "kpi-only",
-  "headline": "Revenue rebounds but losses widen and leverage climbs",
+  "depth": "filing",
+  "headline": "Quarter beats own targets, but full-year outlook cut",
   "kpis": [
     { "label": "Revenue", "value": "$867.1M", "delta": "+14.3%", "delta_basis": "q/q", "direction": "up" },
     { "label": "Revenue", "value": "$867.1M", "delta": "-17.5%", "delta_basis": "y/y", "direction": "down" },
@@ -27,8 +27,58 @@
     { "label": "Shareholders' equity", "value": "$1.64B", "delta": "-10.2%", "delta_basis": "q/q", "direction": "down" },
     { "label": "Shareholders' equity", "value": "$1.64B", "delta": "-62.8%", "delta_basis": "y/y", "direction": "down" }
   ],
-  "summary_short": "FMC's Q2 2026 revenue was $867.1M, up 14.3% q/q but down 17.5% y/y, while the operating loss widened to $119.7M (from $81M q/q, +$126.4M profit y/y) and diluted EPS was -$1.49 versus -$2.25 q/q and $0.53 y/y.",
-  "summary_long": "Revenue was $867.1M (+14.3% q/q, -17.5% y/y). Gross margin was 39.5%, up from 32.5% q/q and roughly flat y/y (38.7%). Operating loss widened to $119.7M (vs -$81M q/q, +$126.4M y/y); EBITDA fell to -$81.9M. Diluted EPS was -$1.49 (vs -$2.25 q/q, $0.53 y/y). Cash rose to $476.6M (+21.9% q/q). Long-term debt grew to $3.96B (+17.9% q/q) while short-term debt fell to $9.3M from $590.1M; equity fell to $1.64B from $4.40B y/y.",
+  "summary_short": "FMC's Q2 2026 revenue was $867.1M, down 17% y/y (+14.3% q/q), with a GAAP net loss of $186.6M (diluted EPS -$1.49) and Adjusted EBITDA of $153M — above the high end of prior guidance — even as the company cut full-year 2026 revenue, EBITDA and EPS guidance.",
+  "summary_long": "Revenue fell 17% y/y to $867.1M (20% ex-India) as a 10% volume decline — lower diamide partner orders and weak North America legacy demand — combined with 7% price erosion, partly offset by a 2% FX tailwind; the India divestiture cut another 5 points. GAAP net loss widened to $186.6M on higher restructuring charges ($222.3M vs $36.7M) and interest expense, though Adjusted EBITDA of $153M beat the high end of prior guidance and Adjusted EPS was $0.26. Cash from operations rose to $363M, aided by a $200M rimisoxafen licensing payment. FMC cut full-year revenue, EBITDA and EPS guidance, citing a tougher demand environment, while raising free-cash-flow guidance.",
+  "drivers": [
+    {
+      "metric": "Revenue",
+      "direction": "down",
+      "explanation": "Volumes fell 10% on lower diamide partner orders and weaker North America legacy-product demand; price fell 7% on core-product pressure and Rynaxypyr pricing actions; FX added 2%; the India divestiture cut another 5 points.",
+      "basis": "company-disclosed"
+    },
+    {
+      "metric": "Operating income",
+      "direction": "down",
+      "explanation": "Restructuring and other charges rose to $222.3M from $36.7M, driven mainly by Project Foundation non-cash asset write-offs and accelerated depreciation tied to planned exits of production activities.",
+      "basis": "company-disclosed"
+    },
+    {
+      "metric": "EBITDA",
+      "direction": "down",
+      "explanation": "Lower price and volume were partially offset by favorable costs and a moderate FX tailwind.",
+      "basis": "company-disclosed"
+    },
+    {
+      "metric": "Net income",
+      "direction": "down",
+      "explanation": "GAAP net loss widened on lower sales, higher restructuring costs, and higher interest expense, per the release.",
+      "basis": "company-disclosed"
+    },
+    {
+      "metric": "Total cash",
+      "direction": "up",
+      "explanation": "Cash from operations rose $297M y/y, including a $200M upfront payment from Corteva under the rimisoxafen licensing agreement.",
+      "basis": "company-disclosed"
+    },
+    {
+      "metric": "Long-term debt",
+      "direction": "up",
+      "explanation": "not explained in the release",
+      "basis": "company-disclosed"
+    },
+    {
+      "metric": "Shareholders' equity",
+      "direction": "down",
+      "explanation": "Not directly explained; consistent with trailing-twelve-month GAAP net losses attributable to stockholders of about $2.76B shown in the release's own ROIC reconciliation table.",
+      "basis": "derived-arithmetic"
+    },
+    {
+      "metric": "overall",
+      "direction": "down",
+      "explanation": "CEO Pierre Brondeau said the India, Newark and Tessenderlo actions strengthened FMC's financial footing; the strategic review is now concluded and focus shifts to competitiveness and the technology portfolio.",
+      "basis": "company-disclosed"
+    }
+  ],
   "source_url": "https://www.sec.gov/Archives/edgar/data/37785/000003778526000139/fmcex991063026.htm",
-  "confidence_notes": "primary filing unreachable — KPI-only summary from verified shard data. FORCE-REGENERATED: force-regenerate mode was requested for this run and the Step-0 already-exists guard was deliberately skipped per instruction; this write is a fresh regeneration of data/summaries/FMC_US_FY2026_Q2.json (no prior file existed on disk before this run, so there was nothing literally to overwrite, but the run followed the force-regenerate path throughout). Event sourceLink from resolve-earnings-target.mjs (https://www.sec.gov/Archives/edgar/data/37785/000095010326009902/dp249374_8k.htm, resolved via resolve-edgar-exhibit.mjs to EX-99.1 dp249374_ex9901.htm) turned out to be an unrelated 8-K announcing a $400M Tessenderlo Group minority equity investment, not the Q2 2026 earnings release — a data-quality issue in the stored sourceLink worth correcting in a future backfill pass. The correct earnings 8-K (Items 2.02/9.01) was located via the EDGAR CIK filing index: accession 0000037785-26-000139, filed 2026-07-29, exhibit fmcex991063026.htm — but fetching its content would have been this run's 4th fetch, exceeding the 3-fetch budget after the mismatch was discovered, so per the Step 0.5 downgrade rule this summary is composed KPI-only from the shard's SEC-verbatim data rather than the actual press release; no drivers or guidance were assessed. reported_at is set to 2026-07-29 (the real filing date of the correct earnings 8-K found via the EDGAR index) rather than the shard's stored eventDate of 2026-06-30, which is a fiscal-quarter-end placeholder per this project's real-report-date rule. Step 3b (extended metrics) was still executed per instruction with an empty array, since no earnings-filing text was read within budget to extract non-GAAP/operational KPIs from."
+  "confidence_notes": "FORCE-REGENERATED: this is a fresh regeneration of data/summaries/FMC_US_FY2026_Q2.json produced with the Step-0 already-exists guard deliberately skipped per instruction, overwriting the prior kpi-only summary on disk. Data-quality note (reconfirmed this run): the event's stored sourceLink (dp249374_8k.htm / exhibit dp249374_ex9901.htm, resolved via resolve-edgar-exhibit.mjs) is an unrelated 8-K announcing a $400M Tessenderlo Group minority equity investment, not the Q2 2026 earnings release — verified by fetching and reading that exhibit again this run. The correct earnings 8-K was located via the EDGAR filing index at accession 0000037785-26-000139 (filed 2026-07-29), exhibit fmcex991063026.htm, and this summary is composed from that document at filing depth. reported_at is set to 2026-07-29 (the real earnings filing date) rather than the shard's stored eventDate of 2026-06-30, a fiscal-quarter-end placeholder per this project's real-report-date rule; the shard's event.sourceLink is worth correcting in a future backfill pass. Restructuring and other charges roughly sextupled y/y ($222.3M vs $36.7M), driven primarily by non-cash asset write-offs/accelerated depreciation under Project Foundation tied to the planned exit of certain production activities — the dominant swing factor behind the operating and net loss. The India held-for-sale business remains consolidated in GAAP figures pending close of its sale to Crystal Crop Protection. Adjusted EBITDA/EPS/revenue guidance for FY2026, Q3 2026 and Q4 2026 were written to the event's guidance[] array from the release's explicit outlook tables; Q3/Q4 entries use move:\"initiated\" since no prior-quarter range exists on record for comparison, and FY2026 entries use move:\"cut\" (revenue/EBITDA/EPS, per the release's own \"lowered\" language) or \"raised\" (free cash flow, per the release's own \"increased\" language)."
 }
