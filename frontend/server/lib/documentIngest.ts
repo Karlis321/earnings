@@ -302,8 +302,8 @@ export const INGESTABLE_HOSTS: Set<string> = new Set([
   "bankofengland.co.uk",
   "www.bis.org",
   "bis.org",
-  "www.imf.org",
-  "imf.org",
+  // imf.org removed 2026-08-17: returns 403 to browser UA on
+  // homepage + /news/ routes. Keep out until we have a workaround.
   // Company IR sites (individually vetted)
   "capstonecopper.com",
   "www.capstonecopper.com",
@@ -311,8 +311,9 @@ export const INGESTABLE_HOSTS: Set<string> = new Set([
   "www.hudbayminerals.com",
   "centuryaluminum.com",
   "www.centuryaluminum.com",
-  "silvercrestmetals.com",
-  "www.silvercrestmetals.com",
+  // silvercrestmetals.com removed 2026-08-17: DNS timeout — the
+  // ticker moved (SIL restructured). Keep out until an active IR
+  // host is confirmed.
   // Wire services — designed for redistribution
   "www.newsfilecorp.com",
   "newsfilecorp.com",
@@ -347,8 +348,8 @@ export const INGESTABLE_HOSTS: Set<string> = new Set([
   "cnbc.com",
   "www.ft.com",
   "ft.com",
-  "www.barrons.com",
-  "barrons.com",
+  // barrons.com removed 2026-08-17: returns 401 to browser UA
+  // (paywall gate at edge). Would produce dead iframes; keep out.
   "www.economist.com",
   "economist.com",
   "www.morningstar.com",
@@ -364,8 +365,8 @@ export const INGESTABLE_HOSTS: Set<string> = new Set([
   "investing.com",
   "www.marketbeat.com",
   "marketbeat.com",
-  "www.gurufocus.com",
-  "gurufocus.com",
+  // gurufocus.com removed 2026-08-17: returns 403 to browser UA
+  // (bot ACL). Keep out until an alternate identifier works.
   "www.fool.com",
   "fool.com",
   "simplywall.st",
@@ -390,8 +391,8 @@ export const INGESTABLE_HOSTS: Set<string> = new Set([
   "barchart.com",
   "www.stockanalysis.com",
   "stockanalysis.com",
-  "www.thestreet.com",
-  "thestreet.com",
+  // thestreet.com removed 2026-08-17: returns 403 to browser UA
+  // (bot ACL similar to gurufocus). Keep out.
   "public.com",
   "www.public.com",
 ]);
