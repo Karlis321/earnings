@@ -1,0 +1,39 @@
+{
+  "ticker": "LNC US",
+  "period": "FY2026 Q2",
+  "reported_at": "2026-07-30",
+  "generated_at": "2026-08-17T19:15:00.000Z",
+  "depth": "filing",
+  "headline": "Net income jumps on favorable swings as core earnings hold",
+  "kpis": [
+    { "label": "Revenue", "value": "$4,542M", "delta": "+12.3%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Net income", "value": "$1,332M", "delta": "+90.6%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Basic EPS", "value": "$6.85", "delta": "+76.5%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Diluted EPS", "value": "$6.72", "delta": "+76.8%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Pretax income", "value": "$1,643M", "delta": "+93.8%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EBIT", "value": "$1,725M", "delta": "+$1,890M", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Total cash", "value": "$10,165M", "delta": "+38.4%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Long-term debt", "value": "$6,465M", "delta": "+8.3%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Short-term debt", "value": "$400M", "delta": "+0.0%", "delta_basis": "q/q", "direction": "flat" },
+    { "label": "Shareholders' equity", "value": "$11,349M", "delta": "+11.1%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Weighted diluted shares", "value": "196M", "delta": "-0.0%", "delta_basis": "q/q", "direction": "flat" }
+  ],
+  "summary_short": "Lincoln Financial's Q2 2026 net income rose to $1,332M ($6.72 diluted EPS) from $699M a year earlier, a swing the company attributes mainly to favorable non-economic market risk benefit movements, while adjusted operating income was $450M versus $438M a year ago.",
+  "summary_long": "Total revenues were $4,542M, up 12.3% y/y. Net income was $1,332M ($6.72 diluted EPS), up 90.6% y/y, while adjusted operating income — the company's core profitability measure — was $450M ($2.24/share), just above $438M a year ago; management attributes the gap to non-economic market risk benefit swings. By segment: Annuities held flat at $287M; Life Insurance rose to $57M on favorable mortality; Group Protection fell to $147M against a stronger prior-year experience refund; Retirement Plan Services rose 32% to $49M. Total cash rose to $10,165M and equity to $11,349M q/q, aided by a $500M subordinated debt issuance completed June 29. No forward guidance was issued.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/0000059558/000005955826000058/a2q2026lncearningspr.htm",
+  "confidence_notes": "FORCE-REGENERATED SUMMARY: this run was executed under an explicit force-regenerate directive, bypassing the normal Step-0 already-exists guard; no prior LNC_US_FY2026_Q2.json existed on disk at run time, so this is a fresh write rather than a true overwrite. SOURCELINK BUG FOUND: the event's stored sourceLink (and resolve-earnings-target.mjs's Step-0 output) points to https://www.sec.gov/Archives/edgar/data/59558/000119312526288480/d146146d8k.htm, an 8-K for a $500M subordinated-notes debt offering filed 2026-06-29 — not an earnings release (no EX-99 press-release exhibit exists in that accession; confirmed via resolve-edgar-exhibit.mjs and a direct fetch). The genuine Q2 2026 earnings press release (EX-99.1, accession 0000059558-26-000058, filed 2026-07-30) was located via WebSearch and used as the primary source instead; this discrepancy should be corrected on the shard's event.sourceLink by a future backfill pass. reported_at uses the earnings release's own date (2026-07-30) rather than the shard's quarter-end placeholder eventDate (2026-06-30). EBIT has no prior_yy on the shard (Yahoo fundamentals-timeseries gap), so its delta is shown as a dollar change vs. the prior quarter rather than a percentage, since prior_qq was negative (-$165M) and a percentage swing would be misleading. EPS and net-income y/y deltas were used instead of q/q because Q1 2026 (prior_qq) was itself a net-loss quarter (net income -$172M, diluted EPS -$1.10) driven by the same non-economic market-risk-benefit volatility the company calls out this quarter, making the q/q comparison less informative than y/y. The $500M subordinated debt issuance (read directly from the mis-linked 8-K while investigating the sourceLink bug above) legitimately explains the quarter's long-term debt and cash increases and is cited in summary_long and drivers on that basis.",
+  "drivers": [
+    { "metric": "overall", "direction": "up", "explanation": "Management cited year-over-year earnings growth across all businesses, with strong growth in Life Insurance and Retirement Plan Services, continued strong Group Protection performance, and Annuities diversifying toward spread-based products.", "basis": "company-disclosed" },
+    { "metric": "Net income", "direction": "up", "explanation": "The gap between net income and adjusted operating income is primarily attributable to the non-economic impact of changes in market risk benefits, per the release.", "basis": "company-disclosed" },
+    { "metric": "Basic EPS", "direction": "up", "explanation": "Tracks the net-income increase on a roughly unchanged weighted-average basic share count.", "basis": "derived-arithmetic" },
+    { "metric": "Diluted EPS", "direction": "up", "explanation": "Tracks the net-income increase on a roughly unchanged weighted-average diluted share count.", "basis": "derived-arithmetic" },
+    { "metric": "Pretax income", "direction": "up", "explanation": "Same market-risk-benefit driver as net income, ahead of income tax expense for the quarter.", "basis": "derived-arithmetic" },
+    { "metric": "EBIT", "direction": "up", "explanation": "Not a company-reported line item; moves with the pretax-income swing driven by favorable market risk benefit changes versus the prior quarter's loss.", "basis": "derived-arithmetic" },
+    { "metric": "Revenue", "direction": "up", "explanation": "Growth was broad-based across segments: Annuities revenue rose 10.5%, Group Protection 2.5%, and Retirement Plan Services 6.6%, partially offset by a 1.9% decline in Life Insurance revenue.", "basis": "derived-arithmetic" },
+    { "metric": "Total cash", "direction": "up", "explanation": "Boosted by the $500 million subordinated debt issuance completed June 29, 2026, which also funded prefunding for a planned preferred-stock repurchase/redemption.", "basis": "company-disclosed" },
+    { "metric": "Long-term debt", "direction": "up", "explanation": "Reflects the $500 million issuance of 6.800% Fixed-to-Fixed Reset Rate Subordinated Notes due 2056, completed June 29, 2026.", "basis": "company-disclosed" },
+    { "metric": "Short-term debt", "direction": "flat", "explanation": "Not explained in the release — short-term borrowings were unchanged quarter over quarter.", "basis": "company-disclosed" },
+    { "metric": "Shareholders' equity", "direction": "up", "explanation": "Growth is largely explained by the quarter's $1,332 million net income flowing into retained earnings.", "basis": "derived-arithmetic" },
+    { "metric": "Weighted diluted shares", "direction": "flat", "explanation": "Not explained in the release — diluted share count was essentially unchanged quarter over quarter.", "basis": "company-disclosed" }
+  ]
+}
