@@ -1,0 +1,35 @@
+{
+  "ticker": "FHN US",
+  "period": "FY2026 Q2",
+  "reported_at": "2026-07-15",
+  "generated_at": "2026-08-17T06:40:00.000Z",
+  "depth": "filing",
+  "headline": "Profit growth continues on loan growth, better credit trends",
+  "kpis": [
+    { "label": "Revenue", "value": "$887M", "delta": "+2.9%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Revenue", "value": "$887M", "delta": "+6.9%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Net income", "value": "$270M", "delta": "+3.1%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Net income", "value": "$270M", "delta": "+12.0%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EPS diluted", "value": "$0.54", "delta": "+1.9%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "EPS diluted", "value": "$0.54", "delta": "+20.0%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EPS basic", "value": "$0.55", "delta": "+1.9%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "EPS basic", "value": "$0.55", "delta": "+19.6%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Pretax income", "value": "$340M", "delta": "-0.6%", "delta_basis": "q/q", "direction": "flat" },
+    { "label": "Pretax income", "value": "$340M", "delta": "+10.0%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Shareholders' equity", "value": "$9,168M", "delta": "-0.02%", "delta_basis": "q/q", "direction": "flat" },
+    { "label": "Shareholders' equity", "value": "$9,168M", "delta": "+2.3%", "delta_basis": "y/y", "direction": "up" }
+  ],
+  "summary_short": "First Horizon's net income available to common shareholders rose 12% y/y and 1% q/q to $260M ($0.54 diluted EPS, +20% y/y), as net interest income grew on loan growth even though the margin slipped 3bp to 3.49%, while credit quality kept improving and CET1 held at 10.5%.",
+  "summary_long": "Net interest income (FTE) rose $9M q/q to $679M on loan-portfolio growth, while NIM slipped 3bp to 3.49% as higher deposit costs from increased brokered deposits offset the gain. Noninterest income grew $16M q/q to $211M, led by deferred-compensation income and brokerage/trust/insurance, partly offset by a $7M fixed-income decline. Noninterest expense rose $26M to $531M on higher outside-services and deferred-compensation costs. Provision for credit losses held flat at $15M; net charge-offs ticked up to 20bp of loans, but nonperforming loans fell $75M and the allowance-to-loans ratio improved to 1.24%. CET1 held steady at 10.5%; the bank repurchased $100M of stock. Effective tax rate fell to 19.5% from 22.2%. No forward guidance was given.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/36966/000003696626000143/a2q2026earningsrelease.htm",
+  "confidence_notes": "REGENERATION: this summary was force-regenerated on explicit operator request. No prior FHN_US_FY2026_Q2.json existed on disk or was reported by the resolver (summaryExists=false), so this run produced a fresh file rather than overwriting an existing one; force-regenerate mode (skipping the Step-0 'already exists' guard) applied regardless per instruction. EXHIBIT RESOLUTION: the event-level sourceLink pointed at the 8-K cover document (fhn-20260715.htm); resolve-edgar-exhibit.mjs found no EX-99*-named file in the filing folder (candidates: a2q2026earningsrelease.htm, a2q26earningsslides.htm, fhn-20260715.htm, R1.htm) so the earnings-release exhibit was identified by name and fetched directly instead (counts as this run's one document fetch). LEDGER RECONCILIATION: two shard KPIs are off by $1M from the release's own printed tables, consistent with rounding of the underlying non-rounded SEC XBRL value versus the release's own rounded display — net_income_usd_m (270 vs release's 'Net income attributable to controlling interest' of 271) and pretax_income_usd_m (340 vs release's 341); both q/q and y/y prior-period comparisons show the same consistent 1M offset, so the deltas above are internally consistent even though the absolute level differs by <0.4% from the press release's own rounding. short_term_debt_usd_m (3,003/4,168/3,461, not used as a standalone KPI here) reconciles exactly to the release's combined 'Federal funds purchased and securities sold under repurchase agreements' + 'Short-term borrowings' lines. No forward guidance (revenue, EPS, or otherwise) found anywhere in this release — guidance array intentionally left empty. Step 3b extended-metrics extraction (financials sector set: NIM, efficiency ratio, CET1, ROTCE, net charge-off ratio, deposits balance, provision for credit losses; plus universal set) yielded 10 metrics with confidence >=0.95 each; capex, adjusted capex, free-cash-flow (mgmt def), asset-sale proceeds, and next-quarter revenue/EPS guidance were not disclosed in this release and were omitted rather than invented.",
+  "drivers": [
+    { "metric": "Revenue", "direction": "up", "explanation": "Net interest income rose $9M q/q on loan-portfolio growth; noninterest income rose $16M q/q on deferred-compensation income and brokerage/trust/insurance, partly offset by a $7M fixed-income decline.", "basis": "company-disclosed" },
+    { "metric": "Net income", "direction": "up", "explanation": "Revenue growth outpaced the $26M q/q rise in noninterest expense, provision for credit losses held flat at $15M, and the effective tax rate fell to 19.5% from 22.2%.", "basis": "company-disclosed" },
+    { "metric": "EPS diluted", "direction": "up", "explanation": "Follows from higher net income against a lower diluted share count (480M vs 487M q/q, 514M y/y); the release notes share count in all periods was impacted by share repurchases.", "basis": "derived-arithmetic" },
+    { "metric": "EPS basic", "direction": "up", "explanation": "Same net income growth and repurchase-driven share-count decline as diluted EPS.", "basis": "derived-arithmetic" },
+    { "metric": "Pretax income", "direction": "flat", "explanation": "Roughly unchanged q/q as the $26M rise in noninterest expense (outside services, deferred compensation) offset revenue growth; up 10% y/y on stronger revenue and a lower credit-loss provision.", "basis": "derived-arithmetic" },
+    { "metric": "Shareholders' equity", "direction": "flat", "explanation": "Combined shareholders' equity was roughly unchanged q/q ($9,168M vs $9,170M) as retained-earnings growth was offset by $100M of share repurchases and a wider accumulated-other-comprehensive-loss balance; up 2.3% y/y on cumulative retained-earnings growth.", "basis": "derived-arithmetic" },
+    { "metric": "overall", "direction": "up", "explanation": "CEO Bryan Jordan framed the quarter as \"disciplined execution\" driven by client relationships and service; first-half 2026 NIAC grew 16% y/y including 3% y/y loan growth.", "basis": "company-disclosed" }
+  ]
+}
