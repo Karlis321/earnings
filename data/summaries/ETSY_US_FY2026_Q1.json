@@ -1,0 +1,35 @@
+{
+  "ticker": "ETSY US",
+  "period": "FY2026 Q1",
+  "reported_at": "2026-04-29",
+  "generated_at": "2026-08-17T03:30:39.000Z",
+  "depth": "filing",
+  "headline": "Etsy returns to profit as last year's impairment fades",
+  "kpis": [
+    { "label": "Revenue", "value": "$631.3M", "delta": "-28.4%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Revenue", "value": "$631.3M", "delta": "+3.1%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Gross profit", "value": "$455.6M", "delta": "+2.5%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Operating income", "value": "$119.8M", "delta": "+$123.7M", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Net income", "value": "$69.7M", "delta": "+$121.8M", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EPS diluted (GAAP)", "value": "$0.60", "delta": "-34.8%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "EPS diluted (GAAP)", "value": "$0.60", "delta": "+$1.09", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EBITDA", "value": "$135.2M", "delta": "+17.5%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Total cash", "value": "$1,214.4M", "delta": "+96.5%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Long-term debt", "value": "$2,334.6M", "delta": "+2.0%", "delta_basis": "y/y", "direction": "up" }
+  ],
+  "summary_short": "Etsy's Q1 2026 revenue rose 3.1% y/y to $631.3M (down 28.4% q/q on normal post-holiday seasonality) as GAAP net income swung to $69.7M ($0.60 diluted EPS) from a $52.1M loss a year ago, mainly because Q1 2025 carried a $101.7M Reverb goodwill impairment that did not recur.",
+  "summary_long": "Q1 2026 revenue grew 3.1% y/y to $631.3M (down 28.4% q/q on normal post-holiday seasonality), driven by a 7.9% rise in services revenue (higher Etsy Ads price-per-click) and a 1.1% rise in marketplace revenue, partly offset by the divested Reverb business. Gross profit rose 2.5% y/y to $455.6M. GAAP net income swung to $69.7M (diluted EPS $0.60) from a $52.1M loss a year ago, mainly because Q1 2025 carried a $101.7M Reverb goodwill impairment that did not recur; G&A also fell on reversal of a Canadian digital-services-tax accrual. Cash and equivalents fell to $1,214.4M from $1,355.4M q/q on $145.2M of buybacks. No forward guidance is disclosed in the 10-Q.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/1370637/000137063726000044/etsy-20260331.htm",
+  "confidence_notes": "REGENERATION: this run was invoked in force-regenerate mode with the Step-0 'already exists' guard explicitly skipped. Note: no prior ETSY_US_FY2026_Q1.json summary actually existed on disk before this run (resolver reported summaryExists=false, and no prior commit ever wrote this file) — this is a first-time compose, not a literal overwrite, despite the force-regen framing of the request. Date correction: the shard's stored eventDate (2026-03-31) is a quarter-end placeholder; reported_at above uses the 10-Q's actual EDGAR filing date (2026-04-29) per the same-document sourceLink.filingDate. Ledger inconsistency (not corrected, flagged only): the shard's ebit_usd_m carries a Q1-2025 prior of +$97.83M (Yahoo, ex-impairment) while operating_income_usd_m carries a Q1-2025 prior of -$3.873M (SEC XBRL OperatingIncomeLoss, includes the $101.7M Reverb impairment) — two different provenance families disagreeing on the same prior period. The 'Operating income' KPI row above uses the SEC-sourced figure per the SEC-verbatim priority rule; the stored EBITDA prior is built on the Yahoo/ex-impairment figure instead, so EBITDA and Operating income y/y deltas are not on a reconciled basis. Scope note: continuing-operations figures (including all KPIs above) exclude Depop, Etsy's fashion-resale marketplace, which is under a pending $1.2B cash sale to eBay (expected to close by Q3 2026) and is now presented as a discontinued operation; y/y continuing-operations comparisons are further distorted by the June 2025 sale of Reverb (Q1 2025 continuing operations included Reverb, Q1 2026 does not) — the filing's own Etsy-marketplace-ex-Reverb non-GAAP comparison shows a cleaner +7.6% revenue growth y/y for the ongoing business. No numeric forward guidance appears anywhere in this 10-Q (Etsy issues guidance via its earnings press release/call, which was not part of this filing-only fetch); guidance[] intentionally left empty on the event shard.",
+  "drivers": [
+    { "metric": "Revenue", "direction": "up", "explanation": "Growth was driven primarily by a 7.9% rise in services revenue (higher average price-per-click on Etsy Ads) and, to a lesser extent, a 1.1% rise in marketplace revenue (payments and transaction fees), partly offset by lost Reverb revenue post-divestiture.", "basis": "company-disclosed" },
+    { "metric": "Gross profit", "direction": "up", "explanation": "Gross profit growth follows revenue's 3.1% y/y rise outpacing a 4.7% increase in cost of revenue, driven by higher refund costs, payments fees, and cloud hosting/bandwidth expense.", "basis": "derived-arithmetic" },
+    { "metric": "Operating income", "direction": "up", "explanation": "The swing to profit is explained by the absence of the year-ago $101.7M Reverb goodwill impairment charge, plus an $11.4M decline in G&A from reversal of a Canadian digital-services-tax accrual after its March 2026 repeal.", "basis": "company-disclosed" },
+    { "metric": "Net income", "direction": "up", "explanation": "Same drivers as operating income — no repeat of the $101.7M Reverb impairment — plus other income swinging to a $9.4M gain from a $10.7M loss on favorable non-functional-currency FX effects.", "basis": "company-disclosed" },
+    { "metric": "EPS diluted (GAAP)", "direction": "up", "explanation": "Follows net income's swing to profit, partly diluted by weighted-average diluted share count rising to 121.0M from 107.1M y/y.", "basis": "derived-arithmetic" },
+    { "metric": "EBITDA", "direction": "up", "explanation": "Not separately explained in the release; parallels the operating-income drivers (no repeat impairment, lower G&A) with depreciation and amortization added back.", "basis": "derived-arithmetic" },
+    { "metric": "Total cash", "direction": "up", "explanation": "Not explained in the release — the liquidity section covers the quarter-end balance and available credit facility but does not address the year-over-year change.", "basis": "company-disclosed" },
+    { "metric": "Long-term debt", "direction": "up", "explanation": "Not explained in the release.", "basis": "company-disclosed" },
+    { "metric": "overall", "direction": "up", "explanation": "Etsy's Q1 was flattered by the absence of the year-ago $101.7M Reverb impairment and a Canadian DST accrual reversal; Depop is now held for sale to eBay for $1.2B (expected to close by Q3 2026) and reported as discontinued operations. No forward guidance appears in this 10-Q.", "basis": "company-disclosed" }
+  ]
+}
