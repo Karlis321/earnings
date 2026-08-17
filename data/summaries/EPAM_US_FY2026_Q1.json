@@ -2,7 +2,7 @@
   "ticker": "EPAM US",
   "period": "FY2026 Q1",
   "reported_at": "2026-05-07",
-  "generated_at": "2026-08-16T00:00:00.000Z",
+  "generated_at": "2026-08-17T00:00:00.000Z",
   "depth": "filing",
   "headline": "Growth holds, margins widen, buybacks power EPS higher",
   "kpis": [
@@ -50,8 +50,8 @@
     {
       "metric": "Operating income",
       "direction": "up",
-      "explanation": "GAAP operating margin rose to 8.3% from 7.6% y/y (non-GAAP 14.3% vs 13.5%); the GAAP-to-non-GAAP bridge widened on higher stock-based comp, cost-optimization charges and Ukraine humanitarian support per the release's reconciliation table.",
-      "basis": "company-disclosed"
+      "explanation": "GAAP operating margin rose to 8.3% from 7.6% y/y (non-GAAP 14.3% vs 13.5%); cost of revenue grew only 6.3% y/y against 7.6% revenue growth, expanding gross margin and flowing through to operating income.",
+      "basis": "derived-arithmetic"
     },
     {
       "metric": "EPS (diluted)",
@@ -84,6 +84,6 @@
       "basis": "derived-arithmetic"
     }
   ],
-  "source_url": "https://www.sec.gov/Archives/edgar/data/1352010/000135201026000026/exhibit99_q1x2026.htm",
-  "confidence_notes": "REGENERATION: this run was executed in force-regenerate mode per operator request, overwriting the prior kpi-only summary for EPAM US FY2026 Q1. Sourcing correction: the shard's Step-0 sourceLink pointed to SEC accession 0001352010-26-000024 (filed 2026-04-01, Items 5.02/9.01 — an executive RSU-grant 8-K with no earnings content, the same issue flagged by the prior kpi-only run). This run confirmed via the EDGAR filing index that the actual Q1 2026 earnings release is accession 0001352010-26-000026 (filed 2026-05-07, Item 2.02/9.01) and fetched its EX-99.1 exhibit directly, upgrading this summary from kpi-only to filing depth. reported_at is set to 2026-05-07 (the real 8-K filing date) rather than the shard's eventDate placeholder of 2026-03-31 (fiscal quarter-end) — flagging this mismatch per Step 0 guidance; the shard's own eventDate field was not modified. eps_usd basis note: prior_qq (1.99) is Yahoo-sourced while current and prior_yy are SEC-sourced (no surprisePct is computed in this summary, so the same-basis rule doesn't apply). Guidance: full-year revenue-growth and EPS ranges use 'now expects' language signalling a change from a prior guide, but the release does not restate the prior range's numbers, so move is left null rather than guessed as raised/lowered; full-year GAAP/non-GAAP operating-margin and non-GAAP tax-rate guidance use 'continues to expect' language and are marked held; Q2 2026 guidance is marked initiated as the first disclosure of that quarter. The release narrates only y/y comparisons — q/q moves (the long-term debt jump from $25.0M to $165.0M, and the operating cash flow swing to -$36.4M) are not explained in the primary document and are flagged as such in drivers[]. Total cash of $1,036.959M matches the balance sheet's cash-and-equivalents line; the release's headline $1.043B figure additionally includes restricted cash — not a discrepancy, just a different aggregate."
+  "source_url": "https://www.sec.gov/Archives/edgar/data/0001352010/000135201026000026/exhibit99_q1x2026.htm",
+  "confidence_notes": "REGENERATION (force-regenerate mode, operator request 2026-08-17): this run overwrote the prior on-disk summary from scratch rather than reusing it. Sourcing correction (reconfirmed): the shard's Step-0 sourceLink still points to SEC accession 0001352010-26-000024 (filed 2026-04-01) — that filing is Items 5.02/9.01, an executive RSU-grant 8-K for Viktar Dvorkin with no earnings content, not the Q1 2026 results. scripts/resolve-edgar-exhibit.mjs correctly returned no EX-99 exhibit for that accession (exit 3), which is the intended signal that the stored sourceLink is mismatched rather than a simple cover-page-to-exhibit case. The real Q1 2026 earnings release is accession 0001352010-26-000026 (filed 2026-05-07, Item 2.02/9.01, exhibit99_q1x2026.htm), located via one WebSearch after the EDGAR company filing-index fetch returned HTTP 503; this summary is composed from that document at filing depth. reported_at is set to 2026-05-07 (the real 8-K filing date) rather than the shard's eventDate placeholder of 2026-03-31 (fiscal quarter-end); the shard's own eventDate field was not modified, only extendedMetrics (event.extendedMetrics via scripts/apply-extended-metrics.mjs). event.sourceLink itself was left unmodified since no sanctioned script covers that field — flagging as a residual shard data-quality item. eps_usd basis note: prior_qq (1.99) is Yahoo-sourced while current and prior_yy are SEC-sourced (no surprisePct is computed in this summary, so the same-basis rule doesn't apply). Guidance already present on the shard was independently reconciled against the release and confirmed accurate: full-year revenue-growth and EPS ranges use 'now expects' language signalling a change from a prior guide, but the release does not restate the prior range's numbers, so move is left null rather than guessed as raised/lowered; full-year GAAP/non-GAAP operating-margin and non-GAAP tax-rate guidance use 'continues to expect' language and are marked held; Q2 2026 guidance is marked initiated as the first disclosure of that quarter. The release narrates only y/y comparisons — q/q moves (the long-term debt jump from $25.0M to $165.0M, and the operating cash flow swing to -$36.4M) are not explained in the primary document and are flagged as such in drivers[]. Total cash of $1,036.959M matches the balance sheet's cash-and-equivalents line; the release's headline $1.043B figure additionally includes restricted cash — not a discrepancy, just a different aggregate."
 }
