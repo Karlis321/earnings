@@ -1,0 +1,37 @@
+{
+  "ticker": "HLI US",
+  "period": "FY2026 Q2",
+  "reported_at": "2026-07-29",
+  "generated_at": "2026-08-17T00:00:00.000Z",
+  "depth": "filing",
+  "headline": "Houlihan Lokey cites temporary Corporate Finance headwinds",
+  "kpis": [
+    { "label": "Revenue", "value": "$511M", "delta": "-19.6%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Revenue", "value": "$511M", "delta": "-15.6%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Gross profit", "value": "$154M", "delta": "-18.0%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Operating income", "value": "$78M", "delta": "-13.1%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Net income", "value": "$78M", "delta": "-20.0%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "EPS diluted (GAAP)", "value": "$1.15", "delta": "-11.5%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "EPS diluted (GAAP)", "value": "$1.15", "delta": "-19.0%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "EBITDA", "value": "$100M", "delta": "-30.7%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Total cash", "value": "$745M", "delta": "-6.1%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Operating cash flow", "value": "-$336M", "delta": "-$204M", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Shareholders' equity", "value": "$2,255M", "delta": "+3.5%", "delta_basis": "y/y", "direction": "up" }
+  ],
+  "summary_short": "Houlihan Lokey's fiscal Q1 2027 (calendar Q2 2026) revenue fell 15.6% y/y to $511M and net income fell to $78M ($1.15 diluted EPS, -19.0% y/y), driven by a 24% drop in Corporate Finance revenue that management called temporary rather than a cyclical downturn.",
+  "summary_long": "Revenue fell 15.6% y/y to $511M as Corporate Finance revenue dropped 24% on a lower average transaction fee tied to transaction mix; FVA rose 13% on higher fee-event volume, while Financial Restructuring fell 8% on fewer closed transactions. GAAP diluted EPS fell to $1.15 (adjusted $1.35) as compensation expense fell roughly in line with revenue, but the effective tax rate rose to 9.8% from 0.5% a year ago on lower stock-based compensation deductions. Cash fell to $745M from $1,189M at fiscal year-end; operating cash flow was -$336M for the quarter, not itemized in the release. The board declared a $0.70/share dividend and repurchased 348,000 shares. Management called the headwinds temporary, not cyclical.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/1302215/000130221526000063/a1q27-ex991.htm",
+  "confidence_notes": "REGENERATION: this run was invoked in force-regenerate mode with the Step-0 'already exists' guard explicitly skipped. Note: no prior HLI_US_FY2026_Q2.json summary actually existed on disk before this run (resolver reported summaryExists=false) — this is a first-time compose, not a literal overwrite, despite the force-regen framing of the request. Source-link correction: the event's stored sourceLink pointed to the 8-K cover document (hli-20260729.htm), which is a stub pointing at Exhibit 99.1; resolve-edgar-exhibit.mjs resolved the actual press release at a1q27-ex991.htm, which is what this summary and the extended metrics cite. Fiscal-period-label note: Houlihan Lokey's own fiscal year ends March 31, so the company calls this release 'First Quarter Fiscal 2027' (period ended June 30, 2026); the shard/site label 'FY2026 Q2' follows calendar-quarter convention, not the company's own fiscal quarter numbering — same underlying period, different label scheme. Mixed-provenance deltas: the 'Revenue' and 'EPS diluted (GAAP)' q/q prior values are sourced from Yahoo fundamentals-timeseries (wire) on the shard rather than SEC XBRL, while the current-quarter actuals are SEC-verbatim; y/y deltas use same-basis SEC-to-SEC or SEC-to-Yahoo-timeseries pairs per the same-basis rule. 'Operating cash flow' delta is expressed as an absolute dollar change (-$204M) rather than a percentage because both the current and prior values are negative, making a percentage change misleading. Adjusted (non-GAAP) diluted EPS of $1.35 (vs $2.14 a year ago) is disclosed by the company but is not carried as a top-level KPI here since it is not present in the SEC-verbatim shard KPI set; it is captured instead under extendedMetrics (eps_non_gaap).",
+  "drivers": [
+    { "metric": "Revenue", "direction": "down", "explanation": "Corporate Finance revenue fell 24% y/y on a lower average transaction fee from transaction mix; FVA rose 13% on higher fee-event volume; Financial Restructuring fell 8% on fewer closed transactions.", "basis": "company-disclosed" },
+    { "metric": "Gross profit", "direction": "down", "explanation": "Gross profit fell with revenue; GAAP compensation ratio was roughly flat (64.3% vs 64.9% y/y) while non-compensation expenses fell on lower acquisition-related revaluation and depreciation.", "basis": "company-disclosed" },
+    { "metric": "Operating income", "direction": "down", "explanation": "Decline follows the revenue drop outpacing reductions in compensation and non-compensation expense, both of which the company ties to lower revenue.", "basis": "derived-arithmetic" },
+    { "metric": "Net income", "direction": "down", "explanation": "Tracks the lower operating income plus a higher effective tax rate (9.8% vs 0.5% a year ago) attributed to decreased stock-based compensation deductions.", "basis": "company-disclosed" },
+    { "metric": "EPS diluted (GAAP)", "direction": "down", "explanation": "Reflects lower net income, partly offset by a smaller diluted share count (67.6M vs 68.9M shares) from continued buybacks.", "basis": "derived-arithmetic" },
+    { "metric": "EBITDA", "direction": "down", "explanation": "Follows the same revenue and compensation-cost dynamics as operating income, plus the depreciation and amortization add-back.", "basis": "derived-arithmetic" },
+    { "metric": "Total cash", "direction": "down", "explanation": "Cash fell from $1,189M at fiscal year-end on the quarter's -$336M operating cash outflow; the release does not itemize the outflow's components.", "basis": "company-disclosed" },
+    { "metric": "Operating cash flow", "direction": "down", "explanation": "not explained in the release", "basis": "company-disclosed" },
+    { "metric": "Shareholders' equity", "direction": "up", "explanation": "not explained in the release", "basis": "company-disclosed" },
+    { "metric": "overall", "direction": "down", "explanation": "Advisory revenue and earnings declined broadly as Corporate Finance activity slowed; management calls the headwinds temporary, not a cyclical downturn, and declared a $0.70/share quarterly dividend.", "basis": "company-disclosed" }
+  ]
+}
