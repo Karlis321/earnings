@@ -279,6 +279,17 @@ export interface IngestInput {
 // clicks routinely land on EDGAR / IR press pages, and those hosts are
 // generally friendly to server-side fetches with a UA. Extend after
 // confirming a host's terms allow re-serving sanitized content.
+// Universe of hosts the server proxy is willing to fetch + re-serve
+// inline. Any URL from a host NOT in this set falls through to a
+// direct iframe (which most publishers block via X-Frame-Options) or,
+// after that, to the "Open at publisher" fallback CTA.
+//
+// Expansion rule: add a host only after confirming it (a) serves clean
+// HTML for the article path, (b) doesn't require a login/paywall JS
+// shim to render main content, and (c) responds 200 to a browser-UA
+// server fetch. Aggregators are on the source_url blocklist for
+// summaries BUT are still allowed here — the blocklist is about what
+// we CITE as primary source, this list is about what we can PREVIEW.
 export const INGESTABLE_HOSTS: Set<string> = new Set([
   // Regulatory
   "www.sec.gov",
@@ -288,8 +299,12 @@ export const INGESTABLE_HOSTS: Set<string> = new Set([
   "www.ecb.europa.eu",
   "ecb.europa.eu",
   "www.bankofengland.co.uk",
-  // Company IR sites (individually vetted — extend only after
-  // confirming a host serves clean press-release HTML)
+  "bankofengland.co.uk",
+  "www.bis.org",
+  "bis.org",
+  "www.imf.org",
+  "imf.org",
+  // Company IR sites (individually vetted)
   "capstonecopper.com",
   "www.capstonecopper.com",
   "hudbayminerals.com",
@@ -298,8 +313,7 @@ export const INGESTABLE_HOSTS: Set<string> = new Set([
   "www.centuryaluminum.com",
   "silvercrestmetals.com",
   "www.silvercrestmetals.com",
-  // Wire services — designed for redistribution, so safe defaults for
-  // any ticker whose press releases route through these hosts.
+  // Wire services — designed for redistribution
   "www.newsfilecorp.com",
   "newsfilecorp.com",
   "feeds.newsfilecorp.com",
@@ -313,10 +327,73 @@ export const INGESTABLE_HOSTS: Set<string> = new Set([
   "businesswire.com",
   "www.accesswire.com",
   "accesswire.com",
-  // Yahoo Finance — earnings source URLs in past-event Facts point here.
-  // The article shell is thin (mostly JS-shimmed) but the sanitizer
-  // handles it cleanly and the source link stays traceable.
+  "www.marketwire.com",
+  "marketwire.com",
+  "www.acnnewswire.com",
+  "acnnewswire.com",
+  // Yahoo Finance / other portals — article shells JS-shimmed but
+  // the sanitizer + reader-mode extraction handle it cleanly.
   "finance.yahoo.com",
+  "ca.finance.yahoo.com",
+  "uk.finance.yahoo.com",
+  "www.msn.com",
+  "msn.com",
+  // Major financial publishers — VERIFIED 200 to our browser-UA
+  // server fetch on 2026-08-17. Reuters/Bloomberg/WSJ/MarketWatch/
+  // Seeking Alpha excluded because they gate on more than just UA
+  // (bot detection, geographic ACL) and return 401/403 — adding
+  // them would just create dead iframe experiences.
+  "www.cnbc.com",
+  "cnbc.com",
+  "www.ft.com",
+  "ft.com",
+  "www.barrons.com",
+  "barrons.com",
+  "www.economist.com",
+  "economist.com",
+  "www.morningstar.com",
+  "morningstar.com",
+  // Earnings analysis aggregators verified 200 to browser-UA
+  "www.stocktitan.net",
+  "stocktitan.net",
+  "www.zacks.com",
+  "zacks.com",
+  "www.tipranks.com",
+  "tipranks.com",
+  "www.investing.com",
+  "investing.com",
+  "www.marketbeat.com",
+  "marketbeat.com",
+  "www.gurufocus.com",
+  "gurufocus.com",
+  "www.fool.com",
+  "fool.com",
+  "simplywall.st",
+  "www.simplywall.st",
+  // Canadian / mining publishers
+  "www.theglobeandmail.com",
+  "theglobeandmail.com",
+  "www.northernminer.com",
+  "northernminer.com",
+  "www.mining.com",
+  "mining.com",
+  "www.kitco.com",
+  "kitco.com",
+  "boereport.com",
+  "www.boereport.com",
+  "energynow.ca",
+  "www.energynow.ca",
+  "www.tradingview.com",
+  "tradingview.com",
+  // Wires we've seen in R1000 batch citations
+  "www.barchart.com",
+  "barchart.com",
+  "www.stockanalysis.com",
+  "stockanalysis.com",
+  "www.thestreet.com",
+  "thestreet.com",
+  "public.com",
+  "www.public.com",
 ]);
 
 export function isIngestableUrl(url: string): boolean {
