@@ -1,0 +1,41 @@
+{
+  "ticker": "WSC US",
+  "period": "FY2026 Q1",
+  "reported_at": "2026-05-07",
+  "generated_at": "2026-08-18T00:00:00.000Z",
+  "depth": "filing",
+  "headline": "Volumes soften, but WillScot lifts its full-year outlook",
+  "kpis": [
+    { "label": "Revenue", "value": "$548.6M", "delta": "-3.1%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Revenue", "value": "$548.6M", "delta": "-2.0%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Gross profit", "value": "$285.7M", "delta": "+0.05%", "delta_basis": "q/q", "direction": "flat" },
+    { "label": "Gross profit", "value": "$285.7M", "delta": "-4.9%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Operating income", "value": "$96.7M", "delta": "-18.4%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Operating income", "value": "$96.7M", "delta": "-19.3%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "EBITDA", "value": "$189.1M", "delta": "+$265.9M", "delta_basis": "q/q", "direction": "up" },
+    { "label": "EBITDA", "value": "$189.1M", "delta": "-12.7%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Net income", "value": "$28.1M", "delta": "+$215.4M", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Net income", "value": "$28.1M", "delta": "-34.7%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "EPS diluted", "value": "$0.15", "delta": "+$1.18", "delta_basis": "q/q", "direction": "up" },
+    { "label": "EPS diluted", "value": "$0.15", "delta": "-34.8%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Total cash", "value": "$15.5M", "delta": "+6.6%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Total cash", "value": "$15.5M", "delta": "+45.6%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Shareholders' equity", "value": "$870.5M", "delta": "+1.7%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Shareholders' equity", "value": "$870.5M", "delta": "-13.9%", "delta_basis": "y/y", "direction": "down" }
+  ],
+  "summary_short": "WillScot's Q1 2026 revenue fell 2.0% y/y to $548.6 million and net income dropped 34.7% to $28.1 million on restructuring charges, even as Adjusted EBITDA of $211.0 million (-7.8% y/y) topped plan and management raised its full-year 2026 outlook.",
+  "summary_long": "Revenue fell 2.0% y/y to $548.6M as a 7.3% drop in average units on rent and a $13.4M decline in new-unit sales outweighed 12.3% higher delivery/installation revenue from large complex projects. Gross margin fell to 52.1% from 53.7% on higher leasing costs and receivables write-offs. SG&A fell 1.8% to $154.0M. Adjusted EBITDA was $211.0M (-7.8% y/y, ~38.5% margin). Net income fell 34.7% to $28.1M, mostly on $11.6M of Network Optimization Plan restructuring charges. Rental-equipment capex rose to $101.9M funding large-project activations; Net CAPEX was $89.3M. WillScot paid a $0.07/share dividend, repurchased $7.3M of stock, and raised its full-year 2026 outlook to roughly $2.25B revenue (from ~$2.18B) and $915M Adjusted EBITDA.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/1647088/000164708826000031/wsc-20260331.htm",
+  "confidence_notes": "REGENERATION: this run was invoked in force-regenerate mode with the Step-0 'already exists' guard explicitly skipped. Note: the resolver reported summaryExists=false — no prior WSC_US_FY2026_Q1.json existed on disk before this run, so this is a first-time compose rather than a literal file overwrite, despite the force-regen framing of the request. Date correction: the shard's stored eventDate (2026-03-31) is the fiscal quarter-end placeholder, not the actual filing date; this summary's reported_at (2026-05-07) uses the 10-Q's actual SEC filing date instead, per the 'real report dates' preference rule. EBITDA note: the shard's ebitda_usd_m ($189.1M, a straight GAAP operating-income + D&A calc) differs from the company's own non-GAAP 'Adjusted EBITDA' of $211.0M for the quarter (down 7.8% y/y from $228.8M) — the two are not interchangeable; the KPI table above uses the shard's GAAP basis for consistency with prior periods, while Adjusted EBITDA is called out separately in summary_long. CapEx note: the shard's capex_usd_m ($3.6M, SEC XBRL PaymentsToAcquirePropertyPlantAndEquipment) captures only non-fleet PP&E and understates the business's real capital intensity; the 10-Q's own MD&A states capital expenditures for rental equipment of $101.9M (+$29.4M y/y) and Net CAPEX of $89.3M — these filing-disclosed figures are used in summary_long and extendedMetrics instead, not the shard KPI. Guidance sourcing caveat: the FY2026 outlook (revenue ~$2.25B, Adjusted EBITDA ~$915M, both raised) could not be verified against WillScot's own press release text directly — two WebFetch attempts (the investors.willscot.com quarterly-results page, then the specific press-release document titled 'WillScot Reports First Quarter 2026 Results and Raises 2026 Full Year Outlook') both timed out. The figures are cross-corroborated by three independent secondary reports (StockStory, IndexBox, Investing.com) that each attribute them to the company's own raised outlook rather than analyst estimates, so they are captured in event.guidance with reduced confidence (0.75) and llm_extracted method rather than a direct filing read.",
+  "drivers": [
+    { "metric": "Revenue", "direction": "down", "explanation": "Decline driven by a $13.4M drop in new-unit sales and $8.9M lower leasing revenue on fewer units on rent, plus $3.4M higher receivables write-offs, partly offset by $10.9M higher delivery/installation revenue on large complex projects.", "basis": "company-disclosed" },
+    { "metric": "Gross profit", "direction": "down", "explanation": "Fell on a $16.8M drop in leasing gross profit (fewer units on rent, $8.0M higher leasing costs, more write-offs) and $4.5M lower sales gross profit, partly offset by lower fleet depreciation and higher installation gross profit.", "basis": "company-disclosed" },
+    { "metric": "Operating income", "direction": "down", "explanation": "Tracks the gross-profit decline; SG&A fell $2.8M but restructuring charges of $11.3M for the Network Optimization Plan weighed on the operating line.", "basis": "derived-arithmetic" },
+    { "metric": "EBITDA", "direction": "down", "explanation": "Same gross-profit and cost drivers as operating income, plus the D&A add-back; company's own non-GAAP Adjusted EBITDA fell 7.8% y/y on lower leasing and sales gross profit.", "basis": "company-disclosed" },
+    { "metric": "Net income", "direction": "down", "explanation": "Fell 34.7%, including $11.6M of discrete Network Optimization Plan charges; partly offset by $4.9M lower net interest expense and $3.0M lower income tax expense.", "basis": "company-disclosed" },
+    { "metric": "EPS diluted", "direction": "down", "explanation": "Flows through from the lower net income, only partly cushioned by a smaller diluted share count from continued buybacks.", "basis": "derived-arithmetic" },
+    { "metric": "Total cash", "direction": "up", "explanation": "Not explained in the release as a discrete balance driver; $191.1M of operating cash inflow exceeded $84.5M of investing outflows and $105.0M of financing outflows (buybacks, dividend, $75.1M ABL paydown).", "basis": "derived-arithmetic" },
+    { "metric": "Shareholders' equity", "direction": "down", "explanation": "Not explained in the release versus the prior-year quarter specifically; y/y decline reflects cumulative buybacks and dividends since Q1 2025 outweighing retained net income.", "basis": "company-disclosed" },
+    { "metric": "overall", "direction": "down", "explanation": "Weaker non-residential construction demand cut units on rent and new-unit sales, compressing margins, but delivery/installation strength on large complex projects and continued Network Optimization Plan execution partly offset the decline.", "basis": "company-disclosed" }
+  ]
+}
