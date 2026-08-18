@@ -3,16 +3,48 @@
   "period": "FY2026 Q1",
   "reported_at": "2026-03-31",
   "generated_at": "2026-08-18T00:00:00.000Z",
-  "depth": "kpi-only",
-  "headline": "Profit and revenue growth accelerate sharply year over year",
+  "depth": "filing",
+  "headline": "Revenue and profit climb sharply, though margins tighten",
   "kpis": [
     { "label": "Revenue", "value": "$3,538.3M", "delta": "+57.2%", "delta_basis": "y/y", "direction": "up" },
     { "label": "Net income", "value": "$872.1M", "delta": "+56.5%", "delta_basis": "y/y", "direction": "up" },
     { "label": "EPS (diluted)", "value": "$0.18", "delta": "+55.9%", "delta_basis": "y/y", "direction": "up" },
     { "label": "EPS (basic)", "value": "$0.18", "delta": "+55.2%", "delta_basis": "y/y", "direction": "up" }
   ],
-  "summary_short": "Nu Holdings' Q1 FY2026 revenue rose 57.2% y/y to $3,538.3 million and net income grew 56.5% y/y to $872.1 million, though net income slipped 2.3% q/q even as revenue grew 12.8% q/q.",
-  "summary_long": "Q1 FY2026 revenue reached $3,538.3 million, up 57.2% y/y and 12.8% q/q. Net income of $872.1 million rose 56.5% y/y but fell 2.3% q/q. Diluted EPS was $0.18 (+55.9% y/y) and basic EPS was $0.18 (+55.2% y/y), tracking net income growth closely. No cash-position KPI is present on the shard to assess balance-sheet delta.",
-  "source_url": "https://www.sec.gov/Archives/edgar/data/1691493/000129281426003059/nu20260514_6k1.htm",
-  "confidence_notes": "REGENERATION (force-regenerate mode): this summary was regenerated per explicit operator instruction, overwriting a prior summary file at data/summaries/NU_US_FY2026_Q1.json, bypassing Step 0's 'already exists' guard. primary filing unreachable — KPI-only summary from verified shard data. Source-ladder detail: the event's sourceLink (accession 0001292814-26-003059, filed 2026-05-14) is Nu Holdings' 6-K exhibit nu20260514_6k1.htm, an Independent Limited Assurance Report plus Managerial P&L Reconciliation Report from KPMG/management — no MD&A or press-release narrative. EDGAR shows three sibling 6-K accessions filed the same day (0001292814-26-003053, -003055, -003057); accession 003053 contains nufs1q26_6k.htm (~1.4MB, likely the actual financial-statements/press-release document), a strong candidate for filing-depth treatment on a future run, but fetching it would have been a 4th fetch against this run's 3-fetch budget (already spent on: the 003059 accession index, the EDGAR CIK 6-K filing list, and the 003053 accession index) so it was not retrieved this run. Per Step 0.5 this triggers a downgrade to kpi-only rather than a skip. Ledger inconsistency (noted, not massaged): the shard's KPI revenue_usd_m ($3,538.31M, Yahoo fundamentals-timeseries provenance) does not reconcile with either revenue figure disclosed in the assurance-report exhibit (Accounting P&L revenue $4,968.0M or Managerial P&L revenue $5,315.5M) — Nu, as a foreign private issuer filing 6-K rather than 10-Q/10-K, does not submit SEC XBRL companyfacts, so the SEC-verbatim rule does not apply and Yahoo remains the KPI source of truth per procedure. Net income reconciles closely ($872.056M shard vs $871.4M in the assurance exhibit, rounding-level only). reported_at is set to the shard's stored eventDate (2026-03-31, a quarter-end placeholder); the actual 6-K filing date is 2026-05-14, a ~6-week lag not yet reflected via the fetch-real-report-dates sweep. Step 3b: extended metrics extraction skipped for content (kpi-only depth, no filing narrative read) — extendedMetrics written as an empty array via scripts/apply-extended-metrics.mjs per explicit operator instruction that the script call itself is mandatory regardless of depth."
+  "summary_short": "Nu Holdings' Q1 FY2026 revenue rose 57.2% y/y to $3,538.3 million and net income grew 56.5% y/y to $872.1 million; on the company's own managerial basis, revenue topped $5.3 billion for the first time and ROE closed at 29%, though net income slipped 2.3% q/q as credit-loss allowances jumped 33% q/q.",
+  "summary_long": "Q1 FY2026 revenue reached $3,538.3M (+57.2% y/y, +12.8% q/q); on Nu's managerial P&L, revenue surpassed $5.3B for the first time (+42% YoY FX-neutral). Net income of $872.1M rose 56.5% y/y but fell 2.3% q/q as credit-loss allowances rose 33% q/q on seasonality, pushing risk-adjusted NIM down 100bp q/q to 9.5% even as headline NIM expanded to 21.1%. Efficiency ratio improved to a record 17.6% (-2.3pp q/q) and ROE was 29% (-4.0pp q/q). Customers grew to 135.2M (+3% q/q) and deposits reached $42.4B (+22% y/y). Management reiterated FY2026 efficiency ratio should land near the ~20% range communicated for the year, with US-expansion capped below 100bp of efficiency-ratio drag through 2027.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/1691493/000129281426003057/nu20260514_6k2.htm",
+  "drivers": [
+    {
+      "metric": "Revenue",
+      "direction": "up",
+      "explanation": "Company-disclosed: growth was broad-based across credit, float and fee income; managerial revenue crossed $5B for the first time on continued engagement and monetization gains, with ARPAC up 23% y/y FXN.",
+      "basis": "company-disclosed"
+    },
+    {
+      "metric": "Net income",
+      "direction": "up",
+      "explanation": "Company-disclosed: y/y growth reflects overall business scaling; the 2.3% q/q dip stems from credit-loss allowances up 33% q/q on seasonality and portfolio growth, pulling risk-adjusted NIM to 9.5% from 10.5%.",
+      "basis": "company-disclosed"
+    },
+    {
+      "metric": "EPS (diluted)",
+      "direction": "up",
+      "explanation": "Derived-arithmetic: diluted EPS growth (+55.9% y/y) tracks net income growth (+56.5% y/y) closely, implying a roughly flat diluted share count.",
+      "basis": "derived-arithmetic"
+    },
+    {
+      "metric": "EPS (basic)",
+      "direction": "up",
+      "explanation": "Derived-arithmetic: basic EPS growth (+55.2% y/y) closely tracks net income growth, implying a roughly flat basic share count.",
+      "basis": "derived-arithmetic"
+    },
+    {
+      "metric": "overall",
+      "direction": "up",
+      "explanation": "Company-disclosed: efficiency ratio hit a record-low 17.6% (from 19.9% in Q4'25) on ARPAC outperformance and portfolio growth; customers reached 135.2M with Mexico reaching break-even this quarter.",
+      "basis": "company-disclosed"
+    }
+  ],
+  "confidence_notes": "REGENERATION (force-regenerate mode): this summary was regenerated per explicit operator instruction, overwriting a prior kpi-only summary file at data/summaries/NU_US_FY2026_Q1.json, bypassing Step 0's 'already exists' guard. Upgraded from kpi-only to filing depth: the shard's sourceLink (accession 0001292814-26-003059, nu20260514_6k1.htm) is Nu's Independent Limited Assurance Report + Managerial P&L Reconciliation Report — tables only, no MD&A narrative. A WebSearch surfaced the actual earnings release, filed the same day as a SIBLING accession (0001292814-26-003057, nu20260514_6k2.htm, 'Nu Holdings Ltd. Reports First Quarter 2026 Financial Results'), which was fetched and used for drivers, guidance, and confidence notes; the shard's sourceLink was left unchanged since updating it is out of this run's scope. irSourcesUpdate: consider adding accession 003057 as the observed earnings-release document for this entity going forward. Ledger inconsistency (noted, not massaged): the shard's KPI revenue_usd_m ($3,538.31M, Yahoo fundamentals-timeseries provenance) does not reconcile with either revenue figure the company itself discloses — Accounting P&L (IFRS) total revenue $4,968.0M or Managerial P&L revenue $5,315.5M — because Yahoo's 'revenue' line uses a narrower net-interest-income convention while Nu's IFRS/managerial revenue is presented gross of interest expense. Net income reconciles closely ($872.056M shard vs $871.4M company-reported, rounding-level only). Nu, as a foreign private issuer filing 6-K rather than 10-Q/10-K, does not submit SEC XBRL companyfacts, so the SEC-verbatim rule does not apply and Yahoo remains the shard's KPI source of truth per procedure; the kpis[] array above is therefore Yahoo-basis while drivers/summary_long freely cite the company's own managerial-basis figures, labeled as such. All release-quoted growth percentages are FX-neutral (FXN) except where noted; y/y deltas in kpis[] are as-reported USD from the shard, not FXN. reported_at is set to the shard's stored eventDate (2026-03-31, a quarter-end placeholder); the actual 6-K filing date is 2026-05-14. Extended metrics (NIM, efficiency ratio, ROE-as-ROTCE-proxy, deposits, provision for credit losses) extracted from the same 003057 release and applied via scripts/apply-extended-metrics.mjs; two candidate mappings (net charge-off ratio ← NPL 90+ ratio; next-quarter revenue guidance) were dropped rather than forced, since NPL is a delinquency-stock ratio distinct from a true charge-off ratio and no next-quarter revenue guidance was disclosed. Guidance array on the event shard now carries two entries: FY2026 efficiency ratio ~20% (move: held, reaffirming the Q4'25 call) and a US-expansion investment cap of <100bp of efficiency-ratio drag in FY2026/FY2027 (move: null, no prior figure stated to compare against)."
 }
