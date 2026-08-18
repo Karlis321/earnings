@@ -1,0 +1,41 @@
+{
+  "ticker": "WU US",
+  "period": "FY2026 Q2",
+  "reported_at": "2026-07-30",
+  "generated_at": "2026-08-18T19:43:49.000Z",
+  "depth": "filing",
+  "headline": "Transaction growth picks up, but margins keep sliding",
+  "kpis": [
+    { "label": "Revenue", "value": "$1,013.2M", "delta": "+3.1%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Revenue", "value": "$1,013.2M", "delta": "-1.3%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Gross profit", "value": "$336.5M", "delta": "+2.7%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Gross profit", "value": "$336.5M", "delta": "-12.2%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Operating income", "value": "$132.1M", "delta": "+7.4%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Operating income", "value": "$132.1M", "delta": "-31.4%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "EBIT", "value": "$134.9M", "delta": "+6.8%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "EBIT", "value": "$134.9M", "delta": "-31.3%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "EBITDA", "value": "$184.2M", "delta": "+6.5%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "EBITDA", "value": "$184.2M", "delta": "-22.1%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Net income", "value": "$76.7M", "delta": "+18.5%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Net income", "value": "$76.7M", "delta": "-37.2%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "EPS diluted", "value": "$0.24", "delta": "+20.0%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "EPS diluted", "value": "$0.24", "delta": "-35.1%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "EPS basic", "value": "$0.25", "delta": "+19.0%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "EPS basic", "value": "$0.25", "delta": "-32.4%", "delta_basis": "y/y", "direction": "down" }
+  ],
+  "summary_short": "Western Union's Q2 2026 revenue was $1,013.2 million, up 3.1% q/q but down 1.3% y/y, while net income fell 37.2% y/y to $76.7 million as higher agent commissions, compliance costs, and interest expense outweighed a pickup in transaction growth.",
+  "summary_long": "Revenue fell 1% y/y to $1,013.2M as Consumer Money Transfer revenue dropped 2% on North America (lower US-outbound remittances amid immigration/macro headwinds) and Latin America softness, offset by 13% growth in Middle East/Africa/South Asia and a 25% jump in Branded Digital transactions; Consumer Services revenue rose 4% on travel-money and check-acceptance growth. Operating income fell 31% y/y to $132.1M on higher agent commissions, acquisition-related employee/real estate costs, and compliance costs; net income fell 37% to $76.7M, also hit by higher interest expense on the 2029 Notes. Western Union repurchased $53.7M of stock and paid $147.0M in dividends in H1. FY2026 guidance: 3-5% GAAP revenue growth, 4-6% adjusted revenue growth, $1.25-$1.35 adjusted EPS.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/1365135/000119312526326355/wu-20260630.htm",
+  "confidence_notes": "REGENERATION: this run was invoked in force-regenerate mode with the Step-0 'already exists' guard explicitly skipped; resolver reported summaryExists=false, so this is a first-time compose rather than a literal overwrite despite the force-regen framing. Date correction: the shard's stored eventDate (2026-06-30) is the fiscal quarter-end placeholder, not the actual filing date; this summary's reported_at (2026-07-30) uses the 10-Q's actual SEC filing date instead, per the 'real report dates' preference rule. EBIT-vs-operating-income note: the shard carries both ebit_usd_m ($134.9M) and operating_income_usd_m ($132.1M) as distinct XBRL concepts; the 10-Q's own income statement only reports 'Operating income' ($132.1M / $192.7M PY / $123.0M prior-Q) — both figures are shown in the KPI table since both are on the shard, but the 10-Q's own operating income line is $132.1M. All shard KPI values (revenue, gross profit, operating income, net income, basic/diluted EPS) were independently cross-checked against the 10-Q's consolidated results-of-operations table and match exactly. Guidance sourcing: FY2026 guidance (GAAP revenue growth 3-5%, adjusted revenue growth 4-6%, adjusted EPS $1.25-$1.35) is not stated in the 10-Q itself (Western Union discloses guidance only in its earnings press release/8-K, not the 10-Q body). The press release PDF (s21.q4cdn.com) could not be parsed as text by WebFetch (binary/FlateDecode-compressed PDF); the figures were instead confirmed via a wire-service republish of the press release (StockTitan) and cross-corroborated by an independent WebSearch synthesis (GuruFocus/Investing.com earnings-call recaps) that independently returned the same $1.25-$1.35 adjusted EPS and 3-5%/4-6% revenue-growth ranges. Guidance 'move' (raised/held/cut) is deliberately left null: no source available to this run states whether this FY2026 range is a change from a prior 2026 guide (the company's own explicit raise/lower/reaffirm language was not observed in any source read), so no move direction is asserted per the hard rule that silence is not reaffirmation.",
+  "drivers": [
+    { "metric": "Revenue", "direction": "down", "explanation": "y/y decline driven by lower transactions/revenue sent from and within the US (immigration and macro headwinds) and declines in Mexico/Brazil and Thailand, partly offset by MEASA Branded Digital growth and Italy strength in EU & CIS.", "basis": "company-disclosed" },
+    { "metric": "Gross profit", "direction": "down", "explanation": "Not a line the release names directly; decline is explained by revenue -1% y/y against cost of services +5% y/y (higher agent commissions plus acquisition-related employee/real estate costs).", "basis": "derived-arithmetic" },
+    { "metric": "Operating income", "direction": "down", "explanation": "CMT operating income fell on lower revenue, FX, and higher agent commissions/professional-services costs; Consumer Services operating income fell on higher employee/real estate costs from acquisitions and higher agent commissions.", "basis": "company-disclosed" },
+    { "metric": "EBIT", "direction": "down", "explanation": "Tracks the same revenue and cost pressures as operating income; not separately explained in the release.", "basis": "derived-arithmetic" },
+    { "metric": "EBITDA", "direction": "down", "explanation": "Same underlying revenue/cost drivers as operating income, plus the D&A add-back; not separately explained in the release.", "basis": "derived-arithmetic" },
+    { "metric": "Net income", "direction": "down", "explanation": "Fell on the operating-income decline plus higher interest expense from the new 2029 Notes issuance, partly offset by a lower effective tax rate (19.6% vs 23.6% PY) tied to prior-year discrete expenses.", "basis": "company-disclosed" },
+    { "metric": "EPS diluted", "direction": "down", "explanation": "Flows through from the net income decline, partly offset by a lower diluted share count from continued buybacks.", "basis": "derived-arithmetic" },
+    { "metric": "EPS basic", "direction": "down", "explanation": "Same net income decline, partly offset by fewer basic shares outstanding (312.8M vs 328.9M PY) from buybacks.", "basis": "derived-arithmetic" },
+    { "metric": "overall", "direction": "down", "explanation": "CMT transaction growth accelerated to its best pace since Q2 2024 and Branded Digital transactions grew 25%, but NA/LACA retail declines and higher costs pressured margins; CEO cited a 'difficult operating environment' requiring accelerated H2 cost reductions.", "basis": "company-disclosed" }
+  ]
+}
