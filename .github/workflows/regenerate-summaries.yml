@@ -28,7 +28,7 @@ on:
   workflow_dispatch:
     inputs:
       source:
-        description: "Which pool to iterate."
+        description: "Which pool to iterate. r1000 (default) covers SP500 ∪ R1000 = 1,022 unique US indexed tickers."
         required: true
         type: choice
         options:
@@ -36,7 +36,7 @@ on:
           - sp500
           - r1000
           - covered
-        default: sp500
+        default: r1000
       delay_seconds:
         description: "Delay per ticker in seconds. Default 900 (15 min) matches typical /earnings run duration."
         required: false

@@ -72,10 +72,18 @@ async function tickersFromSource() {
     return [...(covered.tickers ?? [])].sort();
   }
   // sp500 or r1000
+  //   sp500 = strict SP500 membership only (~493 tickers)
+  //   r1000 = SP500 ∪ R1000 union (~1,022 unique tickers). The union
+  //     matters because 9 SP500 members aren't tagged R1000 in the
+  //     current registry — iterating only R1000 would miss them.
   const reg = JSON.parse(await fs.readFile(path.join(ROOT, "data", "entity-registry.json"), "utf-8"));
-  const flag = SOURCE === "sp500" ? "SP500" : "R1000";
   return (reg.entities ?? [])
-    .filter((e) => (e.index_membership ?? []).includes(flag))
+    .filter((e) => {
+      const mem = e.index_membership ?? [];
+      if (SOURCE === "sp500") return mem.includes("SP500");
+      // r1000 = union
+      return mem.includes("R1000") || mem.includes("SP500");
+    })
     .filter((e) => e.securityType === "operating" && !e.dormant)
     .filter((e) => e.secFilerType !== "foreign" && e.secFilerType !== "pre-listing")
     .map((e) => e.ticker)
