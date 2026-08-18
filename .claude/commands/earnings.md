@@ -148,12 +148,23 @@ document on it, fetch that.
 and Rung 2 didn't yield a matching document, hit the EDGAR CIK list
 directly and pick the 10-Q / 10-K / 6-K covering the period.
 
-**Rung 4: WebSearch** — final fallback, ONE query:
-`"<displayName> <period> results press release"`. Prefer results
-on `investors.<company>.com`, `<company>.com`, `sec.gov`, or the
-company's IR host. Blocklist (validator will reject the summary):
-Yahoo, Reuters aggregator, SeekingAlpha, MarketWatch, CNBC,
-Bloomberg, Investing.com, Zacks, Motley Fool, Benzinga.
+**Rung 4: WebSearch** — final fallback for the summary's cited
+`source_url`, ONE query: `"<displayName> <period> results press
+release"`. Prefer results on `investors.<company>.com`,
+`<company>.com`, `sec.gov`, `globenewswire.com`, `prnewswire.com`,
+`businesswire.com`, `newswire.ca`, `accesswire.com`,
+`newsfilecorp.com`, or the company's IR host.
+
+**Note on the `source_url` blocklist**: the validator rejects
+summaries whose `source_url` is on Yahoo, Reuters portal,
+SeekingAlpha, MarketWatch, CNBC, Bloomberg portal, Investing.com,
+Zacks, Motley Fool, or Benzinga — because those are aggregators,
+not primary sources. That blocklist applies ONLY to the summary's
+cited primary source_url. Claude may freely READ those aggregator
+pages to extract KPIs for Step 3b, cross-check numbers, or find
+the underlying primary. The rule is:
+- **Cite as primary** — only non-aggregator primaries
+- **Extract numbers from** — any labeled figure on any page
 
 **Write-back on Rung 4 success:** when WebSearch surfaces a document
 we successfully fetched, include an `irSourcesUpdate` field in the
@@ -379,7 +390,44 @@ Write the JSON to
 
 ## Step 3b — Extract extended metrics into the shard
 
-**Only when depth === "filing"**. Skip for kpi-only downgrades.
+**MANDATORY on every /earnings run, regardless of depth.** The
+previous "filing only" gate is retired: kpi-only summaries also
+run Step 3b, sourcing from whatever numbers Claude found in
+Step 1 / 1B / any WebSearch tab. Even an empty `extendedMetrics`
+array is acceptable — an ABSENT call to
+`apply-extended-metrics.mjs` is a task failure.
+
+Rationale: extended metrics aren't tied to whether the source was
+a 10-Q vs a press release vs a Yahoo Finance page vs a wire-service
+recap. Any labeled number for a registry-defined KPI qualifies.
+Hiding Step 3b behind the depth flag left ~500 R1000 tickers with
+kpi-only summaries and empty extendedMetrics arrays — the very
+data the sector KPI grid consumes.
+
+Source ladder for KPI extraction (broader than the summary-writing
+ladder in Step 1 — this ladder is about finding numbers, not about
+what to cite as `source_url` on the summary):
+
+- **Anything Claude already fetched** in Step 1 / 1B — that's the
+  primary target.
+- **Yahoo Finance quote page** (`finance.yahoo.com/quote/<sym>`) —
+  headline numbers + analyst estimates. Aggregator-blocked as a
+  cited `source_url`, but fine for KPI extraction with a URL
+  pointing at Yahoo. Add `provenance: "llm_extracted"` and note
+  Yahoo in `source.section`.
+- **EDGAR full-text search** (`efts.sec.gov/LATEST/search-index`) —
+  when the ticker has an `edgarCik`, hit the CIK's filings list and
+  read whichever 10-Q/10-K/6-K covers the period.
+- **News portals** for wire-service earnings recaps —
+  globenewswire, prnewswire, businesswire, accesswire, newswire.ca,
+  newsfilecorp — these carry the same press release the issuer
+  filed. Aggregators (Reuters portal, MarketWatch, CNBC, Bloomberg
+  portal, Investing.com, Zacks, SeekingAlpha, Motley Fool,
+  Benzinga, TipRanks, GuruFocus, StockTitan) are FINE for KPI
+  extraction — the numbers they quote come from the same primary.
+  Note the aggregator in `source.section`.
+- **IR page / investor day slides / annual reports** — usually
+  hosted on the company domain; safe extraction source.
 
 While the primary document is loaded, extract sector-driven
 extended metrics (non-GAAP + operational KPIs that Yahoo/SEC
@@ -399,15 +447,20 @@ structured feeds don't carry) and write them onto the event's
      software → ARR / NDR / cRPO; etc.). Full definitions in
      `frontend/lib/extendedMetricsRegistry.ts`.
 
-2. For each metric in the set, scan the primary document (already
-   in `./fetched/`) for a labeled value. Rules:
+2. For each metric in the set, scan every source Claude has
+   loaded (primary filing, Yahoo page, wire recap, IR release)
+   for a labeled value. Rules:
    - Numeric-table hit → confidence 0.9-1.0
    - Prose extraction with explicit "$X million" / "N%" callout →
      confidence 0.7-0.9
    - Below 0.7 or requires interpretation/computation → SKIP
    - Guidance metrics (`_next_q`): capture low + high when range;
      midpoint only if single point given
-   - No hit → omit the entry (do not write `value: null`)
+   - No hit across ALL loaded sources → omit the entry (do not
+     write `value: null`, do not fabricate)
+   - When the same metric appears in multiple sources with
+     different values → prefer the primary-source value; note
+     the disagreement in `source.section`
 
 3. Every stored entry MUST carry:
    ```
