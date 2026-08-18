@@ -81,13 +81,40 @@ async function tickersFromSource() {
     .map((e) => e.ticker)
     .sort();
 }
+// Read the ticker's shard from origin/main (not the runner's local
+// checkout, which is a snapshot taken at boot time and NEVER refreshes
+// during the batch's 5-6h lifetime). Historical bug: as concurrent
+// claude-summarize commits populated extendedMetrics on tickers the
+// batch had already scanned, the running batch kept seeing the STALE
+// local snapshot and re-dispatched already-populated tickers with
+// force:true. Net result across 12h: 46 commits landed but only +1
+// ticker was newly populated. Fetching origin/main per-check makes
+// the SKIP filter respect the live state on main. `git fetch --depth=1`
+// is cheap (~50ms), `git show origin/main:` reads without touching
+// the working tree, and refresh_freq below throttles so we don't fetch
+// on every ticker — one refresh per ~5 checks is enough for a batch
+// running with 15-min dispatch delays.
+let _lastFetchTs = 0;
+async function refreshOriginIfStale() {
+  const now = Date.now();
+  if (now - _lastFetchTs < 60_000) return; // dedup within 1 min
+  _lastFetchTs = now;
+  try {
+    const { execSync } = await import("node:child_process");
+    execSync("git fetch --quiet origin main --depth=1", { cwd: ROOT });
+  } catch { /* offline / no upstream — keep going with stale data */ }
+}
 async function alreadyHasExtended(ticker) {
   if (!SKIP_IF_EXTENDED) return false;
+  await refreshOriginIfStale();
   try {
-    const shard = JSON.parse(await fs.readFile(
-      path.join(ROOT, "data", "events", tickerSlug(ticker) + ".json"),
-      "utf-8",
-    ));
+    const { execSync } = await import("node:child_process");
+    const shardRel = `data/events/${tickerSlug(ticker)}.json`;
+    const raw = execSync(`git show origin/main:${shardRel}`, {
+      cwd: ROOT,
+      stdio: ["ignore", "pipe", "ignore"],
+    }).toString();
+    const shard = JSON.parse(raw);
     const events = Array.isArray(shard) ? shard : shard.events ?? [];
     const past = events.filter((e) => e.eventDate).sort((a, b) =>
       (b.eventDate ?? "").localeCompare(a.eventDate ?? ""),
@@ -95,6 +122,8 @@ async function alreadyHasExtended(ticker) {
     const latest = past[0];
     return Array.isArray(latest?.extendedMetrics) && latest.extendedMetrics.length > 0;
   } catch {
+    // Shard not on origin/main yet — treat as unpopulated so the ticker
+    // gets processed (safer than skipping something we can't verify).
     return false;
   }
 }
@@ -125,7 +154,13 @@ async function main() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${CRON_SECRET}`,
         },
-        body: JSON.stringify({ ticker, force: true }),
+        // No `force: true` — that historically bypassed the 409
+        // "summary already exists" guard in /api/summarize and was
+        // the second half of the re-processing loop. SKIP_IF_EXTENDED
+        // above already screens tickers whose latest event has
+        // populated extendedMetrics, so any ticker that reaches this
+        // dispatch call legitimately needs a run.
+        body: JSON.stringify({ ticker }),
       });
       const body = await r.json().catch(() => null);
       if (r.status === 202) {
