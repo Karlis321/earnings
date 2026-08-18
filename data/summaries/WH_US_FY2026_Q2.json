@@ -1,0 +1,38 @@
+{
+  "ticker": "WH US",
+  "period": "FY2026 Q2",
+  "reported_at": "2026-07-23",
+  "generated_at": "2026-08-18T00:00:00.000Z",
+  "depth": "filing",
+  "headline": "Wyndham's profit rises despite a revenue pullback",
+  "kpis": [
+    { "label": "Revenue", "value": "$375M", "delta": "+14.7%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Revenue", "value": "$375M", "delta": "-5.5%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Operating income", "value": "$174M", "delta": "+52.6%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Operating income", "value": "$174M", "delta": "+16.0%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Net income", "value": "$102M", "delta": "+67.2%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Net income", "value": "$102M", "delta": "+17.2%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EPS diluted", "value": "$1.36", "delta": "+70.0%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "EPS diluted", "value": "$1.36", "delta": "+20.4%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EBITDA", "value": "$189M", "delta": "+45.4%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "EBITDA", "value": "$189M", "delta": "+13.9%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Total cash", "value": "$69M", "delta": "-12.7%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Total cash", "value": "$69M", "delta": "+38.0%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Shareholders' equity", "value": "$480M", "delta": "+7.4%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Shareholders' equity", "value": "$480M", "delta": "-15.8%", "delta_basis": "y/y", "direction": "down" }
+  ],
+  "summary_short": "Wyndham's Q2 2026 net revenue fell 5.5% y/y to $375M as one-time conference pass-through revenue from a year ago rolled off and Revo-related fees were deferred, but operating income rose 16% to $174M and net income grew 17.2% to $102M ($1.36 diluted EPS) as expenses fell even faster than revenue.",
+  "summary_long": "Net revenue fell 6% y/y on $20M lower conference-related pass-through revenue and $8M lower fees from Revo deferrals, partly offset by credit-card ancillary revenue and Revo-hotel management fees. Expenses fell 19% on the same comp and lower restructuring costs, lifting operating income 16% and net income 17% to $102M. Global RevPAR was roughly flat (-1% constant-currency): US +2% (Midwest, Texas, Florida, California strength) offset EMEA -6% (Mideast conflict, Revo softness), Latin America -7% (Mexico cross-border weakness), and China -5% (deflationary pricing). Development pipeline hit a record ~261,000 rooms, +4% y/y ex-Revo. FY2026 guidance: capex ~$40-45M, development advance notes ~$110M, 2026 restructuring plan costs $8-10M. Repurchased $105M of stock and paid $0.43/share dividends in H1 2026.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/1722684/000172268426000074/wh-20260630.htm",
+  "confidence_notes": "REGENERATION: this run was invoked in force-regenerate mode with the Step-0 'already exists' guard explicitly skipped. Note: no prior WH_US_FY2026_Q2.json summary actually existed on disk before this run (resolver reported summaryExists=false) — this is a first-time compose, not a literal overwrite, despite the force-regen framing of the request. Date correction: the shard's stored eventDate (2026-06-30) is the fiscal quarter-end placeholder, not the actual filing date; this summary's reported_at (2026-07-23) uses the 10-Q's actual SEC filing date instead, per the 'real report dates' preference rule. EBITDA note: the shard's ebitda_usd_m ($189M) is operating income ($174M) + D&A ($15M) — a straight GAAP EBITDA — and differs materially from the company's own non-GAAP 'adjusted EBITDA' of $212M for the quarter, which adds back stock-based compensation, development-advance-note amortization, restructuring, and Revo-related charges. The two are not interchangeable; the KPI table above uses the shard's GAAP-EBITDA basis for consistency with prior periods. Segment table in the 10-Q labels the Hotel Franchising/Corporate/Total-Company breakout row 'Net income' ($194M/$(92)M/$102M) when it is actually pre-addback income used as the EBITDA-reconciliation starting point, not consolidated net income twice-counted — the $102M total ties to the income statement's actual net income.",
+  "drivers": [
+    { "metric": "Revenue", "direction": "down", "explanation": "$20M lower marketing/reservation/loyalty pass-through revenue from the absence of 2025's global franchisee conference, plus $8M lower royalty/franchise fees on lower fees and Revo fee deferrals, partly offset by co-branded credit-card and Revo-hotel management fee gains.", "basis": "company-disclosed" },
+    { "metric": "Operating income", "direction": "up", "explanation": "Total expenses fell $46M (19%), outpacing the $22M revenue decline, mainly on the same conference-comp absence in marketing/reservation/loyalty expense plus $8M lower restructuring costs.", "basis": "company-disclosed" },
+    { "metric": "Net income", "direction": "up", "explanation": "Flows through from the wider operating-income gain, partly offset by a $2M rise in net interest expense and a higher effective tax rate (26.1% vs 25.0%).", "basis": "derived-arithmetic" },
+    { "metric": "EPS diluted", "direction": "up", "explanation": "Higher net income combined with a lower diluted share count from continued buybacks.", "basis": "derived-arithmetic" },
+    { "metric": "EBITDA", "direction": "up", "explanation": "Tracks the same operating-income drivers plus the D&A add-back.", "basis": "derived-arithmetic" },
+    { "metric": "Total cash", "direction": "down", "explanation": "Not explained in the release as a discrete q/q driver; H1 financing activities included $105M of stock repurchases and $650M of new notes proceeds used to repay revolver/term-loan-A borrowings.", "basis": "company-disclosed" },
+    { "metric": "Shareholders' equity", "direction": "down", "explanation": "Not explained in the release versus the prior-year quarter specifically; H1 2026 equity rose only $12M versus year-end 2025 as net income was largely offset by $105M of stock repurchases and $66M of dividends declared.", "basis": "company-disclosed" },
+    { "metric": "overall", "direction": "flat", "explanation": "Revenue dipped on a tough conference-related comp and Revo fee deferrals, but cost discipline lifted operating income, net income, and EPS; global RevPAR held roughly flat and the development pipeline hit a record high.", "basis": "company-disclosed" }
+  ]
+}
