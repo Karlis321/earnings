@@ -89,23 +89,23 @@ export default async function SecurityDetailPage({ params }: Props) {
   // it refuses when there are no shard metrics either.
   const hasSummaryForLatest =
     latestPast?.period != null && summaries.some((s) => s.period === latestPast.period);
-  // Show the button on every operating ticker that has a reported past
-  // event and no existing summary for that period. Previously we also
-  // required `latestPast.metrics` to carry at least one actual value —
-  // dropped after the audit filled the R1000 tail: it's routine for
-  // Yahoo-only ingested foreign tickers to have zero metric actuals
-  // stored (KRW/JPY EPS values were being tossed by the unit filter
-  // last year), yet /earnings can still pull a real summary from the
-  // press release. Hiding the button on those tickers gave the false
-  // impression the dashboard couldn't summarize them at all. The
-  // /earnings command itself auto-downgrades to kpi-only when the
-  // primary filing is unreachable and further to skipped when nothing
-  // resolves — those refusals happen at the ticker level, not gated
-  // upfront in the UI.
+  // Unconditional Summarize button per user directive: show on every
+  // operating ticker regardless of whether the shard carries any
+  // reported events, actuals, extended metrics, or SEC-filing
+  // sourceLink. Only hides when a summary already exists for the
+  // latest reported period (the SummaryPanel renders in that slot;
+  // the Regenerate button handles the replace path).
+  //
+  // When the shard has no `latestPast` (freshly-listed name, upcoming-
+  // only, or empty events array), the button still renders and passes
+  // no period to the button component. Clicking then dispatches
+  // /earnings which will WebSearch to find whether the ticker has
+  // recently reported. Refusals like "RESULT: skipped — no recent
+  // report" surface as no-op /earnings runs; that's an acceptable
+  // cost for the personal-dashboard use case where discovery beats
+  // silent UI gating.
   const showSummarizeButton =
-    entity.securityType === "operating" &&
-    !!latestPast &&
-    !hasSummaryForLatest;
+    entity.securityType === "operating" && !hasSummaryForLatest;
 
   return (
     <div className="mx-auto max-w-[1800px] px-10 py-8">
