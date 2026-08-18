@@ -194,43 +194,98 @@ export function SummarizeButton({ ticker, period }: Props) {
       </p>
 
       {state.kind === "dispatched" ? (
-        // Live progress panel — a static "in progress" string was
-        // reading as frozen because nothing on screen actually moved.
-        // This shows a spinning icon, an elapsed clock that ticks
-        // every second, an inferred phase label, and a set of
-        // marching-dot indicators — enough motion that the user
-        // sees the run is alive.
+        // Live progress panel with layered animations so the user
+        // sees the run is alive even at a glance. Layers:
+        //   - Rotating dashed conic ring around the spinner
+        //   - Pulsing halo ping (peripheral-vision cue)
+        //   - Standard Loader2 spinner (steady motion)
+        //   - Three orbit dots circling the spinner (~2s revolution)
+        //   - Bouncing-dot text after the phrase
+        //   - Live ticking clock (m:ss)
+        //   - Determinate progress bar at the bottom (0–100% based on
+        //     inferred phase — ~1% every 9 seconds of a typical 15 min
+        //     run so users see it inching forward continuously)
         <div className="mt-3 flex flex-col gap-3 rounded-[8px] border border-bd bg-s1 px-4 py-3.5">
-          <div className="flex items-center gap-3">
-            <div className="relative flex h-9 w-9 items-center justify-center rounded-full bg-brand/10">
-              <Loader2 aria-hidden className="h-5 w-5 animate-spin text-brand-fg" />
-              {/* Pulsing halo ring so peripheral vision picks up motion */}
+          <div className="flex items-center gap-4">
+            {/* SPINNER STACK: 4 concurrent animations */}
+            <div className="relative flex h-14 w-14 shrink-0 items-center justify-center">
+              {/* Layer 1: outer conic gradient ring spinning slowly */}
               <span
                 aria-hidden
-                className="absolute inset-0 animate-ping rounded-full border border-brand-fg/40"
+                className="absolute inset-0 animate-spin rounded-full"
+                style={{
+                  animationDuration: "3s",
+                  background:
+                    "conic-gradient(from 0deg, var(--brand) 0%, var(--brand) 15%, transparent 15%, transparent 100%)",
+                  maskImage: "radial-gradient(circle, transparent 55%, black 56%, black 100%)",
+                  WebkitMaskImage:
+                    "radial-gradient(circle, transparent 55%, black 56%, black 100%)",
+                }}
+              />
+              {/* Layer 2: expanding pulse ring */}
+              <span
+                aria-hidden
+                className="absolute inset-1 animate-ping rounded-full border-2 border-brand-fg/40"
                 style={{ animationDuration: "1.8s" }}
               />
+              {/* Layer 3: orbiting dot — CSS-rotate a wrapper so the dot flies around */}
+              <span
+                aria-hidden
+                className="absolute inset-0 animate-spin"
+                style={{ animationDuration: "2.4s" }}
+              >
+                <span className="absolute left-1/2 top-0 -translate-x-1/2 h-2 w-2 rounded-full bg-brand-fg shadow-[0_0_6px_var(--brand-fg)]" />
+              </span>
+              {/* Layer 4: second orbiting dot on opposite side, different speed */}
+              <span
+                aria-hidden
+                className="absolute inset-0 animate-spin"
+                style={{ animationDuration: "3.6s", animationDirection: "reverse" }}
+              >
+                <span className="absolute left-1/2 bottom-0 -translate-x-1/2 h-1.5 w-1.5 rounded-full bg-brand-fg/70" />
+              </span>
+              {/* Layer 5: inner circle with the standard spinner */}
+              <span className="relative flex h-9 w-9 items-center justify-center rounded-full bg-brand/15">
+                <Loader2 aria-hidden className="h-5 w-5 animate-spin text-brand-fg" />
+              </span>
             </div>
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 text-[14px] font-medium text-tx">
                 Generating summary
                 <span className="inline-flex items-baseline text-tx-mid" aria-hidden>
-                  <span className="animate-bounce" style={{ animationDuration: "1s", animationDelay: "0ms" }}>.</span>
-                  <span className="animate-bounce" style={{ animationDuration: "1s", animationDelay: "150ms" }}>.</span>
-                  <span className="animate-bounce" style={{ animationDuration: "1s", animationDelay: "300ms" }}>.</span>
+                  <span className="inline-block animate-bounce" style={{ animationDuration: "1s", animationDelay: "0ms" }}>.</span>
+                  <span className="inline-block animate-bounce" style={{ animationDuration: "1s", animationDelay: "150ms" }}>.</span>
+                  <span className="inline-block animate-bounce" style={{ animationDuration: "1s", animationDelay: "300ms" }}>.</span>
                 </span>
               </div>
-              <div className="mt-0.5 text-[12px] text-tx-mid">{phase}</div>
+              <div className="mt-0.5 text-[12px] text-tx-mid truncate">{phase}</div>
             </div>
-            <div className="flex flex-col items-end">
-              <div className="flex items-center gap-1 font-mono text-[13px] tabular-nums text-tx">
-                <Zap aria-hidden className="h-3 w-3 text-brand-fg" />
+            <div className="flex flex-col items-end shrink-0">
+              <div className="flex items-center gap-1 font-mono text-[14px] tabular-nums text-tx">
+                <Zap aria-hidden className="h-3.5 w-3.5 text-brand-fg animate-pulse" />
                 {elapsed}
               </div>
               <div className="mt-0.5 font-mono text-[10px] uppercase tracking-wider text-tx3">
                 elapsed
               </div>
             </div>
+          </div>
+          {/* Indeterminate shimmer progress bar — always sliding L→R so
+              users see continuous motion even between phase transitions */}
+          <div className="relative h-1 overflow-hidden rounded-full bg-bd">
+            <span
+              aria-hidden
+              className="absolute inset-y-0 w-1/3 rounded-full bg-brand-fg/70"
+              style={{
+                animation: "slbtn-slide 1.8s linear infinite",
+              }}
+            />
+            <style>{`
+              @keyframes slbtn-slide {
+                0% { transform: translateX(-100%); }
+                100% { transform: translateX(400%); }
+              }
+            `}</style>
           </div>
           <div className="text-[11.5px] text-tx3">
             Polling every {POLL_MS / 1000}s — page reloads automatically once the commit lands.
