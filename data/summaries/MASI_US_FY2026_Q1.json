@@ -1,10 +1,10 @@
 {
   "ticker": "MASI US",
   "period": "FY2026 Q1",
-  "reported_at": "2026-03-31",
-  "generated_at": "2026-08-18T02:01:36.000Z",
-  "depth": "kpi-only",
-  "headline": "Revenue grows y/y; earnings rebound but slip q/q",
+  "reported_at": "2026-05-05",
+  "generated_at": "2026-08-18T10:07:08.000Z",
+  "depth": "filing",
+  "headline": "Revenue grows; margins compress; last year's charge fades",
   "kpis": [
     { "label": "Revenue", "value": "$403.6M", "delta": "+8.5%", "delta_basis": "y/y", "direction": "up" },
     { "label": "Gross profit", "value": "$250.8M", "delta": "+7.2%", "delta_basis": "y/y", "direction": "up" },
@@ -15,8 +15,15 @@
     { "label": "EPS (diluted)", "value": "$1.09", "delta": "+134.4%", "delta_basis": "y/y", "direction": "up" },
     { "label": "EPS (basic)", "value": "$1.10", "delta": "+134.7%", "delta_basis": "y/y", "direction": "up" }
   ],
-  "summary_short": "Revenue was $403.6M, up 8.5% y/y but down 2.2% q/q. Net income of $57.1M reversed a $170.7M year-ago loss, though it fell 16.4% versus the prior quarter.",
-  "summary_long": "Revenue was $403.6M, up 8.5% y/y but down 2.2% q/q. Gross margin was 62.1%, up from about 60.0% in Q4 FY2025 and down slightly from 62.9% a year earlier. Operating income fell 4.1% y/y and 7.7% q/q to $77.4M; EBITDA was flat y/y at $85.5M but down 10.1% q/q. Net income of $57.1M swung positive from a $170.7M year-ago loss, though down 16.4% q/q; diluted EPS was $1.09 versus a $3.17 loss per share a year earlier.",
-  "source_url": "https://www.google.com/search?q=Masimo%20Q1%202026%20earnings%20results",
-  "confidence_notes": "primary filing unreachable — KPI-only summary from verified shard data. This is a forced regeneration performed at explicit operator request: the existing summary file was overwritten and Step 0's summaryReady/already-exists guard was intentionally bypassed. No edgarCik and no sourceLink (filing-kind or otherwise) are present on the MASI US FY2026 Q1 shard event, so per Step 0.5 this run skipped Step 1/2 and composed kpi-only directly from resolve-earnings-target.mjs's kpis object rather than spending the search/fetch budget. Prior-year net income and EPS were negative, so the stated y/y deltas for those two metrics represent a swing from loss to profit, not a conventional percentage-growth scaling. Step 3b (extended metrics) was run per policy with an empty payload, since kpi-only depth means no filing was read to extract sector KPIs from."
+  "summary_short": "Revenue was $403.6M, up 8.5% y/y (down 2.2% q/q), while net income of $57.1M reversed a $170.7M year-ago loss that had included a $217.9M after-tax discontinued-operations writedown on the now-divested Sound United business.",
+  "summary_long": "Revenue rose 8.5% y/y to $403.6M on higher consumables/service sales and a ~$5.6M FX tailwind; direct/distribution sales grew 10.2% while OEM revenue fell 5.2%. Gross margin compressed to 62.1% from 62.9% on $6.7M of incremental tariffs, partly offset by cost efficiencies. SG&A rose 20.1% on $17.9M of costs tied to the pending Danaher acquisition ($180.00/share cash, stockholder-approved May 1, 2026); R&D fell 11.5% on lower compensation. Net income of $57.1M reversed a $170.7M year-ago loss, which included a $217.9M after-tax writedown when the now-divested Sound United business was classified held-for-sale. No forward guidance was issued in the filing. Capex was $5.3M; no share repurchases.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/937556/000093755626000063/masi-20260404.htm",
+  "confidence_notes": "This is a forced regeneration performed at explicit operator request: the existing kpi-only summary was overwritten and Step 0's summaryReady/already-exists guard was intentionally bypassed. The entity registry's edgarCik was null (a data gap, not a true absence of SEC filings) and the shard carried no filing sourceLink; this run resolved Masimo's real CIK (0000937556) via EDGAR company search and fetched the primary 10-Q directly (accession 0000937556-26-000063), upgrading this summary from kpi-only to full filing depth. reported_at is set to the 10-Q's filing/acceptance date (2026-05-05) rather than the shard's quarter-end placeholder (2026-03-31, the fiscal Q1 period-end of 2026-04-04) — prefer this date if reconciling against the shard event. Prior-year net income and EPS were negative (a $170.7M net loss, driven by a $217.9M after-tax discontinued-operations writedown on the since-divested Sound United business), so the stated y/y deltas for net income and EPS represent a swing from loss to profit via percentage math on the loss magnitude, not conventional growth scaling. Masimo has agreed to be acquired by Danaher Corporation for $180.00/share cash (announced 2026-02-16, stockholders approved 2026-05-01); the filing discloses no forward revenue/EPS guidance, consistent with a pending-merger quiet period. Step 3b extended metrics (capex, zero buybacks, zero asset-sale proceeds, healthcare segment revenue, R&D % of revenue) were extracted from this same 10-Q and applied via apply-extended-metrics.mjs.",
+  "drivers": [
+    { "metric": "Revenue", "direction": "up", "explanation": "Grew on higher consumables and service sales plus a ~$5.6M FX tailwind. Direct/distribution sales +10.2% to $365.0M; OEM revenue -5.2% to $38.6M.", "basis": "company-disclosed" },
+    { "metric": "Gross profit", "direction": "up", "explanation": "COGS rose $14.8M on higher sales volumes and $6.7M of incremental tariffs, partly offset by operational efficiencies; gross margin fell to 62.1% from 62.9%.", "basis": "company-disclosed" },
+    { "metric": "Operating income", "direction": "down", "explanation": "SG&A rose 20.1% on $17.9M of Danaher-merger transaction costs plus higher compensation; R&D fell 11.5% on lower compensation, partly offset by engineering project costs.", "basis": "company-disclosed" },
+    { "metric": "Net income", "direction": "up", "explanation": "Prior-year quarter absorbed a $217.9M after-tax discontinued-operations writedown (Sound United held-for-sale); that business is now fully divested, so no comparable charge recurred.", "basis": "company-disclosed" },
+    { "metric": "overall", "direction": "up", "explanation": "Masimo agreed Feb 16, 2026 to be acquired by Danaher for $180.00/share cash; stockholders approved the merger May 1, 2026, with closing subject to regulatory approval.", "basis": "company-disclosed" }
+  ]
 }
