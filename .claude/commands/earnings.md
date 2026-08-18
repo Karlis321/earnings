@@ -113,12 +113,13 @@ the numbers. RESULT: skipped is reserved for two cases only:
    the deployed panel already renders it.
 
 Every other case must produce a summary — either full filing depth
-or kpi-only (Step 1B). Kpi-only can source numbers from Yahoo
-Finance summaries, press-release snippets, wire-service tables, or
-the resolver's `kpis` object — anything sourced counts. A ticker
-with valid `edgarCik` + `sourceLink.kind === "filing"` (e.g. BHP US,
-any Australian/UK foreign filer with a 6-K link) MUST fetch that
-filing and compose from it — never skip.
+or kpi-only (Step 1B). Kpi-only can source numbers from press-release
+snippets, wire-service tables, financial data portals, or the
+resolver's `kpis` object — anything sourced counts. Any ticker with
+a resolvable `sourceLink.url` MUST fetch that document and compose
+from it. Any ticker without a shard sourceLink but with a WebSearch-
+discoverable release MUST attempt Rung 4 before falling back to
+kpi-only.
 
 ## Step 1 — Fetch the primary (source ladder)
 
@@ -481,8 +482,9 @@ Illegitimate skips (produce a summary instead — kpi-only if needed):
 
 - Shard `kpis` object has few entries — kpi-only fallback still
   works; compose from what's there plus press-release/wire numbers.
-- Foreign ADR with SEC 6-K link — fetch the 6-K, read MD&A +
-  financials, compose. 6-K IS a filing depth path; do not skip it.
+- Shard `sourceLink.url` points at a filing form other than
+  10-K/10-Q — any filing form is a filing-depth source. Fetch it,
+  read what it says, compose.
 - Ticker outside the covered tier — the covered-tier gate lives
   on the API, not the /earnings procedure. If /earnings received
   the dispatch, produce a summary.
