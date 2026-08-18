@@ -105,13 +105,23 @@ export function SummarizeButton({ ticker, period }: Props) {
     }
     setState({ kind: "loading" });
     try {
+      // `force: true` bypasses the covered-tier 403 gate on
+      // /api/summarize (route.ts lines 118-129). Rationale: this
+      // button ONLY renders when there's no summary for the latest
+      // period (parent SummaryPanel absence signal), so we're never
+      // clobbering an existing summary — force here just widens the
+      // route from "covered-17 only" to "any registered ticker",
+      // which matches the current usage pattern (audit fills, R1000
+      // batch, etc.). The 409-guard is still respected because if
+      // a summary DID exist, the panel would render and the button
+      // wouldn't be visible at all.
       const r = await fetch("/api/summarize", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${secret}`,
         },
-        body: JSON.stringify({ ticker }),
+        body: JSON.stringify({ ticker, force: true }),
       });
       if (r.status === 202) {
         setState({ kind: "dispatched", startedAt: Date.now() });

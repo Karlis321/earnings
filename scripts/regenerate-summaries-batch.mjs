@@ -154,13 +154,24 @@ async function main() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${CRON_SECRET}`,
         },
-        // No `force: true` — that historically bypassed the 409
-        // "summary already exists" guard in /api/summarize and was
-        // the second half of the re-processing loop. SKIP_IF_EXTENDED
-        // above already screens tickers whose latest event has
-        // populated extendedMetrics, so any ticker that reaches this
-        // dispatch call legitimately needs a run.
-        body: JSON.stringify({ ticker }),
+        // `force: true` is required for two independent reasons:
+        //   1. Bypass the covered-tier 403 gate in /api/summarize
+        //      (route.ts lines 118-129). The batch iterates the
+        //      entire R1000/SP500 pool, not the 17-ticker covered
+        //      set — without force, every non-covered dispatch hits
+        //      403 "not-covered" and the batch effectively no-ops
+        //      on ~980 of 988 tickers.
+        //   2. Bypass the 409 "summary already exists" guard for the
+        //      case where a summary file exists but its shard event
+        //      has empty extendedMetrics (Step 3b never ran) — the
+        //      historical reason this batch exists at all.
+        // The re-processing loop that force previously participated in
+        // was NOT caused by force itself. The bug was SKIP_IF_EXTENDED
+        // reading a stale runner-local snapshot (fixed above by
+        // switching that check to `git show origin/main:`). With the
+        // SKIP check reading live state, already-populated tickers
+        // correctly skip regardless of force being on.
+        body: JSON.stringify({ ticker, force: true }),
       });
       const body = await r.json().catch(() => null);
       if (r.status === 202) {
