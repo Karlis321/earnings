@@ -1,0 +1,38 @@
+{
+  "ticker": "WAL US",
+  "period": "FY2026 Q2",
+  "reported_at": "2026-07-31",
+  "generated_at": "2026-08-18T00:00:00.000Z",
+  "depth": "filing",
+  "headline": "Profit rebounds as fee income offsets higher credit costs",
+  "kpis": [
+    { "label": "Fee revenue (ASC 606)", "value": "$45.7M", "delta": "-32.0%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Fee revenue (ASC 606)", "value": "$45.7M", "delta": "+94.5%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Net income", "value": "$261.7M", "delta": "+43.7%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Net income", "value": "$261.7M", "delta": "+13.6%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EPS (diluted)", "value": "$2.36", "delta": "+43.0%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "EPS (diluted)", "value": "$2.36", "delta": "+14.0%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Pretax income", "value": "$332M", "delta": "+43.5%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Pretax income", "value": "$332M", "delta": "+14.0%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Total cash", "value": "$5,935.9M", "delta": "-30.6%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Total cash", "value": "$5,935.9M", "delta": "+114.6%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Long-term debt", "value": "$1,479M", "delta": "+36.2%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Long-term debt", "value": "$1,479M", "delta": "-49.1%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Shareholders' equity", "value": "$7,842M", "delta": "+3.0%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Shareholders' equity", "value": "$7,842M", "delta": "+10.2%", "delta_basis": "y/y", "direction": "up" }
+  ],
+  "summary_short": "Western Alliance's Q2 FY2026 diluted EPS was $2.36 (+43% q/q, +14% y/y) on net income of $261.7M, as net interest income rose 14% y/y to $796.9M and the efficiency ratio improved to 58.0% from 60.1%. Provision for credit losses rose to $80.4M from $39.9M a year ago on higher charge-offs.",
+  "summary_long": "Net interest income rose 14% y/y to $796.9M on $11.1B average earning-asset growth; NIM held flat at 3.53% as lower funding costs offset declining yields. Non-interest income grew $50.5M y/y to $198.8M on higher service fees and mortgage-banking gains. Non-interest expense rose $68.6M to $583.3M on higher deposit costs and salaries, but PPNR still climbed 24.5% y/y to $412.4M, pulling the efficiency ratio down to 58.0% from 60.1%. Provision for credit losses jumped to $80.4M from $39.9M a year ago on loan growth and charge-offs; H1's $293.6M figure includes two now-resolved one-off charge-offs (Leucadia $126.4M, Cantor Group $26.1M). CET1 held at 11.0%; dividend rose to $0.42/share. No new guidance was issued.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/1212545/000162828026051418/wal-20260630.htm",
+  "confidence_notes": "REGENERATION: this run was executed in explicit force-regenerate mode per instruction; the resolver reported summaryExists=false and no WAL_US_FY2026_Q2.json existed on disk prior to this run, so there was nothing to overwrite, but this is documented as a forced regeneration per instruction. Sourcing note: the shard's revenue_usd_m KPI ($45.7M) maps to the SEC XBRL tag RevenueFromContractWithCustomerExcludingAssessedTax, which for a bank captures only ASC-606 fee-based revenue (a subset of non-interest income), NOT total bank revenue — it is not comparable to the filing's reported net revenue of $995.7M (Q2 2026) vs $845.9M (Q2 2025). Relabeled 'Fee revenue (ASC 606)' below to avoid a misleading 'Revenue' label; true net revenue and net interest income figures appear in summary_long, sourced directly from the filing's MD&A highlights table. Net income prior_qq/prior_yy values in the shard are Yahoo fundamentals-timeseries (wire provenance) rather than SEC, a basis mismatch on the comparison side only; cross-checked against the filing's own comparative table (net income attributable to Western Alliance of $261.7M vs $230.4M for Q2 2025, SEC-verbatim) and the computed deltas are consistent. Pretax income, Total cash, Long-term debt, and Shareholders' equity priors are same-basis SEC EDGAR on both sides. ROTCE (15.3%) and CET1 ratio (11.0%) extracted into extendedMetrics per Step 3b; the filing's ROTCE comparative row (15.3/14.9/12.9/14.2) mixes three-month and six-month columns without fully unambiguous labeling — captured as Q2 2026 with the raw quote preserved for audit (confidence lowered to 0.75 accordingly). Provision for credit losses for H1 2026 ($293.6M) includes two now-resolved one-time items disclosed in the filing's legal-disputes section: a $126.4M charge-off on the Leucadia Asset Management/Jefferies trade-finance loan (recognized in Q1 2026) and a $26.1M charge-off from the previously established Cantor Group V reserve (also Q1 2026); the Q2-only provision of $80.4M reflects ordinary loan growth and charge-offs, not those two items.",
+  "drivers": [
+    { "metric": "Fee revenue (ASC 606)", "direction": "up", "explanation": "This SEC tag captures only a fee-based revenue subset, not total bank revenue; the release attributes true non-interest income growth to higher service charges, mortgage-banking gains, and fair-value gains on derivatives/equities.", "basis": "company-disclosed" },
+    { "metric": "Net income", "direction": "up", "explanation": "Growth reflects 14% y/y net interest income growth from higher average earning assets and lower funding costs, plus higher fee income, partially offset by a higher provision for credit losses and expenses.", "basis": "company-disclosed" },
+    { "metric": "EPS (diluted)", "direction": "up", "explanation": "EPS growth tracks net income growth closely since diluted share count was little changed (108.0M vs 109.6M a year ago).", "basis": "derived-arithmetic" },
+    { "metric": "Pretax income", "direction": "up", "explanation": "Not explained separately; mirrors the net income move. Effective tax rate rose to 19.0% from 18.4% on higher pretax income and lower investment tax credits.", "basis": "company-disclosed" },
+    { "metric": "Total cash", "direction": "down", "explanation": "Not explained directly in the release for the q/q decline; the filing instead frames cash on a year-end basis, noting higher deposit levels funded a $2.3 billion cash increase alongside loan growth since December 31, 2025.", "basis": "derived-arithmetic" },
+    { "metric": "Long-term debt", "direction": "up", "explanation": "Not explained at the period-end balance level; the release discusses average balances instead, citing a $1.3 billion reduction in average long-term debt that drove lower interest expense.", "basis": "derived-arithmetic" },
+    { "metric": "Shareholders' equity", "direction": "up", "explanation": "Company attributes the increase primarily to net income, partially offset by AFS unrealized fair-value losses in OCI, share repurchases, and dividends.", "basis": "company-disclosed" },
+    { "metric": "overall", "direction": "up", "explanation": "Highlights show PPNR up 24.5% y/y and book value per share up 2.8% q/q, alongside a modest uptick in nonperforming loans (0.92% vs 0.85%) and charge-offs, mostly tied to two now-resolved large credits.", "basis": "company-disclosed" }
+  ]
+}
