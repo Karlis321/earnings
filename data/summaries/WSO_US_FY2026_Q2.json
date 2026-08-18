@@ -1,0 +1,41 @@
+{
+  "ticker": "WSO US",
+  "period": "FY2026 Q2",
+  "reported_at": "2026-07-29",
+  "generated_at": "2026-08-18T00:00:00.000Z",
+  "depth": "filing",
+  "headline": "Watsco keeps growing but margins normalize off a tough comp",
+  "kpis": [
+    { "label": "Revenue", "value": "$2,104.9M", "delta": "+37.3%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Revenue", "value": "$2,104.9M", "delta": "+2.1%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Gross profit", "value": "$578.9M", "delta": "+35.4%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Gross profit", "value": "$578.9M", "delta": "-4.1%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Operating income", "value": "$238.4M", "delta": "+116.3%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Operating income", "value": "$238.4M", "delta": "-12.3%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Net income", "value": "$163.3M", "delta": "+106.6%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Net income", "value": "$163.3M", "delta": "-11.0%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "EPS diluted", "value": "$4.00", "delta": "+113.9%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "EPS diluted", "value": "$4.00", "delta": "-11.5%", "delta_basis": "y/y", "direction": "down" },
+    { "label": "Total cash", "value": "$364.2M", "delta": "-7.3%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Total cash", "value": "$364.2M", "delta": "+24.3%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Short-term investments", "value": "$100.0M", "delta": "-50.0%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Short-term investments", "value": "$100.0M", "delta": "+$100.0M", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Shareholders' equity", "value": "$2,994.4M", "delta": "+8.4%", "delta_basis": "q/q", "direction": "up" },
+    { "label": "Shareholders' equity", "value": "$2,994.4M", "delta": "+8.5%", "delta_basis": "y/y", "direction": "up" }
+  ],
+  "summary_short": "Watsco's Q2 2026 revenue rose 2.1% y/y to $2,104.9M (1% same-store) but diluted EPS fell 11.5% y/y to $4.00 as gross margin compressed to 27.5% from 29.3% a year ago on the fading benefit of 2025's outsized OEM pricing and tariff actions.",
+  "summary_long": "Revenue grew 2% y/y (1% same-store) as 5% domestic residential HVAC equipment growth and 19% commercial-refrigeration growth offset a 1% decline in other HVAC products. Gross margin fell to 27.5% from 29.3% as 2025's outsized OEM pricing/tariff benefit (~130bps) normalized in 2026; SG&A rose 3% to 16.6% of sales. Operating income fell 12% to $238M and diluted EPS fell 12% to $4.00. The company closed the ~$230M-annualized-revenue Jackson Supply acquisition in June, adding 25 Sunbelt locations. Balance sheet remained debt-free with $464M in cash and cash investments; H1 operating cash flow improved $164M y/y to a $21M use. No forward guidance was issued in the release.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/105016/000119312526322168/wso-ex99_1.htm",
+  "confidence_notes": "REGENERATION: this run was invoked in force-regenerate mode with the Step-0 'already exists' guard explicitly skipped. Note: no prior WSO_US_FY2026_Q2.json summary actually existed on disk before this run (resolver reported summaryExists=false) — this is a first-time compose, not a literal overwrite, despite the force-regen framing of the request. Source-link correction: the shard's stored sourceLink pointed to an 8-K filed 2026-06-04 (accession 0001193125-26-257467, item 9.01 only, no EX-99 press-release exhibit) — that filing is unrelated to Q2 earnings. The actual Q2 2026 earnings 8-K (items 2.02/7.01/9.01, EX-99.1 press release) was filed 2026-07-29, accession 0001193125-26-322168; this summary is sourced from that filing instead, and reported_at uses its real filing date rather than the shard's quarter-end placeholder (2026-06-30). EPS basis note: the shard also carries eps_usd (basic, SEC XBRL EarningsPerShareBasic, prior-year comparator $4.53) alongside eps_diluted_usd; the release's condensed income statement presents only a diluted EPS line ($4.00, prior-year $4.52), which this summary's EPS row uses — the trivial basic/diluted prior-year difference is a share-count artifact, not a data error.",
+  "drivers": [
+    { "metric": "Revenue", "direction": "up", "explanation": "Domestic residential HVAC equipment sales rose 5% (2% volume, 2% price) and commercial refrigeration grew 19%, partly offset by a 1% decline in other HVAC products; overall same-store growth was 1%.", "basis": "company-disclosed" },
+    { "metric": "Gross profit", "direction": "down", "explanation": "2025's gross margin included an outsized benefit from that year's OEM pricing/tariff actions; 2026 pricing normalized, along with other A2L transition effects, a combined ~130bps drag.", "basis": "company-disclosed" },
+    { "metric": "Operating income", "direction": "down", "explanation": "Gross-margin compression plus SG&A rising to 16.6% of sales (from 16.4%) outweighed revenue growth.", "basis": "derived-arithmetic" },
+    { "metric": "Net income", "direction": "down", "explanation": "Tracks the operating-income decline; a smaller non-controlling-interest allocation ($28.0M vs $33.2M) softened the decline in income attributable to Watsco slightly versus consolidated net income.", "basis": "derived-arithmetic" },
+    { "metric": "EPS diluted", "direction": "down", "explanation": "Tracks the net-income decline; diluted share count rose slightly (38.2M vs 37.9M shares).", "basis": "derived-arithmetic" },
+    { "metric": "Total cash", "direction": "down", "explanation": "Not explained in the release as a discrete q/q figure; H1 financing activities used $237M (mainly $256M of dividends), partly offset by $192M of investing inflows including a $200M net drawdown of short-term investments.", "basis": "company-disclosed" },
+    { "metric": "Short-term investments", "direction": "down", "explanation": "Company drew down $200M of short-term investments during H1 2026 as part of routine liquidity management; no discrete quarterly rationale was stated.", "basis": "company-disclosed" },
+    { "metric": "Shareholders' equity", "direction": "up", "explanation": "Growth reflects retained net income, partly offset by dividends paid at the increased $13.20/share annual rate declared in April 2026.", "basis": "derived-arithmetic" },
+    { "metric": "overall", "direction": "flat", "explanation": "Results reflect industry stabilization after 2025's A2L refrigerant transition: revenue growth continued but margins normalized off last year's outsized OEM pricing benefit; the company closed the Jackson Supply acquisition and remains debt-free.", "basis": "company-disclosed" }
+  ]
+}
