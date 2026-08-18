@@ -1,8 +1,41 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Loader2, Sparkles, AlertCircle } from "lucide-react";
+import { Loader2, Sparkles, AlertCircle, Zap } from "lucide-react";
 import clsx from "clsx";
+
+// Live elapsed-time counter so users see the summary run is alive
+// rather than a static "in progress" string. Ticks every second while
+// mounted and formats mm:ss.
+function useElapsed(startedAt: number | null): string {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    if (startedAt == null) return;
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, [startedAt]);
+  if (startedAt == null) return "0:00";
+  const secs = Math.max(0, Math.floor((now - startedAt) / 1000));
+  const m = Math.floor(secs / 60);
+  const s = secs % 60;
+  return `${m}:${s.toString().padStart(2, "0")}`;
+}
+
+// Rough phase labeling — inferred from elapsed since dispatch. The
+// underlying /earnings run doesn't stream real progress back, so this
+// is an honest best-guess ladder that matches typical timings from
+// the workflow logs. Users need SOMETHING moving on screen; a stale
+// "in progress" reads as frozen.
+function phaseLabel(startedAt: number | null): string {
+  if (startedAt == null) return "Preparing…";
+  const secs = Math.floor((Date.now() - startedAt) / 1000);
+  if (secs < 30) return "Dispatching to GitHub Actions";
+  if (secs < 90) return "Booting Claude Code runner";
+  if (secs < 240) return "Resolving primary source & fetching filing";
+  if (secs < 480) return "Extracting KPIs & composing summary";
+  if (secs < 900) return "Applying extended metrics & validating";
+  return "Finalizing — commit landing shortly";
+}
 
 // Client-side Summarize button. Rendered where the SummaryPanel would
 // normally sit but doesn't (no summary for the latest reported period).
@@ -150,46 +183,86 @@ export function SummarizeButton({ ticker, period }: Props) {
     }
   }, [ticker, startPolling]);
 
+  const dispatchedAt = state.kind === "dispatched" ? state.startedAt : null;
+  const elapsed = useElapsed(dispatchedAt);
+  const phase = phaseLabel(dispatchedAt);
+
   return (
     <section className="mt-6 rounded-[10px] border border-dashed border-bd bg-panel/60 px-5 py-4">
       <p className="font-mono text-[10.5px] uppercase tracking-[0.08em] text-tx3">
         No summary yet for {period ?? "the latest period"}
       </p>
-      <div className="mt-2 flex flex-wrap items-center gap-3">
-        <button
-          type="button"
-          onClick={onClick}
-          disabled={state.kind === "loading" || state.kind === "dispatched"}
-          className={clsx(
-            "inline-flex items-center gap-2 rounded-[8px] border px-3.5 py-2 text-[13px] font-medium transition-colors",
-            state.kind === "dispatched"
-              ? "border-bd bg-s2 text-tx-mid cursor-not-allowed"
-              : state.kind === "loading"
-              ? "border-bd bg-s2 text-tx-mid cursor-wait"
-              : "border-bd bg-s1 text-tx hover:bg-s2 hover:border-[rgba(10,37,64,0.22)]",
-          )}
-        >
-          {state.kind === "loading" ? (
-            <Loader2 aria-hidden className="h-[14px] w-[14px] animate-spin" />
-          ) : state.kind === "dispatched" ? (
-            <Loader2 aria-hidden className="h-[14px] w-[14px] animate-spin" />
-          ) : (
-            <Sparkles aria-hidden className="h-[14px] w-[14px]" />
-          )}
-          <span>
-            {state.kind === "dispatched"
-              ? "Summary in progress — ready in a few minutes"
-              : state.kind === "loading"
-              ? "Dispatching…"
-              : "Summarize this quarter"}
-          </span>
-        </button>
-        {state.kind === "dispatched" ? (
-          <span className="font-mono text-[11px] text-tx3">
-            polling for the finished summary every {POLL_MS / 1000}s
-          </span>
-        ) : null}
-      </div>
+
+      {state.kind === "dispatched" ? (
+        // Live progress panel — a static "in progress" string was
+        // reading as frozen because nothing on screen actually moved.
+        // This shows a spinning icon, an elapsed clock that ticks
+        // every second, an inferred phase label, and a set of
+        // marching-dot indicators — enough motion that the user
+        // sees the run is alive.
+        <div className="mt-3 flex flex-col gap-3 rounded-[8px] border border-bd bg-s1 px-4 py-3.5">
+          <div className="flex items-center gap-3">
+            <div className="relative flex h-9 w-9 items-center justify-center rounded-full bg-brand/10">
+              <Loader2 aria-hidden className="h-5 w-5 animate-spin text-brand-fg" />
+              {/* Pulsing halo ring so peripheral vision picks up motion */}
+              <span
+                aria-hidden
+                className="absolute inset-0 animate-ping rounded-full border border-brand-fg/40"
+                style={{ animationDuration: "1.8s" }}
+              />
+            </div>
+            <div className="flex-1">
+              <div className="flex items-center gap-2 text-[14px] font-medium text-tx">
+                Generating summary
+                <span className="inline-flex items-baseline text-tx-mid" aria-hidden>
+                  <span className="animate-bounce" style={{ animationDuration: "1s", animationDelay: "0ms" }}>.</span>
+                  <span className="animate-bounce" style={{ animationDuration: "1s", animationDelay: "150ms" }}>.</span>
+                  <span className="animate-bounce" style={{ animationDuration: "1s", animationDelay: "300ms" }}>.</span>
+                </span>
+              </div>
+              <div className="mt-0.5 text-[12px] text-tx-mid">{phase}</div>
+            </div>
+            <div className="flex flex-col items-end">
+              <div className="flex items-center gap-1 font-mono text-[13px] tabular-nums text-tx">
+                <Zap aria-hidden className="h-3 w-3 text-brand-fg" />
+                {elapsed}
+              </div>
+              <div className="mt-0.5 font-mono text-[10px] uppercase tracking-wider text-tx3">
+                elapsed
+              </div>
+            </div>
+          </div>
+          <div className="text-[11.5px] text-tx3">
+            Polling every {POLL_MS / 1000}s — page reloads automatically once the commit lands.
+            Typical wall time: 5-15 min.
+          </div>
+        </div>
+      ) : (
+        <div className="mt-2 flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            onClick={onClick}
+            disabled={state.kind === "loading"}
+            className={clsx(
+              "inline-flex items-center gap-2 rounded-[8px] border px-3.5 py-2 text-[13px] font-medium transition-colors",
+              state.kind === "loading"
+                ? "border-bd bg-s2 text-tx-mid cursor-wait"
+                : "border-bd bg-s1 text-tx hover:bg-s2 hover:border-[rgba(10,37,64,0.22)]",
+            )}
+          >
+            {state.kind === "loading" ? (
+              <Loader2 aria-hidden className="h-[14px] w-[14px] animate-spin" />
+            ) : (
+              <Sparkles aria-hidden className="h-[14px] w-[14px]" />
+            )}
+            <span>
+              {state.kind === "loading"
+                ? "Dispatching…"
+                : "Summarize this quarter"}
+            </span>
+          </button>
+        </div>
+      )}
       {state.kind === "error" ? (
         <div className="mt-2 flex items-start gap-2 rounded-[6px] border border-[rgba(180,35,24,0.35)] bg-[rgba(180,35,24,0.06)] px-3 py-2 text-[12.5px] leading-[1.5] text-tx">
           <AlertCircle aria-hidden className="mt-[2px] h-[14px] w-[14px] shrink-0 text-danger" />
