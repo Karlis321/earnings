@@ -101,7 +101,7 @@ jobs:
           STEP3B_REMINDER="STEP 3b IS MANDATORY. For every ticker where you compose a summary, you MUST also call scripts/apply-extended-metrics.mjs with the sector-specific KPIs extracted from the same filing. Skipping 3b is a task failure — even an empty extendedMetrics array is acceptable, but the script call is not. Refer to frontend/lib/extendedMetricsRegistry.ts for the per-sector priority set."
           EXHIBIT_REMINDER="If Step 1's sourceLink.url is an SEC 8-K cover document (short filename with issuer ticker + date under an accession folder, e.g. aapl-20260730.htm), FIRST call scripts/resolve-edgar-exhibit.mjs <url> to get the EX-99.1 press-release exhibit URL, THEN fetch-edgar the exhibit. Fetching the 8-K cover directly wastes the fetch budget on a stub that only points at the exhibit — this defeated AAPL's Step 3b in the previous batch."
           RESULT_LINE="Your final message MUST be exactly one of: 'RESULT: committed <filename>' or 'RESULT: skipped — <reason>'. Any other ending is a failure."
-          NOPUSH_LINE="IMPORTANT: DO NOT run \`git push\`. Commit your changes locally with \`git add\` + \`git commit\`, then STOP. The workflow's post-Claude ancestry-verification step will push your commit for you after checking it descends from origin/main. If your \`git push\` is rejected as 'command not allowed', that is EXPECTED — treat commit success as task completion. Never try to recover from a push rejection with rebase / reset / init — those produced the Aug 18 orphan incident."
+          NOPUSH_LINE="IMPORTANT: after committing, you MAY run \`git push origin main\` — that is your last step. If it is rejected as non-fast-forward, run \`git fetch origin\` + \`git pull --rebase origin main\` + retry the push. NEVER run: \`git init\`, \`git reset --hard\`, \`git rebase --root\`, \`git push --force\`, \`git push -f\` — these produced the Aug 18 orphan incident and are blocked by the workflow's git allowlist anyway."
           TICKER="${{ github.event.client_payload.ticker || github.event.inputs.ticker }}"
           # `force` comes from /api/summarize when the user clicked
           # "Regenerate" on an existing summary. Instructs /earnings
@@ -116,9 +116,9 @@ jobs:
             FORCE_LINE=" IMPORTANT: force-regenerate mode. Skip the Step-0 'summary already exists' guard and produce a fresh summary, OVERWRITING the existing file on disk. Confidence-notes MUST mention this is a regeneration."
           fi
           if [ -n "$TICKER" ]; then
-            echo "text=Run the /earnings procedure in .claude/commands/earnings.md for ticker $TICKER. Follow it exactly, including validation. Commit the result (do not push).$FORCE_LINE $STEP3B_REMINDER $EXHIBIT_REMINDER $NARRATION $RESULT_LINE $NOPUSH_LINE" >> "$GITHUB_OUTPUT"
+            echo "text=Run the /earnings procedure in .claude/commands/earnings.md for ticker $TICKER. Follow it exactly, including validation. Commit and push the result.$FORCE_LINE $STEP3B_REMINDER $EXHIBIT_REMINDER $NARRATION $RESULT_LINE $NOPUSH_LINE" >> "$GITHUB_OUTPUT"
           else
-            echo "text=Run the /sweep procedure in .claude/commands/sweep.md. Follow it exactly, including validation. Commit the result (do not push). $STEP3B_REMINDER $EXHIBIT_REMINDER $NARRATION $RESULT_LINE $NOPUSH_LINE" >> "$GITHUB_OUTPUT"
+            echo "text=Run the /sweep procedure in .claude/commands/sweep.md. Follow it exactly, including validation. Commit and push the result. $STEP3B_REMINDER $EXHIBIT_REMINDER $NARRATION $RESULT_LINE $NOPUSH_LINE" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Run Claude Code
@@ -150,6 +150,8 @@ jobs:
             "Bash(git show *)"
             "Bash(git rev-parse *)"
             "Bash(git fetch *)"
+            "Bash(git pull --rebase *)"
+            "Bash(git push origin main)"
             "Bash(ls *)"
             "Bash(grep *)"
             Read Write Edit WebSearch WebFetch
@@ -203,38 +205,23 @@ jobs:
           fi
           echo "✓ ancestry verified — HEAD $HEAD_SHA descends from $BASELINE"
 
-      # After ancestry passes, THE WORKFLOW does the push — not Claude.
-      # This is the second half of the orphan tripwire: Claude's git
-      # allowlist has `git push` removed entirely, so any orphan tip
-      # never reaches origin/main from a Claude tool call. If Claude
-      # committed cleanly and ancestry verified, this step is a
-      # straightforward push with no force. If the push is rejected
-      # (concurrent commit landed while Claude was running), fetch +
-      # rebase locally with the ours strategy on data conflicts, then
-      # try once more. Never force.
-      - name: Push commits (workflow-controlled)
-        if: success()
-        run: |
-          BASELINE="${{ steps.snapshot.outputs.sha }}"
-          HEAD_SHA=$(git rev-parse HEAD)
-          if [ "$HEAD_SHA" = "$BASELINE" ]; then
-            echo "no new commit — skipping push"
-            exit 0
-          fi
-          echo "pushing $HEAD_SHA to origin/main…"
-          if git push origin main 2>&1; then
-            echo "✓ push landed"
-            exit 0
-          fi
-          echo "push rejected — attempting fetch + rebase-ours-on-data"
-          git fetch origin main
-          if git rebase -X ours origin/main; then
-            git push origin main
-          else
-            git rebase --abort
-            echo "::error::rebase after conflict failed — leaving local commit unpushed. Retry via workflow_dispatch after inspecting the diff."
-            exit 1
-          fi
+      # Claude now does its own `git push origin main` (allowlist
+      # restored). The workflow-controlled push step was rolled back
+      # because Claude's push step at the end of /earnings had auth
+      # tied to actions/checkout's remote config, and the workflow
+      # step's re-push was failing with a token-scope mismatch that
+      # needed more investigation than the batch could afford.
+      #
+      # Remaining protection: (1) fetch-depth: 20 removes the shallow-
+      # clone failure mode that caused Claude to escalate on rebase.
+      # (2) Pre-configured git identity removes the `git config`
+      # escalation path. (3) The tightened allowlist above physically
+      # blocks `git init`, `git reset`, `git rebase`, `git push --force`
+      # — the specific commands used in the Aug 18 orphan cascade.
+      # (4) The ancestry tripwire below still fires if Claude somehow
+      # produces an orphan; it fires post-push so it's a detector, not
+      # a preventer, but the loud ::error message names the incident
+      # type so a repeat is instantly recognizable.
 
       - name: Report summary outcome
         env:
