@@ -89,13 +89,23 @@ export default async function SecurityDetailPage({ params }: Props) {
   // it refuses when there are no shard metrics either.
   const hasSummaryForLatest =
     latestPast?.period != null && summaries.some((s) => s.period === latestPast.period);
-  const latestHasShardMetrics =
-    latestPast?.metrics?.some((m) => m.actual?.value != null) ?? false;
+  // Show the button on every operating ticker that has a reported past
+  // event and no existing summary for that period. Previously we also
+  // required `latestPast.metrics` to carry at least one actual value —
+  // dropped after the audit filled the R1000 tail: it's routine for
+  // Yahoo-only ingested foreign tickers to have zero metric actuals
+  // stored (KRW/JPY EPS values were being tossed by the unit filter
+  // last year), yet /earnings can still pull a real summary from the
+  // press release. Hiding the button on those tickers gave the false
+  // impression the dashboard couldn't summarize them at all. The
+  // /earnings command itself auto-downgrades to kpi-only when the
+  // primary filing is unreachable and further to skipped when nothing
+  // resolves — those refusals happen at the ticker level, not gated
+  // upfront in the UI.
   const showSummarizeButton =
     entity.securityType === "operating" &&
     !!latestPast &&
-    !hasSummaryForLatest &&
-    latestHasShardMetrics;
+    !hasSummaryForLatest;
 
   return (
     <div className="mx-auto max-w-[1800px] px-10 py-8">
