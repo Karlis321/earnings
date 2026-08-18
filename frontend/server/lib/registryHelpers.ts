@@ -42,24 +42,35 @@ export function sectorCounts(
   const canonicalOnly = entities.filter(
     (e) => e.isCanonical !== false && isDisplayable(e),
   );
-  const total = new Map<string, number>();
   const core = new Map<string, number>();
-  const equities = new Map<string, number>();
+  const universeSPR = new Map<string, number>();
+  // Universe count restricted to SP500 or R1000 constituents to match
+  // the sector detail page's filter (2026-08-19 user directive).
+  // Portfolio (isCore) is unaffected — portfolio names always render
+  // regardless of index membership.
   for (const e of canonicalOnly) {
+    const mem = e.index_membership ?? [];
+    const isCore = !!e.isCore;
+    const isIndexed = mem.includes("SP500") || mem.includes("R1000");
     for (const s of e.sectorTags) {
-      total.set(s, (total.get(s) ?? 0) + 1);
-      if (e.isCore) core.set(s, (core.get(s) ?? 0) + 1);
-      equities.set(s, (equities.get(s) ?? 0) + 1);
+      if (isCore) core.set(s, (core.get(s) ?? 0) + 1);
+      else if (isIndexed) universeSPR.set(s, (universeSPR.get(s) ?? 0) + 1);
     }
   }
-  return Array.from(total, ([id, count]) => ({
-    id,
-    count,
-    portfolio: core.get(id) ?? 0,
-    universe: count - (core.get(id) ?? 0),
-    equities: equities.get(id) ?? 0,
-    etfs: 0, // structurally always 0 now; kept in shape for callers.
-  })).sort((a, b) => b.count - a.count);
+  const ids = new Set([...core.keys(), ...universeSPR.keys()]);
+  return Array.from(ids, (id) => {
+    const portfolio = core.get(id) ?? 0;
+    const universe = universeSPR.get(id) ?? 0;
+    const count = portfolio + universe;
+    return {
+      id,
+      count,
+      portfolio,
+      universe,
+      equities: count,
+      etfs: 0, // structurally always 0 now; kept in shape for callers.
+    };
+  }).sort((a, b) => b.count - a.count);
 }
 
 // Sector membership by canonical listing. A search for /sectors/technology

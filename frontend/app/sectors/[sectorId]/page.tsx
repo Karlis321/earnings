@@ -36,8 +36,17 @@ export default async function SectorDetailPage({ params }: Props) {
     members.some((m) => m.ticker === r.ticker),
   );
   const portfolio = inSector.filter((r) => r.entity.isCore);
+  // Universe = sector members that are NOT in the portfolio, restricted
+  // to SP500 or R1000 constituents. Per-user directive (2026-08-19):
+  // sector views should only surface names in the two big US indexes;
+  // small caps / foreign / obscure listings clutter the grid without
+  // matching how the user browses (index-first).
   const universe = inSector
     .filter((r) => !r.entity.isCore)
+    .filter((r) => {
+      const mem = r.entity.index_membership ?? [];
+      return mem.includes("SP500") || mem.includes("R1000");
+    })
     .sort(
       (a, b) => (b.entity.marketCapUsd ?? 0) - (a.entity.marketCapUsd ?? 0),
     );
