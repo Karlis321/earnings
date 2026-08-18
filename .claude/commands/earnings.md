@@ -101,9 +101,24 @@ In any downgrade path, `confidence_notes` MUST begin with:
 `"primary filing unreachable — KPI-only summary from verified shard
 data."` — readers must know why filing depth wasn't possible.
 
-If `kpis` is empty AND no filing can be reached, print
-`RESULT: skipped — insufficient data` and STOP. Depth doesn't
-matter if there's nothing to summarize.
+**NEVER skip based on shard thinness.** The resolver's `kpis` object
+size is not a skip signal — even an empty `kpis` object is fine when
+the filing is reachable. Composing a summary from the primary filing
+does NOT require pre-populated shard KPIs; the filing itself supplies
+the numbers. RESULT: skipped is reserved for two cases only:
+
+1. **Resolver exits 2** (Step 0): unknown ticker or period that
+   doesn't exist. The resolver's stderr message becomes the reason.
+2. **Summary already exists** for the exact period AND force is off:
+   the deployed panel already renders it.
+
+Every other case must produce a summary — either full filing depth
+or kpi-only (Step 1B). Kpi-only can source numbers from Yahoo
+Finance summaries, press-release snippets, wire-service tables, or
+the resolver's `kpis` object — anything sourced counts. A ticker
+with valid `edgarCik` + `sourceLink.kind === "filing"` (e.g. BHP US,
+any Australian/UK foreign filer with a 6-K link) MUST fetch that
+filing and compose from it — never skip.
 
 ## Step 1 — Fetch the primary (source ladder)
 
@@ -436,18 +451,44 @@ structured feeds don't carry) and write them onto the event's
 
 ## Failure modes — abort, don't paper over
 
+`RESULT: skipped` is reserved for **structural** blockers — cases
+where the procedure literally cannot produce a summary. Data
+thinness, hard-to-find sources, or foreign-filer quirks do NOT
+qualify: for those, downgrade to kpi-only per Step 1B and produce
+a summary anyway. The user's expectation is a summary on every
+click; skips are the last resort.
+
+Legitimate skips:
+
 - **Resolver exits 2** — ticker unknown or period not in shard.
-  `RESULT: skipped — <resolver message>`.
-- **Already-valid summary** — `summaryReady === true`.
-  `RESULT: skipped — already exists`.
-- **Source unreachable** — 2 searches + 3 fetches exhausted with
-  no non-aggregator document loaded.
-  `RESULT: skipped — source unreachable, <detail>`.
+  `RESULT: skipped — <resolver message>`. No summary possible
+  because the target is undefined.
+- **Already-valid summary + not force** — `summaryReady === true`
+  AND the run is not in force-regenerate mode.
+  `RESULT: skipped — already exists`. The dashboard already
+  renders a summary for this period.
+- **Source unreachable AFTER kpi-only attempted** — 2 searches
+  + 3 fetches exhausted with no parseable document AND Step 1B's
+  kpi-only fallback also produced nothing (which would only
+  happen if the resolver's `kpis` object is truly empty AND
+  the ticker has no external number source). `RESULT: skipped —
+  source unreachable AND kpi-only fallback empty, <detail>`.
+- **Validator failure after retry** — if a schema violation
+  can't be fixed without inventing data,
+  `RESULT: skipped — <specific validator error>`.
+
+Illegitimate skips (produce a summary instead — kpi-only if needed):
+
+- Shard `kpis` object has few entries — kpi-only fallback still
+  works; compose from what's there plus press-release/wire numbers.
+- Foreign ADR with SEC 6-K link — fetch the 6-K, read MD&A +
+  financials, compose. 6-K IS a filing depth path; do not skip it.
+- Ticker outside the covered tier — the covered-tier gate lives
+  on the API, not the /earnings procedure. If /earnings received
+  the dispatch, produce a summary.
+
 - **Tooling gap** — you need an operation with no sanctioned
   script. `RESULT: skipped — tooling gap: <describe>`. Do not
   reach for `node -e` or `python3`.
 - **Ledger inconsistency** — release publishes figures that
   don't reconcile. Note in `confidence_notes`, don't massage.
-- **Validator failure after retry** — if a schema violation
-  can't be fixed without inventing data,
-  `RESULT: skipped — <specific validator error>`.
