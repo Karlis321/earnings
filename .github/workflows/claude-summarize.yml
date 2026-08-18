@@ -129,14 +129,28 @@ jobs:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           prompt: ${{ steps.prompt.outputs.text }}
           show_full_output: true
-          # git allowlist: EXPLICIT safe subcommands only. Previously
-          # `Bash(git *)` matched anything including `git init`,
-          # `git reset --hard`, `git rebase --root`, `git push --force`
-          # — those are how the Aug 18 orphan happened. Now Claude can
-          # add / commit / read / fetch / pull, but NOT init, reset,
-          # rebase, checkout --, clean, filter-*, worktree, update-ref,
-          # gc, prune, or force-push. Push is limited to the exact
-          # `git push origin main` form so `--force` cannot be tacked on.
+          # git allowlist: safe subcommands only.
+          #
+          # Blocked (via non-inclusion): git init, git reset,
+          # git rebase --root, git rebase -i, git filter-branch,
+          # git worktree, git update-ref, git gc, git prune,
+          # git checkout -- (destructive), git clean -f.
+          # These are the specific commands used in the Aug 18 orphan
+          # cascade + adjacent destructive ops.
+          #
+          # Push variants intentionally listed multiple ways:
+          #   - `git push` (default, uses branch tracking)
+          #   - `git push origin main` (explicit)
+          #   - `git push origin HEAD` (CI style)
+          #   - `git push -u origin main` (upstream setup)
+          # `git push --force` and `git push -f` are NOT allowed —
+          # neither has `--force` in any allowed pattern's prefix.
+          # If Claude tries force-push, it's blocked; tripwire covers
+          # the residual case where force somehow lands.
+          #
+          # Rebase: only sync-forward (`git rebase origin/*`) and
+          # recovery (`--abort`, `--continue`, `--skip`) are permitted.
+          # `git rebase --root` / `-i` / `--onto` are blocked.
           claude_args: >-
             --max-turns 300 --allowedTools
             "Bash(node scripts/*)"
@@ -144,14 +158,25 @@ jobs:
             "Bash(node scripts/dev-tests/*)"
             "Bash(git add *)"
             "Bash(git commit *)"
+            "Bash(git status)"
             "Bash(git status *)"
             "Bash(git log *)"
             "Bash(git diff *)"
             "Bash(git show *)"
             "Bash(git rev-parse *)"
             "Bash(git fetch *)"
+            "Bash(git pull)"
+            "Bash(git pull --rebase)"
             "Bash(git pull --rebase *)"
+            "Bash(git pull origin *)"
+            "Bash(git rebase origin/*)"
+            "Bash(git rebase --abort)"
+            "Bash(git rebase --continue)"
+            "Bash(git rebase --skip)"
+            "Bash(git push)"
             "Bash(git push origin main)"
+            "Bash(git push origin HEAD)"
+            "Bash(git push -u origin main)"
             "Bash(ls *)"
             "Bash(grep *)"
             Read Write Edit WebSearch WebFetch
