@@ -28,7 +28,19 @@ export function GlobalSearch() {
         // Filter ETF/fund entities out of the search index — they
         // remain in the registry (benchmarks depend on them) and
         // direct URLs to /s/<ticker> still resolve. See displayFilter.
-        if (!cancelled) setEntities(r.filter(isDisplayable));
+        // Additional filter (2026-08-19 user directive): only surface
+        // portfolio + SP500 + R1000 tickers in the palette. Non-indexed
+        // tickers remain in the registry and their /s/<ticker> URLs
+        // still work — they're just not discoverable via search.
+        if (!cancelled) {
+          setEntities(
+            r.filter(isDisplayable).filter((e) => {
+              if (e.isCore) return true;
+              const mem = e.index_membership ?? [];
+              return mem.includes("SP500") || mem.includes("R1000");
+            }),
+          );
+        }
       })
       .catch(() => {
         /* Search stays empty on fetch failure. */

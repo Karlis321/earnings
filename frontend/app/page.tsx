@@ -22,7 +22,16 @@ export default async function OverviewPage() {
     store.readRegistry(),
     store.readEventsIndex?.() ?? Promise.resolve(EMPTY_INDEX),
   ]);
-  const rows = buildWatchlistRowsFromIndex(entities, index.entries, todayIso());
+  const allRows = buildWatchlistRowsFromIndex(entities, index.entries, todayIso());
+  // Filter to portfolio (always visible) + SP500 + R1000 constituents.
+  // Per user directive (2026-08-19): no dashboard surface should list
+  // tickers outside the two big US indexes unless they're on the
+  // portfolio. Applies uniformly with the sector-page filter.
+  const rows = allRows.filter((r) => {
+    if (r.entity.isCore) return true;
+    const mem = r.entity.index_membership ?? [];
+    return mem.includes("SP500") || mem.includes("R1000");
+  });
   const coreCount = rows.filter((r) => r.entity.isCore).length;
   const universeCount = rows.length - coreCount;
   return (
