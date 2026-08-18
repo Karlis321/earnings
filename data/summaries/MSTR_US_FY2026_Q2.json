@@ -1,10 +1,10 @@
 {
   "ticker": "MSTR US",
   "period": "FY2026 Q2",
-  "reported_at": "2026-08-03",
-  "generated_at": "2026-08-18T02:46:15Z",
-  "depth": "kpi-only",
-  "headline": "Steep GAAP loss persists but narrows versus last quarter",
+  "reported_at": "2026-07-30",
+  "generated_at": "2026-08-18T10:11:59Z",
+  "depth": "filing",
+  "headline": "Bitcoin markdown drives record loss; revenue keeps growing",
   "kpis": [
     { "label": "Revenue", "value": "$122.4M", "delta": "-1.6%", "delta_basis": "q/q", "direction": "down" },
     { "label": "Revenue", "value": "$122.4M", "delta": "+6.9%", "delta_basis": "y/y", "direction": "up" },
@@ -29,8 +29,64 @@
     { "label": "Weighted diluted shares", "value": "352.5M", "delta": "+5.6%", "delta_basis": "q/q", "direction": "up" },
     { "label": "Weighted diluted shares", "value": "352.5M", "delta": "+14.9%", "delta_basis": "y/y", "direction": "up" }
   ],
-  "summary_short": "Revenue was $122.4M, up 6.9% y/y but down 1.6% q/q, while diluted EPS of -$24.45 improved from -$38.25 in Q1 but reversed a year-ago profit of $32.60.",
-  "summary_long": "Revenue was $122.4M, +6.9% y/y and -1.6% q/q. Gross profit was $81.6M (about 66.7% of revenue). Diluted EPS was -$24.45, versus -$38.25 in Q1 and +$32.60 a year ago. Net loss was $8,219.6M, narrower than Q1's $12,542.7M loss but a reversal from a $10,020.8M profit a year earlier. Cash fell to $1,711.8M from $2,207.2M q/q; long-term debt fell to $6,709.9M from $8,196.5M.",
-  "source_url": "https://www.sec.gov/Archives/edgar/data/1050446/000105044626000044/",
-  "confidence_notes": "primary filing unreachable — KPI-only summary from verified shard data. FORCE-REGENERATE: this run was explicitly instructed to bypass the Step-0 summaryReady guard and overwrite the existing MSTR_US_FY2026_Q2.json (previously present on disk, summaryReady=true). Fresh Step 0/1 resolution independently confirmed the same conclusion: the event's sourceLink (kind=filing) resolves to https://www.sec.gov/Archives/edgar/data/1050446/000119312526286871/mstr-20260629.htm, an Item 8.01 8-K titled 'Digital Credit Capital Framework Announcement' filed 2026-06-29 — a strategic/operational disclosure (USD Reserve policy, STRC dividend policy change, $1B Digital Credit Securities + common stock repurchase programs, BTC monetization program), NOT the FY2026 Q2 earnings release. scripts/resolve-edgar-exhibit.mjs confirmed no EX-99 exhibit exists in that filing's accession folder (only the cover doc, index pages, and an R1.htm XBRL viewer stub). That cover document was fetched and read (fetch #2 of 3) and contains no quarterly income-statement narrative, so it cannot honestly support drivers/guidance extraction. The EDGAR CIK 10-Q filings index (fetch #3, final budget slot) identified the correct filing as the 10-Q filed 2026-08-03 (accession 0001050446-26-000044), but the 3-fetch budget was exhausted before that document's body could be retrieved. Per Step 0.5's downgrade rule ('search/fetch budget fully consumed without landing a parseable primary'), this summary downgrades to depth=kpi-only rather than skipping. Step 3b was executed per mandatory instruction: scripts/apply-extended-metrics.mjs was called with an empty array because no primary filing was read this run to extract sector-specific KPIs from — the 8-K text on hand doesn't disclose ARR, capex intensity, or other technology-sector/universal-set line items in a form matching those keys, so nothing was extracted rather than invented. q/q deltas for operating income, pretax income, net income, and both EPS lines are large-magnitude percentages because both the current and prior quarter are losses (narrowing, not a sign flip); y/y deltas for the same rows are marked NM because the prior-year comparable was a GAAP profit (sign flip makes a raw percentage misleading). Total cash y/y is marked NM because the year-ago base ($50.1M) was anomalously small ahead of large capital raises. source_url points to the correct 10-Q's EDGAR accession-index folder (mechanically constructed from the confirmed-real accession number 0001050446-26-000044), not the mis-attached 8-K, since every KPI value above is itself SEC-verbatim from that same 10-Q per resolve-earnings-target.mjs's source_label fields. No guidance was captured (kpi-only forbids it); data/events/MSTR_US.json was touched only for the empty extendedMetrics array via the sanctioned script."
+  "summary_short": "Revenue grew 6.9% y/y to $122.4M while an $8.32B unrealized loss on bitcoin holdings drove a $8.22B net loss (-$24.45 diluted EPS), narrower than Q1's loss but a reversal from last year's GAAP profit.",
+  "summary_long": "Total revenue rose 6.9% y/y to $122.4M on subscription-services growth, with gross margin at 66.6% versus 68.8% a year ago. Operating loss of $8.33B and net loss of $8.22B (-$24.45 diluted EPS) were driven almost entirely by an $8.32B unrealized mark-to-market loss on bitcoin holdings under ASU 2023-08, not operating performance; the year-ago quarter had a $14.05B unrealized gain, explaining the swing from a $10.02B profit. Sequentially the net loss narrowed from Q1's $12.54B. Cash fell to $1.71B from $2.21B q/q after the company repurchased $1.50B face value of convertible notes at an 8% discount, cutting long-term debt to $6.71B; bitcoin holdings grew 11% q/q to 846,000 BTC. No formal revenue or earnings guidance was issued.",
+  "drivers": [
+    {
+      "metric": "overall",
+      "direction": "down",
+      "explanation": "Management framed the quarter as balance-sheet strengthening amid a bitcoin price decline: convertible debt cut 18%, USD Reserve up 12% to $2.4B, and Bitcoin Per Share up 5%, even as GAAP results showed a large loss.",
+      "basis": "company-disclosed"
+    },
+    {
+      "metric": "Revenue",
+      "direction": "up",
+      "explanation": "Subscription-services revenue rose to $62.9M from $40.8M y/y, more than offsetting declines in product-license and product-support revenue lines on the consolidated statement of operations.",
+      "basis": "derived-arithmetic"
+    },
+    {
+      "metric": "Gross profit",
+      "direction": "down",
+      "explanation": "Gross margin fell to 66.6% from 68.8% y/y as cost of revenue grew faster than revenue; not explained in the release.",
+      "basis": "company-disclosed"
+    },
+    {
+      "metric": "Operating income",
+      "direction": "down",
+      "explanation": "Operating loss reflects an $8.32B unrealized mark-to-market loss on the Company's bitcoin holdings under ASU 2023-08, not core operations; a year ago the same line was a $14.05B unrealized gain.",
+      "basis": "company-disclosed"
+    },
+    {
+      "metric": "Net income",
+      "direction": "down",
+      "explanation": "Net loss mirrors the operating-loss swing from the bitcoin fair-value markdown; sequentially the loss narrowed as the mark-to-market loss shrank versus Q1.",
+      "basis": "company-disclosed"
+    },
+    {
+      "metric": "Total cash",
+      "direction": "down",
+      "explanation": "Cash fell as approximately $1.38B was used in May 2026 to repurchase $1.50B face value of convertible notes at an 8% discount to par.",
+      "basis": "company-disclosed"
+    },
+    {
+      "metric": "Long-term debt",
+      "direction": "down",
+      "explanation": "Convertible-note principal fell from $8.21B to $6.71B after the Company repurchased $1.50B face value in negotiated transactions.",
+      "basis": "company-disclosed"
+    },
+    {
+      "metric": "Shareholders' equity",
+      "direction": "down",
+      "explanation": "Stockholders' equity fell as the quarter's net loss pushed retained earnings from a $6.32B surplus at year-start to a $15.20B accumulated deficit.",
+      "basis": "derived-arithmetic"
+    },
+    {
+      "metric": "Weighted diluted shares",
+      "direction": "up",
+      "explanation": "Share count rose as the Company raised $2.95B via ATM sales of class A common stock during the quarter.",
+      "basis": "company-disclosed"
+    }
+  ],
+  "source_url": "https://www.sec.gov/Archives/edgar/data/0001050446/000162828026051027/mstr-20260730x8kxex991.htm",
+  "confidence_notes": "FORCE-REGENERATE: explicitly instructed to bypass the Step-0 summaryReady guard and overwrite the existing MSTR_US_FY2026_Q2.json (previously present on disk, summaryReady=true, depth=kpi-only). Depth upgraded to filing this run: the shard's sourceLink (kind=filing) resolves to https://www.sec.gov/Archives/edgar/data/1050446/000119312526286871/mstr-20260629.htm, an Item 8.01/7.01 8-K titled 'Digital Credit Capital Framework Announcement' filed 2026-06-29 — a capital-structure/policy disclosure, NOT the Q2 earnings release (confirmed no EX-99 exhibit exists in that accession via resolve-edgar-exhibit.mjs, which found only cover doc + index pages + an R1.htm XBRL viewer stub). Located the actual earnings filing via the EDGAR CIK browse listing: the Item 2.02 'Results of Operations and Financial Condition' 8-K filed 2026-07-30 (accession 0001628280-26-051027); one WebSearch then surfaced and confirmed its EX-99.1 press-release exhibit URL (mstr-20260730x8kxex991.htm), which was fetched and read in full and is cited as source_url. reported_at is set to 2026-07-30 (the release/8-K filing date) rather than the shard's stored eventDate of 2026-06-30, which is a fiscal-quarter-end placeholder, not the real report date (see the repo's 'real report dates, not quarter-end' rule) — flagging this mismatch per Step 0's authoritative-date-from-primary guidance rather than silently overriding it. All P&L and balance-sheet KPI values were verified against the press release's consolidated statements of operations and balance sheets and match the resolver's SEC-XBRL shard figures exactly (revenue $122.368M, net loss $8,219.628M, diluted EPS -$24.45, etc.). The $8.32B operating/net loss is a non-cash unrealized fair-value markdown on bitcoin holdings under ASU 2023-08 (the Company's own explicit framing in the release), not an operating deterioration — captured in drivers rather than folded into a misleading top-line narrative. No company-issued revenue or EPS guidance was found anywhere in the release; guidance[] on the shard is left empty. Step 3b: scanned the press release against the technology-sector extended-metric set (universal set + arr/wafer_starts/capex_intensity per frontend/lib/extendedMetricsRegistry.ts); only two metrics cleared the >=0.7 confidence bar with an exact quote — buyback_qtr_usd=$0 ('No repurchases to date' under the $1.0 Billion MSTR Repurchase Program) and dividend_per_share=$0 ('has historically not paid any dividends on its shares of class A common stock'). A WebFetch of Yahoo Finance's key-statistics page for cross-check returned HTTP 503 and was not retried per the no-retry-loop rule, so no Yahoo-sourced metrics were added. capex_total, capex_adjusted, free_cash_flow_mgmt, sale_of_assets_usd, eps_non_gaap, guidance_revenue_next_q, guidance_eps_next_q, arr, wafer_starts, and capex_intensity had no qualifying disclosure in the loaded sources and were omitted rather than fabricated or computed by inference."
 }
