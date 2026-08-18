@@ -1,3 +1,5 @@
+// SP500 + R1000 + portfolio filter added in commit fe87af70; cache-buster
+// comment below because Vercel didn't rebuild this route on the first push.
 import { WatchlistTable } from "@/components/overview/WatchlistTable";
 import { MarketPulse } from "@/components/overview/MarketPulse";
 import { store } from "@/server/store";
