@@ -228,6 +228,27 @@ export function WatchlistTable({
   const [filter, setFilter] = useState<Filter>(
     focusTickers.length > 0 ? "focus" : "portfolio",
   );
+  // Ticker → last-visit ISO watermark read from localStorage. Empty on
+  // first render (SSR-safe); populated once on client mount from every
+  // `sig-seen:*` key. Used by <Row hasNewSinceVisit /> to render the
+  // "new" pill only when the shard's latestItemAt is strictly after
+  // the stored watermark.
+  const [lastSeenMap, setLastSeenMap] = useState<Record<string, string>>({});
+  useEffect(() => {
+    try {
+      const out: Record<string, string> = {};
+      for (let i = 0; i < window.localStorage.length; i++) {
+        const k = window.localStorage.key(i);
+        if (!k || !k.startsWith("sig-seen:")) continue;
+        const t = k.slice("sig-seen:".length);
+        const v = window.localStorage.getItem(k);
+        if (v) out[t] = v;
+      }
+      setLastSeenMap(out);
+    } catch {
+      // localStorage disabled — badge simply never fires. Not a bug.
+    }
+  }, []);
   const [sortKey, setSortKey] = useState<SortKey>("next");
   const [reportingSoon, setReportingSoon] = useState(false);
   const [group, setGroup] = useState<Group>("flat");
@@ -719,6 +740,11 @@ export function WatchlistTable({
                   router.push(`/s/${encodeURIComponent(r.ticker)}`)
                 }
                 columnMetric={columnMetric}
+                hasNewSinceVisit={
+                  !!r.latestItemAt &&
+                  (!lastSeenMap[r.ticker] ||
+                    r.latestItemAt > lastSeenMap[r.ticker])
+                }
               />
             ))}
           </div>
@@ -818,6 +844,7 @@ function Row({
   siblingCount,
   siblingTickers,
   columnMetric,
+  hasNewSinceVisit,
 }: {
   r: WatchlistRow;
   onClick: () => void;
@@ -828,6 +855,9 @@ function Row({
   siblingCount?: number;
   siblingTickers?: string[];
   columnMetric: string;
+  // True when latestItemAt > localStorage lastSeenAt[ticker]. Computed
+  // once on the client after hydration and threaded down to the row.
+  hasNewSinceVisit?: boolean;
 }) {
   const isDev = r.entity.securityType === "developer";
   const isEtf = r.entity.securityType === "etf";
@@ -1011,9 +1041,12 @@ function Row({
 
       <span className="text-right font-mono text-[12.5px] text-tx-strong">
         {r.sourceCount || "—"}
-        {r.newSinceLastView > 0 ? (
-          <span className="ml-1 rounded-[4px] bg-brand/20 px-[5px] py-[1px] text-[10px] text-brand-fg">
-            +{r.newSinceLastView}
+        {hasNewSinceVisit ? (
+          <span
+            className="ml-1 rounded-[4px] bg-brand/20 px-[5px] py-[1px] text-[10px] text-brand-fg"
+            title="New source items since your last visit"
+          >
+            new
           </span>
         ) : null}
       </span>

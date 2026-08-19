@@ -220,7 +220,15 @@ export function buildWatchlistRows(
           : undefined,
       freshness,
       sourceCount,
-      newSinceLastView,
+      // See index-path note — client compares latestItemAt vs localStorage.
+      newSinceLastView: 0,
+      latestItemAt: (() => {
+        let max: string | null = null;
+        for (const it of latest?.sources?.items ?? []) {
+          if (it?.time && (!max || it.time > max)) max = it.time;
+        }
+        return max ?? undefined;
+      })(),
       dataIncomplete,
       recentEvent,
     };
@@ -345,7 +353,12 @@ export function buildWatchlistRowsFromIndex(
       reactionPoints: idx?.lastEventReactionPoints?.map(slimReactionPoint),
       freshness,
       sourceCount,
-      newSinceLastView,
+      // Real "new since visit" is computed client-side in
+      // WatchlistTable from `latestItemAt` + localStorage.
+      // newSinceLastView is legacy — keep it 0 so the old fake
+      // heuristic doesn't fire.
+      newSinceLastView: 0,
+      latestItemAt: idx?.latestItemAt,
       dataIncomplete,
       recentEvent,
     };

@@ -15,6 +15,7 @@ import { SummarizeButton } from "@/components/security/SummarizeButton";
 import { ExtendedMetricsPanel } from "@/components/security/ExtendedMetricsPanel";
 import { GuidanceTimeline, Panel } from "@/components/primitives";
 import { EmptyState } from "@/components/primitives";
+import { MarkSeen } from "@/components/shell/MarkSeen";
 import { computeFreshness, todayIso } from "@/lib/freshness";
 import type { EventRecord } from "@/lib/types";
 
@@ -63,6 +64,18 @@ export default async function SecurityDetailPage({ params }: Props) {
   // "Last: <period>" line show a future quarter with no data behind it.
   const latestPast = events.find((e) => e.eventDate);
   const latest = latestPast ?? events[0];
+
+  // Latest source-item timestamp across all events on this ticker —
+  // handed to <MarkSeen /> so localStorage stamps the exact watermark
+  // being viewed. Matches shard-earnings.mjs's latestItemAt logic.
+  let latestItemAt: string | undefined = undefined;
+  for (const e of events) {
+    for (const it of e.sources?.items ?? []) {
+      if (it?.time && (!latestItemAt || it.time > latestItemAt)) {
+        latestItemAt = it.time;
+      }
+    }
+  }
   const nextEvent = events.find((e) => e.scheduledDate >= todayIso());
   const freshness = computeFreshness(
     latest?.sources.capturedAt ?? latest?.eventDate ?? latest?.scheduledDate ?? null,
@@ -109,6 +122,7 @@ export default async function SecurityDetailPage({ params }: Props) {
 
   return (
     <div className="mx-auto max-w-[1800px] px-10 py-8">
+      <MarkSeen ticker={ticker} latestItemAt={latestItemAt} />
       <SecurityHeader
         entity={entity}
         latest={latest}

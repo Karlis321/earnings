@@ -90,6 +90,20 @@ function buildIndexEntry(ticker, events, entity) {
       if (summed > 0) return summed;
       return entity?.sourceCount ?? 0;
     })(),
+    // Latest source-item timestamp across ALL events on this ticker.
+    // Used by the watchlist to compute "+N new since your last visit"
+    // client-side (localStorage lastSeenAt[ticker] compare). Absent
+    // when no items exist. Not indexing by event because a very old
+    // event can still receive fresh items via /append-sources.
+    latestItemAt: (() => {
+      let max = null;
+      for (const e of events) {
+        for (const it of e.sources?.items ?? []) {
+          if (it?.time && (!max || it.time > max)) max = it.time;
+        }
+      }
+      return max ?? undefined;
+    })(),
     guidanceMove: latest?.guidanceMove ?? null,
     freshness: latest?.freshness ?? "never",
     lastEventReactionPoints,

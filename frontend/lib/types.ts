@@ -490,6 +490,15 @@ export interface WatchlistRow {
   reactionPoints?: WatchlistReactionPoint[];
   freshness: Freshness;
   sourceCount: number;
+  // Client compares this against localStorage lastSeenAt[ticker] to
+  // decide whether to render the "new since visit" badge. Server
+  // never renders based on this — only the client knows what has
+  // been seen. Absent when no source items exist yet.
+  latestItemAt?: string;
+  // DEPRECATED — the old fake heuristic (min(sourceCount, 2)). Kept
+  // on the type for one deploy so the row builders don't fail; the
+  // WatchlistTable now computes the "new" state client-side from
+  // latestItemAt + localStorage. Remove in a follow-up.
   newSinceLastView: number;
   dataIncomplete: boolean;
   recentEvent: boolean;
@@ -522,6 +531,13 @@ export interface EventsIndexEntry {
   // a spuriously precise day for a semi-annual or annual filer.
   nextCadence?: Cadence;
   sourceCount: number;
+  // ISO time of the most recent source item on ANY of this ticker's
+  // events. Populated by shard-earnings.mjs as max(item.time) across
+  // all events' sources.items[]. Client uses this vs a localStorage
+  // lastSeenAt[ticker] to compute the "+N new since visit" badge —
+  // avoids shipping the full item list to the grid just for a
+  // freshness comparison.
+  latestItemAt?: string;
   guidanceMove: GuidanceMove;
   freshness: Freshness;
   // Reaction horizons on the latest past event — carried in the index
