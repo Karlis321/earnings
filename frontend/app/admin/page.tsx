@@ -4,10 +4,25 @@ import { store } from "@/server/store";
 
 export const dynamic = "force-dynamic";
 
+// Cap on how many non-portfolio entities the admin home renders inline.
+// The registry holds ~4k entities today; server-rendering every one as
+// an anchor produced a 6.7 MB HTML body (each row is ~700 bytes of
+// tailwind-heavy markup, times 4k rows). The universe list is
+// browsing convenience, not the primary edit path — direct URLs
+// (/admin/securities/<TICKER>) and the header GlobalSearch cover any
+// specific ticker. Cap at the biggest names by market cap so the
+// panel still surfaces the tickers the user is most likely to browse.
+const UNIVERSE_RENDER_CAP = 200;
+
 export default async function AdminHome() {
   const entities = await store.readRegistry();
   const core = entities.filter((e) => e.isCore);
-  const universe = entities.filter((e) => !e.isCore);
+  const universeAll = entities.filter((e) => !e.isCore);
+  const universe = universeAll
+    .slice()
+    .sort((a, b) => (b.marketCapUsd ?? 0) - (a.marketCapUsd ?? 0))
+    .slice(0, UNIVERSE_RENDER_CAP);
+  const universeHidden = universeAll.length - universe.length;
 
   return (
     <div className="flex flex-col gap-4">
@@ -47,11 +62,12 @@ export default async function AdminHome() {
       </Panel>
 
       {universe.length > 0 ? (
-        <Panel eyebrow={`Sector universe · ${universe.length} names · not on core watchlist`}>
+        <Panel eyebrow={`Sector universe · ${universeAll.length} names · not on core watchlist`}>
           <details>
             <summary className="cursor-pointer text-[12.5px] text-tx-mid hover:text-tx">
-              Show {universe.length} universe entities (added via
-              /admin/expand or API)
+              {universeHidden > 0
+                ? `Show top ${universe.length} by market cap (of ${universeAll.length} · use the header search or /admin/securities/<TICKER> for the rest)`
+                : `Show ${universe.length} universe entities (added via /admin/expand or API)`}
             </summary>
             <div className="mt-3 grid grid-cols-1 gap-1 md:grid-cols-2 lg:grid-cols-3">
               {universe.map((e) => (
@@ -73,6 +89,16 @@ export default async function AdminHome() {
                 </Link>
               ))}
             </div>
+            {universeHidden > 0 ? (
+              <p className="mt-3 text-[11px] text-tx3">
+                {universeHidden} more entities not shown — search from the
+                header or go directly to{" "}
+                <code className="text-tx-mid">
+                  /admin/securities/&lt;TICKER&gt;
+                </code>
+                .
+              </p>
+            ) : null}
           </details>
         </Panel>
       ) : null}
