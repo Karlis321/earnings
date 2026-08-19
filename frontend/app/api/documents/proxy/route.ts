@@ -19,8 +19,20 @@ export const maxDuration = 45;
 // contact string (their bot policies grant read access when we ID as
 // a browser but keep the audit trail), and doesn't spoof a specific
 // version we might have to keep updating.
-const UA =
+const BROWSER_UA =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36";
+
+// SEC EDGAR requires a "compliant" User-Agent identifying the client +
+// contact per its fair-access policy. Chrome UAs get 403'd (verified:
+// browse-edgar via the proxy returns "sec.gov → 403" with BROWSER_UA).
+// Matches the pattern used by `server/vendors/sec.ts` and the CLI
+// `scripts/fetch-edgar.mjs`.
+const SEC_UA = "Earnings Tracker (contact@example.com)";
+
+function pickUa(host: string): string {
+  if (host === "www.sec.gov" || host.endsWith(".sec.gov")) return SEC_UA;
+  return BROWSER_UA;
+}
 
 // Minimal HTML sanitizer — no DOM, regex-based. Not a general-purpose
 // XSS defender; scoped to our allowlisted hosts where we trust the source.
@@ -72,7 +84,7 @@ export async function GET(req: NextRequest) {
   try {
     const r = await fetch(target, {
       headers: {
-        "User-Agent": UA,
+        "User-Agent": pickUa(host),
         Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
         "Accept-Language": "en-US,en;q=0.9",
       },
