@@ -1,18 +1,21 @@
 import { store } from "@/server/store";
 import { EmptyState } from "@/components/primitives";
 import { IdeasTable } from "@/components/ideas/IdeasTable";
+import { IdeasPitchStrip } from "@/components/ideas/IdeasPitchStrip";
 
-// Feature 3B — Ideas view. Reads the signal ranking committed to
-// data/ranking.json by scripts/run-ranking.mjs (Feature 3A) and
-// renders a sortable leaderboard over the SP500 ∪ R1000 ∪ isCore
-// operating universe.
+// Feature 3B/3C — Ideas view.
+//   3B: sortable leaderboard from data/ranking.json (Feature 3A).
+//   3C: AI pitch cards from data/ideas.json, rendered as a strip
+//       above the leaderboard when present. Absent → strip omitted,
+//       leaderboard is the whole page.
 
 export const dynamic = "force-dynamic";
 
 export default async function IdeasPage() {
-  const ranking = store.readRanking
-    ? await store.readRanking()
-    : null;
+  const [ranking, ideas] = await Promise.all([
+    store.readRanking ? store.readRanking() : Promise.resolve(null),
+    store.readIdeas ? store.readIdeas() : Promise.resolve(null),
+  ]);
 
   if (!ranking) {
     return (
@@ -44,6 +47,10 @@ export default async function IdeasPage() {
           <span>generated {ranking.generatedAt.slice(0, 16).replace("T", " ")}Z</span>
         </div>
       </div>
+
+      {ideas && ideas.pitches.length > 0 ? (
+        <IdeasPitchStrip ideas={ideas} />
+      ) : null}
 
       <IdeasTable ranking={ranking} />
     </div>

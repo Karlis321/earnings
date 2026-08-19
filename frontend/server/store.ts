@@ -84,6 +84,12 @@ export interface Store {
   // Returns null when the ranking hasn't been computed yet.
   readRanking?(): Promise<import("@/lib/types").Ranking | null>;
 
+  // Feature 3C AI pitch cards (data/ideas.json). Written by
+  // .claude/commands/ideas.md via scripts/apply-ideas.mjs. Overwritten
+  // 3×/week (Mon/Wed/Fri) by .github/workflows/ideas.yml. Consumed
+  // by /ideas as a top-strip above the ranking table.
+  readIdeas?(): Promise<import("@/lib/types").Ideas | null>;
+
   readDocument(id: string): Promise<Document | null>;
   writeDocument(doc: Document): Promise<void>;
 

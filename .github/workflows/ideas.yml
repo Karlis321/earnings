@@ -1,0 +1,162 @@
+name: ideas
+
+# Feature 3C — AI pitch cards over the top-N ranked tickers.
+# See .claude/commands/ideas.md for the procedure. Writes
+# data/ideas.json (single-file overwrite per run). Consumed by
+# /ideas on the dashboard.
+
+on:
+  # 3×/week schedule — Mon, Wed, Fri at 14:00 UTC. Deliberately far
+  # from the 03:00 refresh (refresh-data.yml) and 05:30 sweep
+  # (claude-summarize.yml) so the AI quota pool doesn't contend with
+  # daily jobs. 14:00 UTC = 10 AM ET (post-open, pre-lunch), when
+  # overnight news + the daily refresh have both settled.
+  schedule:
+    - cron: "0 14 * * 1,3,5"
+  workflow_dispatch:
+    inputs:
+      note:
+        description: "Trigger source label (shown in the run title)."
+        required: false
+        default: ""
+
+# One run at a time. Fresh ranking gets consumed by whichever run is
+# active; concurrent runs would race the apply-ideas cross-check.
+concurrency:
+  group: ideas
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  id-token: write
+
+run-name: >-
+  ideas · ${{
+    github.event_name == 'schedule' && 'scheduled (14:00 UTC)'
+    || (github.event.inputs.note != '' && format('manual · {0}', github.event.inputs.note))
+    || 'manual'
+  }}
+
+jobs:
+  ideas:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          # 20 commits deep so the ancestry tripwire + any rebase
+          # against origin/main resolves cleanly. Matches the
+          # claude-summarize.yml scaffold hardening.
+          fetch-depth: 20
+
+      # Pre-configure git identity so Claude never has to `git config` —
+      # that was one of the escalation paths in the Aug 18 orphan
+      # incident. Identical to claude-summarize.yml.
+      - name: Configure git identity
+        run: |
+          git config user.name "claude[bot]"
+          git config user.email "41898282+claude[bot]@users.noreply.github.com"
+
+      # Snapshot the origin/main tip BEFORE Claude runs. The
+      # post-Claude tripwire compares HEAD's ancestry against this
+      # SHA to detect orphan-tip pushes.
+      - name: Snapshot origin baseline
+        id: snapshot
+        run: |
+          SHA=$(git rev-parse HEAD)
+          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+          echo "baseline SHA recorded: $SHA"
+
+      # Refresh the ranking snapshot before Claude runs so the top-12
+      # reflects TODAY's shard state, not whatever ranking.json was
+      # last committed. Cheap — reads events-index + registry, writes
+      # a single JSON file.
+      - name: Refresh ranking snapshot
+        run: node scripts/run-ranking.mjs
+
+      - name: Build prompt
+        id: prompt
+        run: |
+          NARRATION="Narrate as you work: before every tool call, print one line stating what you are about to do and why. After each numbered step, print STEP <n> DONE: <one-line result>."
+          RESULT_LINE="Your final message MUST be exactly one of: 'RESULT: committed data/ideas.json (<N> pitches)' or 'RESULT: skipped — <reason>'."
+          NOPUSH_LINE="IMPORTANT: after committing, you MAY run 'git push origin main' — that is your last step. If it is rejected as non-fast-forward, run 'git fetch origin' + 'git pull --rebase origin main' + retry the push. NEVER run: 'git init', 'git reset --hard', 'git rebase --root', 'git push --force', 'git push -f'."
+          echo "text=Run the /ideas procedure in .claude/commands/ideas.md. Follow it exactly, including the validation step and the sanctioned apply-ideas.mjs write. Commit and push the result. $NARRATION $RESULT_LINE $NOPUSH_LINE" >> "$GITHUB_OUTPUT"
+
+      - name: Run Claude Code
+        uses: anthropics/claude-code-action@v1
+        env:
+          EDGAR_CONTACT_EMAIL: ${{ vars.EDGAR_CONTACT_EMAIL || 'klpp@bluorbank.lv' }}
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: ${{ steps.prompt.outputs.text }}
+          show_full_output: true
+          # git allowlist — identical to claude-summarize.yml. Only
+          # additive safe commands. Blocks: git init, git reset,
+          # git rebase --root/-i, git filter-branch, git worktree,
+          # git gc, git prune, git clean -f, git push --force, -f.
+          claude_args: >-
+            --max-turns 120 --allowedTools
+            "Bash(node scripts/*)"
+            "Bash(git add *)"
+            "Bash(git commit *)"
+            "Bash(git status)"
+            "Bash(git status *)"
+            "Bash(git log *)"
+            "Bash(git diff *)"
+            "Bash(git show *)"
+            "Bash(git rev-parse *)"
+            "Bash(git fetch *)"
+            "Bash(git pull)"
+            "Bash(git pull --rebase)"
+            "Bash(git pull --rebase *)"
+            "Bash(git pull origin *)"
+            "Bash(git rebase origin/*)"
+            "Bash(git rebase --abort)"
+            "Bash(git rebase --continue)"
+            "Bash(git rebase --skip)"
+            "Bash(git push)"
+            "Bash(git push origin main)"
+            "Bash(git push origin HEAD)"
+            "Bash(git push -u origin main)"
+            "Bash(ls *)"
+            "Bash(grep *)"
+            Read Write Edit WebSearch WebFetch
+
+      # Orphan-commit tripwire — identical logic to
+      # claude-summarize.yml. If Claude somehow produces a HEAD that
+      # doesn't descend from the pre-run baseline, fail loud so the
+      # incident is visible on the Actions tab.
+      - name: Verify commit ancestry (orphan tripwire)
+        if: always()
+        run: |
+          BASELINE="${{ steps.snapshot.outputs.sha }}"
+          if [ -z "$BASELINE" ]; then
+            echo "no baseline recorded — skipping ancestry check"
+            exit 0
+          fi
+          HEAD_SHA=$(git rev-parse HEAD)
+          if [ "$HEAD_SHA" = "$BASELINE" ]; then
+            echo "HEAD unchanged from baseline — nothing to verify"
+            exit 0
+          fi
+          if ! git merge-base --is-ancestor "$BASELINE" HEAD; then
+            echo "::error::ORPHAN TRIPWIRE FIRED — HEAD ($HEAD_SHA) does not descend from pre-run baseline ($BASELINE)."
+            git log HEAD --format="%h · parents:%p · %s" -3
+            exit 1
+          fi
+          if ! git rev-parse HEAD^ >/dev/null 2>&1; then
+            echo "::error::ORPHAN TRIPWIRE FIRED — HEAD ($HEAD_SHA) has no parent commit."
+            exit 1
+          fi
+          echo "✓ ancestry verified — HEAD $HEAD_SHA descends from $BASELINE"
+
+      - name: Report outcome
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          NEW=$(gh api "repos/${{ github.repository }}/commits?path=data/ideas.json&since=$(date -u -d '30 minutes ago' +%Y-%m-%dT%H:%M:%SZ)" --jq 'length')
+          if [ "$NEW" -gt 0 ]; then
+            echo "✓ ideas.json commit landed in the last 30 minutes."
+          else
+            echo "ℹ️ No ideas.json commit landed — Claude either skipped (insufficient signal quality) or the ranking was stale. See the Run Claude Code step output above."
+          fi

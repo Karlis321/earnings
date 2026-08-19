@@ -1,6 +1,35 @@
 // Shape mirrors PRD Appendix C.5 (entity registry) + C.6 (earnings.json).
 // Every sourced number is a Fact; derived numbers store inputs + computedAt.
 
+// Feature 3C — AI pitch cards over the top-N ranked tickers.
+// Written by .claude/commands/ideas.md via scripts/apply-ideas.mjs.
+// Consumed by /ideas (3B) as a top-strip above the ranking table.
+export interface IdeaSourceRef {
+  kind: "summary" | "shard" | "ranking" | "filing" | "release";
+  ref: string;
+}
+export interface IdeaCatalyst {
+  label: string;
+  date?: string;
+}
+export interface IdeaPitch {
+  ticker: string;
+  rank: number;
+  compositeScore: number;
+  thesis: string;
+  rationale: string;
+  risks: string[];
+  catalyst: IdeaCatalyst;
+  sources: IdeaSourceRef[];
+}
+export interface Ideas {
+  schema: "ideas/v1";
+  generatedAt: string;
+  universe: string;
+  disclaimer: string;
+  pitches: IdeaPitch[];
+}
+
 // Feature 3A — ranking output. Written by scripts/run-ranking.mjs
 // to data/ranking.json. Consumed by /ideas (3B).
 export interface RankingComponent {
