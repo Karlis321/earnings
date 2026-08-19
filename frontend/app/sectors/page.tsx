@@ -15,9 +15,19 @@ export default async function SectorsPage() {
   // never render on this surface — see displayFilter.ts.
   const displayable = entities.filter(isDisplayable);
   const sectors = sectorCounts(entities);
-  const totalCore = displayable.filter((e) => e.isCore).length;
-  const totalUniverse = displayable.length - totalCore;
-  const totalEquities = displayable.length;
+  // Counts match the filter applied to sector detail pages + the
+  // dashboard-wide portfolio + SP500 + R1000 gate. Previously
+  // totalUniverse counted every non-core displayable entity (~2.7k),
+  // while sectorCounts() returns the filtered universe (~1k). Summing
+  // sector cards vs. the header total didn't reconcile.
+  const filteredDisplayable = displayable.filter((e) => {
+    if (e.isCore) return true;
+    const mem = e.index_membership ?? [];
+    return mem.includes("SP500") || mem.includes("R1000");
+  });
+  const totalCore = filteredDisplayable.filter((e) => e.isCore).length;
+  const totalUniverse = filteredDisplayable.length - totalCore;
+  const totalEquities = filteredDisplayable.length;
 
   return (
     <div className="mx-auto max-w-[1800px] px-10 py-8">

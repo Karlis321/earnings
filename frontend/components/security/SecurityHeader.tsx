@@ -18,10 +18,17 @@ interface Props {
 }
 
 export function SecurityHeader({ entity, latest, nextEvent, freshness }: Props) {
-  // "Latest earnings release" = the primary IR press-release URL for the latest event.
-  const releaseUrl = latest?.metrics
-    .find((m) => m.actual?.source?.url)
-    ?.actual?.source?.url;
+  // "Latest earnings release" = the primary IR/filing URL for the latest
+  // event. Prefer the event's own sourceLink (which the daily cron's
+  // fix-fallback-links pass keeps current — either a real SEC/IR filing
+  // or a Google-search fallback that always resolves). Falls back to any
+  // per-metric Fact source only if event.sourceLink is missing entirely.
+  // Prior implementation grabbed the first metric's source.url which for
+  // ~2,706 foreign shards points at defunct finance.yahoo.com/quote/*
+  // paths (verified HTTP 404), breaking the header CTA.
+  const releaseUrl =
+    latest?.sourceLink?.url ??
+    latest?.metrics.find((m) => m.actual?.source?.url)?.actual?.source?.url;
 
   return (
     <header className="mb-8">

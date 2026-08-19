@@ -5,7 +5,6 @@ import type { Entity, EventRecord } from "@/lib/types";
 import {
   Panel,
   ReactionChart,
-  SourceItemCard,
   CatalystCard,
   ExpectationTag,
 } from "@/components/primitives";
@@ -80,19 +79,11 @@ export function DeveloperDetail({ entity, events }: Props) {
           ticker={entity.ticker}
           displayName={entity.displayName}
         />
-        <Panel eyebrow="Latest sources" padded={false}>
-          <div className="flex flex-col gap-3 p-4">
-            {events[0]?.sources.items.length ? (
-              events[0].sources.items.map((it) => (
-                <SourceItemCard key={it.id} item={it} />
-              ))
-            ) : (
-              <div className="p-4 text-center text-[13px] text-tx-mid">
-                No sources captured in the current window.
-              </div>
-            )}
-          </div>
-        </Panel>
+        {/* "Latest sources" panel removed to match the OperatingDetail
+            fix (commit 9fcf979d) — the shard-frozen sources.items dump
+            leaked cross-ticker wire noise. CompanyNewsPanel above already
+            covers this role with the /api/news?ticker= server-side
+            alias-filtered feed. */}
       </div>
       </div>
     </div>

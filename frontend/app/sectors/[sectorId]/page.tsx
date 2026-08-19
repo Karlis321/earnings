@@ -68,7 +68,7 @@ export default async function SectorDetailPage({ params }: Props) {
         </h1>
         <p className="mt-1 text-[13.5px] text-tx-mid">
           {portfolio.length} portfolio · {universe.length} universe ·{" "}
-          {members.length} total in sector
+          {portfolio.length + universe.length} total (SP500 ∪ R1000)
         </p>
       </div>
 
