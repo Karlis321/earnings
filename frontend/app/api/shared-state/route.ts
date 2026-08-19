@@ -40,6 +40,24 @@ export async function PUT(req: NextRequest) {
         { status: 400 },
       );
     }
+    // preferences is optional during the schema-v1 migration. When
+    // present it must have the three fields; missing → left off.
+    if (body.preferences !== undefined) {
+      const p = body.preferences;
+      if (
+        !p ||
+        typeof p !== "object" ||
+        !Array.isArray(p.focusTickers) ||
+        !Array.isArray(p.themes) ||
+        typeof p.subscriptions !== "object" ||
+        p.subscriptions == null
+      ) {
+        return NextResponse.json(
+          { error: "bad_request", message: "preferences must be { focusTickers[], themes[], subscriptions{} }" },
+          { status: 400 },
+        );
+      }
+    }
     if (store.mode() === "in-memory") {
       return NextResponse.json(
         {
@@ -54,6 +72,7 @@ export async function PUT(req: NextRequest) {
       watchlist: body.watchlist,
       customSources: body.customSources,
       themes: body.themes,
+      ...(body.preferences ? { preferences: body.preferences } : {}),
       lastCommit: new Date().toISOString(),
     };
     await store.writeSharedState(next);

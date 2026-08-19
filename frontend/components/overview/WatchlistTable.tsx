@@ -103,6 +103,7 @@ const INDUSTRY_GROUPS: Record<string, string[]> = {
 };
 
 type Filter =
+  | "focus"
   | "portfolio"
   | "sp500"
   | "r1000"
@@ -212,9 +213,21 @@ function pickRowHeadlineMetric(
   return null;
 }
 
-export function WatchlistTable({ rows }: { rows: WatchlistRow[] }) {
+export function WatchlistTable({
+  rows,
+  focusTickers = [],
+}: {
+  rows: WatchlistRow[];
+  // Prioritized subset from user preferences. Empty when the user
+  // hasn't set any yet — component falls back to portfolio as the
+  // default filter in that case.
+  focusTickers?: string[];
+}) {
   const router = useRouter();
-  const [filter, setFilter] = useState<Filter>("portfolio");
+  const focusSet = useMemo(() => new Set(focusTickers), [focusTickers]);
+  const [filter, setFilter] = useState<Filter>(
+    focusTickers.length > 0 ? "focus" : "portfolio",
+  );
   const [sortKey, setSortKey] = useState<SortKey>("next");
   const [reportingSoon, setReportingSoon] = useState(false);
   const [group, setGroup] = useState<Group>("flat");
@@ -319,7 +332,14 @@ export function WatchlistTable({ rows }: { rows: WatchlistRow[] }) {
 
   const filtered = useMemo(() => {
     let list = rows.slice();
-    if (filter === "portfolio") {
+    if (filter === "focus") {
+      // Focus filter — user-selected priority subset from preferences.
+      // If the set is empty (user hasn't configured yet), degrade to
+      // showing portfolio so the panel isn't blank.
+      list = list.filter((r) =>
+        focusSet.size > 0 ? focusSet.has(r.ticker) : r.entity.isCore,
+      );
+    } else if (filter === "portfolio") {
       // Portfolio = core watchlist (17 tickers from prompt1.txt).
       // Sector-universe entities (isCore:false) live under the tab
       // labels below and on /admin.
@@ -452,7 +472,7 @@ export function WatchlistTable({ rows }: { rows: WatchlistRow[] }) {
       }
     });
     return list;
-  }, [rows, filter, reportingSoon, sortKey, tier, prices]);
+  }, [rows, filter, reportingSoon, sortKey, tier, prices, focusSet]);
 
   const grouped = useMemo(() => {
     if (group === "flat") {
@@ -1041,6 +1061,7 @@ function FilterBar({
       <div className="flex flex-wrap rounded-button border border-bd bg-s1 p-[3px]">
         {(
           [
+            { id: "focus", label: "Focus" },
             { id: "portfolio", label: "Our portfolio" },
             { id: "sp500", label: "S&P 500" },
             { id: "r1000", label: "Russell 1000" },

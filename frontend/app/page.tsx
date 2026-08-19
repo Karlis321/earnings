@@ -20,10 +20,12 @@ const EMPTY_INDEX: EventsIndex = {
 };
 
 export default async function OverviewPage() {
-  const [entities, index] = await Promise.all([
+  const [entities, index, state] = await Promise.all([
     store.readRegistry(),
     store.readEventsIndex?.() ?? Promise.resolve(EMPTY_INDEX),
+    store.readSharedState(),
   ]);
+  const focusTickers = state.preferences?.focusTickers ?? [];
   const allRows = buildWatchlistRowsFromIndex(entities, index.entries, todayIso());
   // Filter to portfolio (always visible) + SP500 + R1000 constituents.
   // Per user directive (2026-08-19): no dashboard surface should list
@@ -52,7 +54,7 @@ export default async function OverviewPage() {
           </p>
         ) : null}
       </div>
-      <WatchlistTable rows={rows} />
+      <WatchlistTable rows={rows} focusTickers={focusTickers} />
     </div>
   );
 }

@@ -552,6 +552,21 @@ export interface EventsIndex {
   entries: EventsIndexEntry[];
 }
 
+// User-editable preferences. Separate from `watchlist` (which is the
+// tracked set, populated by admin/expand flow) — `focusTickers` is the
+// prioritized subset the user actively cares about within that set,
+// used to filter/rank the overview. Themes live here so subsequent
+// Feature 2/3 features can key off the same object.
+export interface Preferences {
+  focusTickers: string[];
+  themes: Array<{ id: string; label: string; active: boolean }>;
+  subscriptions: {
+    newTranscripts: boolean;
+    weekAhead: boolean;
+    ideasDigest: boolean;
+  };
+}
+
 export interface SharedState {
   schema: "shared-state/v1";
   watchlist: string[];
@@ -570,7 +585,12 @@ export interface SharedState {
       error: string | null;
     } | null;
   }>;
+  // Legacy top-level themes kept during migration. Read path prefers
+  // `preferences.themes` when present. Follow-up commit drops this
+  // once the deployed snapshot has been through one write with the
+  // new envelope.
   themes: Array<{ id: string; label: string; active: boolean }>;
+  preferences?: Preferences;
   lastCommit: string;
 }
 
