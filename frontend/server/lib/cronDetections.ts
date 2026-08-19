@@ -153,6 +153,21 @@ export function computeSourceLink(
 
   if (prov === "yahoo-timeseries" || prov === "yahoo-earnings-chart") {
     if (!symbol) return null;
+
+    // Prefer an EDGAR filing-index landing when the entity has a CIK —
+    // always resolves, always shows real filings, verifiable. This
+    // covers ECG US, OZK US, and ~240 other CIK-bearing tickers whose
+    // yahoo-provenance events previously fell straight to Google
+    // search. Foreign wrappers with no SEC registration keep the
+    // Google fallback below.
+    if (entity?.edgarCik) {
+      const paddedCik = String(entity.edgarCik).padStart(10, "0");
+      return {
+        url: `https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=${paddedCik}&type=8-K&dateb=&owner=include&count=40`,
+        kind: "fallback",
+      };
+    }
+
     // Yahoo dropped /quote/{sym}/financials for most foreign listings
     // (verified 30/30 sampled 2026-07-30). Route the fallback to a
     // Google search with journalism-style phrasing so users always

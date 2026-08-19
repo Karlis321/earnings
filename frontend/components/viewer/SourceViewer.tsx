@@ -11,6 +11,7 @@ import {
   ArrowLeft,
   RefreshCw,
   Info,
+  Search,
 } from "lucide-react";
 import {
   ShareEmailButton,
@@ -62,6 +63,22 @@ export function SourceViewer() {
     if (!rawUrl.startsWith("http")) return false;
     try { return new URL(rawUrl).host.toLowerCase() === "news.google.com"; }
     catch { return false; }
+  })();
+
+  // Google search fallback URL (kind: "fallback" in the shard) — no
+  // primary document exists, computeSourceLink emitted a search
+  // landing page. Iframing google.com/search throws X-Frame-Options,
+  // so short-circuit to a dedicated link-out card instead of a 4s
+  // empty pane → mis-labeled BlockedFallback.
+  const isSearchFallback = (() => {
+    if (!rawUrl.startsWith("http")) return false;
+    try {
+      const u = new URL(rawUrl);
+      return (
+        u.host.toLowerCase() === "www.google.com" &&
+        u.pathname.startsWith("/search")
+      );
+    } catch { return false; }
   })();
   const [resolvedUrl, setResolvedUrl] = useState<string>(rawUrl);
   const [gnewsUnresolved, setGnewsUnresolved] = useState<boolean>(false);
@@ -244,6 +261,8 @@ export function SourceViewer() {
               <RefreshCw size={14} className="mr-2 animate-spin" />
               Checking hosted archive…
             </div>
+          ) : isSearchFallback ? (
+            <SearchFallbackCard url={url} label={label} />
           ) : gnewsUnresolved ? (
             <GnewsFallback url={url} label={label} />
           ) : isReal ? (
@@ -397,6 +416,34 @@ function GnewsFallback({ url, label }: { url: string; label: string }) {
       >
         <ExternalLink size={13} />
         Open at Google News
+      </a>
+    </div>
+  );
+}
+
+function SearchFallbackCard({ url, label }: { url: string; label: string }) {
+  return (
+    <div className="flex h-full min-h-[420px] flex-col items-center justify-center gap-4 p-8 text-center">
+      <Search size={22} className="text-tx-mid" />
+      <div className="max-w-[52ch]">
+        <div className="text-[15px] font-semibold text-tx">
+          Primary filing not on record for this quarter
+        </div>
+        <p className="mt-2 text-[13px] leading-[1.5] text-tx-mid">
+          {label || "This source"} carries a search-fallback link — no direct
+          earnings document was matched by the ingest pipeline. Open the
+          search below to find the release manually, then paste the URL into
+          the admin entry form if you want it captured next run.
+        </p>
+      </div>
+      <a
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex h-9 items-center gap-2 rounded-button bg-brand px-4 text-[13px] font-medium text-white shadow-[0_1px_2px_rgba(10,37,64,0.08),0_2px_6px_rgba(47,127,255,0.24)] hover:bg-brand-hi"
+      >
+        <ExternalLink size={13} />
+        Open Google search
       </a>
     </div>
   );

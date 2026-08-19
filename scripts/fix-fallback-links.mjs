@@ -71,6 +71,7 @@ async function main() {
       shardsWritten: 0,
       events: 0,
       rewrittenToGoogle: 0,
+      upgradedGoogleToEdgar: 0,
       keptFilingSecGov: 0,
       keptOtherFilingHost: 0,
       skippedNoEntity: 0,
@@ -109,7 +110,24 @@ async function main() {
       const isOldGoogle =
         /google\.com\/search/i.test(link.url) &&
         /%22[A-Z0-9]{1,6}%20[A-Z]{2}%22/.test(link.url); // "TICKER CC" quoted
-      if (!isYahoo && !isOldGoogle) continue;
+      // Any current-style Google-search URL whose ticker has a CIK is
+      // upgradable to an EDGAR filing-index landing — a real, verifiable
+      // page instead of a search results snippet. Matches the same
+      // preference `computeSourceLink` now applies at ingest time.
+      const isGoogleAny = /google\.com\/search/i.test(link.url);
+      const canUpgradeToEdgar = isGoogleAny && !!entity.edgarCik;
+
+      if (!isYahoo && !isOldGoogle && !canUpgradeToEdgar) continue;
+
+      if (canUpgradeToEdgar) {
+        const paddedCik = String(entity.edgarCik).padStart(10, "0");
+        e.sourceLink = {
+          url: `https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=${paddedCik}&type=8-K&dateb=&owner=include&count=40`,
+          kind: "fallback",
+        };
+        rollup.totals.upgradedGoogleToEdgar++;
+        continue;
+      }
 
       e.sourceLink = {
         url: buildGoogleQuery(entity, e),
@@ -132,6 +150,7 @@ async function main() {
   console.log(`Events scanned:           ${rollup.totals.events}`);
   console.log(`Kept SEC filing:          ${rollup.totals.keptFilingSecGov}`);
   console.log(`Kept other filing host:   ${rollup.totals.keptOtherFilingHost}`);
+  console.log(`Upgraded Google → EDGAR:  ${rollup.totals.upgradedGoogleToEdgar}`);
   console.log(`Rewritten → Google:       ${rollup.totals.rewrittenToGoogle}`);
   console.log(`Skipped (no entity):      ${rollup.totals.skippedNoEntity}`);
 
