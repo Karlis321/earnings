@@ -225,7 +225,13 @@ export function buildWatchlistRows(
       latestItemAt: (() => {
         let max: string | null = null;
         for (const it of latest?.sources?.items ?? []) {
-          if (it?.time && (!max || it.time > max)) max = it.time;
+          const withT = it as unknown as {
+            time?: string;
+            publishedAt?: string;
+            capturedAt?: string;
+          };
+          const t = withT.time ?? withT.publishedAt ?? withT.capturedAt;
+          if (t && (!max || t > max)) max = t;
         }
         return max ?? undefined;
       })(),

@@ -95,11 +95,19 @@ function buildIndexEntry(ticker, events, entity) {
     // client-side (localStorage lastSeenAt[ticker] compare). Absent
     // when no items exist. Not indexing by event because a very old
     // event can still receive fresh items via /append-sources.
+    //
+    // Source items use one of three time fields depending on ingest
+    // vintage: `time` (SourceItem contract), `publishedAt` (news/RSS
+    // items from press-releases route), `capturedAt` (fallback when
+    // publisher didn't emit a datetime). Prefer the earliest known
+    // publication signal — publishedAt/time are real, capturedAt is
+    // our-side-only.
     latestItemAt: (() => {
       let max = null;
       for (const e of events) {
         for (const it of e.sources?.items ?? []) {
-          if (it?.time && (!max || it.time > max)) max = it.time;
+          const t = it?.time ?? it?.publishedAt ?? it?.capturedAt;
+          if (t && (!max || t > max)) max = t;
         }
       }
       return max ?? undefined;

@@ -67,13 +67,18 @@ export default async function SecurityDetailPage({ params }: Props) {
 
   // Latest source-item timestamp across all events on this ticker —
   // handed to <MarkSeen /> so localStorage stamps the exact watermark
-  // being viewed. Matches shard-earnings.mjs's latestItemAt logic.
+  // being viewed. Matches shard-earnings.mjs's latestItemAt logic
+  // (time → publishedAt → capturedAt fallback).
   let latestItemAt: string | undefined = undefined;
   for (const e of events) {
     for (const it of e.sources?.items ?? []) {
-      if (it?.time && (!latestItemAt || it.time > latestItemAt)) {
-        latestItemAt = it.time;
-      }
+      const withT = it as unknown as {
+        time?: string;
+        publishedAt?: string;
+        capturedAt?: string;
+      };
+      const t = withT.time ?? withT.publishedAt ?? withT.capturedAt;
+      if (t && (!latestItemAt || t > latestItemAt)) latestItemAt = t;
     }
   }
   const nextEvent = events.find((e) => e.scheduledDate >= todayIso());
