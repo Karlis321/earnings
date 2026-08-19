@@ -12,6 +12,7 @@ import { FEATURE_FLAGS } from "@/lib/flags";
 
 const TABS = [
   { href: "/", label: "Overview" },
+  { href: "/ideas", label: "Ideas" },
   { href: "/news", label: "News" },
   { href: "/sectors", label: "Sectors", flagged: "sectors" as const },
   { href: "/admin", label: "Admin" },

@@ -1,6 +1,50 @@
 // Shape mirrors PRD Appendix C.5 (entity registry) + C.6 (earnings.json).
 // Every sourced number is a Fact; derived numbers store inputs + computedAt.
 
+// Feature 3A — ranking output. Written by scripts/run-ranking.mjs
+// to data/ranking.json. Consumed by /ideas (3B).
+export interface RankingComponent {
+  score: number; // tanh-scaled to [-1, 1]
+  raw: number; // original percentage
+  horizon?: "d3"; // reaction component only
+  basis?: "revenue_usd_m" | "eps_usd"; // trend component only
+}
+export interface RankingRow {
+  ticker: string;
+  companyId: string | null;
+  displayName: string;
+  capTier: CapTier;
+  marketCapUsd: number | null;
+  compositeScore: number;
+  componentsPresent: number;
+  components: {
+    reaction: RankingComponent | null;
+    surprise: RankingComponent | null;
+    trend: RankingComponent | null;
+  };
+  rank: number;
+  lastPeriod: string | null;
+  lastEventDate: string | null;
+  nextScheduled: string | null;
+}
+export interface Ranking {
+  schema: "ranking/v1";
+  generatedAt: string;
+  universe: string;
+  weights: { reaction: number; surprise: number; trend: number };
+  scales: { reaction: number; surprise: number; trend: number };
+  stats: {
+    total: number;
+    scored: number;
+    dropped: number;
+    hasReaction: number;
+    hasSurprise: number;
+    hasTrend: number;
+    hasAllThree: number;
+  };
+  rows: RankingRow[];
+}
+
 export type SecurityType = "operating" | "developer" | "etf";
 export type CapTier = "small" | "mid" | "large" | "mega" | "unknown";
 export type Freshness = "fresh" | "overdue" | "stale" | "never";

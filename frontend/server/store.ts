@@ -79,6 +79,11 @@ export interface Store {
   // hitting Yahoo per visitor.
   readMarketPulse?(): Promise<unknown | null>;
 
+  // Feature 3A signal ranking (data/ranking.json). Written by
+  // scripts/run-ranking.mjs. Consumed by /ideas (Feature 3B).
+  // Returns null when the ranking hasn't been computed yet.
+  readRanking?(): Promise<import("@/lib/types").Ranking | null>;
+
   readDocument(id: string): Promise<Document | null>;
   writeDocument(doc: Document): Promise<void>;
 

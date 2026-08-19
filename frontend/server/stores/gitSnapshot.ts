@@ -274,6 +274,7 @@ const P = {
   cronStatus: "data/cron-status.json",
   pipelineReport: "data/pipeline-report.json",
   marketPulse: "data/market-pulse.json",
+  ranking: "data/ranking.json",
   // Stored as a JSON object `{schema, entries:[...]}` rather than raw
   // JSONL — the write path uses commit() which JSON.stringifies, and
   // append-then-commit reduces to updating one entry. The health page
@@ -880,6 +881,17 @@ export function gitSnapshotStore(cfg: GhConfig): Store {
     async readMarketPulse() {
       try {
         const r = await readCached<unknown>(cfg, P.marketPulse);
+        return r?.content ?? null;
+      } catch {
+        return null;
+      }
+    },
+    async readRanking() {
+      try {
+        const r = await readCached<import("@/lib/types").Ranking>(
+          cfg,
+          P.ranking,
+        );
         return r?.content ?? null;
       } catch {
         return null;
