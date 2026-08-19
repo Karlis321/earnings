@@ -11,7 +11,13 @@
 // re-used on the event-detail header, sector member rows, and the
 // watchlist expanded row.
 
-import type { Horizon, ReactionPoint } from "@/lib/types";
+import type { Horizon, ReactionPoint, WatchlistReactionPoint } from "@/lib/types";
+
+// Renderer reads only horizon, absReturn, clipped, contaminated —
+// accept either the full ReactionPoint (event-detail path, from the
+// shard) or the slim WatchlistReactionPoint (watchlist grid, from
+// the events-index) so both callers type-check.
+type RenderablePoint = ReactionPoint | WatchlistReactionPoint;
 
 const HORIZON_LABEL: Record<Horizon, string> = {
   d1: "+1d",
@@ -31,10 +37,10 @@ export function ReactionRow({
   points,
   size = "sm",
 }: {
-  points: ReactionPoint[];
+  points: RenderablePoint[];
   size?: "sm" | "xs";
 }) {
-  const byH = new Map<Horizon, ReactionPoint>();
+  const byH = new Map<Horizon, RenderablePoint>();
   for (const p of points) byH.set(p.horizon, p);
   const textSize = size === "xs" ? "text-[10.5px]" : "text-[11px]";
   return (

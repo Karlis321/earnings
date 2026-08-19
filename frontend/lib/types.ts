@@ -404,9 +404,52 @@ export interface EtfDetail {
   usedAsBenchmarkFor: string[]; // list of tickers
 }
 
+// The subset of Entity actually consumed by the watchlist + sector
+// grouping / filtering code. Full Entity records are ~860 bytes serialized
+// (aliases, fundamentals, irSources, headlineMetrics, edgarCik, etc.); the
+// watchlist reads only 11 fields per row, so shipping the full record
+// pushes ~500 KB of dead payload to the client at 1039 rows. Narrowing
+// here catches any accidental new consumer at compile time.
+export type WatchlistEntity = Pick<
+  Entity,
+  | "ticker"
+  | "displayName"
+  | "securityType"
+  | "sectorTags"
+  | "capTier"
+  | "marketCapUsd"
+  | "companyId"
+  | "index_membership"
+  | "industryGroup"
+  | "isCanonical"
+  | "isCore"
+  // Aliases are used by the sector-view free-text search
+  // (SectorGroupsFilter) to match "Alphabet" → GOOGL etc. Cheap
+  // to include (~27 KB across the 1,039-row universe).
+  | "aliases"
+>;
+
+// Slim reaction shape shipped inside a WatchlistRow. ReactionRow only
+// renders horizon + absReturn + optional clipped/contaminated flags;
+// benchmark, computedAt, gapFlagged, populatesOn, excessReturn are
+// not used at the row level (event-detail views read a fresh
+// reaction from the shard). Splitting the type here keeps the wire
+// payload small without touching downstream ReactionPoint consumers.
+export interface WatchlistReactionPoint {
+  horizon: Horizon;
+  absReturn: number | null;
+  clipped?: boolean;
+  contaminated?: boolean;
+  // Rendering gate on WatchlistTable's "Last surprise" column — only
+  // shows the reaction when status is matured or clipped (not pending
+  // / unavailable). Optional so builders that don't have it (fixture
+  // path) can omit.
+  status?: "matured" | "clipped" | "pending" | "unavailable";
+}
+
 export interface WatchlistRow {
   ticker: string;
-  entity: Entity;
+  entity: WatchlistEntity;
   nextEvent: {
     date: string | null;
     daysUntil: number | null;
@@ -434,13 +477,17 @@ export interface WatchlistRow {
       label: string;
     }
   >;
-  guidanceMove: GuidanceMove;
-  reactionSpark: number[]; // 4 values, one per horizon, null-safe
-  reactionPending: boolean;
+  // These three are populated by the builders but not consumed by any
+  // renderer of a WatchlistRow (guidanceMove renders on event-detail
+  // reading its own event.guidanceMove). Optional so callers can skip
+  // populating them; kept for backwards compatibility.
+  guidanceMove?: GuidanceMove;
+  reactionSpark?: number[]; // 4 values, one per horizon, null-safe
+  reactionPending?: boolean;
   // Full reaction horizons on the latest past event — populated by the
   // index builder so the compact <ReactionRow /> can render on the
   // sector row + watchlist expanded row without touching the shard.
-  reactionPoints?: ReactionPoint[];
+  reactionPoints?: WatchlistReactionPoint[];
   freshness: Freshness;
   sourceCount: number;
   newSinceLastView: number;
