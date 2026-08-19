@@ -62,6 +62,39 @@ function buildIndexEntry(ticker, events, entity) {
       ? latest.reaction.points
       : undefined;
 
+  // Forward-growth signal for the ranking script (Feature 3A). Compare
+  // the next event's analyst estimate vs. the latest past actual for
+  // the same metric. Prefer revenue (most-often-populated on the
+  // trend-estimates path), fall back to EPS. Skips when either side
+  // is missing — leaves the field absent rather than emitting 0.
+  let nextEstimateVsActualPct = undefined;
+  let nextEstimateBasis = undefined;
+  if (latest && nextEvent) {
+    const pick = (m) => (m?.actual?.value != null ? m.actual.value : null);
+    const est = (m) => (m?.estimate?.value != null ? m.estimate.value : null);
+    const revActual = pick(
+      (latest.metrics ?? []).find((m) => m.key === "revenue_usd_m"),
+    );
+    const revEst = est(
+      (nextEvent.metrics ?? []).find((m) => m.key === "revenue_usd_m"),
+    );
+    if (revActual != null && revEst != null && revActual !== 0) {
+      nextEstimateVsActualPct = ((revEst - revActual) / revActual) * 100;
+      nextEstimateBasis = "revenue_usd_m";
+    } else {
+      const epsActual = pick(
+        (latest.metrics ?? []).find((m) => m.key === "eps_usd"),
+      );
+      const epsEst = est(
+        (nextEvent.metrics ?? []).find((m) => m.key === "eps_usd"),
+      );
+      if (epsActual != null && epsEst != null && epsActual !== 0) {
+        nextEstimateVsActualPct = ((epsEst - epsActual) / epsActual) * 100;
+        nextEstimateBasis = "eps_usd";
+      }
+    }
+  }
+
   return {
     ticker,
     count: events.length,
@@ -112,6 +145,9 @@ function buildIndexEntry(ticker, events, entity) {
       }
       return max ?? undefined;
     })(),
+    // Feature 3A ranking inputs — see buildIndexEntry preamble.
+    nextEstimateVsActualPct,
+    nextEstimateBasis,
     guidanceMove: latest?.guidanceMove ?? null,
     freshness: latest?.freshness ?? "never",
     lastEventReactionPoints,

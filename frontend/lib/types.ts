@@ -538,6 +538,16 @@ export interface EventsIndexEntry {
   // avoids shipping the full item list to the grid just for a
   // freshness comparison.
   latestItemAt?: string;
+  // Forward-growth signal — % change from the latest past event's
+  // ACTUAL to the next upcoming event's ANALYST ESTIMATE for the
+  // same metric. Prefers revenue_usd_m, falls back to eps_usd.
+  // Positive → analysts expect growth q/q. Consumed by the ranking
+  // script (data/ranking.json) as one of three composite-score
+  // components. Absent when either side is missing.
+  nextEstimateVsActualPct?: number;
+  // Which metric fed nextEstimateVsActualPct — audit hint so the
+  // ranking output can label its source cleanly.
+  nextEstimateBasis?: "revenue_usd_m" | "eps_usd";
   guidanceMove: GuidanceMove;
   freshness: Freshness;
   // Reaction horizons on the latest past event — carried in the index
