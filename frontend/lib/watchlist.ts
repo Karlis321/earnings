@@ -238,11 +238,23 @@ export function buildWatchlistRows(
 //   - `nextEvent.label` for operating rows shows `nextScheduled` only —
 //     the index doesn't carry the BMO/AMC/intraday timing, so we can't
 //     render "<date> · BMO" here. Developer + ETF labels are identical.
+// Extra ~1 MB / R1000 render came from `latestMetrics` — a per-metric
+// snapshot only WatchlistTable's dynamic-column-sort feature consumes.
+// Sector pages (/sectors/*, /sectors/sp500, /sectors/russell1000) render
+// SectorMemberRows which doesn't touch latestMetrics; passing
+// { includeLatestMetrics: false } from those pages drops the field
+// from the wire payload without any downstream change.
+export interface BuildWatchlistOptions {
+  includeLatestMetrics?: boolean;
+}
+
 export function buildWatchlistRowsFromIndex(
   entities: Entity[],
   indexEntries: EventsIndexEntry[],
   now: string,
+  options?: BuildWatchlistOptions,
 ): WatchlistRow[] {
+  const includeLatestMetrics = options?.includeLatestMetrics !== false;
   const byTicker = new Map(indexEntries.map((e) => [e.ticker, e]));
   return entities.filter(isDisplayable).map((entity) => {
     const idx = byTicker.get(entity.ticker);
@@ -323,7 +335,7 @@ export function buildWatchlistRowsFromIndex(
         }
         return null;
       })(),
-      latestMetrics: idx?.latestMetrics,
+      latestMetrics: includeLatestMetrics ? idx?.latestMetrics : undefined,
       // guidanceMove kept for API compatibility with buildWatchlistRows,
       // even though no renderer consumes it off a WatchlistRow.
       guidanceMove,

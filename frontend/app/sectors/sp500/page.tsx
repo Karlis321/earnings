@@ -30,7 +30,13 @@ export default async function Sp500Page() {
   const members = entities.filter((e) => (e.index_membership ?? []).includes("SP500"));
   const memberTickers = new Set(members.map((m) => m.ticker));
 
-  const allRows = buildWatchlistRowsFromIndex(entities, index.entries, todayIso());
+  // latestMetrics unused by sector groupings; skip populating it.
+  const allRows = buildWatchlistRowsFromIndex(
+    entities,
+    index.entries,
+    todayIso(),
+    { includeLatestMetrics: false },
+  );
   const inIndex = allRows.filter((r) => memberTickers.has(r.ticker));
 
   // Group by industry group (real GICS-ish sub-industry, populated by

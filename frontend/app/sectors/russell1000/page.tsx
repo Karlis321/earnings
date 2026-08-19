@@ -25,7 +25,14 @@ export default async function Russell1000Page() {
   const members = entities.filter((e) => (e.index_membership ?? []).includes("R1000"));
   const memberTickers = new Set(members.map((m) => m.ticker));
 
-  const allRows = buildWatchlistRowsFromIndex(entities, index.entries, todayIso());
+  // Sector groupings don't consume `latestMetrics` — skip populating
+  // it (~1 MB saving on the R1000 SSR payload).
+  const allRows = buildWatchlistRowsFromIndex(
+    entities,
+    index.entries,
+    todayIso(),
+    { includeLatestMetrics: false },
+  );
   const inIndex = allRows.filter((r) => memberTickers.has(r.ticker));
 
   const byIndustry = new Map<string, typeof inIndex>();

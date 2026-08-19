@@ -31,7 +31,15 @@ export default async function SectorDetailPage({ params }: Props) {
   const members = entitiesInSector(entities, sectorId);
   if (members.length === 0) notFound();
 
-  const allRows = buildWatchlistRowsFromIndex(entities, index.entries, todayIso());
+  // Sector detail renders SectorMemberRows which doesn't read
+  // latestMetrics — skip populating it (saves ~1 MB on wide sectors
+  // like technology/financials).
+  const allRows = buildWatchlistRowsFromIndex(
+    entities,
+    index.entries,
+    todayIso(),
+    { includeLatestMetrics: false },
+  );
   const inSector = allRows.filter((r) =>
     members.some((m) => m.ticker === r.ticker),
   );
