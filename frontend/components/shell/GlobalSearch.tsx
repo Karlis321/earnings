@@ -28,19 +28,10 @@ export function GlobalSearch() {
         // Filter ETF/fund entities out of the search index — they
         // remain in the registry (benchmarks depend on them) and
         // direct URLs to /s/<ticker> still resolve. See displayFilter.
-        // Additional filter (2026-08-19 user directive): only surface
-        // portfolio + SP500 + R1000 tickers in the palette. Non-indexed
-        // tickers remain in the registry and their /s/<ticker> URLs
-        // still work — they're just not discoverable via search.
-        if (!cancelled) {
-          setEntities(
-            r.filter(isDisplayable).filter((e) => {
-              if (e.isCore) return true;
-              const mem = e.index_membership ?? [];
-              return mem.includes("SP500") || mem.includes("R1000");
-            }),
-          );
-        }
+        // The portfolio + SP500 + R1000 gate is applied later at hit-
+        // ranking time (not here) so byCompany grouping can still see
+        // sibling listings for accurate "+N listings" counts.
+        if (!cancelled) setEntities(r.filter(isDisplayable));
       })
       .catch(() => {
         /* Search stays empty on fetch failure. */
@@ -74,17 +65,31 @@ export function GlobalSearch() {
   const filtered = useMemo(() => {
     const term = q.trim().toLowerCase();
     // Index entities by companyId once so we can attach listing counts.
+    // Includes ALL sibling listings so the "+N listings" badge counts
+    // accurately even for foreign siblings outside the SP500/R1000 filter.
     const byCompany = new Map<string, Entity[]>();
     for (const e of entities) {
       const cid = e.companyId ?? e.ticker;
       if (!byCompany.has(cid)) byCompany.set(cid, []);
       byCompany.get(cid)!.push(e);
     }
+    // Result-level gate: only surface companies where at least one
+    // listing is in portfolio OR SP500 OR R1000. Applied here (not on
+    // the entities array) so byCompany above sees every sibling for
+    // accurate listing counts. Non-indexed companies remain reachable
+    // via direct `/s/<ticker>` URL — just not discoverable via ⌘K.
+    const companyMeetsFilter = (list: Entity[]) =>
+      list.some((e) => {
+        if (e.isCore) return true;
+        const mem = e.index_membership ?? [];
+        return mem.includes("SP500") || mem.includes("R1000");
+      });
     // Empty query: default to the first N canonical listings (matches
     // watchlist ordering: portfolio picks first).
     const canonical = (list: Entity[]) => list.find((e) => e.isCanonical) ?? list[0];
     if (!term) {
       return [...byCompany.values()]
+        .filter(companyMeetsFilter)
         .map((list) => ({ hit: canonical(list), listings: list }))
         .slice(0, 6);
     }
@@ -111,6 +116,10 @@ export function GlobalSearch() {
       if (seenCompanies.has(cid)) continue;
       seenCompanies.add(cid);
       const list = byCompany.get(cid) ?? [e];
+      // Skip the whole company if none of its listings meet the
+      // portfolio/SP500/R1000 gate — even if one of its non-indexed
+      // siblings matched the search term.
+      if (!companyMeetsFilter(list)) continue;
       const canon = canonical(list);
       // Exact ticker match test — matches the full Bloomberg ticker
       // ("TGB US") OR the base symbol ("TGB") of any member listing.
