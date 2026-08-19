@@ -1,6 +1,12 @@
 import clsx from "clsx";
-import { ArrowUpRight, AlertTriangle, ArrowUp, ArrowDown, Minus } from "lucide-react";
-import type { Summary, SummaryDirection, SummaryDriver, SummaryDriverBasis } from "@/lib/types";
+import { ArrowUpRight, AlertTriangle, ArrowUp, ArrowDown, Minus, Quote } from "lucide-react";
+import type {
+  Summary,
+  SummaryCallSnippet,
+  SummaryDirection,
+  SummaryDriver,
+  SummaryDriverBasis,
+} from "@/lib/types";
 import { OlderSummaries } from "./OlderSummaries";
 import { RegenerateSummaryButton } from "./RegenerateSummaryButton";
 
@@ -221,6 +227,15 @@ export function SummaryCard({
         </details>
       ) : null}
 
+      {/* 6b. Call snippets — v3 verbatim quotes from the earnings
+             call transcript / release. Visible by default (no
+             collapse) so a reader scanning the summary catches
+             tone/guidance colour immediately. Omitted when the
+             field is absent or empty (kpi-only summaries have none). */}
+      {!compact && Array.isArray(summary.callSnippets) && summary.callSnippets.length > 0 ? (
+        <CallSnippets snippets={summary.callSnippets} />
+      ) : null}
+
       {/* 7. Caveats — warning-tinted, max 3 one-liners. */}
       {caveats.length > 0 ? (
         <div
@@ -354,6 +369,86 @@ function DriverBasisTag({ basis }: { basis: SummaryDriverBasis }) {
     >
       {isCompany ? "Company" : "Derived"}
     </span>
+  );
+}
+
+function CallSnippets({ snippets }: { snippets: SummaryCallSnippet[] }) {
+  // Group by topic in insertion order — first occurrence of a topic
+  // sets its position; later duplicates cluster with it.
+  const topics: string[] = [];
+  const byTopic = new Map<string, SummaryCallSnippet[]>();
+  for (const s of snippets) {
+    if (!byTopic.has(s.topic)) {
+      topics.push(s.topic);
+      byTopic.set(s.topic, []);
+    }
+    byTopic.get(s.topic)!.push(s);
+  }
+
+  return (
+    <section
+      aria-label="Verbatim call snippets"
+      className="mt-4 rounded-[6px] border border-bd bg-panel2/50 px-3 py-2.5"
+    >
+      <header className="mb-2 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.07em] text-tx-mid">
+        <Quote aria-hidden className="h-[11px] w-[11px] text-tx3" />
+        <span>From the call · {snippets.length} snippet{snippets.length === 1 ? "" : "s"}</span>
+      </header>
+      <div className="space-y-3">
+        {topics.map((topic) => (
+          <div key={topic}>
+            <div className="mb-1 inline-flex h-5 items-center rounded-[3px] border border-bd bg-s2 px-[6px] font-mono text-[9.5px] uppercase tracking-[0.06em] text-tx-mid">
+              {topic}
+            </div>
+            <ul className="space-y-1.5">
+              {byTopic.get(topic)!.map((s, i) => (
+                <li
+                  key={`${topic}-${i}`}
+                  className="border-l-2 border-bd pl-3 text-[12.5px] leading-[1.55]"
+                >
+                  <blockquote className="text-tx">
+                    <span aria-hidden className="mr-[3px] text-tx3">
+                      &ldquo;
+                    </span>
+                    {s.quote}
+                    <span aria-hidden className="ml-[2px] text-tx3">
+                      &rdquo;
+                    </span>
+                  </blockquote>
+                  <div className="mt-[2px] flex flex-wrap items-center gap-x-1.5 gap-y-0.5 font-mono text-[10px] text-tx3">
+                    {s.speaker ? (
+                      <span className="text-tx-mid">{s.speaker}</span>
+                    ) : (
+                      <span>from release</span>
+                    )}
+                    {s.role ? (
+                      <>
+                        <span aria-hidden>·</span>
+                        <span>{s.role === "qa" ? "Q&A" : "prepared"}</span>
+                      </>
+                    ) : null}
+                    <span aria-hidden>·</span>
+                    <a
+                      href={
+                        s.source.locator
+                          ? `${s.source.url}${s.source.locator}`
+                          : s.source.url
+                      }
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-[3px] underline decoration-bd underline-offset-2 hover:text-tx-mid hover:decoration-tx2"
+                    >
+                      transcript
+                      <ArrowUpRight aria-hidden className="h-[9px] w-[9px]" />
+                    </a>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }
 

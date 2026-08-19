@@ -642,6 +642,33 @@ export interface SummaryDriver {
   basis: SummaryDriverBasis;
 }
 
+// v3 addition — verbatim call-snippet quotes extracted from the
+// earnings call transcript (or the release when no transcript is
+// available). Each snippet stands on its own; UI renders them as
+// pull-quotes under the summary. Contract:
+//   - `quote` is a verbatim excerpt, ≤ 45 words, no ellipsis-hiding.
+//   - `speaker` is the person who said it (CEO/CFO/analyst name).
+//     Empty string when the source is a written release rather
+//     than a call.
+//   - `role` is either "prepared" (management remarks / script) or
+//     "qa" (Q&A section). Absent when unknown.
+//   - `topic` is a short two-word-max theme label (e.g. "margins",
+//     "guidance", "china"). Used for chip grouping.
+//   - `source.url` links to the transcript / release; `source.locator`
+//     is optional deep-link (#seg-N or #para-N) matching the
+//     Document ingest pattern.
+export type SummaryCallSnippetRole = "prepared" | "qa";
+export interface SummaryCallSnippet {
+  quote: string;
+  speaker: string;
+  role?: SummaryCallSnippetRole;
+  topic: string;
+  source: {
+    url: string;
+    locator?: string;
+  };
+}
+
 export interface Summary {
   ticker: string;
   period: string;
@@ -657,6 +684,9 @@ export interface Summary {
   // logic: any consumer must render nothing when the field is
   // missing rather than fall over.
   drivers?: SummaryDriver[];
+  // v3 addition — verbatim call quotes. Optional (absent for
+  // pre-v3 summaries + for events with no transcript on record).
+  callSnippets?: SummaryCallSnippet[];
   // Summary depth. "filing" = full treatment (release / 10-Q read,
   // drivers + guidance assessed). "kpi-only" = fast path composed
   // purely from resolve-earnings-target.mjs output (SEC-verbatim

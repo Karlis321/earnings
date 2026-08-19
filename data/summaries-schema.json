@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "summaries/v2",
-  "description": "Post-earnings summary written by /earnings + /sweep slash commands. One file per ticker+period at data/summaries/<TICKER>_<PERIOD>.json. Ticker uses '_' for Bloomberg space (e.g. HBM_US); period uses '_' for space (e.g. FY2026_Q2). v2 adds an optional `drivers` array — absent means v1 (KPIs only); present means v2 (per-KPI cause explanations from the primary document). v1 files still validate.",
+  "$id": "summaries/v3",
+  "description": "Post-earnings summary written by /earnings + /sweep slash commands. One file per ticker+period at data/summaries/<TICKER>_<PERIOD>.json. Ticker uses '_' for Bloomberg space (e.g. HBM_US); period uses '_' for space (e.g. FY2026_Q2). v2 adds an optional `drivers` array — absent means v1 (KPIs only); present means v2 (per-KPI cause explanations from the primary document). v3 adds optional `callSnippets` — verbatim pull-quotes from the earnings call. v1 + v2 files still validate.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -108,6 +108,50 @@
             "type": "string",
             "enum": ["company-disclosed", "derived-arithmetic"],
             "description": "company-disclosed: filing/MD&A explicitly states this cause (the overwhelming majority). derived-arithmetic: pure decomposition from our own data (e.g. 'margin expansion is fully explained by revenue +8% against flat operating costs')."
+          }
+        }
+      }
+    },
+    "callSnippets": {
+      "type": "array",
+      "description": "Optional (v3). Verbatim pull-quotes from the earnings-call transcript (or release when no transcript exists). Rules: (a) `quote` is verbatim — no paraphrase, no ellipsis-hiding cuts (…), ≤ 45 words. (b) `speaker` is the person who uttered it (CEO / CFO / analyst name); empty string when the source is a written release. (c) `topic` is a short two-word-max theme label (e.g. 'margins', 'guidance', 'china', 'buyback'). (d) `source.url` links to the transcript or release. (e) `source.locator` is optional deep-link (e.g. '#seg-4' or '#para-12') matching the Document ingest anchors. Absent field means no snippets extracted — do not render a section.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["quote", "speaker", "topic", "source"],
+        "properties": {
+          "quote": {
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 400,
+            "description": "Verbatim excerpt from the call or release. No paraphrase. No hidden cuts."
+          },
+          "speaker": {
+            "type": "string",
+            "description": "Named speaker (e.g. 'Tim Cook, CEO'). Empty string when source is a written release."
+          },
+          "role": {
+            "type": "string",
+            "enum": ["prepared", "qa"],
+            "description": "Optional — 'prepared' = management prepared remarks / script, 'qa' = Q&A section. Absent when unknown."
+          },
+          "topic": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 24,
+            "description": "Short theme tag for chip grouping (e.g. 'margins', 'guidance', 'china', 'ai capex')."
+          },
+          "source": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["url"],
+            "properties": {
+              "url": { "type": "string", "format": "uri" },
+              "locator": {
+                "type": "string",
+                "description": "Optional deep-link anchor (e.g. '#seg-4', '#para-12')."
+              }
+            }
           }
         }
       }

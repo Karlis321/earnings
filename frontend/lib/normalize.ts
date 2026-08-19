@@ -135,13 +135,16 @@ export function normalizeEvents(
   return raw.filter(Boolean).map((e) => normalizeEvent(e as EventRecord, entity));
 }
 
-// Normalize a summary (v1 shape had no `drivers` or `kpis`; v2 does).
+// Normalize a summary (v1 shape had no `drivers` or `kpis`; v2 added
+// drivers; v3 added callSnippets). Missing arrays become [] so the
+// UI can `.map` without guarding.
 export function normalizeSummary(raw: Summary | undefined | null): Summary | null {
   if (!raw) return null;
   return {
     ...raw,
     kpis: Array.isArray(raw.kpis) ? raw.kpis : [],
     drivers: Array.isArray(raw.drivers) ? raw.drivers : [],
+    callSnippets: Array.isArray(raw.callSnippets) ? raw.callSnippets : [],
   } as Summary;
 }
 

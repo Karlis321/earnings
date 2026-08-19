@@ -487,6 +487,73 @@ structured feeds don't carry) and write them onto the event's
    if the filing didn't disclose anything from the set. Never
    invent a value — no hit = omit.
 
+## Step 3c — Extract verbatim call snippets (best-effort, filing-depth only)
+
+Only runs when Step 1 loaded an earnings-call transcript (Seeking
+Alpha, Motley Fool, company IR page, or a press-release excerpt
+with quoted management remarks). kpi-only summaries SKIP this step
+— there's no transcript on hand.
+
+Purpose: distill 3-8 short pull-quotes that a reader can scan in
+15 seconds to catch the tone / drivers / guidance change beyond
+what the KPI grid encodes. Each snippet stands alone as a
+quotable line.
+
+Rules:
+
+- **Verbatim only.** Copy the exact string from the transcript.
+  NO paraphrase. NO ellipsis-hiding cuts (`…`) — if a passage
+  needs shortening, cut at a sentence boundary and quote only the
+  clean sentence.
+- **≤ 45 words per snippet.** Hard ceiling. Cut ruthlessly at
+  natural clause boundaries.
+- **Speaker must be named.** Format: `"Tim Cook, CEO"` /
+  `"Luca Maestri, CFO"` / `"analyst Q, Morgan Stanley"`. For
+  written releases (no call), use `speaker: ""` and mark
+  `role: "prepared"`.
+- **`topic` is a 2-word tag** for chip grouping. Reuse across
+  snippets when applicable — e.g. `margins`, `guidance`, `china`,
+  `ai capex`, `buyback`, `demand`. Keep short.
+- **`role`** is `"prepared"` for management prepared remarks /
+  script, `"qa"` for Q&A section. Omit when unknown.
+- **`source.url`** links to the transcript page. `source.locator`
+  is optional — use `#seg-N` if you know the segment index, else
+  omit.
+- Prefer snippets that add signal the KPI grid doesn't already
+  encode: forward-looking colour, tone shifts, explicit rationale
+  for a guidance change, notable Q&A pushback. Avoid pure
+  restatements of numbers already in `kpis[]`.
+
+Target count: **3-8 snippets**. Fewer than 3 → skip the step
+(don't force filler). Zero snippets is a valid outcome for
+filings without a call.
+
+Persistence — sanctioned script:
+
+`Bash: node scripts/apply-call-snippets.mjs <TICKER> <PERIOD> <path/to/snippets.json>`
+
+The script reads the JSON array, validates each entry
+(verbatim discipline, ≤45 words, no ellipsis, topic present,
+source.url present), sets `summary.callSnippets = [...]`, writes
+the summary file. Rejects the whole payload if ANY entry fails
+validation.
+
+Payload shape:
+```
+[
+  {
+    "quote": "Verbatim excerpt exactly as spoken.",
+    "speaker": "Speaker Name, Role",
+    "role": "prepared",
+    "topic": "margins",
+    "source": { "url": "https://…", "locator": "#seg-4" }
+  }, ...
+]
+```
+
+Skipping Step 3c is fine when no transcript was loaded. Absent
+`callSnippets` on the summary file is the honest signal.
+
 ## Step 4 — Validate + commit + push
 
 1. `Bash: node scripts/validate.js data/summaries/<file>.json` —
