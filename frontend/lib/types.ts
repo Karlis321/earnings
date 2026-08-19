@@ -1,6 +1,32 @@
 // Shape mirrors PRD Appendix C.5 (entity registry) + C.6 (earnings.json).
 // Every sourced number is a Fact; derived numbers store inputs + computedAt.
 
+// Feature 2C — macro extremity signals. Written by
+// scripts/refresh-macro.mjs to data/macro-signals.json. Rendered
+// on /week-ahead above the day grid as a small chip strip that
+// highlights any market-priced series >2σ from its 3-year mean.
+export type MacroFlag = "normal" | "elevated" | "extreme";
+export interface MacroSignal {
+  key: string;
+  symbol: string;
+  label: string;
+  unit: string;
+  interpretation: string;
+  latest: number;
+  latestDate: string;
+  window: { years: number; observations: number; mean: number; stdev: number };
+  zScore: number;
+  flag: MacroFlag;
+}
+export interface MacroSignals {
+  schema: "macro-signals/v1";
+  generatedAt: string;
+  windowYears: number;
+  thresholds: { elevated: number; extreme: number };
+  signals: MacroSignal[];
+  errors?: string[];
+}
+
 // Feature 3C — AI pitch cards over the top-N ranked tickers.
 // Written by .claude/commands/ideas.md via scripts/apply-ideas.mjs.
 // Consumed by /ideas (3B) as a top-strip above the ranking table.

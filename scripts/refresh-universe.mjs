@@ -133,6 +133,12 @@ const PHASES = [
   // committed snapshot for instant paint; live client fetch stays
   // as fallback for intra-day ticks between refreshes.
   { key: "market-pulse", label: "Market Pulse index series (4 indices)", script: "refresh-market-pulse.mjs" },
+  // Macro extremity — 10 market-priced series (VIX, DXY, oil, gold,
+  // bond ETFs, index levels, credit) fetched from Yahoo, z-scored
+  // against 3y rolling. Feature 2C. Writes data/macro-signals.json;
+  // consumed by /week-ahead as an extremity strip above the day
+  // grid. Best-effort — non-blocking on transient Yahoo errors.
+  { key: "macro", label: "Macro extremity (z-score vs 3y)", script: "refresh-macro.mjs", optional: true },
   // Google News + wire RSS fanout — ported to
   // scripts/refresh-google-news.mjs on 2026-08-03. Single fetch pass
   // (29 feeds), distributes matched items via displayName / aliases /

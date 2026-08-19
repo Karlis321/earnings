@@ -2,6 +2,7 @@ import { store } from "@/server/store";
 import { EmptyState } from "@/components/primitives";
 import { MarketPulse } from "@/components/overview/MarketPulse";
 import { WeekAheadGrid } from "@/components/week-ahead/WeekAheadGrid";
+import { MacroStrip } from "@/components/week-ahead/MacroStrip";
 import { isDisplayable } from "@/lib/displayFilter";
 import { todayIso } from "@/lib/freshness";
 import type { WeekAheadRow } from "@/components/week-ahead/WeekAheadGrid";
@@ -25,12 +26,13 @@ function isoAfterDays(days: number): string {
 }
 
 export default async function WeekAheadPage() {
-  const [entities, index, state, ranking] = await Promise.all([
+  const [entities, index, state, ranking, macro] = await Promise.all([
     store.readRegistry(),
     store.readEventsIndex?.() ??
       Promise.resolve({ schema: "events-index/v1", updatedAt: "", entries: [] }),
     store.readSharedState(),
     store.readRanking ? store.readRanking() : Promise.resolve(null),
+    store.readMacroSignals ? store.readMacroSignals() : Promise.resolve(null),
   ]);
 
   const today = todayIso();
@@ -106,6 +108,10 @@ export default async function WeekAheadPage() {
           </p>
         ) : null}
       </div>
+
+      {macro && macro.signals.length > 0 ? (
+        <MacroStrip signals={macro} />
+      ) : null}
 
       <WeekAheadGrid rows={rows} horizonStart={today} horizonEnd={horizonEnd} />
     </div>

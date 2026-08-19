@@ -167,6 +167,9 @@ export const inMemoryStore: Store = {
   async readIdeas() {
     return null;
   },
+  async readMacroSignals() {
+    return null;
+  },
   async writePipelineReport(): Promise<void> {
     notImplemented("writePipelineReport");
   },

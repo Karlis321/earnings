@@ -90,6 +90,11 @@ export interface Store {
   // by /ideas as a top-strip above the ranking table.
   readIdeas?(): Promise<import("@/lib/types").Ideas | null>;
 
+  // Feature 2C macro extremity signals (data/macro-signals.json).
+  // Written by scripts/refresh-macro.mjs (phase in refresh-universe).
+  // Consumed by /week-ahead as an extremity strip above the day grid.
+  readMacroSignals?(): Promise<import("@/lib/types").MacroSignals | null>;
+
   readDocument(id: string): Promise<Document | null>;
   writeDocument(doc: Document): Promise<void>;
 

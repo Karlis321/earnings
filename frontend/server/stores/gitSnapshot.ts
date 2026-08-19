@@ -276,6 +276,7 @@ const P = {
   marketPulse: "data/market-pulse.json",
   ranking: "data/ranking.json",
   ideas: "data/ideas.json",
+  macroSignals: "data/macro-signals.json",
   // Stored as a JSON object `{schema, entries:[...]}` rather than raw
   // JSONL — the write path uses commit() which JSON.stringifies, and
   // append-then-commit reduces to updating one entry. The health page
@@ -903,6 +904,17 @@ export function gitSnapshotStore(cfg: GhConfig): Store {
         const r = await readCached<import("@/lib/types").Ideas>(
           cfg,
           P.ideas,
+        );
+        return r?.content ?? null;
+      } catch {
+        return null;
+      }
+    },
+    async readMacroSignals() {
+      try {
+        const r = await readCached<import("@/lib/types").MacroSignals>(
+          cfg,
+          P.macroSignals,
         );
         return r?.content ?? null;
       } catch {
