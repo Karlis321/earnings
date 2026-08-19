@@ -1,6 +1,6 @@
 {
   "$schema": "covered/v1",
-  "description": "The 17 covered names — mirror of entities where coverage='deep' AND isCanonical!=false in data/entity-registry.json. Kept as a durable list so the sweep command doesn't need to walk the whole registry each run. If a name is added/removed from coverage in the registry, update this file.",
+  "description": "Covered deep-tracked names. ETF entries removed 2026-08-19: XEG CN, RIO FP, GDXJ US were hidden from every UI surface by isDisplayable() (which filters securityType==='etf'), so keeping them in this list produced no visible signal and permanently skipped them from /sweep. To follow an ETF, use direct /s/<ticker> URLs — those still resolve for benchmarking purposes. If ETF coverage becomes a first-class feature, revisit isDisplayable + this file together.",
   "tickers": [
     "ABXX CN",
     "BN US",
@@ -15,9 +15,6 @@
     "VLE CN",
     "DBG CN",
     "SCMI CN",
-    "WRN US",
-    "XEG CN",
-    "RIO FP",
-    "GDXJ US"
+    "WRN US"
   ]
 }

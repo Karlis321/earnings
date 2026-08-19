@@ -174,10 +174,14 @@ export default async function SecurityDetailPage({ params }: Props) {
         />
       )}
 
-      {entity.securityType === "operating" && events.length === 0 && (
+      {events.length === 0 && entity.securityType !== "etf" && (
         <EmptyState
           title="No prints on file yet"
-          hint="This name is data-incomplete. The next daily refresh will populate it."
+          hint={
+            entity.securityType === "developer"
+              ? "This name is on the developer watchlist but no catalysts have been ingested yet — either the daily refresh hasn't run against this shard or the entity is pre-listing / delisted. Direct URL still resolves for reference."
+              : "This name is data-incomplete. The next daily refresh will populate it."
+          }
         />
       )}
     </div>

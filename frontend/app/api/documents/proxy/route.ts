@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { INGESTABLE_HOSTS } from "@/server/lib/documentIngest";
 
 export const dynamic = "force-dynamic";
-export const maxDuration = 15;
+export const maxDuration = 45;
 
 // GET /api/documents/proxy?url=<encoded>
 //
@@ -76,7 +76,7 @@ export async function GET(req: NextRequest) {
         Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
         "Accept-Language": "en-US,en;q=0.9",
       },
-      signal: AbortSignal.timeout(10_000),
+      signal: AbortSignal.timeout(30_000),
       redirect: "follow",
     });
     if (!r.ok) {
