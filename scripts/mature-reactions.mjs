@@ -74,7 +74,17 @@ const barsCache = new Map();
 
 async function yahooBars(symbol) {
   if (barsCache.has(symbol)) return barsCache.get(symbol);
-  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?range=3mo&interval=1d`;
+  // 1y window — was 3mo, which is too short for events older than
+  // ~3 months. When the event's true date falls before bars[0].date,
+  // pickBaselineIdx anchors to bar 0 (the earliest bar in-window,
+  // essentially "3 months ago from now") instead of the real
+  // post-event baseline. Then +1d/+3d/+w1/+m1 offsets clip to the
+  // last available bar and every horizon returns the same
+  // absReturn — the "-1.5% -1.5% -1.5% -1.5%" pattern found on
+  // ABT US / COST US / DIS US / etc. across ~768 events. 1y covers
+  // all 4 horizons cleanly for any event within the last year and
+  // costs the same round-trip as 3mo (Yahoo caches at its edge).
+  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?range=1y&interval=1d`;
   // 2-attempt retry — Yahoo v8 chart intermittently returns 429/5xx
   // from datacenter IPs. Real browsers get a full UA + Accept-Language.
   for (let attempt = 1; attempt <= 2; attempt++) {
@@ -195,12 +205,62 @@ async function main() {
     for (const e of events) {
       if (!e.eventDate) continue;
       const hasBaseline = e.reaction?.baselineDate && e.reaction?.baselineClose != null;
+      // Detect stale-baseline events — baseline seeded from the old
+      // 3mo Yahoo window landed 14+ days after eventDate because the
+      // real event date fell before bars[0].date. With the 1y window
+      // active now, reset those baselines + pending status so the
+      // widened data can pick correctly. Only reset when the event
+      // itself falls within our 1y window; anything genuinely older
+      // won't matter (m1 > 1y ago is well past decay).
+      let staleBaseline = false;
+      if (hasBaseline) {
+        const gapDays =
+          (new Date(e.reaction.baselineDate) - new Date(e.eventDate)) / 86_400_000;
+        // Real baselines land within a few sessions (0-5 days for BMO,
+        // 1-6 for AMC). > 14 days off means the fetch window didn't
+        // include the real event date.
+        if (gapDays > 14) staleBaseline = true;
+      }
       const points = e.reaction?.points ?? [];
+      // Clipped points from the old 3mo window should be retried now
+      // that we have 1y bars — they might mature cleanly with wider
+      // data. Pending points already retry naturally.
+      const clippedRetry = points.some(
+        (p) => p.status === "clipped" && new Date(e.eventDate) >= new Date(now - 365 * 86_400_000),
+      );
       const readyPending = points.filter(
         (p) => p.absReturn == null && (!p.populatesOn || new Date(p.populatesOn) <= now),
       );
       const needsBootstrap = points.length === 0 && new Date(e.eventDate) <= now;
-      if (readyPending.length > 0 || (!hasBaseline && new Date(e.eventDate) <= now) || needsBootstrap) {
+      if (
+        readyPending.length > 0 ||
+        (!hasBaseline && new Date(e.eventDate) <= now) ||
+        needsBootstrap ||
+        clippedRetry ||
+        staleBaseline
+      ) {
+        // Force-reset when the baseline was seeded off a truncated
+        // window — clears out the wrong absReturn/excessReturn values
+        // so the compute loop below re-fills them from the wider bars.
+        if (staleBaseline) {
+          e.reaction.baselineDate = null;
+          e.reaction.baselineClose = null;
+          e.reaction.points = (e.reaction.points ?? []).map((p) => ({
+            ...p,
+            absReturn: null,
+            excessReturn: null,
+            status: "pending",
+            clipped: undefined,
+            gapFlagged: undefined,
+          }));
+        } else if (clippedRetry) {
+          // Baseline is fine, just re-null the clipped points.
+          e.reaction.points = (e.reaction.points ?? []).map((p) =>
+            p.status === "clipped"
+              ? { ...p, absReturn: null, excessReturn: null, status: "pending", clipped: undefined }
+              : p,
+          );
+        }
         toMature.push(e);
       }
     }

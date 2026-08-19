@@ -145,7 +145,7 @@ export async function matureEventReaction(
       errors: [`yahoo resolve failed for ${entity.ticker}`],
     };
   }
-  const secBars = (await yahooSeries(secSymbol, "3mo")) as Bar[];
+  const secBars = (await yahooSeries(secSymbol, "1y")) as Bar[];
   if (secBars.length === 0) {
     // Decay rule (Part 6): if the event's report date is >60 trading days
     // in the past (~90 calendar days) and we STILL cannot fetch baseline
@@ -223,7 +223,7 @@ export async function matureEventReaction(
   let benchBars: Bar[] = [];
   let benchBaseIdx = -1;
   if (benchSymbol) {
-    benchBars = (await yahooSeries(benchSymbol, "3mo")) as Bar[];
+    benchBars = (await yahooSeries(benchSymbol, "1y")) as Bar[];
     if (benchBars.length > 0) {
       benchBaseIdx = findBaselineIndex(benchBars, baselineDate);
     }
