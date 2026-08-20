@@ -19,6 +19,7 @@ import type {
 } from "@/lib/types";
 
 interface Props {
+  ticker: string;
   ranking: RankingRow | null;
   pitch: IdeaPitch | null;
   screens: {
@@ -123,7 +124,8 @@ function PitchCard({ pitch }: { pitch: IdeaPitch }) {
   );
 }
 
-export function TickerSignals({ ranking, pitch, screens }: Props) {
+export function TickerSignals({ ticker, ranking, pitch, screens }: Props) {
+  const encodedTicker = encodeURIComponent(ticker);
   const hasAny =
     ranking ||
     pitch ||
@@ -140,12 +142,12 @@ export function TickerSignals({ ranking, pitch, screens }: Props) {
         <FrameworkBadge
           label="Blue Ocean"
           card={screens.blueOcean}
-          href="/screens?framework=blue-ocean"
+          href={`/screens?framework=blue-ocean&ticker=${encodedTicker}`}
         />
         <FrameworkBadge
           label="Rule Breaker"
           card={screens.ruleBreaker}
-          href="/screens?framework=rule-breaker"
+          href={`/screens?framework=rule-breaker&ticker=${encodedTicker}`}
         />
       </div>
       {pitch ? <PitchCard pitch={pitch} /> : null}

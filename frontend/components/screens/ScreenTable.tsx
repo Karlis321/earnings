@@ -3,7 +3,7 @@
 // Feature 4C — screen leaderboard. Sortable by composite; expandable
 // rows show per-dimension scores + rationale + verdict + sources.
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import clsx from "clsx";
 import { ChevronDown, ChevronRight } from "lucide-react";
@@ -70,16 +70,30 @@ function Row({
   expanded,
   onToggle,
   onOpen,
+  highlighted,
+  rowRef,
 }: {
   s: ScreenCard;
   dimensions: Screen["dimensions"];
   expanded: boolean;
   onToggle: () => void;
   onOpen: () => void;
+  // True when this row is the deep-link target — gets a subtle
+  // brand ring so the user's eye lands there after scroll.
+  highlighted?: boolean;
+  // Ref target for scroll-into-view. Undefined for non-highlighted
+  // rows to avoid a per-row ref explosion.
+  rowRef?: React.RefObject<HTMLDivElement | null>;
 }) {
   const Icon = expanded ? ChevronDown : ChevronRight;
   return (
-    <div className="border-b border-bd/60">
+    <div
+      ref={rowRef}
+      className={clsx(
+        "border-b border-bd/60",
+        highlighted && "ring-2 ring-brand/40 bg-[rgba(47,127,255,0.04)]",
+      )}
+    >
       <div className="grid grid-cols-[2rem_2fr_10rem_2fr_5rem] items-center gap-x-3 px-3 py-2 hover:bg-hover">
         <button
           onClick={onToggle}
@@ -146,11 +160,40 @@ function Row({
   );
 }
 
-export function ScreenTable({ screen }: { screen: Screen }) {
+export function ScreenTable({
+  screen,
+  highlightTicker,
+}: {
+  screen: Screen;
+  // Deep-link target from ?ticker=. Row is auto-expanded on mount
+  // + scrolled into view + ringed. Absent when the user reached
+  // /screens via the nav tab rather than a TickerSignals badge.
+  highlightTicker?: string | null;
+}) {
   const router = useRouter();
-  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const [expanded, setExpanded] = useState<Set<string>>(() => {
+    // Seed the expansion set with the highlight ticker so the
+    // dimension breakdown is visible on first paint (no
+    // click-then-expand friction).
+    return highlightTicker ? new Set([highlightTicker]) : new Set();
+  });
   const [minScore, setMinScore] = useState<number>(0);
   const [query, setQuery] = useState("");
+  const highlightRef = useRef<HTMLDivElement | null>(null);
+
+  // Scroll the highlight row into view once after mount + after
+  // filter/sort resolves. Behavior:smooth so the transition is
+  // visible; block:center so the row lands roughly in the middle
+  // of the viewport (users see the row + a couple neighbors for
+  // context).
+  useEffect(() => {
+    if (!highlightTicker) return;
+    if (!highlightRef.current) return;
+    highlightRef.current.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+    });
+  }, [highlightTicker]);
 
   const rows = useMemo(() => {
     const term = query.trim().toLowerCase();
@@ -230,6 +273,10 @@ export function ScreenTable({ screen }: { screen: Screen }) {
               onToggle={() => toggle(s.ticker)}
               onOpen={() =>
                 router.push(`/s/${encodeURIComponent(s.ticker)}`)
+              }
+              highlighted={highlightTicker === s.ticker}
+              rowRef={
+                highlightTicker === s.ticker ? highlightRef : undefined
               }
             />
           ))

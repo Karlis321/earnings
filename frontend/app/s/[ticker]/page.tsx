@@ -169,6 +169,7 @@ export default async function SecurityDetailPage({ params }: Props) {
       {/* Cross-referenced AI signals — renders only sub-cards that
           have data for THIS ticker. Zero-signal tickers → no strip. */}
       <TickerSignals
+        ticker={ticker}
         ranking={rankingRow}
         pitch={ideasPitch}
         screens={{ blueOcean: blueOceanCard, ruleBreaker: ruleBreakerCard }}

@@ -9,7 +9,7 @@ import type { ScreenFramework } from "@/lib/types";
 // tab-switching is instant.
 
 interface Props {
-  searchParams: Promise<{ framework?: string }>;
+  searchParams: Promise<{ framework?: string; ticker?: string }>;
 }
 
 export const dynamic = "force-dynamic";
@@ -24,6 +24,10 @@ export default async function ScreensPage({ searchParams }: Props) {
   const requested = (sp.framework as ScreenFramework) ?? "blue-ocean";
   const framework: ScreenFramework =
     requested === "rule-breaker" ? "rule-breaker" : "blue-ocean";
+  // Optional deep-link ticker — when present, ScreenTable auto-
+  // expands + scrolls + rings that row on mount. Coming from
+  // TickerSignals framework badges on /s/[ticker].
+  const highlightTicker = sp.ticker ?? null;
 
   const [blueOcean, ruleBreaker] = await Promise.all([
     store.readScreen ? store.readScreen("blue-ocean") : Promise.resolve(null),
@@ -142,7 +146,7 @@ export default async function ScreensPage({ searchParams }: Props) {
         </div>
       </div>
 
-      <ScreenTable screen={current} />
+      <ScreenTable screen={current} highlightTicker={highlightTicker} />
     </div>
   );
 }
