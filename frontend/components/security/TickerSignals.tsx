@@ -28,7 +28,15 @@ interface Props {
   };
 }
 
-function CompositeBadge({ score, rank }: { score: number; rank: number }) {
+function CompositeBadge({
+  score,
+  rank,
+  href,
+}: {
+  score: number;
+  rank: number;
+  href: string;
+}) {
   const positive = score >= 0;
   const Icon = positive ? ArrowUp : score === 0 ? Minus : ArrowDown;
   const color = positive
@@ -38,7 +46,7 @@ function CompositeBadge({ score, rank }: { score: number; rank: number }) {
     : "text-danger";
   return (
     <Link
-      href="/ideas"
+      href={href}
       className="inline-flex items-center gap-2 rounded-[6px] border border-bd bg-panel2/60 px-3 py-1.5 text-[12px] hover:bg-hover"
       title="Composite score from the ranking leaderboard (reaction + surprise + trend)"
     >
@@ -137,7 +145,11 @@ export function TickerSignals({ ticker, ranking, pitch, screens }: Props) {
     <section className="mt-4" aria-label="Cross-referenced AI signals">
       <div className="flex flex-wrap items-center gap-2">
         {ranking ? (
-          <CompositeBadge score={ranking.compositeScore} rank={ranking.rank} />
+          <CompositeBadge
+            score={ranking.compositeScore}
+            rank={ranking.rank}
+            href={`/ideas?ticker=${encodedTicker}`}
+          />
         ) : null}
         <FrameworkBadge
           label="Blue Ocean"

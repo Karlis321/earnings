@@ -9,7 +9,7 @@
 // ticker detail page, so multiple concurrent writes converge via
 // the shared-state 3-retry 409 handling.
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import clsx from "clsx";
 import { ArrowUp, ArrowDown, Minus, Star, StarOff } from "lucide-react";
@@ -101,14 +101,32 @@ function CompositeBar({ score }: { score: number }) {
 export function IdeasTable({
   ranking,
   initialState,
+  highlightTicker,
 }: {
   ranking: Ranking;
   initialState?: SharedState;
+  // Deep-link target from /ideas?ticker=<T>. Row is scrolled into
+  // view + ringed on mount. Coming from TickerSignals composite
+  // badge on /s/[ticker].
+  highlightTicker?: string | null;
 }) {
   const router = useRouter();
   const [sortKey, setSortKey] = useState<SortKey>("composite");
   const [minComponents, setMinComponents] = useState<MinComponents>(1);
   const [query, setQuery] = useState("");
+  const highlightRef = useRef<HTMLDivElement | null>(null);
+
+  // Scroll to highlighted row once after mount + after
+  // filter/sort resolves. behavior:smooth so the transition is
+  // visible; block:center so the row lands mid-viewport.
+  useEffect(() => {
+    if (!highlightTicker) return;
+    if (!highlightRef.current) return;
+    highlightRef.current.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+    });
+  }, [highlightTicker]);
 
   // Focus set — hydrated from server-provided initialState so first
   // paint is correct. Local mutations flush to /api/shared-state
@@ -314,10 +332,16 @@ export function IdeasTable({
           rows.map((r) => {
             const inFocus = focus.has(r.ticker);
             const failedHere = failed === r.ticker;
+            const isHighlighted = highlightTicker === r.ticker;
             return (
               <div
                 key={r.ticker}
-                className="grid w-full grid-cols-[2rem_3rem_2fr_10rem_5rem_7rem_7rem_7rem_5rem] items-center gap-x-3 border-b border-bd/60 px-4 py-2 text-left text-[13px] hover:bg-hover"
+                ref={isHighlighted ? highlightRef : undefined}
+                className={clsx(
+                  "grid w-full grid-cols-[2rem_3rem_2fr_10rem_5rem_7rem_7rem_7rem_5rem] items-center gap-x-3 border-b border-bd/60 px-4 py-2 text-left text-[13px] hover:bg-hover",
+                  isHighlighted &&
+                    "ring-2 ring-brand/40 bg-[rgba(47,127,255,0.04)]",
+                )}
               >
                 {/* Star toggle — click swallowed via stopPropagation
                     so it doesn't navigate to /s/[ticker]. */}

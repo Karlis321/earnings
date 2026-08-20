@@ -11,7 +11,13 @@ import { IdeasPitchStrip } from "@/components/ideas/IdeasPitchStrip";
 
 export const dynamic = "force-dynamic";
 
-export default async function IdeasPage() {
+interface Props {
+  searchParams: Promise<{ ticker?: string }>;
+}
+
+export default async function IdeasPage({ searchParams }: Props) {
+  const sp = await searchParams;
+  const highlightTicker = sp.ticker ?? null;
   const [ranking, ideas, sharedState] = await Promise.all([
     store.readRanking ? store.readRanking() : Promise.resolve(null),
     store.readIdeas ? store.readIdeas() : Promise.resolve(null),
@@ -63,7 +69,11 @@ export default async function IdeasPage() {
         </div>
       )}
 
-      <IdeasTable ranking={ranking} initialState={sharedState} />
+      <IdeasTable
+        ranking={ranking}
+        initialState={sharedState}
+        highlightTicker={highlightTicker}
+      />
     </div>
   );
 }
