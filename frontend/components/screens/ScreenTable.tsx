@@ -268,6 +268,56 @@ export function ScreenTable({
       setFailedFocus(ticker);
     }
   };
+
+  // Bulk-add: mirrors IdeasTable pattern. Batches the top N visible
+  // (as currently sorted + filtered) into a single PUT. Silent
+  // no-op if nothing new to add.
+  const bulkAddTopN = async (n: number, visible: ScreenCard[]) => {
+    if (!initialState) return;
+    const before = new Set(focus);
+    const nextFocus = new Set(focus);
+    const added: string[] = [];
+    for (const s of visible.slice(0, n)) {
+      if (!nextFocus.has(s.ticker)) {
+        nextFocus.add(s.ticker);
+        added.push(s.ticker);
+      }
+    }
+    if (added.length === 0) return;
+    setFocus(nextFocus);
+    setFailedFocus(null);
+    try {
+      const nextState: SharedState = {
+        ...initialState,
+        preferences: initialState.preferences
+          ? {
+              ...initialState.preferences,
+              focusTickers: Array.from(nextFocus),
+            }
+          : {
+              focusTickers: Array.from(nextFocus),
+              themes: initialState.themes ?? [],
+              subscriptions: {
+                newTranscripts: false,
+                weekAhead: false,
+                ideasDigest: false,
+              },
+            },
+      };
+      const r = await fetch("/api/shared-state", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(nextState),
+      });
+      if (!r.ok) {
+        const j = await r.json().catch(() => ({}));
+        throw new Error(j.message ?? `HTTP ${r.status}`);
+      }
+    } catch {
+      setFocus(before);
+      setFailedFocus(`bulk: ${added.length} rows failed`);
+    }
+  };
   const [expanded, setExpanded] = useState<Set<string>>(() => {
     // Seed the expansion set with the highlight ticker so the
     // dimension breakdown is visible on first paint (no
@@ -343,6 +393,22 @@ export function ScreenTable({
           placeholder="Filter by ticker or name…"
           className="h-9 min-w-[240px] rounded-button border border-bd bg-s1 px-3 text-[13px] text-tx placeholder:text-tx3 focus:border-brand focus:outline-none"
         />
+        {initialState ? (
+          <div className="flex items-center gap-1 rounded-button border border-bd bg-s1 px-2 py-[3px] text-[12px]">
+            <span className="text-tx-mid">Bulk focus</span>
+            {[10, 20].map((n) => (
+              <button
+                key={n}
+                type="button"
+                onClick={() => bulkAddTopN(n, rows)}
+                title={`Add the top ${n} screened companies (as currently sorted + filtered) to focus in a single PUT`}
+                className="rounded-[4px] bg-s3 px-[7px] py-[2px] font-mono text-[11px] text-tx hover:bg-hover"
+              >
+                +top {n}
+              </button>
+            ))}
+          </div>
+        ) : null}
         <span className="ml-auto font-mono text-[11px] text-tx3">
           {rows.length} row{rows.length === 1 ? "" : "s"}
         </span>
