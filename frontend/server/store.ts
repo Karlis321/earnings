@@ -121,6 +121,13 @@ export interface Store {
     framework: import("@/lib/types").ScreenFramework,
   ): Promise<import("@/lib/types").Screen | null>;
 
+  // Phase 3.4 — framework screen change log (jsonl). Filtered to
+  // `ticker` when provided. Returns [] on missing file / read error.
+  readScreenChangeLog?(
+    framework: import("@/lib/types").ScreenFramework,
+    ticker?: string,
+  ): Promise<import("@/lib/types").ScreenChangeLogRow[]>;
+
   // Feature 3.1 ranking history (data/ranking-history.jsonl).
   // Appended daily by scripts/append-ranking-history.mjs. Filtered
   // to `ticker` when provided (cheap: one grep pass over the

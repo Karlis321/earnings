@@ -15,6 +15,42 @@ import type {
 } from "@/lib/types";
 import { TickerLogo } from "@/components/primitives/TickerLogo";
 
+// Phase 3.4 — composite delta since previous run. Renders "+n" or
+// "−n" with color + tooltip carrying the prior score + date. Absent
+// when no previousCompositeScore exists (first-run ingest).
+function DeltaChip({
+  after,
+  before,
+  since,
+}: {
+  after: number;
+  before: number | null;
+  since: string | null;
+}) {
+  if (before === null) return null;
+  const delta = after - before;
+  if (Math.abs(delta) < 0.5) return null;
+  const sign = delta > 0 ? "+" : "−";
+  const abs = Math.abs(delta);
+  const color =
+    delta > 0
+      ? "border-success/40 bg-success/8 text-success-fg"
+      : "border-danger/40 bg-danger/8 text-danger";
+  const dateBit = since ? ` since ${since.slice(0, 10)}` : "";
+  return (
+    <span
+      className={clsx(
+        "rounded-[4px] border px-1 py-[1px] font-mono text-[9.5px] tabular-nums",
+        color,
+      )}
+      title={`Composite ${before.toFixed(1)} → ${after.toFixed(1)}${dateBit}`}
+    >
+      {sign}
+      {abs.toFixed(0)}
+    </span>
+  );
+}
+
 function ScoreBar({ score }: { score: number }) {
   // 0-100 rendered as a horizontal bar; color transitions at 50 (neutral) and 70 (strong).
   const color =
@@ -107,7 +143,7 @@ function Row({
         highlighted && "ring-2 ring-brand/40 bg-[rgba(47,127,255,0.04)]",
       )}
     >
-      <div className="grid grid-cols-[2rem_2rem_2fr_10rem_2fr_5rem] items-center gap-x-3 px-3 py-2 hover:bg-hover">
+      <div className="grid grid-cols-[2rem_2rem_2fr_13rem_2fr_5rem] items-center gap-x-3 px-3 py-2 hover:bg-hover">
         <button
           type="button"
           aria-pressed={inFocus}
@@ -159,7 +195,14 @@ function Row({
             </span>
           </span>
         </button>
-        <ScoreBar score={s.compositeScore} />
+        <div className="flex items-center gap-1.5">
+          <ScoreBar score={s.compositeScore} />
+          <DeltaChip
+            after={s.compositeScore}
+            before={s.previousCompositeScore ?? null}
+            since={s.previousScreenedAt ?? null}
+          />
+        </div>
         <span className="truncate text-[12px] leading-[1.5] text-tx-mid">
           {s.verdict}
         </span>
@@ -415,7 +458,7 @@ export function ScreenTable({
       </div>
 
       <div className="rounded-[8px] border border-bd bg-panel">
-        <div className="grid grid-cols-[2rem_2rem_2fr_10rem_2fr_5rem] gap-x-3 border-b border-bd px-3 py-2 font-mono text-[10px] uppercase tracking-[0.07em] text-tx3">
+        <div className="grid grid-cols-[2rem_2rem_2fr_13rem_2fr_5rem] gap-x-3 border-b border-bd px-3 py-2 font-mono text-[10px] uppercase tracking-[0.07em] text-tx3">
           <span />
           <span />
           <span>Company</span>

@@ -29,6 +29,25 @@ export interface ScreenCard {
   verdict: string;
   sources: ScreenSourceRef[];
   screenedAt: string;
+  // Phase 3.4 — carried on the ScreenCard so the UI can display a
+  // "+n since last run" delta chip without reading the change-log
+  // jsonl. Written by scripts/apply-screen.mjs when a re-screen
+  // overwrites an existing row; null on first-time ingest.
+  previousCompositeScore?: number | null;
+  previousScreenedAt?: string | null;
+}
+
+// Phase 3.4 — per-run change log for framework screens. Appended to
+// data/screens/<framework>-change-log.jsonl by apply-screen.mjs each
+// time a ticker's compositeScore materially changes. Consumed by the
+// /screens expanded panel + admin timeline.
+export interface ScreenChangeLogRow {
+  screenedAt: string;
+  framework: ScreenFramework;
+  ticker: string;
+  compositeBefore: number | null;
+  compositeAfter: number;
+  compositeDelta: number | null;
 }
 export interface Screen {
   schema: "screen/v1";

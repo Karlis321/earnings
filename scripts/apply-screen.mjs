@@ -249,11 +249,38 @@ async function main() {
   }
 
   // Merge with existing (keep unmentioned tickers, overwrite matched ones).
+  // Also stamp previous compositeScore + screenedAt on each incoming row
+  // so the UI can render a delta chip without reading the change log.
   const byTicker = new Map();
   if (existing?.screens) {
     for (const row of existing.screens) byTicker.set(row.ticker, row);
   }
-  for (const row of clean) byTicker.set(row.ticker, row);
+
+  const changeLogRows = [];
+  for (const row of clean) {
+    const prior = byTicker.get(row.ticker);
+    const beforeScore =
+      prior && typeof prior.compositeScore === "number"
+        ? prior.compositeScore
+        : null;
+    row.previousCompositeScore = beforeScore;
+    row.previousScreenedAt = prior?.screenedAt ?? null;
+
+    // Only log a change row when there IS a delta (skip first-run
+    // ingests to avoid flooding the log with initial coverage).
+    if (beforeScore !== null && Math.abs(beforeScore - row.compositeScore) >= 0.5) {
+      changeLogRows.push({
+        screenedAt: row.screenedAt,
+        framework: FRAMEWORK,
+        ticker: row.ticker,
+        compositeBefore: beforeScore,
+        compositeAfter: row.compositeScore,
+        compositeDelta: Number((row.compositeScore - beforeScore).toFixed(1)),
+      });
+    }
+
+    byTicker.set(row.ticker, row);
+  }
 
   const out = {
     schema: "screen/v1",
@@ -270,6 +297,21 @@ async function main() {
     `✓ wrote ${clean.length} new/updated screens to ${outPath} (total in file: ${out.screens.length})`,
   );
   console.log(`  tickers this run: ${clean.map((c) => c.ticker).join(", ")}`);
+
+  if (changeLogRows.length > 0) {
+    const logPath = path.join(SCREENS_DIR, `${FRAMEWORK}-change-log.jsonl`);
+    const lines = changeLogRows.map((r) => JSON.stringify(r)).join("\n") + "\n";
+    await fs.appendFile(logPath, lines);
+    console.log(
+      `✓ appended ${changeLogRows.length} rows to ${FRAMEWORK}-change-log.jsonl`,
+    );
+    for (const r of changeLogRows) {
+      const sign = r.compositeDelta >= 0 ? "+" : "";
+      console.log(
+        `  · ${r.ticker}: ${r.compositeBefore} → ${r.compositeAfter} (${sign}${r.compositeDelta})`,
+      );
+    }
+  }
 }
 
 main().catch((e) => {
