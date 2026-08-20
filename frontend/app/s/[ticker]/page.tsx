@@ -15,6 +15,7 @@ import { SummarizeButton } from "@/components/security/SummarizeButton";
 import { ExtendedMetricsPanel } from "@/components/security/ExtendedMetricsPanel";
 import { TickerSignals } from "@/components/security/TickerSignals";
 import { FocusToggle } from "@/components/security/FocusToggle";
+import { ReturnChip } from "@/components/shell/ReturnChip";
 import { GuidanceTimeline, Panel } from "@/components/primitives";
 import { EmptyState } from "@/components/primitives";
 import { MarkSeen } from "@/components/shell/MarkSeen";
@@ -156,9 +157,12 @@ export default async function SecurityDetailPage({ params }: Props) {
         freshness={freshness}
       />
 
-      {/* One-click focus toggle — writes preferences.focusTickers
-          via /api/shared-state. */}
-      <div className="mt-4">
+      {/* Return-to-origin chip (present when the user arrived via a
+          same-origin link like /ideas or /screens) + one-click
+          focus toggle. Both actions live at the top of the ticker
+          page so users land, see context, then act. */}
+      <div className="mt-4 flex flex-wrap items-center gap-2">
+        <ReturnChip />
         <FocusToggle
           ticker={ticker}
           initialInFocus={initialInFocus}
