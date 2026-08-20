@@ -173,6 +173,12 @@ export const inMemoryStore: Store = {
   async readWeekAheadNarrative() {
     return null;
   },
+  async listWeekAheadArchive() {
+    return [];
+  },
+  async readWeekAheadArchive() {
+    return null;
+  },
   async readScreen() {
     return null;
   },

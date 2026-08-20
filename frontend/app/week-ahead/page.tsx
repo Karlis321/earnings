@@ -27,23 +27,33 @@ function isoAfterDays(days: number): string {
 }
 
 interface Props {
-  searchParams: Promise<{ ticker?: string }>;
+  searchParams: Promise<{ ticker?: string; week?: string }>;
 }
 
 export default async function WeekAheadPage({ searchParams }: Props) {
   const sp = await searchParams;
   const highlightTicker = sp.ticker ?? null;
-  const [entities, index, state, ranking, macro, narrative] = await Promise.all([
-    store.readRegistry(),
-    store.readEventsIndex?.() ??
-      Promise.resolve({ schema: "events-index/v1", updatedAt: "", entries: [] }),
-    store.readSharedState(),
-    store.readRanking ? store.readRanking() : Promise.resolve(null),
-    store.readMacroSignals ? store.readMacroSignals() : Promise.resolve(null),
-    store.readWeekAheadNarrative
-      ? store.readWeekAheadNarrative()
-      : Promise.resolve(null),
-  ]);
+  const archivedWeek =
+    sp.week && /^\d{4}-\d{2}-\d{2}$/.test(sp.week) ? sp.week : null;
+  const [entities, index, state, ranking, macro, currentNarrative, archiveWeeks, archivedNarrative] =
+    await Promise.all([
+      store.readRegistry(),
+      store.readEventsIndex?.() ??
+        Promise.resolve({ schema: "events-index/v1", updatedAt: "", entries: [] }),
+      store.readSharedState(),
+      store.readRanking ? store.readRanking() : Promise.resolve(null),
+      store.readMacroSignals ? store.readMacroSignals() : Promise.resolve(null),
+      store.readWeekAheadNarrative
+        ? store.readWeekAheadNarrative()
+        : Promise.resolve(null),
+      store.listWeekAheadArchive
+        ? store.listWeekAheadArchive()
+        : Promise.resolve([]),
+      archivedWeek && store.readWeekAheadArchive
+        ? store.readWeekAheadArchive(archivedWeek)
+        : Promise.resolve(null),
+    ]);
+  const narrative = archivedWeek ? archivedNarrative : currentNarrative;
 
   const today = todayIso();
   const horizonEnd = isoAfterDays(HORIZON_DAYS);
@@ -119,6 +129,24 @@ export default async function WeekAheadPage({ searchParams }: Props) {
         ) : null}
       </div>
 
+      {archivedWeek ? (
+        <div className="mb-3 flex items-center gap-2 rounded-[8px] border border-brand/40 bg-brand/8 px-3 py-2 text-[12px] text-tx-hi">
+          <span className="font-mono text-[10.5px] uppercase tracking-[0.07em] text-brand-fg">
+            § Archived
+          </span>
+          <span>
+            Viewing archived narrative for week of{" "}
+            <span className="font-mono">{archivedWeek}</span>.
+          </span>
+          <a
+            href="/week-ahead"
+            className="ml-auto font-mono text-[11px] text-brand-fg underline decoration-dotted underline-offset-2 hover:text-brand"
+          >
+            → back to current
+          </a>
+        </div>
+      ) : null}
+
       {narrative ? (
         <NarrativePanel narrative={narrative} />
       ) : (
@@ -126,13 +154,38 @@ export default async function WeekAheadPage({ searchParams }: Props) {
           <span className="font-mono text-[10.5px] uppercase tracking-[0.07em] text-tx3">
             § Narrative
           </span>{" "}
-          — no snapshot yet. The{" "}
+          — no snapshot yet
+          {archivedWeek ? ` for week ${archivedWeek}` : ""}. The{" "}
           <code className="text-tx-mid">week-ahead</code> workflow fires
           Sunday 22:00 UTC and writes The setup + What to watch + Signals
           to trust sections based on the ranking + macro + market-pulse
           state. Day grid below still renders from events-index directly.
         </div>
       )}
+
+      {archiveWeeks.length > 0 ? (
+        <div className="mb-4 flex flex-wrap items-center gap-1.5 text-[11px] text-tx-mid">
+          <span className="font-mono uppercase tracking-[0.07em] text-tx3">
+            § Past weeks
+          </span>
+          {archiveWeeks.slice(0, 12).map((w) => {
+            const active = archivedWeek === w;
+            return (
+              <a
+                key={w}
+                href={active ? "/week-ahead" : `/week-ahead?week=${w}`}
+                className={
+                  active
+                    ? "rounded-[4px] border border-brand/40 bg-brand/10 px-1.5 py-[2px] font-mono text-[10.5px] text-brand-fg"
+                    : "rounded-[4px] border border-bd px-1.5 py-[2px] font-mono text-[10.5px] text-tx-mid hover:border-brand/40 hover:text-brand-fg"
+                }
+              >
+                {w}
+              </a>
+            );
+          })}
+        </div>
+      ) : null}
 
       {macro && macro.signals.length > 0 ? (
         <MacroStrip signals={macro} />

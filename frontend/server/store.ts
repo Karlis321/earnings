@@ -103,6 +103,16 @@ export interface Store {
     import("@/lib/types").WeekAheadNarrative | null
   >;
 
+  // Feature 3.3 per-week archive. `listWeekAheadArchive` returns
+  // available weekOf ISO dates newest-first (empty when the archive
+  // directory doesn't exist yet). `readWeekAheadArchive` reads one
+  // week's narrative (returns null if the archive is missing or the
+  // input weekOf isn't a YYYY-MM-DD).
+  listWeekAheadArchive?(): Promise<string[]>;
+  readWeekAheadArchive?(
+    weekOf: string,
+  ): Promise<import("@/lib/types").WeekAheadNarrative | null>;
+
   // Feature 4A framework screens (data/screens/<framework>.json).
   // Written by .claude/commands/{blue-ocean,rule-breaker}.md via
   // scripts/apply-screen.mjs. Monthly self-chaining workflow

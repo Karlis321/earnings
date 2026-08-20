@@ -278,6 +278,9 @@ const P = {
   ideas: "data/ideas.json",
   macroSignals: "data/macro-signals.json",
   weekAheadNarrative: "data/week-ahead-narrative.json",
+  weekAheadArchiveDir: "data/week-ahead-archive",
+  weekAheadArchive: (weekOf: string) =>
+    `data/week-ahead-archive/${weekOf}.json`,
   screenBlueOcean: "data/screens/blue-ocean.json",
   screenRuleBreaker: "data/screens/rule-breaker.json",
   rankingHistory: "data/ranking-history.jsonl",
@@ -930,6 +933,32 @@ export function gitSnapshotStore(cfg: GhConfig): Store {
         const r = await readCached<import("@/lib/types").WeekAheadNarrative>(
           cfg,
           P.weekAheadNarrative,
+        );
+        return r?.content ?? null;
+      } catch {
+        return null;
+      }
+    },
+    async listWeekAheadArchive() {
+      try {
+        const dir = await listDir(cfg, P.weekAheadArchiveDir);
+        if (!dir) return [];
+        return dir
+          .filter((e) => e.type === "file" && e.name.endsWith(".json"))
+          .map((e) => e.name.replace(/\.json$/, ""))
+          .filter((w) => /^\d{4}-\d{2}-\d{2}$/.test(w))
+          .sort()
+          .reverse();
+      } catch {
+        return [];
+      }
+    },
+    async readWeekAheadArchive(weekOf: string) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(weekOf)) return null;
+      try {
+        const r = await readCached<import("@/lib/types").WeekAheadNarrative>(
+          cfg,
+          P.weekAheadArchive(weekOf),
         );
         return r?.content ?? null;
       } catch {

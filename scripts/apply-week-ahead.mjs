@@ -29,6 +29,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT = path.resolve(__dirname, "..");
 const OUT_PATH = path.join(ROOT, "data", "week-ahead-narrative.json");
+const ARCHIVE_DIR = path.join(ROOT, "data", "week-ahead-archive");
 const INDEX_PATH = path.join(ROOT, "data", "events-index.json");
 
 const [, , PAYLOAD_PATH] = process.argv;
@@ -171,6 +172,15 @@ async function main() {
   console.log(
     `  weekOf: ${out.weekOf} · ${out.sections.length} sections · ${out.highlights.length} highlights`,
   );
+
+  // Phase 3.3 — per-week archive so past narratives are retrievable
+  // after the current file is overwritten. Filename is the Monday of
+  // the week the narrative covers; safe to overwrite if the same week
+  // reruns (idempotent).
+  await fs.mkdir(ARCHIVE_DIR, { recursive: true });
+  const archivePath = path.join(ARCHIVE_DIR, `${out.weekOf}.json`);
+  await fs.writeFile(archivePath, JSON.stringify(out, null, 2));
+  console.log(`✓ archived to data/week-ahead-archive/${out.weekOf}.json`);
 }
 
 main().catch((e) => {
