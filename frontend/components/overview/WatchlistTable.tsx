@@ -219,6 +219,7 @@ export function WatchlistTable({
   rows,
   focusTickers = [],
   compositeByTicker = {},
+  frameworkByTicker = {},
 }: {
   rows: WatchlistRow[];
   // Prioritized subset from user preferences. Empty when the user
@@ -229,6 +230,11 @@ export function WatchlistTable({
   // the chip renders only for tickers with a score present, so
   // an empty map degrades cleanly to "no chips" on any row.
   compositeByTicker?: Record<string, number>;
+  // Ticker → framework composite scores (bo = Blue Ocean, rb =
+  // Rule Breaker) from data/screens/*.json. Optional — chips
+  // only render when data exists (auto-hidden while
+  // framework-screen workflow hasn't fired for a ticker).
+  frameworkByTicker?: Record<string, { bo?: number; rb?: number }>;
 }) {
   const router = useRouter();
   const focusSet = useMemo(() => new Set(focusTickers), [focusTickers]);
@@ -781,6 +787,7 @@ export function WatchlistTable({
                     r.latestItemAt > lastSeenMap[r.ticker])
                 }
                 composite={compositeByTicker[r.ticker]}
+                framework={frameworkByTicker[r.ticker]}
               />
             ))}
           </div>
@@ -882,6 +889,7 @@ function Row({
   columnMetric,
   hasNewSinceVisit,
   composite,
+  framework,
 }: {
   r: WatchlistRow;
   onClick: () => void;
@@ -899,6 +907,10 @@ function Row({
   // the ticker isn't in the ranking universe (foreign wrappers, ETFs,
   // etc.) or ranking hasn't been computed. Renders a small pill.
   composite?: number;
+  // Framework composite scores (Feature 4C). bo = Blue Ocean, rb =
+  // Rule Breaker. Each optional; only renders when workflow has
+  // covered the ticker.
+  framework?: { bo?: number; rb?: number };
 }) {
   const isDev = r.entity.securityType === "developer";
   const isEtf = r.entity.securityType === "etf";
@@ -999,6 +1011,40 @@ function Row({
               >
                 {composite >= 0 ? "+" : ""}
                 {composite.toFixed(2)}
+              </span>
+            ) : null}
+            {framework?.bo != null ? (
+              <span
+                title="Blue Ocean framework composite (Kim/Mauborgne value-innovation, 0-100)"
+                className={clsx(
+                  "rounded-[4px] px-[5px] py-[1px] font-mono text-[10px] tabular-nums",
+                  framework.bo >= 70
+                    ? "bg-[rgba(18,183,106,0.10)] text-success-fg"
+                    : framework.bo >= 50
+                    ? "bg-[rgba(47,127,255,0.10)] text-brand-fg"
+                    : framework.bo >= 30
+                    ? "bg-s3 text-tx-mid"
+                    : "bg-[rgba(180,35,24,0.10)] text-danger",
+                )}
+              >
+                BO {framework.bo.toFixed(0)}
+              </span>
+            ) : null}
+            {framework?.rb != null ? (
+              <span
+                title="Rule Breaker framework composite (Motley Fool top-dog / first-mover, 0-100)"
+                className={clsx(
+                  "rounded-[4px] px-[5px] py-[1px] font-mono text-[10px] tabular-nums",
+                  framework.rb >= 70
+                    ? "bg-[rgba(18,183,106,0.10)] text-success-fg"
+                    : framework.rb >= 50
+                    ? "bg-[rgba(47,127,255,0.10)] text-brand-fg"
+                    : framework.rb >= 30
+                    ? "bg-s3 text-tx-mid"
+                    : "bg-[rgba(180,35,24,0.10)] text-danger",
+                )}
+              >
+                RB {framework.rb.toFixed(0)}
               </span>
             ) : null}
             {siblingCount && siblingCount > 0 ? (
