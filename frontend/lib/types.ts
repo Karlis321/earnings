@@ -1,6 +1,28 @@
 // Shape mirrors PRD Appendix C.5 (entity registry) + C.6 (earnings.json).
 // Every sourced number is a Fact; derived numbers store inputs + computedAt.
 
+// Feature 2F — weekly AI narrative for /week-ahead. Written by
+// .claude/commands/week-ahead.md via scripts/apply-week-ahead.mjs
+// on Sunday 22:00 UTC. Rendered as a panel above the macro strip.
+export interface WeekAheadSection {
+  heading: string;
+  body: string;
+}
+export interface WeekAheadHighlight {
+  ticker: string;
+  note: string;
+  eventDate: string;
+}
+export interface WeekAheadNarrative {
+  schema: "week-ahead-narrative/v1";
+  generatedAt: string;
+  weekOf: string;
+  eventsCount: number;
+  sections: WeekAheadSection[];
+  highlights: WeekAheadHighlight[];
+  disclaimer: string;
+}
+
 // Feature 2C — macro extremity signals. Written by
 // scripts/refresh-macro.mjs to data/macro-signals.json. Rendered
 // on /week-ahead above the day grid as a small chip strip that

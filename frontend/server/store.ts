@@ -95,6 +95,14 @@ export interface Store {
   // Consumed by /week-ahead as an extremity strip above the day grid.
   readMacroSignals?(): Promise<import("@/lib/types").MacroSignals | null>;
 
+  // Feature 2F weekly narrative (data/week-ahead-narrative.json).
+  // Written by .claude/commands/week-ahead.md via
+  // scripts/apply-week-ahead.mjs on Sunday 22:00 UTC. Rendered as
+  // a panel above the macro strip on /week-ahead.
+  readWeekAheadNarrative?(): Promise<
+    import("@/lib/types").WeekAheadNarrative | null
+  >;
+
   readDocument(id: string): Promise<Document | null>;
   writeDocument(doc: Document): Promise<void>;
 

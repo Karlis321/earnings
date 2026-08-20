@@ -277,6 +277,7 @@ const P = {
   ranking: "data/ranking.json",
   ideas: "data/ideas.json",
   macroSignals: "data/macro-signals.json",
+  weekAheadNarrative: "data/week-ahead-narrative.json",
   // Stored as a JSON object `{schema, entries:[...]}` rather than raw
   // JSONL — the write path uses commit() which JSON.stringifies, and
   // append-then-commit reduces to updating one entry. The health page
@@ -915,6 +916,17 @@ export function gitSnapshotStore(cfg: GhConfig): Store {
         const r = await readCached<import("@/lib/types").MacroSignals>(
           cfg,
           P.macroSignals,
+        );
+        return r?.content ?? null;
+      } catch {
+        return null;
+      }
+    },
+    async readWeekAheadNarrative() {
+      try {
+        const r = await readCached<import("@/lib/types").WeekAheadNarrative>(
+          cfg,
+          P.weekAheadNarrative,
         );
         return r?.content ?? null;
       } catch {

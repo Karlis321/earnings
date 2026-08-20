@@ -3,6 +3,7 @@ import { EmptyState } from "@/components/primitives";
 import { MarketPulse } from "@/components/overview/MarketPulse";
 import { WeekAheadGrid } from "@/components/week-ahead/WeekAheadGrid";
 import { MacroStrip } from "@/components/week-ahead/MacroStrip";
+import { NarrativePanel } from "@/components/week-ahead/NarrativePanel";
 import { isDisplayable } from "@/lib/displayFilter";
 import { todayIso } from "@/lib/freshness";
 import type { WeekAheadRow } from "@/components/week-ahead/WeekAheadGrid";
@@ -26,13 +27,16 @@ function isoAfterDays(days: number): string {
 }
 
 export default async function WeekAheadPage() {
-  const [entities, index, state, ranking, macro] = await Promise.all([
+  const [entities, index, state, ranking, macro, narrative] = await Promise.all([
     store.readRegistry(),
     store.readEventsIndex?.() ??
       Promise.resolve({ schema: "events-index/v1", updatedAt: "", entries: [] }),
     store.readSharedState(),
     store.readRanking ? store.readRanking() : Promise.resolve(null),
     store.readMacroSignals ? store.readMacroSignals() : Promise.resolve(null),
+    store.readWeekAheadNarrative
+      ? store.readWeekAheadNarrative()
+      : Promise.resolve(null),
   ]);
 
   const today = todayIso();
@@ -108,6 +112,8 @@ export default async function WeekAheadPage() {
           </p>
         ) : null}
       </div>
+
+      {narrative ? <NarrativePanel narrative={narrative} /> : null}
 
       {macro && macro.signals.length > 0 ? (
         <MacroStrip signals={macro} />
