@@ -3,6 +3,7 @@ import { EmptyState } from "@/components/primitives";
 import { MarketPulse } from "@/components/overview/MarketPulse";
 import { WeekAheadGrid } from "@/components/week-ahead/WeekAheadGrid";
 import { MacroStrip } from "@/components/week-ahead/MacroStrip";
+import { CommodityStrip } from "@/components/week-ahead/CommodityStrip";
 import { NarrativePanel } from "@/components/week-ahead/NarrativePanel";
 import { isDisplayable } from "@/lib/displayFilter";
 import { todayIso } from "@/lib/freshness";
@@ -35,24 +36,34 @@ export default async function WeekAheadPage({ searchParams }: Props) {
   const highlightTicker = sp.ticker ?? null;
   const archivedWeek =
     sp.week && /^\d{4}-\d{2}-\d{2}$/.test(sp.week) ? sp.week : null;
-  const [entities, index, state, ranking, macro, currentNarrative, archiveWeeks, archivedNarrative] =
-    await Promise.all([
-      store.readRegistry(),
-      store.readEventsIndex?.() ??
-        Promise.resolve({ schema: "events-index/v1", updatedAt: "", entries: [] }),
-      store.readSharedState(),
-      store.readRanking ? store.readRanking() : Promise.resolve(null),
-      store.readMacroSignals ? store.readMacroSignals() : Promise.resolve(null),
-      store.readWeekAheadNarrative
-        ? store.readWeekAheadNarrative()
-        : Promise.resolve(null),
-      store.listWeekAheadArchive
-        ? store.listWeekAheadArchive()
-        : Promise.resolve([]),
-      archivedWeek && store.readWeekAheadArchive
-        ? store.readWeekAheadArchive(archivedWeek)
-        : Promise.resolve(null),
-    ]);
+  const [
+    entities,
+    index,
+    state,
+    ranking,
+    macro,
+    commodities,
+    currentNarrative,
+    archiveWeeks,
+    archivedNarrative,
+  ] = await Promise.all([
+    store.readRegistry(),
+    store.readEventsIndex?.() ??
+      Promise.resolve({ schema: "events-index/v1", updatedAt: "", entries: [] }),
+    store.readSharedState(),
+    store.readRanking ? store.readRanking() : Promise.resolve(null),
+    store.readMacroSignals ? store.readMacroSignals() : Promise.resolve(null),
+    store.readCommodities ? store.readCommodities() : Promise.resolve(null),
+    store.readWeekAheadNarrative
+      ? store.readWeekAheadNarrative()
+      : Promise.resolve(null),
+    store.listWeekAheadArchive
+      ? store.listWeekAheadArchive()
+      : Promise.resolve([]),
+    archivedWeek && store.readWeekAheadArchive
+      ? store.readWeekAheadArchive(archivedWeek)
+      : Promise.resolve(null),
+  ]);
   const narrative = archivedWeek ? archivedNarrative : currentNarrative;
 
   const today = todayIso();
@@ -185,6 +196,10 @@ export default async function WeekAheadPage({ searchParams }: Props) {
             );
           })}
         </div>
+      ) : null}
+
+      {commodities && commodities.items.length > 0 ? (
+        <CommodityStrip data={commodities} />
       ) : null}
 
       {macro && macro.signals.length > 0 ? (

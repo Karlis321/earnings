@@ -286,6 +286,7 @@ const P = {
   screenChangeLog: (framework: import("@/lib/types").ScreenFramework) =>
     `data/screens/${framework}-change-log.jsonl`,
   correlations: "data/correlations.json",
+  commodities: "data/commodities.json",
   rankingHistory: "data/ranking-history.jsonl",
   // Stored as a JSON object `{schema, entries:[...]}` rather than raw
   // JSONL — the write path uses commit() which JSON.stringifies, and
@@ -983,6 +984,17 @@ export function gitSnapshotStore(cfg: GhConfig): Store {
         const r = await readCached<import("@/lib/types").Correlations>(
           cfg,
           P.correlations,
+        );
+        return r?.content ?? null;
+      } catch {
+        return null;
+      }
+    },
+    async readCommodities() {
+      try {
+        const r = await readCached<import("@/lib/types").Commodities>(
+          cfg,
+          P.commodities,
         );
         return r?.content ?? null;
       } catch {

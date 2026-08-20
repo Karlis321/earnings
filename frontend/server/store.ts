@@ -133,6 +133,11 @@ export interface Store {
   // /correlation. Null when the snapshot file doesn't exist yet.
   readCorrelations?(): Promise<import("@/lib/types").Correlations | null>;
 
+  // Phase 4.2 — commodity price snapshot (data/commodities.json).
+  // Refreshed by scripts/refresh-commodities.mjs. Consumed by the
+  // commodity strip on /week-ahead.
+  readCommodities?(): Promise<import("@/lib/types").Commodities | null>;
+
   // Feature 3.1 ranking history (data/ranking-history.jsonl).
   // Appended daily by scripts/append-ranking-history.mjs. Filtered
   // to `ticker` when provided (cheap: one grep pass over the

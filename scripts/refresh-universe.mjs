@@ -151,6 +151,9 @@ const PHASES = [
   // calls). Optional; the /correlation page renders "no snapshot"
   // gracefully when this hasn't run yet.
   { key: "correlations", label: "Pairwise correlation (watchlist)", script: "refresh-correlations.mjs", optional: true },
+  // Phase 4.2 — commodity basket (8 Yahoo futures). ~3 s of calls.
+  // Optional; feeds the /week-ahead commodity strip.
+  { key: "commodities", label: "Commodity basket (WTI/Brent/gas/metals/ag)", script: "refresh-commodities.mjs", optional: true },
   // Google News + wire RSS fanout — ported to
   // scripts/refresh-google-news.mjs on 2026-08-03. Single fetch pass
   // (29 feeds), distributes matched items via displayName / aliases /

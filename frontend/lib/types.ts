@@ -63,6 +63,35 @@ export interface Correlations {
   tickers: string[];
   matrix: Record<string, Record<string, number | null>>;
 }
+
+// Phase 4.2 — commodity price snapshot for the /week-ahead
+// commodity strip. Yahoo commodity futures (WTI/Brent/nat gas/
+// gold/silver/copper/platinum/corn). Written by
+// scripts/refresh-commodities.mjs.
+export interface CommodityBar {
+  date: string;
+  close: number;
+}
+export interface CommodityItem {
+  symbol: string;
+  label: string;
+  unit: string;
+  group: "energy" | "precious" | "base" | "ag";
+  currency: string | null;
+  latest: { date: string; close: number } | null;
+  change1d: number | null;
+  change5d: number | null;
+  change30d: number | null;
+  change90d: number | null;
+  bars: CommodityBar[];
+  error?: string;
+}
+export interface Commodities {
+  schema: "commodities/v1";
+  generatedAt: string;
+  range: string;
+  items: CommodityItem[];
+}
 export interface Screen {
   schema: "screen/v1";
   framework: ScreenFramework;

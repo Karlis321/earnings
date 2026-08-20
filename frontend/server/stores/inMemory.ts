@@ -188,6 +188,9 @@ export const inMemoryStore: Store = {
   async readCorrelations() {
     return null;
   },
+  async readCommodities() {
+    return null;
+  },
   async readRankingHistory() {
     return [];
   },
