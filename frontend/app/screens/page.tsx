@@ -31,26 +31,67 @@ export default async function ScreensPage({ searchParams }: Props) {
   ]);
 
   const current = framework === "blue-ocean" ? blueOcean : ruleBreaker;
+  const blueOceanCount = blueOcean?.screens.length ?? 0;
+  const ruleBreakerCount = ruleBreaker?.screens.length ?? 0;
 
+  // Empty branch — still render the tab chips + header so the user
+  // can flip to the other framework (which may not be empty). The
+  // hint below states the next-fire schedule concretely.
   if (!current) {
     return (
       <div className="mx-auto max-w-[1400px] px-10 py-8">
         <div className="mb-6">
           <div className="mono-eyebrow mb-3">§ Screens · Framework rubrics</div>
           <h1 className="text-[28px] font-semibold leading-tight tracking-[-0.02em]">
-            No {FRAMEWORK_LABEL[framework]} snapshot yet
+            {FRAMEWORK_LABEL[framework]} — no snapshot yet
           </h1>
+          <p className="mt-2 max-w-[68ch] text-[13px] text-tx-mid">
+            The framework-screen workflow rates ~1,000 US operating names
+            on 5 frozen dimensions each. Cadence is monthly per
+            framework — Blue Ocean fires the 1st, Rule Breaker the 2nd,
+            at 12:00 UTC. Each run scores 8 tickers and self-chains
+            until the universe is covered (~125 batches).
+          </p>
         </div>
+
+        <div className="mb-4 flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap rounded-button border border-bd bg-s1 p-[3px]">
+            <a
+              href="/screens?framework=blue-ocean"
+              className={`rounded-[6px] px-3 py-[5px] text-[12.5px] ${
+                framework === "blue-ocean"
+                  ? "bg-s3 font-medium text-tx"
+                  : "text-tx2 hover:text-tx"
+              }`}
+            >
+              Blue Ocean{" "}
+              <span className="ml-1 font-mono text-[10.5px] text-tx3">
+                {blueOceanCount}
+              </span>
+            </a>
+            <a
+              href="/screens?framework=rule-breaker"
+              className={`rounded-[6px] px-3 py-[5px] text-[12.5px] ${
+                framework === "rule-breaker"
+                  ? "bg-s3 font-medium text-tx"
+                  : "text-tx2 hover:text-tx"
+              }`}
+            >
+              Rule Breaker{" "}
+              <span className="ml-1 font-mono text-[10.5px] text-tx3">
+                {ruleBreakerCount}
+              </span>
+            </a>
+          </div>
+        </div>
+
         <EmptyState
-          title="Workflow hasn't run yet"
-          hint="framework-screen.yml fires on the 1st/2nd of each month, or dispatch it manually from the GitHub Actions tab (choose blue-ocean or rule-breaker + batch_size). First run scores 8 tickers; chained runs cover the ~1,000-name universe over multiple days."
+          title="Waiting for first workflow run"
+          hint="To fire earlier: open the repo's Actions tab, pick 'framework-screen', click 'Run workflow', choose the framework + batch_size. A single dispatch takes ~10-15 minutes for 8 tickers."
         />
       </div>
     );
   }
-
-  const blueOceanCount = blueOcean?.screens.length ?? 0;
-  const ruleBreakerCount = ruleBreaker?.screens.length ?? 0;
 
   return (
     <div className="mx-auto max-w-[1800px] px-10 py-8">

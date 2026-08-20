@@ -113,7 +113,20 @@ export default async function WeekAheadPage() {
         ) : null}
       </div>
 
-      {narrative ? <NarrativePanel narrative={narrative} /> : null}
+      {narrative ? (
+        <NarrativePanel narrative={narrative} />
+      ) : (
+        <div className="mb-4 rounded-[8px] border border-dashed border-bd bg-panel2/40 px-4 py-3 text-[12px] text-tx-mid">
+          <span className="font-mono text-[10.5px] uppercase tracking-[0.07em] text-tx3">
+            § Narrative
+          </span>{" "}
+          — no snapshot yet. The{" "}
+          <code className="text-tx-mid">week-ahead</code> workflow fires
+          Sunday 22:00 UTC and writes The setup + What to watch + Signals
+          to trust sections based on the ranking + macro + market-pulse
+          state. Day grid below still renders from events-index directly.
+        </div>
+      )}
 
       {macro && macro.signals.length > 0 ? (
         <MacroStrip signals={macro} />

@@ -22,7 +22,7 @@ export default async function IdeasPage() {
       <div className="mx-auto max-w-[1200px] px-10 py-20">
         <EmptyState
           title="No ranking snapshot yet"
-          hint="Run node scripts/run-ranking.mjs to produce data/ranking.json — the daily refresh will schedule this automatically once wired in."
+          hint="scripts/run-ranking.mjs writes data/ranking.json. The daily refresh does not chain it yet — dispatch it manually via `node scripts/run-ranking.mjs` or wait for the ideas workflow (Mon/Wed/Fri 14:00 UTC) which refreshes ranking first."
         />
       </div>
     );
@@ -50,7 +50,17 @@ export default async function IdeasPage() {
 
       {ideas && ideas.pitches.length > 0 ? (
         <IdeasPitchStrip ideas={ideas} />
-      ) : null}
+      ) : (
+        <div className="mb-6 rounded-[8px] border border-dashed border-bd bg-panel2/40 px-4 py-3 text-[12px] text-tx-mid">
+          <span className="font-mono text-[10.5px] uppercase tracking-[0.07em] text-tx3">
+            § AI pitch strip
+          </span>{" "}
+          — no snapshot yet. The <code className="text-tx-mid">ideas</code>{" "}
+          workflow fires Mon/Wed/Fri 14:00 UTC and writes 8-12 pitches to
+          the top-composite tickers. The ranking table below is the same
+          data source, unfiltered.
+        </div>
+      )}
 
       <IdeasTable ranking={ranking} />
     </div>
