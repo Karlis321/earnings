@@ -139,6 +139,13 @@ const PHASES = [
   // consumed by /week-ahead as an extremity strip above the day
   // grid. Best-effort — non-blocking on transient Yahoo errors.
   { key: "macro", label: "Macro extremity (z-score vs 3y)", script: "refresh-macro.mjs", optional: true },
+  // Ranking + history — writes data/ranking.json (fresh composite
+  // over the universe) and appends today's snapshot to
+  // data/ranking-history.jsonl. Optional so a Yahoo blip doesn't
+  // block the whole refresh. History enables composite sparklines
+  // on /s/[ticker] (Phase 3.2).
+  { key: "ranking", label: "Signal ranking (composite)", script: "run-ranking.mjs", optional: true },
+  { key: "ranking-history", label: "Ranking history append", script: "append-ranking-history.mjs", optional: true },
   // Google News + wire RSS fanout — ported to
   // scripts/refresh-google-news.mjs on 2026-08-03. Single fetch pass
   // (29 feeds), distributes matched items via displayName / aliases /
