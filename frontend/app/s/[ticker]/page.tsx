@@ -13,6 +13,7 @@ import { EtfDetail } from "@/components/security/EtfDetail";
 import { SummaryPanel } from "@/components/security/SummaryPanel";
 import { SummarizeButton } from "@/components/security/SummarizeButton";
 import { ExtendedMetricsPanel } from "@/components/security/ExtendedMetricsPanel";
+import { TickerSignals } from "@/components/security/TickerSignals";
 import { GuidanceTimeline, Panel } from "@/components/primitives";
 import { EmptyState } from "@/components/primitives";
 import { MarkSeen } from "@/components/shell/MarkSeen";
@@ -36,10 +37,25 @@ export const dynamic = "force-dynamic";
 export default async function SecurityDetailPage({ params }: Props) {
   const { ticker: raw } = await params;
   const ticker = decodeURIComponent(raw);
-  const entities = await store.readRegistry();
+  const [entities, ranking, ideas, blueOcean, ruleBreaker] = await Promise.all([
+    store.readRegistry(),
+    store.readRanking ? store.readRanking() : Promise.resolve(null),
+    store.readIdeas ? store.readIdeas() : Promise.resolve(null),
+    store.readScreen ? store.readScreen("blue-ocean") : Promise.resolve(null),
+    store.readScreen ? store.readScreen("rule-breaker") : Promise.resolve(null),
+  ]);
   const rawEntity = findEntity(entities, ticker);
   if (!rawEntity) notFound();
   const entity = normalizeEntity(rawEntity)!;
+
+  // Cross-referenced AI signals for this specific ticker.
+  const rankingRow = ranking?.rows.find((r) => r.ticker === ticker) ?? null;
+  const ideasPitch =
+    ideas?.pitches.find((p) => p.ticker === ticker) ?? null;
+  const blueOceanCard =
+    blueOcean?.screens.find((s) => s.ticker === ticker) ?? null;
+  const ruleBreakerCard =
+    ruleBreaker?.screens.find((s) => s.ticker === ticker) ?? null;
 
   // Per-ticker shard read replaces filtering the whole monolith.
   const rawTickerEvents = store.readEventsForTicker
@@ -133,6 +149,15 @@ export default async function SecurityDetailPage({ params }: Props) {
         latest={latest}
         nextEvent={nextEvent}
         freshness={freshness}
+      />
+
+      {/* Cross-referenced AI signals — renders only sub-cards that
+          have data for THIS ticker. Zero-signal tickers get no
+          strip at all. */}
+      <TickerSignals
+        ranking={rankingRow}
+        pitch={ideasPitch}
+        screens={{ blueOcean: blueOceanCard, ruleBreaker: ruleBreakerCard }}
       />
 
       {/* Summary panel renders above the past-quarters grid only when
