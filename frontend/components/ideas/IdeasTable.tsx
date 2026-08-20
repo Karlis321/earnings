@@ -113,6 +113,12 @@ export function IdeasTable({
   const router = useRouter();
   const [sortKey, setSortKey] = useState<SortKey>("composite");
   const [minComponents, setMinComponents] = useState<MinComponents>(1);
+  // "Matured only" — hides rows whose last event was < 5 calendar
+  // days ago. Rough proxy for d3 reaction maturity (d3 = 3 trading
+  // sessions ≈ 5 calendar days worst-case with weekends).
+  // Underlying signals may be pending / clipped, so this filter
+  // trades coverage for signal cleanliness.
+  const [maturedOnly, setMaturedOnly] = useState<boolean>(false);
   const [query, setQuery] = useState("");
   const highlightRef = useRef<HTMLDivElement | null>(null);
 
@@ -231,10 +237,22 @@ export function IdeasTable({
     }
   };
 
+  const maturityCutoffIso = useMemo(() => {
+    const d = new Date();
+    d.setUTCDate(d.getUTCDate() - 5);
+    return d.toISOString().slice(0, 10);
+  }, []);
+
   const rows = useMemo(() => {
     const term = query.trim().toLowerCase();
     return ranking.rows
       .filter((r) => r.componentsPresent >= minComponents)
+      .filter((r) => {
+        if (!maturedOnly) return true;
+        // Require lastEventDate present AND >= 5 calendar days ago
+        // — rough d3 maturity proxy.
+        return !!r.lastEventDate && r.lastEventDate <= maturityCutoffIso;
+      })
       .filter((r) => {
         if (!term) return true;
         return (
@@ -244,7 +262,7 @@ export function IdeasTable({
       })
       .slice()
       .sort((a, b) => sortValue(b, sortKey) - sortValue(a, sortKey));
-  }, [ranking.rows, sortKey, minComponents, query]);
+  }, [ranking.rows, sortKey, minComponents, query, maturedOnly, maturityCutoffIso]);
 
   return (
     <>
@@ -283,6 +301,19 @@ export function IdeasTable({
             </button>
           ))}
         </div>
+        <button
+          type="button"
+          onClick={() => setMaturedOnly((v) => !v)}
+          title="Hide rows whose last earnings event was < 5 calendar days ago (d3 reaction still stabilizing)"
+          className={clsx(
+            "rounded-button border px-3 py-[6px] text-[12.5px] transition",
+            maturedOnly
+              ? "border-brand bg-[rgba(47,127,255,0.10)] text-brand-fg"
+              : "border-bd bg-s1 text-tx-mid hover:text-tx",
+          )}
+        >
+          {maturedOnly ? "Matured only ✓" : "Matured only"}
+        </button>
         <input
           type="text"
           value={query}
