@@ -14,6 +14,7 @@ import { SummaryPanel } from "@/components/security/SummaryPanel";
 import { SummarizeButton } from "@/components/security/SummarizeButton";
 import { ExtendedMetricsPanel } from "@/components/security/ExtendedMetricsPanel";
 import { TickerSignals } from "@/components/security/TickerSignals";
+import { FocusToggle } from "@/components/security/FocusToggle";
 import { GuidanceTimeline, Panel } from "@/components/primitives";
 import { EmptyState } from "@/components/primitives";
 import { MarkSeen } from "@/components/shell/MarkSeen";
@@ -37,13 +38,17 @@ export const dynamic = "force-dynamic";
 export default async function SecurityDetailPage({ params }: Props) {
   const { ticker: raw } = await params;
   const ticker = decodeURIComponent(raw);
-  const [entities, ranking, ideas, blueOcean, ruleBreaker] = await Promise.all([
-    store.readRegistry(),
-    store.readRanking ? store.readRanking() : Promise.resolve(null),
-    store.readIdeas ? store.readIdeas() : Promise.resolve(null),
-    store.readScreen ? store.readScreen("blue-ocean") : Promise.resolve(null),
-    store.readScreen ? store.readScreen("rule-breaker") : Promise.resolve(null),
-  ]);
+  const [entities, ranking, ideas, blueOcean, ruleBreaker, sharedState] =
+    await Promise.all([
+      store.readRegistry(),
+      store.readRanking ? store.readRanking() : Promise.resolve(null),
+      store.readIdeas ? store.readIdeas() : Promise.resolve(null),
+      store.readScreen ? store.readScreen("blue-ocean") : Promise.resolve(null),
+      store.readScreen ? store.readScreen("rule-breaker") : Promise.resolve(null),
+      store.readSharedState(),
+    ]);
+  const initialInFocus =
+    (sharedState.preferences?.focusTickers ?? []).includes(ticker);
   const rawEntity = findEntity(entities, ticker);
   if (!rawEntity) notFound();
   const entity = normalizeEntity(rawEntity)!;
@@ -151,9 +156,18 @@ export default async function SecurityDetailPage({ params }: Props) {
         freshness={freshness}
       />
 
+      {/* One-click focus toggle — writes preferences.focusTickers
+          via /api/shared-state. */}
+      <div className="mt-4">
+        <FocusToggle
+          ticker={ticker}
+          initialInFocus={initialInFocus}
+          initialState={sharedState}
+        />
+      </div>
+
       {/* Cross-referenced AI signals — renders only sub-cards that
-          have data for THIS ticker. Zero-signal tickers get no
-          strip at all. */}
+          have data for THIS ticker. Zero-signal tickers → no strip. */}
       <TickerSignals
         ranking={rankingRow}
         pitch={ideasPitch}
