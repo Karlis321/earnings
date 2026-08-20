@@ -173,6 +173,9 @@ export const inMemoryStore: Store = {
   async readWeekAheadNarrative() {
     return null;
   },
+  async readScreen() {
+    return null;
+  },
   async writePipelineReport(): Promise<void> {
     notImplemented("writePipelineReport");
   },

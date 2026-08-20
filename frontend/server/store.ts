@@ -103,6 +103,14 @@ export interface Store {
     import("@/lib/types").WeekAheadNarrative | null
   >;
 
+  // Feature 4A framework screens (data/screens/<framework>.json).
+  // Written by .claude/commands/{blue-ocean,rule-breaker}.md via
+  // scripts/apply-screen.mjs. Monthly self-chaining workflow
+  // (framework-screen.yml). Consumed by /screens (Feature 4C).
+  readScreen?(
+    framework: import("@/lib/types").ScreenFramework,
+  ): Promise<import("@/lib/types").Screen | null>;
+
   readDocument(id: string): Promise<Document | null>;
   writeDocument(doc: Document): Promise<void>;
 

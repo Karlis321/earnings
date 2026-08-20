@@ -1,0 +1,147 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "screen/v1",
+  "description": "Framework screen output. One file per framework at data/screens/<framework>.json. Written by .claude/commands/<framework>.md via scripts/apply-screen.mjs. Consumed by /screens. Each `screens[]` entry is one company's rubric-score card — five dimensions per framework, composite = mean of dimension scores. Two frameworks live today: blue-ocean (Kim/Mauborgne value-innovation rubric) and rule-breaker (Motley Fool top-dog / first-mover rubric). Schema is framework-agnostic.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "framework",
+    "generatedAt",
+    "dimensions",
+    "screens"
+  ],
+  "properties": {
+    "schema": { "const": "screen/v1" },
+    "framework": {
+      "type": "string",
+      "enum": ["blue-ocean", "rule-breaker"],
+      "description": "Which rubric this file scores against."
+    },
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Last time apply-screen.mjs updated the file (individual per-ticker entries carry their own screenedAt below)."
+    },
+    "dimensions": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 7,
+      "description": "The rubric dimensions in canonical order. Each screens[].dimensions[] entry MUST have an entry per key here. Frozen once a framework version ships.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["key", "label"],
+        "properties": {
+          "key": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]{2,30}$",
+            "description": "Short slug used as JSON key in per-ticker dimension arrays (e.g. 'value-innovation')."
+          },
+          "label": {
+            "type": "string",
+            "minLength": 4,
+            "maxLength": 60,
+            "description": "Human-readable dimension name shown in the UI."
+          },
+          "description": {
+            "type": "string",
+            "minLength": 30,
+            "maxLength": 300,
+            "description": "Rubric text — how to interpret a high vs low score on this dimension. Shown in tooltip."
+          }
+        }
+      }
+    },
+    "screens": {
+      "type": "array",
+      "description": "Per-ticker screen cards. Append-only within a framework — apply-screen.mjs merges by ticker (later screening overwrites the ticker's card).",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "ticker",
+          "companyId",
+          "displayName",
+          "compositeScore",
+          "dimensions",
+          "verdict",
+          "sources",
+          "screenedAt"
+        ],
+        "properties": {
+          "ticker": {
+            "type": "string",
+            "pattern": "^[A-Z0-9./-]+ [A-Z]{2}$"
+          },
+          "companyId": {
+            "type": ["string", "null"]
+          },
+          "displayName": {
+            "type": "string",
+            "minLength": 2
+          },
+          "compositeScore": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100,
+            "description": "Mean of the dimension scores. Rounded to 1 decimal."
+          },
+          "dimensions": {
+            "type": "array",
+            "minItems": 3,
+            "maxItems": 7,
+            "description": "One entry per rubric dimension (matches the file-level dimensions[] order + count).",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["key", "score", "rationale"],
+              "properties": {
+                "key": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9-]{2,30}$"
+                },
+                "score": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 100,
+                  "description": "0-100. 0 = strong negative fit, 50 = neutral, 100 = perfect fit."
+                },
+                "rationale": {
+                  "type": "string",
+                  "minLength": 20,
+                  "maxLength": 280,
+                  "description": "One line explaining the score. Cite a fact — no speculation."
+                }
+              }
+            }
+          },
+          "verdict": {
+            "type": "string",
+            "minLength": 20,
+            "maxLength": 320,
+            "description": "One-sentence overall read on the company against this framework. Neutral tone — no target price, no directional trade call."
+          },
+          "sources": {
+            "type": "array",
+            "minItems": 1,
+            "description": "Provenance refs used during scoring.",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["kind", "ref"],
+              "properties": {
+                "kind": {
+                  "type": "string",
+                  "enum": ["summary", "shard", "filing", "release", "web"]
+                },
+                "ref": { "type": "string", "minLength": 3 }
+              }
+            }
+          },
+          "screenedAt": { "type": "string", "format": "date-time" }
+        }
+      }
+    }
+  }
+}

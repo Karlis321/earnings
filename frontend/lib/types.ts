@@ -1,6 +1,43 @@
 // Shape mirrors PRD Appendix C.5 (entity registry) + C.6 (earnings.json).
 // Every sourced number is a Fact; derived numbers store inputs + computedAt.
 
+// Feature 4A — framework-screen output. One file per framework
+// at data/screens/<framework>.json. Written by
+// .claude/commands/<framework>.md via scripts/apply-screen.mjs.
+// Consumed by /screens (Feature 4C).
+export type ScreenFramework = "blue-ocean" | "rule-breaker";
+export interface ScreenDimensionDef {
+  key: string;
+  label: string;
+  description?: string;
+}
+export interface ScreenDimensionScore {
+  key: string;
+  score: number; // 0-100
+  rationale: string;
+}
+export interface ScreenSourceRef {
+  kind: "summary" | "shard" | "filing" | "release" | "web";
+  ref: string;
+}
+export interface ScreenCard {
+  ticker: string;
+  companyId: string | null;
+  displayName: string;
+  compositeScore: number;
+  dimensions: ScreenDimensionScore[];
+  verdict: string;
+  sources: ScreenSourceRef[];
+  screenedAt: string;
+}
+export interface Screen {
+  schema: "screen/v1";
+  framework: ScreenFramework;
+  generatedAt: string;
+  dimensions: ScreenDimensionDef[];
+  screens: ScreenCard[];
+}
+
 // Feature 2F — weekly AI narrative for /week-ahead. Written by
 // .claude/commands/week-ahead.md via scripts/apply-week-ahead.mjs
 // on Sunday 22:00 UTC. Rendered as a panel above the macro strip.

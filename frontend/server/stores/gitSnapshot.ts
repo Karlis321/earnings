@@ -278,6 +278,8 @@ const P = {
   ideas: "data/ideas.json",
   macroSignals: "data/macro-signals.json",
   weekAheadNarrative: "data/week-ahead-narrative.json",
+  screenBlueOcean: "data/screens/blue-ocean.json",
+  screenRuleBreaker: "data/screens/rule-breaker.json",
   // Stored as a JSON object `{schema, entries:[...]}` rather than raw
   // JSONL — the write path uses commit() which JSON.stringifies, and
   // append-then-commit reduces to updating one entry. The health page
@@ -928,6 +930,16 @@ export function gitSnapshotStore(cfg: GhConfig): Store {
           cfg,
           P.weekAheadNarrative,
         );
+        return r?.content ?? null;
+      } catch {
+        return null;
+      }
+    },
+    async readScreen(framework: import("@/lib/types").ScreenFramework) {
+      const p =
+        framework === "blue-ocean" ? P.screenBlueOcean : P.screenRuleBreaker;
+      try {
+        const r = await readCached<import("@/lib/types").Screen>(cfg, p);
         return r?.content ?? null;
       } catch {
         return null;

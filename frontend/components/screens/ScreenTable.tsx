@@ -1,0 +1,240 @@
+"use client";
+
+// Feature 4C — screen leaderboard. Sortable by composite; expandable
+// rows show per-dimension scores + rationale + verdict + sources.
+
+import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import clsx from "clsx";
+import { ChevronDown, ChevronRight } from "lucide-react";
+import type { Screen, ScreenCard, ScreenDimensionScore } from "@/lib/types";
+import { TickerLogo } from "@/components/primitives/TickerLogo";
+
+function ScoreBar({ score }: { score: number }) {
+  // 0-100 rendered as a horizontal bar; color transitions at 50 (neutral) and 70 (strong).
+  const color =
+    score >= 70
+      ? "bg-success"
+      : score >= 50
+      ? "bg-brand"
+      : score >= 30
+      ? "bg-[rgba(202,138,4,0.85)]"
+      : "bg-danger";
+  const text =
+    score >= 70
+      ? "text-success-fg"
+      : score >= 50
+      ? "text-brand-fg"
+      : score >= 30
+      ? "text-[rgba(202,138,4,1)]"
+      : "text-danger";
+  return (
+    <span className="inline-flex items-center gap-2">
+      <span className={clsx("w-[3rem] font-mono text-[11.5px] tabular-nums", text)}>
+        {score.toFixed(0)}
+      </span>
+      <span className="relative inline-block h-[6px] w-[70px] rounded-full bg-s2">
+        <span
+          className={clsx("absolute left-0 top-0 h-full rounded-full", color)}
+          style={{ width: `${Math.min(100, Math.max(0, score))}%` }}
+        />
+      </span>
+    </span>
+  );
+}
+
+function DimensionRow({
+  d,
+  def,
+}: {
+  d: ScreenDimensionScore;
+  def: { label: string; description?: string };
+}) {
+  return (
+    <div className="grid grid-cols-[12rem_10rem_1fr] items-start gap-x-3 py-1 text-[12px]">
+      <span
+        className="font-mono text-[10.5px] uppercase tracking-[0.05em] text-tx-mid"
+        title={def.description}
+      >
+        {def.label}
+      </span>
+      <ScoreBar score={d.score} />
+      <span className="text-tx-mid">{d.rationale}</span>
+    </div>
+  );
+}
+
+function Row({
+  s,
+  dimensions,
+  expanded,
+  onToggle,
+  onOpen,
+}: {
+  s: ScreenCard;
+  dimensions: Screen["dimensions"];
+  expanded: boolean;
+  onToggle: () => void;
+  onOpen: () => void;
+}) {
+  const Icon = expanded ? ChevronDown : ChevronRight;
+  return (
+    <div className="border-b border-bd/60">
+      <div className="grid grid-cols-[2rem_2fr_10rem_2fr_5rem] items-center gap-x-3 px-3 py-2 hover:bg-hover">
+        <button
+          onClick={onToggle}
+          aria-label={expanded ? "Collapse" : "Expand"}
+          className="text-tx3 hover:text-tx"
+        >
+          <Icon size={14} />
+        </button>
+        <button
+          onClick={onOpen}
+          className="flex min-w-0 items-center gap-2 text-left"
+        >
+          <TickerLogo ticker={s.ticker} name={s.displayName} size={24} />
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-[13px] text-tx">
+              {s.displayName}
+            </span>
+            <span className="font-mono text-[10.5px] text-brand-fg">
+              {s.ticker}
+            </span>
+          </span>
+        </button>
+        <ScoreBar score={s.compositeScore} />
+        <span className="truncate text-[12px] leading-[1.5] text-tx-mid">
+          {s.verdict}
+        </span>
+        <span className="text-right font-mono text-[10px] text-tx3">
+          {s.screenedAt.slice(0, 10)}
+        </span>
+      </div>
+      {expanded ? (
+        <div className="border-t border-bd/40 bg-panel2/40 px-3 py-2">
+          <div className="pl-[3rem]">
+            {s.dimensions.map((d, i) => {
+              const def = dimensions.find((x) => x.key === d.key);
+              if (!def) return null;
+              return (
+                <DimensionRow
+                  key={`${d.key}-${i}`}
+                  d={d}
+                  def={{ label: def.label, description: def.description }}
+                />
+              );
+            })}
+            <div className="mt-2 flex flex-wrap gap-1 text-[10.5px] text-tx3">
+              <span className="font-mono uppercase tracking-[0.06em]">
+                sources:
+              </span>
+              {s.sources.map((src, i) => (
+                <span
+                  key={i}
+                  className="inline-flex items-center gap-1 rounded-[3px] border border-bd bg-s2 px-[6px] py-[1px] font-mono"
+                >
+                  <span className="uppercase">{src.kind}</span>
+                  <span>·</span>
+                  <span className="max-w-[24ch] truncate">{src.ref}</span>
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+export function ScreenTable({ screen }: { screen: Screen }) {
+  const router = useRouter();
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const [minScore, setMinScore] = useState<number>(0);
+  const [query, setQuery] = useState("");
+
+  const rows = useMemo(() => {
+    const term = query.trim().toLowerCase();
+    return screen.screens
+      .filter((s) => s.compositeScore >= minScore)
+      .filter((s) => {
+        if (!term) return true;
+        return (
+          s.ticker.toLowerCase().includes(term) ||
+          s.displayName.toLowerCase().includes(term)
+        );
+      })
+      .slice()
+      .sort((a, b) => b.compositeScore - a.compositeScore);
+  }, [screen.screens, minScore, query]);
+
+  const toggle = (t: string) => {
+    setExpanded((s) => {
+      const next = new Set(s);
+      if (next.has(t)) next.delete(t);
+      else next.add(t);
+      return next;
+    });
+  };
+
+  return (
+    <>
+      <div className="mb-4 flex flex-wrap items-center gap-3">
+        <div className="flex items-center gap-2 rounded-button border border-bd bg-s1 px-2 py-[3px] text-[12px]">
+          <span className="text-tx-mid">Min composite</span>
+          {[0, 50, 70].map((v) => (
+            <button
+              key={v}
+              onClick={() => setMinScore(v)}
+              className={clsx(
+                "rounded-[4px] px-[7px] py-[2px] font-mono text-[11px]",
+                minScore === v
+                  ? "bg-s3 text-tx"
+                  : "text-tx-mid hover:text-tx",
+              )}
+            >
+              {v === 0 ? "any" : `≥ ${v}`}
+            </button>
+          ))}
+        </div>
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Filter by ticker or name…"
+          className="h-9 min-w-[240px] rounded-button border border-bd bg-s1 px-3 text-[13px] text-tx placeholder:text-tx3 focus:border-brand focus:outline-none"
+        />
+        <span className="ml-auto font-mono text-[11px] text-tx3">
+          {rows.length} row{rows.length === 1 ? "" : "s"}
+        </span>
+      </div>
+
+      <div className="rounded-[8px] border border-bd bg-panel">
+        <div className="grid grid-cols-[2rem_2fr_10rem_2fr_5rem] gap-x-3 border-b border-bd px-3 py-2 font-mono text-[10px] uppercase tracking-[0.07em] text-tx3">
+          <span />
+          <span>Company</span>
+          <span>Composite</span>
+          <span>Verdict</span>
+          <span className="text-right">Screened</span>
+        </div>
+        {rows.length === 0 ? (
+          <div className="p-8 text-center text-[13px] text-tx-mid">
+            No rows match the current filters.
+          </div>
+        ) : (
+          rows.map((s) => (
+            <Row
+              key={s.ticker}
+              s={s}
+              dimensions={screen.dimensions}
+              expanded={expanded.has(s.ticker)}
+              onToggle={() => toggle(s.ticker)}
+              onOpen={() =>
+                router.push(`/s/${encodeURIComponent(s.ticker)}`)
+              }
+            />
+          ))
+        )}
+      </div>
+    </>
+  );
+}
