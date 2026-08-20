@@ -115,6 +115,19 @@ export interface Ideas {
   pitches: IdeaPitch[];
 }
 
+// Feature 3.1 — one row per ticker per day appended to
+// data/ranking-history.jsonl. Consumed by the composite sparkline
+// on /s/[ticker] (Phase 3.2).
+export interface RankingHistoryRow {
+  date: string; // YYYY-MM-DD
+  ticker: string;
+  composite: number;
+  rank: number;
+  reaction: number | null;
+  surprise: number | null;
+  trend: number | null;
+}
+
 // Feature 3A — ranking output. Written by scripts/run-ranking.mjs
 // to data/ranking.json. Consumed by /ideas (3B).
 export interface RankingComponent {

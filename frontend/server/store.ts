@@ -111,6 +111,14 @@ export interface Store {
     framework: import("@/lib/types").ScreenFramework,
   ): Promise<import("@/lib/types").Screen | null>;
 
+  // Feature 3.1 ranking history (data/ranking-history.jsonl).
+  // Appended daily by scripts/append-ranking-history.mjs. Filtered
+  // to `ticker` when provided (cheap: one grep pass over the
+  // file). Consumed by /s/[ticker] composite sparkline.
+  readRankingHistory?(
+    ticker?: string,
+  ): Promise<import("@/lib/types").RankingHistoryRow[]>;
+
   readDocument(id: string): Promise<Document | null>;
   writeDocument(doc: Document): Promise<void>;
 

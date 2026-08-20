@@ -14,9 +14,11 @@ import clsx from "clsx";
 import { ArrowUp, ArrowDown, Minus, Quote } from "lucide-react";
 import type {
   IdeaPitch,
+  RankingHistoryRow,
   RankingRow,
   ScreenCard,
 } from "@/lib/types";
+import { CompositeSparkline } from "./CompositeSparkline";
 
 interface Props {
   ticker: string;
@@ -26,6 +28,10 @@ interface Props {
     blueOcean: ScreenCard | null;
     ruleBreaker: ScreenCard | null;
   };
+  // Phase 3.2 — 30-day composite history for this ticker. Empty
+  // when data/ranking-history.jsonl doesn't exist yet or hasn't
+  // accumulated enough rows for a sparkline (< 2 days).
+  history?: RankingHistoryRow[];
 }
 
 function CompositeBadge({
@@ -132,7 +138,13 @@ function PitchCard({ pitch }: { pitch: IdeaPitch }) {
   );
 }
 
-export function TickerSignals({ ticker, ranking, pitch, screens }: Props) {
+export function TickerSignals({
+  ticker,
+  ranking,
+  pitch,
+  screens,
+  history,
+}: Props) {
   const encodedTicker = encodeURIComponent(ticker);
   const hasAny =
     ranking ||
@@ -145,11 +157,16 @@ export function TickerSignals({ ticker, ranking, pitch, screens }: Props) {
     <section className="mt-4" aria-label="Cross-referenced AI signals">
       <div className="flex flex-wrap items-center gap-2">
         {ranking ? (
-          <CompositeBadge
-            score={ranking.compositeScore}
-            rank={ranking.rank}
-            href={`/ideas?ticker=${encodedTicker}`}
-          />
+          <div className="flex items-center gap-1.5">
+            <CompositeBadge
+              score={ranking.compositeScore}
+              rank={ranking.rank}
+              href={`/ideas?ticker=${encodedTicker}`}
+            />
+            {history && history.length >= 2 ? (
+              <CompositeSparkline history={history} />
+            ) : null}
+          </div>
         ) : null}
         <FrameworkBadge
           label="Blue Ocean"

@@ -39,15 +39,25 @@ export const dynamic = "force-dynamic";
 export default async function SecurityDetailPage({ params }: Props) {
   const { ticker: raw } = await params;
   const ticker = decodeURIComponent(raw);
-  const [entities, ranking, ideas, blueOcean, ruleBreaker, sharedState] =
-    await Promise.all([
-      store.readRegistry(),
-      store.readRanking ? store.readRanking() : Promise.resolve(null),
-      store.readIdeas ? store.readIdeas() : Promise.resolve(null),
-      store.readScreen ? store.readScreen("blue-ocean") : Promise.resolve(null),
-      store.readScreen ? store.readScreen("rule-breaker") : Promise.resolve(null),
-      store.readSharedState(),
-    ]);
+  const [
+    entities,
+    ranking,
+    ideas,
+    blueOcean,
+    ruleBreaker,
+    sharedState,
+    rankingHistory,
+  ] = await Promise.all([
+    store.readRegistry(),
+    store.readRanking ? store.readRanking() : Promise.resolve(null),
+    store.readIdeas ? store.readIdeas() : Promise.resolve(null),
+    store.readScreen ? store.readScreen("blue-ocean") : Promise.resolve(null),
+    store.readScreen ? store.readScreen("rule-breaker") : Promise.resolve(null),
+    store.readSharedState(),
+    store.readRankingHistory
+      ? store.readRankingHistory(ticker)
+      : Promise.resolve([]),
+  ]);
   const initialInFocus =
     (sharedState.preferences?.focusTickers ?? []).includes(ticker);
   const rawEntity = findEntity(entities, ticker);
@@ -177,6 +187,7 @@ export default async function SecurityDetailPage({ params }: Props) {
         ranking={rankingRow}
         pitch={ideasPitch}
         screens={{ blueOcean: blueOceanCard, ruleBreaker: ruleBreakerCard }}
+        history={rankingHistory}
       />
 
       {/* Summary panel renders above the past-quarters grid only when
