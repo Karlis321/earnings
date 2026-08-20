@@ -165,6 +165,54 @@ export function IdeasTable({
     }
   };
 
+  // Bulk-add: adds the top N visible rows (as currently sorted +
+  // filtered) into focus in one PUT. Duplicates are silently
+  // absorbed — Set() handles the dedupe.
+  const bulkAddTopN = async (n: number, visible: RankingRow[]) => {
+    if (!initialState) return;
+    const before = new Set(focus);
+    const nextFocus = new Set(focus);
+    const added: string[] = [];
+    for (const r of visible.slice(0, n)) {
+      if (!nextFocus.has(r.ticker)) {
+        nextFocus.add(r.ticker);
+        added.push(r.ticker);
+      }
+    }
+    if (added.length === 0) return; // nothing to do
+    setFocus(nextFocus);
+    setFailed(null);
+    try {
+      const currentTickers = Array.from(nextFocus);
+      const nextState: SharedState = {
+        ...initialState,
+        preferences: initialState.preferences
+          ? { ...initialState.preferences, focusTickers: currentTickers }
+          : {
+              focusTickers: currentTickers,
+              themes: initialState.themes ?? [],
+              subscriptions: {
+                newTranscripts: false,
+                weekAhead: false,
+                ideasDigest: false,
+              },
+            },
+      };
+      const r = await fetch("/api/shared-state", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(nextState),
+      });
+      if (!r.ok) {
+        const j = await r.json().catch(() => ({}));
+        throw new Error(j.message ?? `HTTP ${r.status}`);
+      }
+    } catch (e) {
+      setFocus(before);
+      setFailed(`bulk: ${added.length} rows failed`);
+    }
+  };
+
   const rows = useMemo(() => {
     const term = query.trim().toLowerCase();
     return ranking.rows
@@ -224,6 +272,22 @@ export function IdeasTable({
           placeholder="Filter by ticker or name…"
           className="h-9 min-w-[240px] rounded-button border border-bd bg-s1 px-3 text-[13px] text-tx placeholder:text-tx3 focus:border-brand focus:outline-none"
         />
+        {initialState ? (
+          <div className="flex items-center gap-1 rounded-button border border-bd bg-s1 px-2 py-[3px] text-[12px]">
+            <span className="text-tx-mid">Bulk focus</span>
+            {[10, 20].map((n) => (
+              <button
+                key={n}
+                type="button"
+                onClick={() => bulkAddTopN(n, rows)}
+                title={`Add the top ${n} rows (as currently sorted + filtered) to preferences.focusTickers in a single PUT`}
+                className="rounded-[4px] bg-s3 px-[7px] py-[2px] font-mono text-[11px] text-tx hover:bg-hover"
+              >
+                +top {n}
+              </button>
+            ))}
+          </div>
+        ) : null}
         <span className="ml-auto font-mono text-[11px] text-tx3">
           {rows.length} row{rows.length === 1 ? "" : "s"}
         </span>
