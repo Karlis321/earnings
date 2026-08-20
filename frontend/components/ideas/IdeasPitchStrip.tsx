@@ -5,10 +5,82 @@
 // thesis + rationale + risks + catalyst + source chips. Horizontal
 // scroll on narrow viewports, grid on wide.
 
+import { useState } from "react";
 import Link from "next/link";
-import { AlertTriangle, ArrowUpRight, Calendar, Info } from "lucide-react";
+import {
+  AlertTriangle,
+  ArrowUpRight,
+  Calendar,
+  Copy,
+  Check,
+  Info,
+} from "lucide-react";
 import type { Ideas, IdeaPitch, IdeaSourceRef } from "@/lib/types";
 import { TickerLogo } from "@/components/primitives/TickerLogo";
+
+// Shape a pitch into plain-text form suitable for pasting into
+// Slack/email/notes app. Includes the ticker + link back so a
+// downstream reader can trace the source.
+function formatPitchForClipboard(p: IdeaPitch, siteOrigin: string): string {
+  const url = `${siteOrigin}/s/${encodeURIComponent(p.ticker)}`;
+  const risks = p.risks.map((r) => `- ${r}`).join("\n");
+  const catalyst = p.catalyst.date
+    ? `${p.catalyst.label} · ${p.catalyst.date}`
+    : p.catalyst.label;
+  return [
+    `${p.ticker} · rank #${p.rank} · composite ${p.compositeScore >= 0 ? "+" : ""}${p.compositeScore.toFixed(3)}`,
+    ``,
+    p.thesis,
+    ``,
+    p.rationale,
+    ``,
+    `Risks:`,
+    risks,
+    ``,
+    `Catalyst: ${catalyst}`,
+    ``,
+    `Source: ${url}`,
+  ].join("\n");
+}
+
+function CopyButton({ pitch }: { pitch: IdeaPitch }) {
+  const [copied, setCopied] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const onClick = async () => {
+    try {
+      const text = formatPitchForClipboard(pitch, window.location.origin);
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setFailed(false);
+      setTimeout(() => setCopied(false), 1800);
+    } catch {
+      setFailed(true);
+      setTimeout(() => setFailed(false), 2400);
+    }
+  };
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      title="Copy pitch to clipboard (thesis + rationale + risks + catalyst + link)"
+      className="inline-flex h-6 items-center gap-1 rounded-[3px] border border-bd bg-s1 px-[6px] text-[10px] font-mono uppercase tracking-[0.06em] text-tx-mid hover:bg-hover hover:text-tx"
+    >
+      {copied ? (
+        <>
+          <Check size={10} className="text-success-fg" /> copied
+        </>
+      ) : failed ? (
+        <>
+          <Copy size={10} className="text-danger" /> failed
+        </>
+      ) : (
+        <>
+          <Copy size={10} /> copy
+        </>
+      )}
+    </button>
+  );
+}
 
 function SourceChip({ s }: { s: IdeaSourceRef }) {
   const isUrl = /^https?:\/\//i.test(s.ref);
@@ -44,7 +116,7 @@ function SourceChip({ s }: { s: IdeaSourceRef }) {
 function PitchCard({ p }: { p: IdeaPitch }) {
   return (
     <article className="flex min-w-[320px] max-w-[420px] flex-1 flex-col rounded-[8px] border border-bd bg-panel p-4 shadow-[0_1px_2px_rgba(10,37,64,0.04)]">
-      {/* Header — rank, ticker chip, link to detail */}
+      {/* Header — rank, ticker chip, link to detail, copy action */}
       <header className="mb-3 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <span className="font-mono text-[10.5px] text-tx3">#{p.rank}</span>
@@ -56,10 +128,13 @@ function PitchCard({ p }: { p: IdeaPitch }) {
             {p.ticker}
           </Link>
         </div>
-        <span className="font-mono text-[10.5px] tabular-nums text-tx-mid">
-          {p.compositeScore >= 0 ? "+" : ""}
-          {p.compositeScore.toFixed(3)}
-        </span>
+        <div className="flex items-center gap-2">
+          <CopyButton pitch={p} />
+          <span className="font-mono text-[10.5px] tabular-nums text-tx-mid">
+            {p.compositeScore >= 0 ? "+" : ""}
+            {p.compositeScore.toFixed(3)}
+          </span>
+        </div>
       </header>
 
       {/* Thesis — the one-liner */}
