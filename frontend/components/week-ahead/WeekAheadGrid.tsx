@@ -6,7 +6,7 @@
 // small divergent bar; rows without ranking data show ticker + last
 // surprise + period only.
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import clsx from "clsx";
 import { ArrowUp, ArrowDown } from "lucide-react";
@@ -32,6 +32,10 @@ interface Props {
   rows: WeekAheadRow[];
   horizonStart: string;
   horizonEnd: string;
+  // Deep-link ticker highlight from ?ticker=. Row gets a brand ring
+  // + smooth-scroll to viewport center on mount. Absent for
+  // vanilla nav-tab arrivals.
+  highlightTicker?: string | null;
 }
 
 const DAY_LABEL: Record<number, string> = {
@@ -114,16 +118,22 @@ function SurpriseCell({ pct }: { pct: number | null }) {
 function Row({
   r,
   onClick,
+  highlighted,
+  rowRef,
 }: {
   r: WeekAheadRow;
   onClick: () => void;
+  highlighted?: boolean;
+  rowRef?: React.RefObject<HTMLButtonElement | null>;
 }) {
   return (
     <button
+      ref={rowRef}
       onClick={onClick}
       className={clsx(
         "grid w-full grid-cols-[2.5rem_2fr_5.5rem_6rem_5.5rem_5.5rem] items-center gap-x-3 border-b border-bd/50 px-3 py-2 text-left text-[13px] hover:bg-hover",
         r.isFocus && "bg-[rgba(47,127,255,0.04)]",
+        highlighted && "ring-2 ring-brand/40 bg-[rgba(47,127,255,0.06)]",
       )}
     >
       <span className="flex items-center gap-1">
@@ -158,10 +168,27 @@ function Row({
   );
 }
 
-export function WeekAheadGrid({ rows, horizonStart }: Props) {
+export function WeekAheadGrid({
+  rows,
+  horizonStart,
+  highlightTicker,
+}: Props) {
   const router = useRouter();
   const [focusOnly, setFocusOnly] = useState(false);
   const [minComposite, setMinComposite] = useState<number | null>(null);
+  const highlightRef = useRef<HTMLButtonElement | null>(null);
+
+  // Scroll to the deep-link target once after mount + after
+  // filter/sort resolves. behavior:smooth + block:center matches
+  // /ideas + /screens deep-link pattern for a consistent affordance.
+  useEffect(() => {
+    if (!highlightTicker) return;
+    if (!highlightRef.current) return;
+    highlightRef.current.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+    });
+  }, [highlightTicker]);
 
   const filtered = useMemo(() => {
     return rows
@@ -281,6 +308,10 @@ export function WeekAheadGrid({ rows, horizonStart }: Props) {
                   key={r.ticker}
                   r={r}
                   onClick={() => router.push(`/s/${encodeURIComponent(r.ticker)}`)}
+                  highlighted={highlightTicker === r.ticker}
+                  rowRef={
+                    highlightTicker === r.ticker ? highlightRef : undefined
+                  }
                 />
               ))}
             </section>

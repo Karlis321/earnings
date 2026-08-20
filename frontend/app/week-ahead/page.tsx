@@ -26,7 +26,13 @@ function isoAfterDays(days: number): string {
   return d.toISOString().slice(0, 10);
 }
 
-export default async function WeekAheadPage() {
+interface Props {
+  searchParams: Promise<{ ticker?: string }>;
+}
+
+export default async function WeekAheadPage({ searchParams }: Props) {
+  const sp = await searchParams;
+  const highlightTicker = sp.ticker ?? null;
   const [entities, index, state, ranking, macro, narrative] = await Promise.all([
     store.readRegistry(),
     store.readEventsIndex?.() ??
@@ -132,7 +138,12 @@ export default async function WeekAheadPage() {
         <MacroStrip signals={macro} />
       ) : null}
 
-      <WeekAheadGrid rows={rows} horizonStart={today} horizonEnd={horizonEnd} />
+      <WeekAheadGrid
+        rows={rows}
+        horizonStart={today}
+        horizonEnd={horizonEnd}
+        highlightTicker={highlightTicker}
+      />
     </div>
   );
 }
