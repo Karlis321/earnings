@@ -29,9 +29,10 @@ export default async function ScreensPage({ searchParams }: Props) {
   // TickerSignals framework badges on /s/[ticker].
   const highlightTicker = sp.ticker ?? null;
 
-  const [blueOcean, ruleBreaker] = await Promise.all([
+  const [blueOcean, ruleBreaker, sharedState] = await Promise.all([
     store.readScreen ? store.readScreen("blue-ocean") : Promise.resolve(null),
     store.readScreen ? store.readScreen("rule-breaker") : Promise.resolve(null),
+    store.readSharedState(),
   ]);
 
   const current = framework === "blue-ocean" ? blueOcean : ruleBreaker;
@@ -146,7 +147,11 @@ export default async function ScreensPage({ searchParams }: Props) {
         </div>
       </div>
 
-      <ScreenTable screen={current} highlightTicker={highlightTicker} />
+      <ScreenTable
+        screen={current}
+        highlightTicker={highlightTicker}
+        initialState={sharedState}
+      />
     </div>
   );
 }

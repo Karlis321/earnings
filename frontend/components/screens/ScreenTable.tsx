@@ -6,8 +6,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import clsx from "clsx";
-import { ChevronDown, ChevronRight } from "lucide-react";
-import type { Screen, ScreenCard, ScreenDimensionScore } from "@/lib/types";
+import { ChevronDown, ChevronRight, Star, StarOff } from "lucide-react";
+import type {
+  Screen,
+  ScreenCard,
+  ScreenDimensionScore,
+  SharedState,
+} from "@/lib/types";
 import { TickerLogo } from "@/components/primitives/TickerLogo";
 
 function ScoreBar({ score }: { score: number }) {
@@ -72,6 +77,10 @@ function Row({
   onOpen,
   highlighted,
   rowRef,
+  inFocus,
+  onToggleFocus,
+  focusDisabled,
+  focusFailed,
 }: {
   s: ScreenCard;
   dimensions: Screen["dimensions"];
@@ -84,6 +93,10 @@ function Row({
   // Ref target for scroll-into-view. Undefined for non-highlighted
   // rows to avoid a per-row ref explosion.
   rowRef?: React.RefObject<HTMLDivElement | null>;
+  inFocus: boolean;
+  onToggleFocus: () => void;
+  focusDisabled: boolean;
+  focusFailed: boolean;
 }) {
   const Icon = expanded ? ChevronDown : ChevronRight;
   return (
@@ -94,7 +107,37 @@ function Row({
         highlighted && "ring-2 ring-brand/40 bg-[rgba(47,127,255,0.04)]",
       )}
     >
-      <div className="grid grid-cols-[2rem_2fr_10rem_2fr_5rem] items-center gap-x-3 px-3 py-2 hover:bg-hover">
+      <div className="grid grid-cols-[2rem_2rem_2fr_10rem_2fr_5rem] items-center gap-x-3 px-3 py-2 hover:bg-hover">
+        <button
+          type="button"
+          aria-pressed={inFocus}
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleFocus();
+          }}
+          disabled={focusDisabled}
+          title={
+            focusDisabled
+              ? "Focus toggle unavailable"
+              : inFocus
+              ? "Remove from focus"
+              : "Add to focus"
+          }
+          className={clsx(
+            "flex h-5 w-5 items-center justify-center rounded-[3px] transition",
+            inFocus
+              ? "text-brand-fg hover:bg-hover"
+              : "text-tx3 hover:text-tx-mid hover:bg-hover",
+            focusDisabled && "cursor-not-allowed opacity-40",
+            focusFailed && "text-danger",
+          )}
+        >
+          {inFocus ? (
+            <Star size={13} className="fill-current" />
+          ) : (
+            <StarOff size={13} />
+          )}
+        </button>
         <button
           onClick={onToggle}
           aria-label={expanded ? "Collapse" : "Expand"}
@@ -126,7 +169,7 @@ function Row({
       </div>
       {expanded ? (
         <div className="border-t border-bd/40 bg-panel2/40 px-3 py-2">
-          <div className="pl-[3rem]">
+          <div className="pl-[4.75rem]">
             {s.dimensions.map((d, i) => {
               const def = dimensions.find((x) => x.key === d.key);
               if (!def) return null;
@@ -163,14 +206,68 @@ function Row({
 export function ScreenTable({
   screen,
   highlightTicker,
+  initialState,
 }: {
   screen: Screen;
   // Deep-link target from ?ticker=. Row is auto-expanded on mount
   // + scrolled into view + ringed. Absent when the user reached
   // /screens via the nav tab rather than a TickerSignals badge.
   highlightTicker?: string | null;
+  // Full shared-state for the focus-star toggle. Optional — when
+  // absent, stars render disabled with a tooltip.
+  initialState?: SharedState;
 }) {
   const router = useRouter();
+  const [focus, setFocus] = useState<Set<string>>(
+    () => new Set(initialState?.preferences?.focusTickers ?? []),
+  );
+  const [failedFocus, setFailedFocus] = useState<string | null>(null);
+
+  const toggleFocus = async (ticker: string) => {
+    if (!initialState) return;
+    const wasIn = focus.has(ticker);
+    const nextFocus = new Set(focus);
+    if (wasIn) nextFocus.delete(ticker);
+    else nextFocus.add(ticker);
+    setFocus(nextFocus);
+    setFailedFocus(null);
+    try {
+      const nextState: SharedState = {
+        ...initialState,
+        preferences: initialState.preferences
+          ? {
+              ...initialState.preferences,
+              focusTickers: Array.from(nextFocus),
+            }
+          : {
+              focusTickers: Array.from(nextFocus),
+              themes: initialState.themes ?? [],
+              subscriptions: {
+                newTranscripts: false,
+                weekAhead: false,
+                ideasDigest: false,
+              },
+            },
+      };
+      const r = await fetch("/api/shared-state", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(nextState),
+      });
+      if (!r.ok) {
+        const j = await r.json().catch(() => ({}));
+        throw new Error(j.message ?? `HTTP ${r.status}`);
+      }
+    } catch {
+      setFocus((prev) => {
+        const rb = new Set(prev);
+        if (wasIn) rb.add(ticker);
+        else rb.delete(ticker);
+        return rb;
+      });
+      setFailedFocus(ticker);
+    }
+  };
   const [expanded, setExpanded] = useState<Set<string>>(() => {
     // Seed the expansion set with the highlight ticker so the
     // dimension breakdown is visible on first paint (no
@@ -252,7 +349,8 @@ export function ScreenTable({
       </div>
 
       <div className="rounded-[8px] border border-bd bg-panel">
-        <div className="grid grid-cols-[2rem_2fr_10rem_2fr_5rem] gap-x-3 border-b border-bd px-3 py-2 font-mono text-[10px] uppercase tracking-[0.07em] text-tx3">
+        <div className="grid grid-cols-[2rem_2rem_2fr_10rem_2fr_5rem] gap-x-3 border-b border-bd px-3 py-2 font-mono text-[10px] uppercase tracking-[0.07em] text-tx3">
+          <span />
           <span />
           <span>Company</span>
           <span>Composite</span>
@@ -278,6 +376,10 @@ export function ScreenTable({
               rowRef={
                 highlightTicker === s.ticker ? highlightRef : undefined
               }
+              inFocus={focus.has(s.ticker)}
+              onToggleFocus={() => toggleFocus(s.ticker)}
+              focusDisabled={!initialState}
+              focusFailed={failedFocus === s.ticker}
             />
           ))
         )}
