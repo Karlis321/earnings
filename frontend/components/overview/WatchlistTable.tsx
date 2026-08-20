@@ -261,6 +261,12 @@ export function WatchlistTable({
   const [group, setGroup] = useState<Group>("flat");
   const [selectedIdx, setSelectedIdx] = useState<number>(0);
   const [tier, setTier] = useState<TierFilter>("any");
+  // Composite threshold — null = any, otherwise the minimum
+  // ranking.compositeScore required to pass the filter. Absent
+  // scores fail every non-null threshold (would be misleading to
+  // include unranked tickers when the user is explicitly filtering
+  // by signal strength).
+  const [minComposite, setMinComposite] = useState<number | null>(null);
 
   // Reset keyboard cursor whenever the visible row set changes. Without
   // this, applying a filter that shrinks the list can leave selectedIdx
@@ -268,7 +274,7 @@ export function WatchlistTable({
   // rows so the previous selectedIdx highlights the wrong row.
   useEffect(() => {
     setSelectedIdx(0);
-  }, [filter, tier, reportingSoon, group, sortKey]);
+  }, [filter, tier, reportingSoon, group, sortKey, minComposite]);
   // Canonical-listings-only by default — so NVIDIA counts once in
   // large-cap tech instead of four times (once per BDR / MM / TB / CN
   // wrapper listing). Portfolio rows (isCore) always show regardless,
@@ -397,6 +403,12 @@ export function WatchlistTable({
     if (tier !== "any") {
       list = list.filter((r) => (r.entity.capTier ?? "unknown") === tier);
     }
+    if (minComposite !== null) {
+      list = list.filter((r) => {
+        const c = compositeByTicker[r.ticker];
+        return typeof c === "number" && c >= minComposite;
+      });
+    }
     if (!showAllListings) {
       // Canonical-only default. isCore is a hard OVERRIDE — the 17
       // covered tickers always show even if the audit picked a
@@ -513,7 +525,7 @@ export function WatchlistTable({
       }
     });
     return list;
-  }, [rows, filter, reportingSoon, sortKey, tier, prices, focusSet, compositeByTicker]);
+  }, [rows, filter, reportingSoon, sortKey, tier, prices, focusSet, compositeByTicker, minComposite]);
 
   const grouped = useMemo(() => {
     if (group === "flat") {
@@ -683,6 +695,9 @@ export function WatchlistTable({
         showAllListings={showAllListings}
         setShowAllListings={setShowAllListings}
         availableMetrics={availableMetrics}
+        minComposite={minComposite}
+        setMinComposite={setMinComposite}
+        hasComposite={Object.keys(compositeByTicker).length > 0}
       />
 
       <div
@@ -1118,6 +1133,9 @@ function FilterBar({
   showAllListings,
   setShowAllListings,
   availableMetrics,
+  minComposite,
+  setMinComposite,
+  hasComposite,
 }: {
   filter: Filter;
   setFilter: (f: Filter) => void;
@@ -1132,6 +1150,9 @@ function FilterBar({
   showAllListings: boolean;
   setShowAllListings: (v: boolean) => void;
   availableMetrics: Array<{ key: string; label: string; unit: string | null; count: number; surpriseCount: number }>;
+  minComposite: number | null;
+  setMinComposite: (v: number | null) => void;
+  hasComposite: boolean;
 }) {
   return (
     <div className="flex flex-wrap items-center gap-2">
@@ -1169,6 +1190,34 @@ function FilterBar({
           </button>
         ))}
       </div>
+      {/* Composite threshold — inline chip strip. Only renders when
+          any ranking data exists (otherwise it would filter to zero
+          rows on every setting). */}
+      {hasComposite ? (
+        <div className="flex items-center gap-2 rounded-button border border-bd bg-s1 px-2 py-[3px] text-[12px]">
+          <span className="text-tx-mid">Composite</span>
+          {(
+            [
+              { v: null, label: "any" },
+              { v: 0, label: "≥ 0" },
+              { v: 0.5, label: "≥ +0.5" },
+            ] as const
+          ).map((opt, i) => (
+            <button
+              key={i}
+              onClick={() => setMinComposite(opt.v)}
+              className={clsx(
+                "rounded-[4px] px-[7px] py-[2px] font-mono text-[11px]",
+                minComposite === opt.v
+                  ? "bg-s3 text-tx"
+                  : "text-tx-mid hover:text-tx",
+              )}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      ) : null}
       <WatchlistFilterPopover
         sortKey={sortKey}
         setSortKey={setSortKey}
