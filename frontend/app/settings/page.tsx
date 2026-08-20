@@ -1,6 +1,7 @@
 import { store } from "@/server/store";
 import { PreferencesForm } from "@/components/settings/PreferencesForm";
 import { DataSnapshotsPanel } from "@/components/settings/DataSnapshotsPanel";
+import { DispatchPanel } from "@/components/settings/DispatchPanel";
 import { SettingsDiagnostics } from "./SettingsDiagnostics";
 
 // Settings shell — server component that reads the initial shared-state
@@ -44,6 +45,7 @@ export default async function SettingsPage() {
           blueOcean={blueOcean}
           ruleBreaker={ruleBreaker}
         />
+        <DispatchPanel />
         <SettingsDiagnostics />
       </div>
     </div>
