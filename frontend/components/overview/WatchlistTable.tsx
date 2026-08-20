@@ -216,12 +216,17 @@ function pickRowHeadlineMetric(
 export function WatchlistTable({
   rows,
   focusTickers = [],
+  compositeByTicker = {},
 }: {
   rows: WatchlistRow[];
   // Prioritized subset from user preferences. Empty when the user
   // hasn't set any yet — component falls back to portfolio as the
   // default filter in that case.
   focusTickers?: string[];
+  // Ticker → composite score from data/ranking.json. Optional —
+  // the chip renders only for tickers with a score present, so
+  // an empty map degrades cleanly to "no chips" on any row.
+  compositeByTicker?: Record<string, number>;
 }) {
   const router = useRouter();
   const focusSet = useMemo(() => new Set(focusTickers), [focusTickers]);
@@ -745,6 +750,7 @@ export function WatchlistTable({
                   (!lastSeenMap[r.ticker] ||
                     r.latestItemAt > lastSeenMap[r.ticker])
                 }
+                composite={compositeByTicker[r.ticker]}
               />
             ))}
           </div>
@@ -845,6 +851,7 @@ function Row({
   siblingTickers,
   columnMetric,
   hasNewSinceVisit,
+  composite,
 }: {
   r: WatchlistRow;
   onClick: () => void;
@@ -858,6 +865,10 @@ function Row({
   // True when latestItemAt > localStorage lastSeenAt[ticker]. Computed
   // once on the client after hydration and threaded down to the row.
   hasNewSinceVisit?: boolean;
+  // Composite score from data/ranking.json (Feature 3A). Absent when
+  // the ticker isn't in the ranking universe (foreign wrappers, ETFs,
+  // etc.) or ranking hasn't been computed. Renders a small pill.
+  composite?: number;
 }) {
   const isDev = r.entity.securityType === "developer";
   const isEtf = r.entity.securityType === "etf";
@@ -942,6 +953,24 @@ function Row({
           </span>
           <span className="flex items-center gap-2 truncate font-mono text-[11px] text-tx-mid">
             {r.ticker}
+            {composite != null ? (
+              <span
+                title="Composite score from /ideas (reaction + surprise + trend, tanh-scaled)"
+                className={clsx(
+                  "rounded-[4px] px-[5px] py-[1px] text-[10px] tabular-nums",
+                  composite >= 0.5
+                    ? "bg-[rgba(18,183,106,0.10)] text-success-fg"
+                    : composite >= 0
+                    ? "bg-[rgba(47,127,255,0.10)] text-brand-fg"
+                    : composite >= -0.5
+                    ? "bg-s3 text-tx-mid"
+                    : "bg-[rgba(180,35,24,0.10)] text-danger",
+                )}
+              >
+                {composite >= 0 ? "+" : ""}
+                {composite.toFixed(2)}
+              </span>
+            ) : null}
             {siblingCount && siblingCount > 0 ? (
               <span
                 className="rounded-[4px] bg-s3 px-[5px] py-[1px] text-[10px] text-tx2"

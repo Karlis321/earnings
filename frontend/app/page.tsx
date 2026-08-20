@@ -20,12 +20,19 @@ const EMPTY_INDEX: EventsIndex = {
 };
 
 export default async function OverviewPage() {
-  const [entities, index, state] = await Promise.all([
+  const [entities, index, state, ranking] = await Promise.all([
     store.readRegistry(),
     store.readEventsIndex?.() ?? Promise.resolve(EMPTY_INDEX),
     store.readSharedState(),
+    store.readRanking ? store.readRanking() : Promise.resolve(null),
   ]);
   const focusTickers = state.preferences?.focusTickers ?? [];
+  // Slim map of ticker → composite score for the watchlist chip.
+  // Only 2 fields per entry keeps the payload cheap even at 1,006 rows.
+  const compositeByTicker: Record<string, number> = {};
+  for (const r of ranking?.rows ?? []) {
+    compositeByTicker[r.ticker] = r.compositeScore;
+  }
   const allRows = buildWatchlistRowsFromIndex(entities, index.entries, todayIso());
   // Filter to portfolio (always visible) + SP500 + R1000 constituents.
   // Per user directive (2026-08-19): no dashboard surface should list
@@ -54,7 +61,11 @@ export default async function OverviewPage() {
           </p>
         ) : null}
       </div>
-      <WatchlistTable rows={rows} focusTickers={focusTickers} />
+      <WatchlistTable
+        rows={rows}
+        focusTickers={focusTickers}
+        compositeByTicker={compositeByTicker}
+      />
     </div>
   );
 }
