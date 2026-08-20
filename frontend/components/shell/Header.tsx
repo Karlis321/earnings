@@ -26,6 +26,7 @@ const TABS: Array<{
   { href: "/week-ahead", label: "Week ahead", freshKey: "weekAhead" },
   { href: "/ideas", label: "Ideas", freshKey: "ideas" },
   { href: "/screens", label: "Screens", freshKey: "screens" },
+  { href: "/correlation", label: "Correlation" },
   { href: "/news", label: "News" },
   { href: "/sectors", label: "Sectors", flagged: "sectors" },
   { href: "/admin", label: "Admin" },

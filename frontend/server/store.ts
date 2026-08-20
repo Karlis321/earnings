@@ -128,6 +128,11 @@ export interface Store {
     ticker?: string,
   ): Promise<import("@/lib/types").ScreenChangeLogRow[]>;
 
+  // Phase 4.1 — pairwise correlation snapshot (data/correlations.json).
+  // Refreshed by scripts/refresh-correlations.mjs. Consumed by
+  // /correlation. Null when the snapshot file doesn't exist yet.
+  readCorrelations?(): Promise<import("@/lib/types").Correlations | null>;
+
   // Feature 3.1 ranking history (data/ranking-history.jsonl).
   // Appended daily by scripts/append-ranking-history.mjs. Filtered
   // to `ticker` when provided (cheap: one grep pass over the

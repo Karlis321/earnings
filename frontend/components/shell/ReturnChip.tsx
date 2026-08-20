@@ -17,6 +17,7 @@ const KNOWN_ORIGINS: Array<{ prefix: string; label: string }> = [
   { prefix: "/screens", label: "Screens" },
   { prefix: "/week-ahead", label: "Week ahead" },
   { prefix: "/sectors", label: "Sectors" },
+  { prefix: "/correlation", label: "Correlation" },
 ];
 
 export function ReturnChip() {

@@ -185,6 +185,9 @@ export const inMemoryStore: Store = {
   async readScreenChangeLog() {
     return [];
   },
+  async readCorrelations() {
+    return null;
+  },
   async readRankingHistory() {
     return [];
   },

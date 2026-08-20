@@ -49,6 +49,20 @@ export interface ScreenChangeLogRow {
   compositeAfter: number;
   compositeDelta: number | null;
 }
+
+// Phase 4.1 — pairwise Pearson correlation snapshot over the
+// watchlist universe. Computed by scripts/refresh-correlations.mjs.
+// matrix[a][b] is the correlation of daily log returns between
+// tickers `a` and `b` over `range`. Null when the two series share
+// fewer than `minSharedBars` overlapping trading days.
+export interface Correlations {
+  schema: "correlations/v1";
+  generatedAt: string;
+  range: string;
+  minSharedBars: number;
+  tickers: string[];
+  matrix: Record<string, Record<string, number | null>>;
+}
 export interface Screen {
   schema: "screen/v1";
   framework: ScreenFramework;

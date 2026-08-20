@@ -146,6 +146,11 @@ const PHASES = [
   // on /s/[ticker] (Phase 3.2).
   { key: "ranking", label: "Signal ranking (composite)", script: "run-ranking.mjs", optional: true },
   { key: "ranking-history", label: "Ranking history append", script: "append-ranking-history.mjs", optional: true },
+  // Phase 4.1 — pairwise return-correlation snapshot over the
+  // watchlist. Small (~17 tickers × 6mo daily bars = ~5 s of Yahoo
+  // calls). Optional; the /correlation page renders "no snapshot"
+  // gracefully when this hasn't run yet.
+  { key: "correlations", label: "Pairwise correlation (watchlist)", script: "refresh-correlations.mjs", optional: true },
   // Google News + wire RSS fanout — ported to
   // scripts/refresh-google-news.mjs on 2026-08-03. Single fetch pass
   // (29 feeds), distributes matched items via displayName / aliases /
