@@ -2,6 +2,7 @@
 // comment below because Vercel didn't rebuild this route on the first push.
 import { WatchlistTable } from "@/components/overview/WatchlistTable";
 import { MarketPulse } from "@/components/overview/MarketPulse";
+import { NextFiresStrip } from "@/components/shell/NextFiresStrip";
 import { store } from "@/server/store";
 import { buildWatchlistRowsFromIndex } from "@/lib/watchlist";
 import { todayIso } from "@/lib/freshness";
@@ -48,6 +49,7 @@ export default async function OverviewPage() {
   return (
     <div className="mx-auto max-w-[1800px] px-10 py-8">
       <MarketPulse />
+      <NextFiresStrip />
       <div className="mb-6">
         <div className="mono-eyebrow mb-3">§ Overview · Watchlist</div>
         <h1 className="text-[28px] font-semibold leading-tight tracking-[-0.02em]">
