@@ -139,6 +139,8 @@ type FixedSortKey =
   | "reaction-loss-d3"
   | "reaction-loss-w1"
   | "reaction-loss-m1"
+  | "composite"
+  | "composite-loss"
   | "freshness"
   | "name";
 type SortKey = FixedSortKey | `metric:${string}:${"value" | "surprise"}:${"desc" | "asc"}`;
@@ -468,6 +470,19 @@ export function WatchlistTable({
           const bv = b.reactionPoints?.find((p) => p.horizon === "m1")?.absReturn ?? Infinity;
           return av - bv;
         }
+        case "composite": {
+          // Ranking.compositeScore desc — tickers without a ranking
+          // match sink to the bottom via -Infinity.
+          const av = compositeByTicker[a.ticker] ?? -Infinity;
+          const bv = compositeByTicker[b.ticker] ?? -Infinity;
+          return bv - av;
+        }
+        case "composite-loss": {
+          // Weakest composites first — same handling for missing.
+          const av = compositeByTicker[a.ticker] ?? Infinity;
+          const bv = compositeByTicker[b.ticker] ?? Infinity;
+          return av - bv;
+        }
         case "freshness": {
           const order = { fresh: 0, overdue: 1, stale: 2, never: 3 } as const;
           return order[a.freshness] - order[b.freshness];
@@ -498,7 +513,7 @@ export function WatchlistTable({
       }
     });
     return list;
-  }, [rows, filter, reportingSoon, sortKey, tier, prices, focusSet]);
+  }, [rows, filter, reportingSoon, sortKey, tier, prices, focusSet, compositeByTicker]);
 
   const grouped = useMemo(() => {
     if (group === "flat") {
