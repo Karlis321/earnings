@@ -4,12 +4,21 @@
 // Sort modes: composite (default) / reaction / surprise / trend.
 // Coverage filter: min-components toggle (any / ≥2 / all 3).
 // Rows link to the ticker detail page.
+// Per-row ★ toggle mutates preferences.focusTickers via a PUT to
+// /api/shared-state — same commit-pipe path as FocusToggle on the
+// ticker detail page, so multiple concurrent writes converge via
+// the shared-state 3-retry 409 handling.
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import clsx from "clsx";
-import { ArrowUp, ArrowDown, Minus } from "lucide-react";
-import type { Ranking, RankingRow, RankingComponent } from "@/lib/types";
+import { ArrowUp, ArrowDown, Minus, Star, StarOff } from "lucide-react";
+import type {
+  Ranking,
+  RankingRow,
+  RankingComponent,
+  SharedState,
+} from "@/lib/types";
 import { TickerLogo } from "@/components/primitives/TickerLogo";
 
 type SortKey = "composite" | "reaction" | "surprise" | "trend";
@@ -89,11 +98,72 @@ function CompositeBar({ score }: { score: number }) {
   );
 }
 
-export function IdeasTable({ ranking }: { ranking: Ranking }) {
+export function IdeasTable({
+  ranking,
+  initialState,
+}: {
+  ranking: Ranking;
+  initialState?: SharedState;
+}) {
   const router = useRouter();
   const [sortKey, setSortKey] = useState<SortKey>("composite");
   const [minComponents, setMinComponents] = useState<MinComponents>(1);
   const [query, setQuery] = useState("");
+
+  // Focus set — hydrated from server-provided initialState so first
+  // paint is correct. Local mutations flush to /api/shared-state
+  // (fire-and-forget with rollback on failure). initialState might
+  // be absent if the caller didn't wire it (e.g. embedded preview) —
+  // in that case the ★ button no-ops silently.
+  const [focus, setFocus] = useState<Set<string>>(
+    () => new Set(initialState?.preferences?.focusTickers ?? []),
+  );
+  const [failed, setFailed] = useState<string | null>(null);
+
+  const toggleFocus = async (ticker: string) => {
+    if (!initialState) return;
+    const wasIn = focus.has(ticker);
+    const nextFocus = new Set(focus);
+    if (wasIn) nextFocus.delete(ticker);
+    else nextFocus.add(ticker);
+    setFocus(nextFocus); // optimistic
+    setFailed(null);
+    try {
+      const currentTickers = Array.from(nextFocus);
+      const nextState: SharedState = {
+        ...initialState,
+        preferences: initialState.preferences
+          ? { ...initialState.preferences, focusTickers: currentTickers }
+          : {
+              focusTickers: currentTickers,
+              themes: initialState.themes ?? [],
+              subscriptions: {
+                newTranscripts: false,
+                weekAhead: false,
+                ideasDigest: false,
+              },
+            },
+      };
+      const r = await fetch("/api/shared-state", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(nextState),
+      });
+      if (!r.ok) {
+        const j = await r.json().catch(() => ({}));
+        throw new Error(j.message ?? `HTTP ${r.status}`);
+      }
+    } catch (e) {
+      // rollback
+      setFocus((prev) => {
+        const rb = new Set(prev);
+        if (wasIn) rb.add(ticker);
+        else rb.delete(ticker);
+        return rb;
+      });
+      setFailed(ticker);
+    }
+  };
 
   const rows = useMemo(() => {
     const term = query.trim().toLowerCase();
@@ -161,7 +231,8 @@ export function IdeasTable({ ranking }: { ranking: Ranking }) {
 
       {/* Table */}
       <div className="rounded-[8px] border border-bd bg-panel">
-        <div className="grid grid-cols-[3rem_2fr_10rem_5rem_7rem_7rem_7rem_5rem] gap-x-3 border-b border-bd px-4 py-2 font-mono text-[10px] uppercase tracking-[0.07em] text-tx3">
+        <div className="grid grid-cols-[2rem_3rem_2fr_10rem_5rem_7rem_7rem_7rem_5rem] gap-x-3 border-b border-bd px-4 py-2 font-mono text-[10px] uppercase tracking-[0.07em] text-tx3">
+          <span />
           <span>Rank</span>
           <span>Name</span>
           <span>Composite</span>
@@ -176,46 +247,93 @@ export function IdeasTable({ ranking }: { ranking: Ranking }) {
             No rows match the current filters.
           </div>
         ) : (
-          rows.map((r) => (
-            <button
-              key={r.ticker}
-              onClick={() => router.push(`/s/${encodeURIComponent(r.ticker)}`)}
-              className="grid w-full grid-cols-[3rem_2fr_10rem_5rem_7rem_7rem_7rem_5rem] items-center gap-x-3 border-b border-bd/60 px-4 py-2 text-left text-[13px] hover:bg-hover"
-            >
-              <span className="font-mono text-[11px] text-tx-mid">
-                #{r.rank}
-              </span>
-              <span className="flex min-w-0 items-center gap-2">
-                <TickerLogo ticker={r.ticker} name={r.displayName} size={24} />
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-tx">
-                    {r.displayName}
+          rows.map((r) => {
+            const inFocus = focus.has(r.ticker);
+            const failedHere = failed === r.ticker;
+            return (
+              <div
+                key={r.ticker}
+                className="grid w-full grid-cols-[2rem_3rem_2fr_10rem_5rem_7rem_7rem_7rem_5rem] items-center gap-x-3 border-b border-bd/60 px-4 py-2 text-left text-[13px] hover:bg-hover"
+              >
+                {/* Star toggle — click swallowed via stopPropagation
+                    so it doesn't navigate to /s/[ticker]. */}
+                <button
+                  type="button"
+                  aria-pressed={inFocus}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleFocus(r.ticker);
+                  }}
+                  disabled={!initialState}
+                  title={
+                    !initialState
+                      ? "Focus toggle unavailable (no shared-state)"
+                      : inFocus
+                      ? "Remove from focus"
+                      : "Add to focus"
+                  }
+                  className={clsx(
+                    "flex h-5 w-5 items-center justify-center rounded-[3px] transition",
+                    inFocus
+                      ? "text-brand-fg hover:bg-hover"
+                      : "text-tx3 hover:text-tx-mid hover:bg-hover",
+                    !initialState && "cursor-not-allowed opacity-40",
+                    failedHere && "text-danger",
+                  )}
+                >
+                  {inFocus ? (
+                    <Star size={13} className="fill-current" />
+                  ) : (
+                    <StarOff size={13} />
+                  )}
+                </button>
+                {/* Everything after the star opens the ticker page. */}
+                <button
+                  type="button"
+                  onClick={() => router.push(`/s/${encodeURIComponent(r.ticker)}`)}
+                  className="col-span-8 grid w-full grid-cols-[3rem_2fr_10rem_5rem_7rem_7rem_7rem_5rem] items-center gap-x-3 text-left"
+                >
+                  <span className="font-mono text-[11px] text-tx-mid">
+                    #{r.rank}
                   </span>
-                  <span className="font-mono text-[10.5px] text-brand-fg">
-                    {r.ticker}
+                  <span className="flex min-w-0 items-center gap-2">
+                    <TickerLogo ticker={r.ticker} name={r.displayName} size={24} />
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-tx">
+                        {r.displayName}
+                      </span>
+                      <span className="font-mono text-[10.5px] text-brand-fg">
+                        {r.ticker}
+                      </span>
+                    </span>
                   </span>
-                </span>
-              </span>
-              <CompositeBar score={r.compositeScore} />
-              <span className="font-mono text-[10.5px] uppercase text-tx3">
-                {CAP_LABEL[r.capTier] ?? "—"}
-              </span>
-              <span className="text-right">
-                <ComponentCell c={r.components.reaction} />
-              </span>
-              <span className="text-right">
-                <ComponentCell c={r.components.surprise} />
-              </span>
-              <span className="text-right">
-                <ComponentCell c={r.components.trend} />
-              </span>
-              <span className="text-right font-mono text-[10.5px] text-tx3">
-                {r.lastPeriod ?? "—"}
-              </span>
-            </button>
-          ))
+                  <CompositeBar score={r.compositeScore} />
+                  <span className="font-mono text-[10.5px] uppercase text-tx3">
+                    {CAP_LABEL[r.capTier] ?? "—"}
+                  </span>
+                  <span className="text-right">
+                    <ComponentCell c={r.components.reaction} />
+                  </span>
+                  <span className="text-right">
+                    <ComponentCell c={r.components.surprise} />
+                  </span>
+                  <span className="text-right">
+                    <ComponentCell c={r.components.trend} />
+                  </span>
+                  <span className="text-right font-mono text-[10.5px] text-tx3">
+                    {r.lastPeriod ?? "—"}
+                  </span>
+                </button>
+              </div>
+            );
+          })
         )}
       </div>
+      {failed ? (
+        <p className="mt-2 text-[11px] text-danger">
+          Focus PUT failed for {failed}. Refresh the page and retry.
+        </p>
+      ) : null}
     </>
   );
 }

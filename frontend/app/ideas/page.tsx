@@ -12,9 +12,10 @@ import { IdeasPitchStrip } from "@/components/ideas/IdeasPitchStrip";
 export const dynamic = "force-dynamic";
 
 export default async function IdeasPage() {
-  const [ranking, ideas] = await Promise.all([
+  const [ranking, ideas, sharedState] = await Promise.all([
     store.readRanking ? store.readRanking() : Promise.resolve(null),
     store.readIdeas ? store.readIdeas() : Promise.resolve(null),
+    store.readSharedState(),
   ]);
 
   if (!ranking) {
@@ -62,7 +63,7 @@ export default async function IdeasPage() {
         </div>
       )}
 
-      <IdeasTable ranking={ranking} />
+      <IdeasTable ranking={ranking} initialState={sharedState} />
     </div>
   );
 }
