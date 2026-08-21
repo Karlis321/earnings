@@ -235,8 +235,8 @@ async function main() {
         : `Last surprise + forward revision sum ${(r.revisions ?? 0).toFixed(1)}% · percentile ${rs.toFixed(0)} of universe`;
     const rationaleValue =
       vs == null
-        ? "no data — marketCap or trailing revenue missing so P/S is unresolvable"
-        : `P/S ${(-r.psInverse).toFixed(1)}× trailing sales (inverted) · percentile ${vs.toFixed(0)} of universe`;
+        ? "no data — marketCap or revenue missing so P/S is unresolvable"
+        : `P/S ${(-r.psInverse).toFixed(1)}× (marketCap ÷ latest quarter × 4 for quarterly reporters — TTM approximation) · percentile ${vs.toFixed(0)} of universe (higher = cheaper)`;
 
     // Verdict — deterministic template so no LLM needed. 20-320 chars.
     const strongest =
@@ -259,10 +259,14 @@ async function main() {
       displayName: r.entity?.displayName ?? r.ticker,
       compositeScore: Number(composite.toFixed(1)),
       dimensions: [
-        { key: "quality", score: qs ?? 0, rationale: rationaleQuality },
-        { key: "assets", score: as ?? 0, rationale: rationaleAssets },
-        { key: "revisions", score: rs ?? 0, rationale: rationaleRevisions },
-        { key: "value", score: vs ?? 0, rationale: rationaleValue },
+        // Emit null (not 0) for missing factors so the UI can render
+        // "—" instead of a red-zero bar next to a "no data" rationale.
+        // Composite above already averaged only the present factors,
+        // so nulling here doesn't affect the top-level score.
+        { key: "quality", score: qs, rationale: rationaleQuality },
+        { key: "assets", score: as, rationale: rationaleAssets },
+        { key: "revisions", score: rs, rationale: rationaleRevisions },
+        { key: "value", score: vs, rationale: rationaleValue },
       ],
       verdict,
       sources: [

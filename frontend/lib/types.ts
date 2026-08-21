@@ -13,7 +13,13 @@ export interface ScreenDimensionDef {
 }
 export interface ScreenDimensionScore {
   key: string;
-  score: number; // 0-100
+  // 0-100 percentile, or null when the underlying factor is
+  // unresolvable (missing data on that ticker). Null renders as "—"
+  // in the UI to distinguish "no data" from "bottom of universe".
+  // LLM-narrative frameworks (blue-ocean, rule-breaker) never emit
+  // null since the sub-agent scores every dimension; mechanical
+  // frameworks (qarv) may emit null when a factor lacks input.
+  score: number | null;
   rationale: string;
 }
 export interface ScreenSourceRef {

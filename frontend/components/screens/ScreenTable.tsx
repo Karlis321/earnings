@@ -51,8 +51,21 @@ function DeltaChip({
   );
 }
 
-function ScoreBar({ score }: { score: number }) {
-  // 0-100 rendered as a horizontal bar; color transitions at 50 (neutral) and 70 (strong).
+function ScoreBar({ score }: { score: number | null }) {
+  // 0-100 rendered as a horizontal bar; color transitions at 50
+  // (neutral) and 70 (strong). Null renders as "—" with an empty
+  // track — distinguishes "no data on this factor" from "bottom of
+  // universe" (which would legitimately be a red 0).
+  if (score === null) {
+    return (
+      <span className="inline-flex items-center gap-2">
+        <span className="w-[3rem] font-mono text-[11.5px] tabular-nums text-tx3">
+          —
+        </span>
+        <span className="relative inline-block h-[6px] w-[70px] rounded-full bg-s2" />
+      </span>
+    );
+  }
   const color =
     score >= 70
       ? "bg-success"
