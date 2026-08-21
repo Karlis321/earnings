@@ -39,6 +39,10 @@ const __dirname = path.dirname(__filename);
 const ROOT = path.resolve(__dirname, "..");
 const SCREENS_DIR = path.join(ROOT, "data", "screens");
 
+// LLM-narrative frameworks only. QARV (Phase 4.4) is mechanical
+// and writes data/screens/qarv.json directly from
+// scripts/run-qarv-screen.mjs — it doesn't need payload validation
+// or per-batch merging, so it's intentionally NOT listed here.
 const FRAMEWORKS = new Set(["blue-ocean", "rule-breaker"]);
 
 // Frozen dimension lists — first run of each framework writes these

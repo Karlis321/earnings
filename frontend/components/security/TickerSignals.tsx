@@ -151,7 +151,8 @@ export function TickerSignals({
     ranking ||
     pitch ||
     screens.blueOcean ||
-    screens.ruleBreaker;
+    screens.ruleBreaker ||
+    screens.qarv;
   if (!hasAny) return null;
 
   return (

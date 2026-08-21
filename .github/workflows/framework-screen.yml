@@ -34,6 +34,10 @@ on:
   workflow_dispatch:
     inputs:
       framework:
+        # LLM-narrative frameworks only. QARV (Phase 4.4) is mechanical
+        # and doesn't need the Claude sub-agent + chain step — refresh
+        # it via `node scripts/run-qarv-screen.mjs` or the
+        # refresh-universe `qarv` phase instead.
         description: "Framework to run"
         type: choice
         options:

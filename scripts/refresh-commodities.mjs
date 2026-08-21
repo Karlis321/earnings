@@ -113,8 +113,12 @@ async function main() {
         latest: last ? { date: last.date, close: last.close } : null,
         change1d: pctChange(bars, 1),
         change5d: pctChange(bars, 5),
-        change30d: pctChange(bars, 21),
-        change90d: pctChange(bars, 63),
+        // Trading days: use N bars for the "Nd" labels the UI shows.
+        // 30 daily bars ≈ 6 weeks calendar — matches what a trader
+        // reading "30d" typically wants (a month-of-sessions return,
+        // not a mixed calendar/weekend one).
+        change30d: pctChange(bars, 30),
+        change90d: pctChange(bars, 90),
         bars,
       };
       items.push(item);
