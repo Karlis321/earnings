@@ -39,17 +39,24 @@ function topPairs(
   return out.slice(0, n);
 }
 
-// Prefer sector-defining tags over generic "materials" / "financial-services"
-// unless nothing more specific is available. Keeps the label concise.
-const GENERIC_TAGS = new Set([
+// Two-tier tag classification:
+//   STRUCTURAL — wrapper / geography labels. Never carry sector meaning
+//                on their own (an ETF's "etf" tag says nothing about
+//                the industry it tracks). Skip these when picking
+//                primarySector or a shared theme between two tickers.
+//   BUCKET     — broad industry buckets. Fine as a shared theme
+//                (e.g. two miners share "mining") but a more specific
+//                tag on the same entity ("copper") is preferred as
+//                its primarySector.
+// Anything not in either set is treated as a specific sector tag.
+const STRUCTURAL_TAGS = new Set(["etf", "developer", "canada", "brazil"]);
+const BUCKET_TAGS = new Set([
   "materials",
   "financial-services",
   "energy",
   "mining",
-  "canada",
-  "brazil",
-  "developer",
-  "etf",
+  "emerging-markets",
+  "commodities",
 ]);
 
 function metaFor(entity: Entity | undefined): EntityMeta {
@@ -57,23 +64,34 @@ function metaFor(entity: Entity | undefined): EntityMeta {
     return { displayName: "", primarySector: null, tags: [] };
   }
   const tags = Array.isArray(entity.sectorTags) ? entity.sectorTags : [];
-  const specific = tags.find((t) => !GENERIC_TAGS.has(t));
-  const generic = tags.find((t) => GENERIC_TAGS.has(t));
+  const specific = tags.find(
+    (t) => !STRUCTURAL_TAGS.has(t) && !BUCKET_TAGS.has(t),
+  );
+  const bucket = tags.find((t) => BUCKET_TAGS.has(t));
   return {
     displayName: entity.displayName ?? "",
-    primarySector: specific ?? generic ?? null,
+    primarySector: specific ?? bucket ?? null,
     tags,
   };
 }
 
 // Find the industry theme two tickers share, if any — so the pair
 // row can say "both copper miners" rather than making the reader
-// intersect two sector-tag lists in their head.
+// intersect two sector-tag lists in their head. Structural tags
+// (etf, developer, canada, brazil) are ignored — two ETFs sharing
+// "etf" isn't a meaningful theme.
 function sharedTag(a: EntityMeta, b: EntityMeta): string | null {
   const setB = new Set(b.tags);
-  // Prefer specific tags first; fall back to generic
-  for (const t of a.tags) if (!GENERIC_TAGS.has(t) && setB.has(t)) return t;
-  for (const t of a.tags) if (setB.has(t)) return t;
+  // Prefer specific tags first; fall back to broad industry buckets.
+  for (const t of a.tags) {
+    if (STRUCTURAL_TAGS.has(t)) continue;
+    if (BUCKET_TAGS.has(t)) continue;
+    if (setB.has(t)) return t;
+  }
+  for (const t of a.tags) {
+    if (STRUCTURAL_TAGS.has(t)) continue;
+    if (setB.has(t)) return t;
+  }
   return null;
 }
 
