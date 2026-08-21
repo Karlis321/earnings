@@ -283,6 +283,7 @@ const P = {
     `data/week-ahead-archive/${weekOf}.json`,
   screenBlueOcean: "data/screens/blue-ocean.json",
   screenRuleBreaker: "data/screens/rule-breaker.json",
+  screenQarv: "data/screens/qarv.json",
   screenChangeLog: (framework: import("@/lib/types").ScreenFramework) =>
     `data/screens/${framework}-change-log.jsonl`,
   correlations: "data/correlations.json",
@@ -971,7 +972,11 @@ export function gitSnapshotStore(cfg: GhConfig): Store {
     },
     async readScreen(framework: import("@/lib/types").ScreenFramework) {
       const p =
-        framework === "blue-ocean" ? P.screenBlueOcean : P.screenRuleBreaker;
+        framework === "blue-ocean"
+          ? P.screenBlueOcean
+          : framework === "rule-breaker"
+          ? P.screenRuleBreaker
+          : P.screenQarv;
       try {
         const r = await readCached<import("@/lib/types").Screen>(cfg, p);
         return r?.content ?? null;

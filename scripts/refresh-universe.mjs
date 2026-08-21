@@ -154,6 +154,11 @@ const PHASES = [
   // Phase 4.2 — commodity basket (8 Yahoo futures). ~3 s of calls.
   // Optional; feeds the /week-ahead commodity strip.
   { key: "commodities", label: "Commodity basket (WTI/Brent/gas/metals/ag)", script: "refresh-commodities.mjs", optional: true },
+  // Phase 4.4 — QARV mechanical screen. Reads events-index +
+  // registry only; scores the full universe (~1,000 tickers) in
+  // ~2 s. Deterministic — safe to re-run whenever the events
+  // index has changed.
+  { key: "qarv", label: "QARV screen (Quality/Assets/Revisions/Value)", script: "run-qarv-screen.mjs", optional: true },
   // Google News + wire RSS fanout — ported to
   // scripts/refresh-google-news.mjs on 2026-08-03. Single fetch pass
   // (29 feeds), distributes matched items via displayName / aliases /

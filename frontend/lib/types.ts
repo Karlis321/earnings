@@ -5,7 +5,7 @@
 // at data/screens/<framework>.json. Written by
 // .claude/commands/<framework>.md via scripts/apply-screen.mjs.
 // Consumed by /screens (Feature 4C).
-export type ScreenFramework = "blue-ocean" | "rule-breaker";
+export type ScreenFramework = "blue-ocean" | "rule-breaker" | "qarv";
 export interface ScreenDimensionDef {
   key: string;
   label: string;
