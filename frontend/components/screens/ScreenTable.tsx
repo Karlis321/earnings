@@ -325,9 +325,8 @@ export function ScreenTable({
     }
   };
 
-  // Bulk-add: mirrors IdeasTable pattern. Batches the top N visible
-  // (as currently sorted + filtered) into a single PUT. Silent
-  // no-op if nothing new to add.
+  // Bulk-add: batches the top N visible (as currently sorted +
+  // filtered) into a single PUT. Silent no-op if nothing new to add.
   const bulkAddTopN = async (n: number, visible: ScreenCard[]) => {
     if (!initialState) return;
     const before = new Set(focus);

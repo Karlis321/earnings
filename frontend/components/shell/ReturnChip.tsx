@@ -1,9 +1,10 @@
 "use client";
 
-// Small "← Back to /ideas" chip shown on /s/[ticker] when the
-// user arrived from one of the AI-signal list surfaces. Reads
-// document.referrer on mount — silent when unavailable (external
-// nav, referrer stripped, direct URL entry).
+// Small "← Back to <origin>" chip shown on /s/[ticker] when the
+// user arrived from one of the list surfaces (Themes, Screens,
+// Week ahead, Sectors, Correlation). Reads document.referrer on
+// mount — silent when unavailable (external nav, referrer stripped,
+// direct URL entry).
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -41,8 +42,8 @@ export function ReturnChip() {
       if (!match) return;
       setOrigin({
         // Preserve the exact URL including query — so returning
-        // to /ideas?ticker=<T> takes the user back to the right
-        // deep-link position (row still highlighted).
+        // to /screens?ticker=<T> or /themes takes the user back to
+        // the right deep-link position (row still highlighted).
         href: url.pathname + url.search,
         label: match.label,
       });

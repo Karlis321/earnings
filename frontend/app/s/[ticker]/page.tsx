@@ -155,7 +155,7 @@ export default async function SecurityDetailPage({ params }: Props) {
       />
 
       {/* Return-to-origin chip (present when the user arrived via a
-          same-origin link like /ideas or /screens) + one-click
+          same-origin link like /themes or /screens) + one-click
           focus toggle. Both actions live at the top of the ticker
           page so users land, see context, then act. */}
       <div className="mt-4 flex flex-wrap items-center gap-2">

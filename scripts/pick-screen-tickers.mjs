@@ -8,9 +8,10 @@
  *   1. Universe = operating entities in SP500 ∪ R1000 ∪ isCore.
  *   2. Any ticker whose card in data/screens/<framework>.json is
  *      older than 45 days (or missing) is a candidate.
- *   3. Emit candidates in order of highest ranking.compositeScore
- *      first — the workflow catches the interesting names before
- *      the tail. Ties broken by market cap desc, then ticker.
+ *   3. Emit candidates in order of market cap desc (largest first),
+ *      then ticker as tie-break. Previously used ranking composite
+ *      as the primary order key; that data was removed with the
+ *      pivot to sector themes, so market cap is the sole signal now.
  *
  * The workflow calls this with --limit N to fetch a batch, then
  * self-chains until this script emits an empty list (universe
@@ -53,19 +54,6 @@ async function main() {
     return e.isCore || m.includes("SP500") || m.includes("R1000");
   });
 
-  // Load ranking for composite-order preference (higher composite first).
-  let ranking = null;
-  try {
-    ranking = JSON.parse(
-      await fs.readFile(path.join(ROOT, "data", "ranking.json"), "utf-8"),
-    );
-  } catch {
-    // No ranking → fall back to market-cap ordering only.
-  }
-  const compositeByTicker = new Map(
-    (ranking?.rows ?? []).map((r) => [r.ticker, r.compositeScore]),
-  );
-
   // Load existing screen — anything screened within STALE_DAYS is
   // skipped this run.
   let existing = null;
@@ -90,12 +78,10 @@ async function main() {
     .filter((e) => !freshByTicker.has(e.ticker))
     .map((e) => ({
       ticker: e.ticker,
-      composite: compositeByTicker.get(e.ticker) ?? -2,
       marketCap: e.marketCapUsd ?? 0,
       displayName: e.displayName,
     }))
     .sort((a, b) => {
-      if (a.composite !== b.composite) return b.composite - a.composite;
       if (a.marketCap !== b.marketCap) return b.marketCap - a.marketCap;
       return a.ticker.localeCompare(b.ticker);
     });
@@ -108,7 +94,7 @@ async function main() {
     );
     for (const b of batch) {
       console.error(
-        `  ${b.ticker.padEnd(12)}  composite=${b.composite.toFixed(3)}  cap=$${(b.marketCap / 1e9).toFixed(1)}B  ${b.displayName}`,
+        `  ${b.ticker.padEnd(12)}  cap=$${(b.marketCap / 1e9).toFixed(1)}B  ${b.displayName}`,
       );
     }
   }
