@@ -39,7 +39,16 @@ const UA =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
 const HEADERS = { "User-Agent": UA, Accept: "*/*" };
 
-async function yahooBars(symbol, range) {
+// Widening ladder — some low-volume foreign listings (ABXX.NE on
+// Canada's NEO, .JK small-caps, etc.) return 1-2 bars at every range
+// narrower than 'max' from server-side IPs (Yahoo throttles by
+// origin). If the requested range doesn't clear MIN_SHARED_BARS,
+// walk up to the next step and take whichever first gives us
+// enough returns to correlate against a peer. Matches the same
+// ladder used by /api/prices for the ticker chart.
+const LADDER = ["1mo", "3mo", "6mo", "1y", "5y", "max"];
+
+async function fetchOne(symbol, range) {
   const url =
     `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}` +
     `?interval=1d&range=${range}`;
@@ -58,6 +67,24 @@ async function yahooBars(symbol, range) {
     }
   }
   return bars;
+}
+
+async function yahooBars(symbol, range) {
+  let bars = await fetchOne(symbol, range);
+  if (bars.size >= MIN_SHARED_BARS) return { bars, widenedTo: null };
+  const startIdx = LADDER.indexOf(range);
+  if (startIdx < 0) return { bars, widenedTo: null };
+  for (let i = startIdx + 1; i < LADDER.length; i++) {
+    await new Promise((r) => setTimeout(r, 300));
+    const retry = await fetchOne(symbol, LADDER[i]);
+    if (retry.size > bars.size) {
+      bars = retry;
+      if (bars.size >= MIN_SHARED_BARS) {
+        return { bars, widenedTo: LADDER[i] };
+      }
+    }
+  }
+  return { bars, widenedTo: LADDER[LADDER.length - 1] };
 }
 
 function pearson(xs, ys) {
@@ -117,9 +144,11 @@ async function main() {
     }
     try {
       await new Promise((r) => setTimeout(r, 300));
-      const bars = await yahooBars(symbol, RANGE);
+      const { bars, widenedTo } = await yahooBars(symbol, RANGE);
       barsByTicker.set(ticker, bars);
-      console.log(`  · ${ticker.padEnd(10)} (${symbol.padEnd(10)}) · ${bars.size} bars`);
+      console.log(
+        `  · ${ticker.padEnd(10)} (${symbol.padEnd(10)}) · ${bars.size} bars${widenedTo ? ` (widened ${RANGE}→${widenedTo})` : ""}`,
+      );
     } catch (e) {
       console.warn(`  · ${ticker} · fetch failed: ${e.message}`);
     }
