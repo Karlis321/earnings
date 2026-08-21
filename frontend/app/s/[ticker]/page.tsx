@@ -45,6 +45,7 @@ export default async function SecurityDetailPage({ params }: Props) {
     ideas,
     blueOcean,
     ruleBreaker,
+    qarv,
     sharedState,
     rankingHistory,
   ] = await Promise.all([
@@ -53,6 +54,7 @@ export default async function SecurityDetailPage({ params }: Props) {
     store.readIdeas ? store.readIdeas() : Promise.resolve(null),
     store.readScreen ? store.readScreen("blue-ocean") : Promise.resolve(null),
     store.readScreen ? store.readScreen("rule-breaker") : Promise.resolve(null),
+    store.readScreen ? store.readScreen("qarv") : Promise.resolve(null),
     store.readSharedState(),
     store.readRankingHistory
       ? store.readRankingHistory(ticker)
@@ -72,6 +74,7 @@ export default async function SecurityDetailPage({ params }: Props) {
     blueOcean?.screens.find((s) => s.ticker === ticker) ?? null;
   const ruleBreakerCard =
     ruleBreaker?.screens.find((s) => s.ticker === ticker) ?? null;
+  const qarvCard = qarv?.screens.find((s) => s.ticker === ticker) ?? null;
 
   // Per-ticker shard read replaces filtering the whole monolith.
   const rawTickerEvents = store.readEventsForTicker
@@ -186,7 +189,11 @@ export default async function SecurityDetailPage({ params }: Props) {
         ticker={ticker}
         ranking={rankingRow}
         pitch={ideasPitch}
-        screens={{ blueOcean: blueOceanCard, ruleBreaker: ruleBreakerCard }}
+        screens={{
+          blueOcean: blueOceanCard,
+          ruleBreaker: ruleBreakerCard,
+          qarv: qarvCard,
+        }}
         history={rankingHistory}
       />
 

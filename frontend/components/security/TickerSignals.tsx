@@ -27,6 +27,7 @@ interface Props {
   screens: {
     blueOcean: ScreenCard | null;
     ruleBreaker: ScreenCard | null;
+    qarv?: ScreenCard | null;
   };
   // Phase 3.2 — 30-day composite history for this ticker. Empty
   // when data/ranking-history.jsonl doesn't exist yet or hasn't
@@ -177,6 +178,11 @@ export function TickerSignals({
           label="Rule Breaker"
           card={screens.ruleBreaker}
           href={`/screens?framework=rule-breaker&ticker=${encodedTicker}`}
+        />
+        <FrameworkBadge
+          label="QARV"
+          card={screens.qarv ?? null}
+          href={`/screens?framework=qarv&ticker=${encodedTicker}`}
         />
       </div>
       {pitch ? <PitchCard pitch={pitch} /> : null}
