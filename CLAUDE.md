@@ -83,6 +83,17 @@ earnings_dashboard/
 │   ├── backfill-source-links.mjs       populate event.sourceLink where missing
 │   ├── inherit-from-siblings.mjs       copy past events from richer sibling in same companyId
 │   ├── fill-sec-empty-shards.mjs       SEC XBRL for empty-shard CIK entities
+│   ├── ── dashboard signal layer (Phases 3-4) ──
+│   ├── run-ranking.mjs                 composite ranking over the universe (data/ranking.json)
+│   ├── append-ranking-history.mjs      appends today's ranking to data/ranking-history.jsonl (feeds sparkline)
+│   ├── refresh-correlations.mjs        pairwise Pearson correlation over the watchlist (data/correlations.json)
+│   ├── refresh-commodities.mjs         Yahoo commodity futures basket (data/commodities.json)
+│   ├── run-qarv-screen.mjs             mechanical Quality/Assets/Revisions/Value screen (data/screens/qarv.json)
+│   ├── refresh-macro.mjs               FRED z-score extremity signals (data/macro-signals.json)
+│   ├── refresh-market-pulse.mjs        index chart snapshot (data/market-pulse.json)
+│   ├── apply-ideas.mjs                 validate + persist LLM ideas payload (data/ideas.json)
+│   ├── apply-week-ahead.mjs            validate + persist weekly narrative (+ per-week archive)
+│   ├── apply-screen.mjs                validate + merge LLM framework screens (blue-ocean, rule-breaker)
 │   ├── backfills/             43 one-shot repair scripts (archived — see below)
 │   ├── dev-tests/             2 dev-time smoke tests (test-mentions-holding, …)
 │   ├── config/                us-primary-overrides.json (used by add-us-primaries-v2)
@@ -113,6 +124,12 @@ earnings_dashboard/
 | Same-basis surprise rule        | `scripts/enforce-same-basis-surprise.mjs` + `SurprisePill.crossBasisCleared` |
 | One-shot repair evidence        | `scripts/audits/<name>.json` + `scripts/backfills/<name>.mjs`                |
 | Sweep dry-run                   | `node scripts/sweep-dry-run.mjs`                                               |
+| Composite ranking + sparkline   | `scripts/run-ranking.mjs` → `data/ranking.json`; history via `append-ranking-history.mjs` → `data/ranking-history.jsonl`; UI on /ideas + sparkline on /s/[ticker] |
+| Pairwise correlation heatmap    | `scripts/refresh-correlations.mjs` → `data/correlations.json`; UI at `/correlation`                              |
+| Commodity basket strip          | `scripts/refresh-commodities.mjs` → `data/commodities.json`; UI in `CommodityStrip.tsx` on /week-ahead           |
+| QARV mechanical screen          | `scripts/run-qarv-screen.mjs` → `data/screens/qarv.json`; UI at `/screens?framework=qarv`                        |
+| Weekly narrative archive        | writer: `scripts/apply-week-ahead.mjs` (also writes `data/week-ahead-archive/<weekOf>.json`); reader: `/week-ahead?week=YYYY-MM-DD` |
+| Framework screen delta chip     | writer stamps `previousCompositeScore` on each ScreenCard via `scripts/apply-screen.mjs`; `DeltaChip` in `ScreenTable.tsx` |
 | Local /earnings step 0          | `node scripts/resolve-earnings-target.mjs "<TICKER>"`                          |
 | SEC fetch that works from CI    | `node scripts/fetch-edgar.mjs <sec.gov-url>` (writes to fetched/)              |
 | Text of a fetched filing        | `node scripts/extract-doc-text.mjs fetched/<file> [--grep "…"]`               |
@@ -536,15 +553,20 @@ flag in `frontend/lib/flags.ts` is the single seam — flip it once the
 backend endpoints exist. Every live-mode branch throws a specific error
 naming the missing endpoint, so it's obvious what's still stubbed.
 
-## Route map (11 built)
+## Route map
 
 - `/` — Watchlist overview
 - `/s/:ticker` — Security detail (operating / developer / etf, type-routed)
 - `/s/:ticker/e/:eventId` — Event (print) detail
+- `/week-ahead` — Upcoming earnings + macro strip + commodity strip + weekly narrative (with `?week=YYYY-MM-DD` archive picker)
+- `/ideas` — Composite-ranking leaderboard + AI pitch cards
+- `/screens` — Framework screens (`?framework=blue-ocean|rule-breaker|qarv`)
+- `/correlation` — Pairwise return correlation heatmap over the watchlist
+- `/news` — Fanout news feed
 - `/sectors`, `/sectors/:sectorId` — Sector view (flagged)
 - `/admin`, `/admin/securities/new`, `/admin/securities/:ticker`,
   `/admin/entry/:ticker`, `/admin/sources`, `/admin/feedback` — Admin surfaces
-- `/settings` — Theme, feature flags, data status
+- `/settings` — Theme, feature flags, data status, manual dispatch of Ideas/Week-ahead/Framework-screen workflows
 - `/gallery` — Component gallery (every primitive in every state)
 
 ## Backend integration flags — where the front end plugs in

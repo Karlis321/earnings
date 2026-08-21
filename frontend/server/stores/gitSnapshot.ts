@@ -284,8 +284,6 @@ const P = {
   screenBlueOcean: "data/screens/blue-ocean.json",
   screenRuleBreaker: "data/screens/rule-breaker.json",
   screenQarv: "data/screens/qarv.json",
-  screenChangeLog: (framework: import("@/lib/types").ScreenFramework) =>
-    `data/screens/${framework}-change-log.jsonl`,
   correlations: "data/correlations.json",
   commodities: "data/commodities.json",
   rankingHistory: "data/ranking-history.jsonl",
@@ -1004,59 +1002,6 @@ export function gitSnapshotStore(cfg: GhConfig): Store {
         return r?.content ?? null;
       } catch {
         return null;
-      }
-    },
-    async readScreenChangeLog(
-      framework: import("@/lib/types").ScreenFramework,
-      ticker?: string,
-    ) {
-      try {
-        const url =
-          `${GH_API}/repos/${cfg.owner}/${cfg.repo}/contents/${encodeURIComponent(P.screenChangeLog(framework))}` +
-          `?ref=${encodeURIComponent(cfg.branch)}`;
-        const meta = await fetch(url, {
-          headers: headers(cfg),
-          cache: "no-store",
-        });
-        if (meta.status === 404) return [];
-        if (!meta.ok) return [];
-        const j = (await meta.json()) as {
-          content?: string;
-          encoding?: string;
-          download_url?: string;
-        };
-        let raw = "";
-        if (!j.content || j.content.length === 0) {
-          if (!j.download_url) return [];
-          const dl = await fetch(j.download_url, {
-            headers: {
-              Authorization: `Bearer ${cfg.pat}`,
-              "User-Agent": "EarningsDashboard/1.0",
-            },
-            cache: "no-store",
-          });
-          if (!dl.ok) return [];
-          raw = await dl.text();
-        } else {
-          raw =
-            j.encoding === "base64"
-              ? Buffer.from(j.content, "base64").toString("utf8")
-              : j.content;
-        }
-        const rows: import("@/lib/types").ScreenChangeLogRow[] = [];
-        for (const line of raw.split("\n")) {
-          if (!line.trim()) continue;
-          try {
-            const row = JSON.parse(line) as import("@/lib/types").ScreenChangeLogRow;
-            if (ticker && row.ticker !== ticker) continue;
-            rows.push(row);
-          } catch {
-            // skip malformed row
-          }
-        }
-        return rows;
-      } catch {
-        return [];
       }
     },
     async readRankingHistory(ticker?: string) {

@@ -37,19 +37,6 @@ export interface ScreenCard {
   previousScreenedAt?: string | null;
 }
 
-// Phase 3.4 — per-run change log for framework screens. Appended to
-// data/screens/<framework>-change-log.jsonl by apply-screen.mjs each
-// time a ticker's compositeScore materially changes. Consumed by the
-// /screens expanded panel + admin timeline.
-export interface ScreenChangeLogRow {
-  screenedAt: string;
-  framework: ScreenFramework;
-  ticker: string;
-  compositeBefore: number | null;
-  compositeAfter: number;
-  compositeDelta: number | null;
-}
-
 // Phase 4.1 — pairwise Pearson correlation snapshot over the
 // watchlist universe. Computed by scripts/refresh-correlations.mjs.
 // matrix[a][b] is the correlation of daily log returns between

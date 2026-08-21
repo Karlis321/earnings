@@ -121,13 +121,6 @@ export interface Store {
     framework: import("@/lib/types").ScreenFramework,
   ): Promise<import("@/lib/types").Screen | null>;
 
-  // Phase 3.4 — framework screen change log (jsonl). Filtered to
-  // `ticker` when provided. Returns [] on missing file / read error.
-  readScreenChangeLog?(
-    framework: import("@/lib/types").ScreenFramework,
-    ticker?: string,
-  ): Promise<import("@/lib/types").ScreenChangeLogRow[]>;
-
   // Phase 4.1 — pairwise correlation snapshot (data/correlations.json).
   // Refreshed by scripts/refresh-correlations.mjs. Consumed by
   // /correlation. Null when the snapshot file doesn't exist yet.

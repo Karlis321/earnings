@@ -182,9 +182,6 @@ export const inMemoryStore: Store = {
   async readScreen() {
     return null;
   },
-  async readScreenChangeLog() {
-    return [];
-  },
   async readCorrelations() {
     return null;
   },
