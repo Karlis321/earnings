@@ -1,6 +1,7 @@
 import { store } from "@/server/store";
 import { EmptyState } from "@/components/primitives";
 import { CorrelationHeatmap } from "@/components/correlation/CorrelationHeatmap";
+import type { Entity } from "@/lib/types";
 
 // Phase 4.1 — /correlation — pairwise return-correlation heatmap
 // over the watchlist universe. Data is precomputed by
@@ -9,8 +10,14 @@ import { CorrelationHeatmap } from "@/components/correlation/CorrelationHeatmap"
 
 export const dynamic = "force-dynamic";
 
-// Group tickers into pairs by absolute correlation ≥ threshold —
-// surfaces the "most redundant" pairs at a glance.
+interface EntityMeta {
+  displayName: string;
+  primarySector: string | null;
+  tags: string[];
+}
+
+// Group tickers into pairs by absolute correlation — surfaces the
+// "most redundant" pairs at a glance.
 function topPairs(
   data: import("@/lib/types").Correlations,
   n: number,
@@ -32,8 +39,124 @@ function topPairs(
   return out.slice(0, n);
 }
 
+// Prefer sector-defining tags over generic "materials" / "financial-services"
+// unless nothing more specific is available. Keeps the label concise.
+const GENERIC_TAGS = new Set([
+  "materials",
+  "financial-services",
+  "energy",
+  "mining",
+  "canada",
+  "brazil",
+  "developer",
+  "etf",
+]);
+
+function metaFor(entity: Entity | undefined): EntityMeta {
+  if (!entity) {
+    return { displayName: "", primarySector: null, tags: [] };
+  }
+  const tags = Array.isArray(entity.sectorTags) ? entity.sectorTags : [];
+  const specific = tags.find((t) => !GENERIC_TAGS.has(t));
+  const generic = tags.find((t) => GENERIC_TAGS.has(t));
+  return {
+    displayName: entity.displayName ?? "",
+    primarySector: specific ?? generic ?? null,
+    tags,
+  };
+}
+
+// Find the industry theme two tickers share, if any — so the pair
+// row can say "both copper miners" rather than making the reader
+// intersect two sector-tag lists in their head.
+function sharedTag(a: EntityMeta, b: EntityMeta): string | null {
+  const setB = new Set(b.tags);
+  // Prefer specific tags first; fall back to generic
+  for (const t of a.tags) if (!GENERIC_TAGS.has(t) && setB.has(t)) return t;
+  for (const t of a.tags) if (setB.has(t)) return t;
+  return null;
+}
+
+function TagChip({ tag }: { tag: string }) {
+  return (
+    <span className="rounded-[3px] border border-bd bg-panel3/60 px-1 py-[1px] font-mono text-[9.5px] uppercase tracking-[0.06em] text-tx-mid">
+      {tag}
+    </span>
+  );
+}
+
+function PairRow({
+  p,
+  metaA,
+  metaB,
+}: {
+  p: { a: string; b: string; r: number };
+  metaA: EntityMeta;
+  metaB: EntityMeta;
+}) {
+  const shared = sharedTag(metaA, metaB);
+  const positive = p.r >= 0;
+  return (
+    <div className="border-b border-bd/40 py-1.5 last:border-b-0">
+      <div className="flex items-baseline gap-2">
+        <span className="min-w-0 flex-1 truncate text-[12.5px] text-tx">
+          <span className="font-mono text-brand-fg">{p.a}</span>
+          {metaA.displayName ? (
+            <span className="ml-1.5 text-tx-mid">
+              {metaA.displayName}
+            </span>
+          ) : null}
+        </span>
+        <span
+          className={
+            positive
+              ? "shrink-0 font-mono text-[11.5px] text-success-fg"
+              : "shrink-0 font-mono text-[11.5px] text-danger"
+          }
+          title={`Pearson correlation of daily log returns over 6mo — sign indicates direction, magnitude indicates strength (1 = perfect co-move, 0 = independent, −1 = perfect anti-move)`}
+        >
+          ρ {p.r >= 0 ? "+" : ""}
+          {p.r.toFixed(2)}
+        </span>
+      </div>
+      <div className="mt-0.5 flex items-baseline gap-2">
+        <span className="min-w-0 flex-1 truncate text-[12.5px] text-tx">
+          <span className="font-mono text-brand-fg">{p.b}</span>
+          {metaB.displayName ? (
+            <span className="ml-1.5 text-tx-mid">
+              {metaB.displayName}
+            </span>
+          ) : null}
+        </span>
+      </div>
+      <div className="mt-1 flex flex-wrap items-center gap-1">
+        {shared ? (
+          <span className="font-mono text-[10px] uppercase tracking-[0.06em] text-tx-mid">
+            both →
+          </span>
+        ) : null}
+        {shared ? <TagChip tag={shared} /> : null}
+        {!shared ? (
+          <span className="font-mono text-[10px] uppercase tracking-[0.06em] text-tx3">
+            no shared theme
+          </span>
+        ) : null}
+        {metaA.primarySector && !shared ? (
+          <TagChip tag={`${p.a.split(" ")[0]}: ${metaA.primarySector}`} />
+        ) : null}
+        {metaB.primarySector && !shared ? (
+          <TagChip tag={`${p.b.split(" ")[0]}: ${metaB.primarySector}`} />
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
 export default async function CorrelationPage() {
-  const data = store.readCorrelations ? await store.readCorrelations() : null;
+  const [data, entities] = await Promise.all([
+    store.readCorrelations ? store.readCorrelations() : Promise.resolve(null),
+    store.readRegistry(),
+  ]);
 
   if (!data) {
     return (
@@ -48,6 +171,10 @@ export default async function CorrelationPage() {
       </div>
     );
   }
+
+  const byTicker = new Map(entities.map((e) => [e.ticker, e]));
+  const meta: Record<string, EntityMeta> = {};
+  for (const t of data.tickers) meta[t] = metaFor(byTicker.get(t));
 
   const generatedDate = data.generatedAt.slice(0, 10);
   const topRedundant = topPairs(data, 5);
@@ -68,7 +195,8 @@ export default async function CorrelationPage() {
         <p className="mt-2 max-w-[68ch] text-[13px] text-tx-mid">
           Pearson correlation of daily log returns over{" "}
           <span className="font-mono">{data.range}</span>. Cells shade
-          red → neutral → green from −1 to +1. Pairs sharing fewer than{" "}
+          red → neutral → green from −1 to +1 (1 = perfect co-move, 0 =
+          independent, −1 = perfect anti-move). Pairs sharing fewer than{" "}
           {data.minSharedBars} trading days render as{" "}
           <span className="font-mono">—</span> (typical when a listing has
           been live &lt; 3 months). Last refresh: {generatedDate}.
@@ -78,57 +206,43 @@ export default async function CorrelationPage() {
       <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-2">
         <div className="rounded-[8px] border border-bd bg-panel2/40 px-3 py-2">
           <div className="mono-eyebrow mb-1 text-tx3">§ Most redundant</div>
-          <div className="space-y-0.5 text-[12px]">
-            {topRedundant.length === 0 ? (
-              <span className="text-tx3">no pairs</span>
-            ) : (
-              topRedundant.map((p, i) => (
-                <div
-                  key={`${p.a}|${p.b}|${i}`}
-                  className="flex items-baseline gap-2"
-                >
-                  <span className="font-mono text-brand-fg">{p.a}</span>
-                  <span className="text-tx3">×</span>
-                  <span className="font-mono text-brand-fg">{p.b}</span>
-                  <span
-                    className={
-                      p.r >= 0
-                        ? "ml-auto font-mono text-success-fg"
-                        : "ml-auto font-mono text-danger"
-                    }
-                  >
-                    ρ {p.r.toFixed(2)}
-                  </span>
-                </div>
-              ))
-            )}
-          </div>
+          <p className="mb-2 text-[11.5px] text-tx-mid">
+            Move together — owning both adds bulk, not diversification.
+          </p>
+          {topRedundant.length === 0 ? (
+            <span className="text-tx3">no pairs</span>
+          ) : (
+            topRedundant.map((p, i) => (
+              <PairRow
+                key={`${p.a}|${p.b}|${i}`}
+                p={p}
+                metaA={meta[p.a]}
+                metaB={meta[p.b]}
+              />
+            ))
+          )}
         </div>
         <div className="rounded-[8px] border border-bd bg-panel2/40 px-3 py-2">
           <div className="mono-eyebrow mb-1 text-tx3">§ Most divergent</div>
-          <div className="space-y-0.5 text-[12px]">
-            {mostDivergent.length === 0 ? (
-              <span className="text-tx3">no negative-corr pairs</span>
-            ) : (
-              mostDivergent.map((p, i) => (
-                <div
-                  key={`${p.a}|${p.b}|${i}`}
-                  className="flex items-baseline gap-2"
-                >
-                  <span className="font-mono text-brand-fg">{p.a}</span>
-                  <span className="text-tx3">×</span>
-                  <span className="font-mono text-brand-fg">{p.b}</span>
-                  <span className="ml-auto font-mono text-danger">
-                    ρ {p.r.toFixed(2)}
-                  </span>
-                </div>
-              ))
-            )}
-          </div>
+          <p className="mb-2 text-[11.5px] text-tx-mid">
+            Move opposite — hedge each other in the portfolio.
+          </p>
+          {mostDivergent.length === 0 ? (
+            <span className="text-tx3">no negative-corr pairs</span>
+          ) : (
+            mostDivergent.map((p, i) => (
+              <PairRow
+                key={`${p.a}|${p.b}|${i}`}
+                p={p}
+                metaA={meta[p.a]}
+                metaB={meta[p.b]}
+              />
+            ))
+          )}
         </div>
       </div>
 
-      <CorrelationHeatmap data={data} />
+      <CorrelationHeatmap data={data} entityMeta={meta} />
     </div>
   );
 }
