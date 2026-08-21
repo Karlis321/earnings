@@ -625,6 +625,12 @@
               "actualFamily": "yahoo-timeseries",
               "estimateFamily": "yahoo-chart",
               "clearedAt": "2026-08-20T04:02:28.688Z"
+            },
+            {
+              "value": 56.59017396658359,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-08-21T04:08:37.857Z"
             }
           ]
         },
@@ -1084,6 +1090,12 @@
               "actualFamily": "yahoo-timeseries",
               "estimateFamily": "yahoo-chart",
               "clearedAt": "2026-08-20T04:02:28.688Z"
+            },
+            {
+              "value": -512.4696498395951,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-08-21T04:08:37.857Z"
             }
           ]
         },
@@ -1543,6 +1555,12 @@
               "actualFamily": "yahoo-timeseries",
               "estimateFamily": "yahoo-chart",
               "clearedAt": "2026-08-20T04:02:28.688Z"
+            },
+            {
+              "value": -53.55799652514295,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-08-21T04:08:37.857Z"
             }
           ]
         },
@@ -2047,6 +2065,12 @@
               "actualFamily": "yahoo-timeseries",
               "estimateFamily": "yahoo-chart",
               "clearedAt": "2026-07-31T06:51:39.997Z"
+            },
+            {
+              "value": -18.106152275310322,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-08-21T04:08:37.857Z"
             }
           ]
         },
@@ -2295,13 +2319,13 @@
       "kind": "earnings",
       "period": "FY2026 Q2",
       "scheduledDate": "2026-08-21",
-      "eventDate": null,
+      "eventDate": "2026-08-18",
       "timing": null,
       "expectation": "unset",
       "guidanceMove": null,
-      "freshness": "stale",
-      "provenance": "estimator-median-gap",
-      "provenanceAsOf": "2026-08-18T03:38:16.654Z",
+      "freshness": "fresh",
+      "provenance": "yahoo-earnings-chart",
+      "provenanceAsOf": "2026-08-21T03:43:49.353Z",
       "cadence": "quarterly",
       "metrics": [
         {
@@ -2333,7 +2357,7 @@
           "key": "eps_usd",
           "displayLabel": "EPS",
           "isHeadline": true,
-          "surprisePct": null,
+          "surprisePct": -35.02753680573053,
           "estimate": {
             "value": 11.1124,
             "unit": "USD",
@@ -2351,47 +2375,67 @@
             "high": 14.19986,
             "numberOfAnalysts": 13
           },
-          "actual": null,
+          "actual": {
+            "value": 7.22,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/BIDU/earnings-history",
+              "label": "Yahoo · earningsChart",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-06-30",
+            "fetchedAt": "2026-08-21T03:43:49.353Z",
+            "method": "yahoo",
+            "confidence": 0.8
+          },
           "prior": null
         }
       ],
       "guidance": [],
       "reaction": {
         "benchmark": "SPX",
-        "baselineDate": null,
-        "baselineClose": null,
+        "baselineDate": "2026-08-18",
+        "baselineClose": 90.87000274658203,
         "points": [
           {
             "horizon": "d1",
-            "absReturn": null,
-            "excessReturn": null,
+            "absReturn": 0.022009463404305086,
+            "excessReturn": 0.019900685265362258,
             "benchmark": "SPX",
-            "computedAt": null,
-            "populatesOn": "2026-08-20"
+            "computedAt": "2026-08-21T04:06:11.242Z",
+            "populatesOn": null,
+            "status": "matured"
           },
           {
             "horizon": "d3",
-            "absReturn": null,
-            "excessReturn": null,
+            "absReturn": 0.012105188080479825,
+            "excessReturn": 0.018683605883013533,
             "benchmark": "SPX",
-            "computedAt": null,
-            "populatesOn": "2026-08-22"
+            "computedAt": "2026-08-21T04:06:11.242Z",
+            "populatesOn": null,
+            "status": "clipped",
+            "clipped": true
           },
           {
             "horizon": "w1",
-            "absReturn": null,
-            "excessReturn": null,
+            "absReturn": 0.012105188080479825,
+            "excessReturn": 0.018683605883013533,
             "benchmark": "SPX",
-            "computedAt": null,
-            "populatesOn": "2026-08-24"
+            "computedAt": "2026-08-21T04:06:11.242Z",
+            "populatesOn": null,
+            "status": "clipped",
+            "clipped": true
           },
           {
             "horizon": "m1",
-            "absReturn": null,
-            "excessReturn": null,
+            "absReturn": 0.012105188080479825,
+            "excessReturn": 0.018683605883013533,
             "benchmark": "SPX",
-            "computedAt": null,
-            "populatesOn": "2026-09-09"
+            "computedAt": "2026-08-21T04:06:11.242Z",
+            "populatesOn": null,
+            "status": "clipped",
+            "clipped": true
           }
         ]
       },
@@ -2772,7 +2816,75 @@
         ],
         "engineStatus": []
       },
-      "scheduledDateSource": "roll-stale-shells/median-gap"
+      "scheduledDateSource": "roll-stale-shells/median-gap",
+      "eventDateSource": "yahoo-earnings-chart-reportedDate",
+      "sourceLink": {
+        "url": "https://finance.yahoo.com/quote/BIDU/earnings-history",
+        "kind": "fallback"
+      }
+    },
+    {
+      "id": "evt-7v0cq9",
+      "ticker": "BIDU US",
+      "kind": "earnings",
+      "period": "FY2026 Q3",
+      "scheduledDate": "2026-11-17",
+      "eventDate": null,
+      "timing": null,
+      "expectation": "unset",
+      "guidanceMove": null,
+      "freshness": "stale",
+      "provenance": "estimator-median-gap",
+      "provenanceAsOf": "2026-08-21T04:06:10.059Z",
+      "cadence": "quarterly",
+      "metrics": [],
+      "guidance": [],
+      "reaction": {
+        "benchmark": "SPX",
+        "baselineDate": null,
+        "baselineClose": null,
+        "points": [
+          {
+            "horizon": "d1",
+            "absReturn": null,
+            "excessReturn": null,
+            "benchmark": "SPX",
+            "computedAt": null,
+            "populatesOn": "2026-11-20"
+          },
+          {
+            "horizon": "d3",
+            "absReturn": null,
+            "excessReturn": null,
+            "benchmark": "SPX",
+            "computedAt": null,
+            "populatesOn": "2026-11-22"
+          },
+          {
+            "horizon": "w1",
+            "absReturn": null,
+            "excessReturn": null,
+            "benchmark": "SPX",
+            "computedAt": null,
+            "populatesOn": "2026-11-24"
+          },
+          {
+            "horizon": "m1",
+            "absReturn": null,
+            "excessReturn": null,
+            "benchmark": "SPX",
+            "computedAt": null,
+            "populatesOn": "2026-12-10"
+          }
+        ]
+      },
+      "sources": {
+        "windowStart": "2026-11-15",
+        "windowEnd": "2026-12-22",
+        "capturedAt": null,
+        "items": [],
+        "engineStatus": []
+      }
     }
   ]
 }
