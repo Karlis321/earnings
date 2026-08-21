@@ -10,7 +10,7 @@
 
 import { useEffect, useState } from "react";
 
-type Kind = "ideas" | "week-ahead" | "blue-ocean" | "rule-breaker";
+type Kind = "week-ahead" | "blue-ocean" | "rule-breaker";
 
 interface Workflow {
   kind: Kind;
@@ -52,13 +52,6 @@ function nextMonthly(from: Date, dayOfMonth: number, hourUtc: number): Date {
 }
 
 const WORKFLOWS: Workflow[] = [
-  {
-    kind: "ideas",
-    label: "Ideas",
-    href: "/ideas",
-    // Mon / Wed / Fri at 14:00 UTC.
-    next: (from) => nextWeekday(from, [1, 3, 5], 14),
-  },
   {
     kind: "week-ahead",
     label: "Week ahead",

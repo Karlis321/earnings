@@ -15,7 +15,7 @@ import { FEATURE_FLAGS } from "@/lib/flags";
 // `freshness` prop below. When the server-side timestamp is newer
 // than the localStorage watermark stamped on last visit, a small
 // dot renders next to the label.
-type FreshKey = "weekAhead" | "ideas" | "screens";
+type FreshKey = "weekAhead" | "themes" | "screens";
 const TABS: Array<{
   href: string;
   label: string;
@@ -24,7 +24,7 @@ const TABS: Array<{
 }> = [
   { href: "/", label: "Overview" },
   { href: "/week-ahead", label: "Week ahead", freshKey: "weekAhead" },
-  { href: "/ideas", label: "Ideas", freshKey: "ideas" },
+  { href: "/themes", label: "Themes", freshKey: "themes" },
   { href: "/screens", label: "Screens", freshKey: "screens" },
   { href: "/correlation", label: "Correlation" },
   { href: "/news", label: "News" },
@@ -39,7 +39,7 @@ const NAV_SEEN_PREFIX = "sig-nav-seen:";
 
 interface Freshness {
   weekAhead: string | null;
-  ideas: string | null;
+  themes: string | null;
   screens: string | null;
 }
 

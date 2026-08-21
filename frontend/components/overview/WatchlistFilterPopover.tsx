@@ -27,8 +27,6 @@ type FixedSortKey =
   | "reaction-loss-d3"
   | "reaction-loss-w1"
   | "reaction-loss-m1"
-  | "composite"
-  | "composite-loss"
   | "freshness"
   | "name";
 type SortKey = FixedSortKey | `metric:${string}:${"value" | "surprise"}:${"desc" | "asc"}`;
@@ -109,13 +107,6 @@ const SORT_GROUPS: Array<{
     options: [
       { id: "surprise", label: "EPS beat/miss · latest quarter" },
       { id: "surprise-rev", label: "Revenue beat/miss · latest quarter" },
-    ],
-  },
-  {
-    label: "By AI composite (Ideas ranking)",
-    options: [
-      { id: "composite", label: "Composite · high → low" },
-      { id: "composite-loss", label: "Composite · low → high" },
     ],
   },
   {

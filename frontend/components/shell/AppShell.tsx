@@ -3,17 +3,19 @@ import { Footer } from "./Footer";
 import { Banners } from "./Banners";
 import { store } from "@/server/store";
 
-// Fresh-data timestamps for the three new AI surfaces (Features
-// 2F, 3C, 4A/C). Fetched once per request and handed to the
-// client Header, which compares against localStorage watermarks
-// to render a small "new" dot next to the nav tab.
+// Fresh-data timestamps for the three AI/data surfaces. Fetched
+// once per request and handed to the client Header, which compares
+// against localStorage watermarks to render a "new" dot next to
+// the nav tab.
 async function readFreshness(): Promise<{
-  ideas: string | null;
+  themes: string | null;
   weekAhead: string | null;
   screens: string | null;
 }> {
-  const [ideas, narrative, blueOcean, ruleBreaker] = await Promise.all([
-    store.readIdeas ? store.readIdeas() : Promise.resolve(null),
+  const [sectorSignals, narrative, blueOcean, ruleBreaker] = await Promise.all([
+    store.readSectorSignals
+      ? store.readSectorSignals()
+      : Promise.resolve(null),
     store.readWeekAheadNarrative
       ? store.readWeekAheadNarrative()
       : Promise.resolve(null),
@@ -29,7 +31,7 @@ async function readFreshness(): Promise<{
     .sort()
     .reverse()[0] ?? null;
   return {
-    ideas: ideas?.generatedAt ?? null,
+    themes: sectorSignals?.generatedAt ?? null,
     weekAhead: narrative?.generatedAt ?? null,
     screens: screenTs,
   };

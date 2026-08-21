@@ -13,7 +13,7 @@ import { ArrowLeft } from "lucide-react";
 // destinations. Extending this array is the only wiring needed
 // to add a new surface (e.g. /screens future subpaths).
 const KNOWN_ORIGINS: Array<{ prefix: string; label: string }> = [
-  { prefix: "/ideas", label: "Ideas" },
+  { prefix: "/themes", label: "Themes" },
   { prefix: "/screens", label: "Screens" },
   { prefix: "/week-ahead", label: "Week ahead" },
   { prefix: "/sectors", label: "Sectors" },

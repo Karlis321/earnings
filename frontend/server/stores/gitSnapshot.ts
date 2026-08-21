@@ -274,8 +274,7 @@ const P = {
   cronStatus: "data/cron-status.json",
   pipelineReport: "data/pipeline-report.json",
   marketPulse: "data/market-pulse.json",
-  ranking: "data/ranking.json",
-  ideas: "data/ideas.json",
+  sectorSignals: "data/sector-signals.json",
   macroSignals: "data/macro-signals.json",
   weekAheadNarrative: "data/week-ahead-narrative.json",
   weekAheadArchiveDir: "data/week-ahead-archive",
@@ -286,7 +285,6 @@ const P = {
   screenQarv: "data/screens/qarv.json",
   correlations: "data/correlations.json",
   commodities: "data/commodities.json",
-  rankingHistory: "data/ranking-history.jsonl",
   // Stored as a JSON object `{schema, entries:[...]}` rather than raw
   // JSONL — the write path uses commit() which JSON.stringifies, and
   // append-then-commit reduces to updating one entry. The health page
@@ -898,22 +896,11 @@ export function gitSnapshotStore(cfg: GhConfig): Store {
         return null;
       }
     },
-    async readRanking() {
+    async readSectorSignals() {
       try {
-        const r = await readCached<import("@/lib/types").Ranking>(
+        const r = await readCached<import("@/lib/types").SectorSignals>(
           cfg,
-          P.ranking,
-        );
-        return r?.content ?? null;
-      } catch {
-        return null;
-      }
-    },
-    async readIdeas() {
-      try {
-        const r = await readCached<import("@/lib/types").Ideas>(
-          cfg,
-          P.ideas,
+          P.sectorSignals,
         );
         return r?.content ?? null;
       } catch {
@@ -1002,59 +989,6 @@ export function gitSnapshotStore(cfg: GhConfig): Store {
         return r?.content ?? null;
       } catch {
         return null;
-      }
-    },
-    async readRankingHistory(ticker?: string) {
-      // jsonl — line-delimited; readCached's JSON.parse would fail,
-      // so fetch raw via download_url. Cached separately from the
-      // JSON files to keep the JSON-typed cache clean.
-      try {
-        const url =
-          `${GH_API}/repos/${cfg.owner}/${cfg.repo}/contents/${encodeURIComponent(P.rankingHistory)}` +
-          `?ref=${encodeURIComponent(cfg.branch)}`;
-        const meta = await fetch(url, {
-          headers: headers(cfg),
-          cache: "no-store",
-        });
-        if (meta.status === 404) return [];
-        if (!meta.ok) return [];
-        const j = (await meta.json()) as {
-          content?: string;
-          encoding?: string;
-          download_url?: string;
-        };
-        let raw = "";
-        if (!j.content || j.content.length === 0) {
-          if (!j.download_url) return [];
-          const dl = await fetch(j.download_url, {
-            headers: {
-              Authorization: `Bearer ${cfg.pat}`,
-              "User-Agent": "EarningsDashboard/1.0",
-            },
-            cache: "no-store",
-          });
-          if (!dl.ok) return [];
-          raw = await dl.text();
-        } else {
-          raw =
-            j.encoding === "base64"
-              ? Buffer.from(j.content, "base64").toString("utf8")
-              : j.content;
-        }
-        const rows: import("@/lib/types").RankingHistoryRow[] = [];
-        for (const line of raw.split("\n")) {
-          if (!line.trim()) continue;
-          try {
-            const row = JSON.parse(line) as import("@/lib/types").RankingHistoryRow;
-            if (ticker && row.ticker !== ticker) continue;
-            rows.push(row);
-          } catch {
-            // skip malformed row
-          }
-        }
-        return rows;
-      } catch {
-        return [];
       }
     },
     async writePipelineReport(report) {

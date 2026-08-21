@@ -139,13 +139,11 @@ const PHASES = [
   // consumed by /week-ahead as an extremity strip above the day
   // grid. Best-effort — non-blocking on transient Yahoo errors.
   { key: "macro", label: "Macro extremity (z-score vs 3y)", script: "refresh-macro.mjs", optional: true },
-  // Ranking + history — writes data/ranking.json (fresh composite
-  // over the universe) and appends today's snapshot to
-  // data/ranking-history.jsonl. Optional so a Yahoo blip doesn't
-  // block the whole refresh. History enables composite sparklines
-  // on /s/[ticker] (Phase 3.2).
-  { key: "ranking", label: "Signal ranking (composite)", script: "run-ranking.mjs", optional: true },
-  { key: "ranking-history", label: "Ranking history append", script: "append-ranking-history.mjs", optional: true },
+  // Sector rollup — reads events-index + registry + a bounded set
+  // of shards (top movers only) to aggregate per-sector metrics +
+  // recent headlines. Mechanical, no LLM. Writes
+  // data/sector-signals.json; consumed by /themes.
+  { key: "sector-signals", label: "Sector rollup (mechanical)", script: "aggregate-by-sector.mjs", optional: true },
   // Phase 4.1 — pairwise return-correlation snapshot over the
   // watchlist. Small (~17 tickers × 6mo daily bars = ~5 s of Yahoo
   // calls). Optional; the /correlation page renders "no snapshot"

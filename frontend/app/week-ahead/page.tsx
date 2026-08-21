@@ -40,7 +40,6 @@ export default async function WeekAheadPage({ searchParams }: Props) {
     entities,
     index,
     state,
-    ranking,
     macro,
     commodities,
     currentNarrative,
@@ -51,7 +50,6 @@ export default async function WeekAheadPage({ searchParams }: Props) {
     store.readEventsIndex?.() ??
       Promise.resolve({ schema: "events-index/v1", updatedAt: "", entries: [] }),
     store.readSharedState(),
-    store.readRanking ? store.readRanking() : Promise.resolve(null),
     store.readMacroSignals ? store.readMacroSignals() : Promise.resolve(null),
     store.readCommodities ? store.readCommodities() : Promise.resolve(null),
     store.readWeekAheadNarrative
@@ -71,13 +69,9 @@ export default async function WeekAheadPage({ searchParams }: Props) {
   const focusTickers = new Set(state.preferences?.focusTickers ?? []);
 
   const byTicker = new Map(entities.map((e) => [e.ticker, e]));
-  const rankingByTicker = new Map(
-    (ranking?.rows ?? []).map((r) => [r.ticker, r]),
-  );
 
   // Universe = displayable operating entities from SP500 / R1000 /
-  // isCore — matches the /ideas leaderboard scope so the two views
-  // are comparable. Exclude foreign + pre-listing entities.
+  // isCore. Exclude foreign + pre-listing entities.
   const rows: WeekAheadRow[] = [];
   for (const entry of index.entries) {
     if (!entry.nextScheduled) continue;
@@ -88,7 +82,6 @@ export default async function WeekAheadPage({ searchParams }: Props) {
     if (ent.securityType !== "operating") continue;
     const mem = ent.index_membership ?? [];
     if (!ent.isCore && !mem.includes("SP500") && !mem.includes("R1000")) continue;
-    const r = rankingByTicker.get(entry.ticker);
     rows.push({
       ticker: entry.ticker,
       displayName: ent.displayName,
@@ -100,8 +93,6 @@ export default async function WeekAheadPage({ searchParams }: Props) {
       cadence: entry.nextCadence,
       lastPeriod: entry.lastPeriod ?? null,
       lastSurprisePct: entry.lastSurprisePct ?? null,
-      compositeScore: r?.compositeScore ?? null,
-      compositeRank: r?.rank ?? null,
       isFocus: focusTickers.has(entry.ticker),
     });
   }
@@ -129,9 +120,8 @@ export default async function WeekAheadPage({ searchParams }: Props) {
         </h1>
         <p className="mt-2 max-w-[68ch] text-[13px] text-tx-mid">
           Universe: SP500 ∪ R1000 ∪ portfolio, operating names only.
-          Ranking (composite + rank) enriches each row when available;
-          rows without a ranking match still render with the ticker +
-          period + last-surprise context.
+          Each row shows ticker + period + last-surprise context; focus
+          tickers pinned to the top of each day.
         </p>
         {focusCount > 0 ? (
           <p className="mt-1 font-mono text-[11px] text-brand-fg">
@@ -169,8 +159,8 @@ export default async function WeekAheadPage({ searchParams }: Props) {
           {archivedWeek ? ` for week ${archivedWeek}` : ""}. The{" "}
           <code className="text-tx-mid">week-ahead</code> workflow fires
           Sunday 22:00 UTC and writes The setup + What to watch + Signals
-          to trust sections based on the ranking + macro + market-pulse
-          state. Day grid below still renders from events-index directly.
+          to trust sections based on macro + market-pulse state.
+          Day grid below still renders from events-index directly.
         </div>
       )}
 

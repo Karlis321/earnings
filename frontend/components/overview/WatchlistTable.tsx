@@ -139,8 +139,6 @@ type FixedSortKey =
   | "reaction-loss-d3"
   | "reaction-loss-w1"
   | "reaction-loss-m1"
-  | "composite"
-  | "composite-loss"
   | "freshness"
   | "name";
 type SortKey = FixedSortKey | `metric:${string}:${"value" | "surprise"}:${"desc" | "asc"}`;
@@ -218,7 +216,6 @@ function pickRowHeadlineMetric(
 export function WatchlistTable({
   rows,
   focusTickers = [],
-  compositeByTicker = {},
   frameworkByTicker = {},
 }: {
   rows: WatchlistRow[];
@@ -226,10 +223,6 @@ export function WatchlistTable({
   // hasn't set any yet — component falls back to portfolio as the
   // default filter in that case.
   focusTickers?: string[];
-  // Ticker → composite score from data/ranking.json. Optional —
-  // the chip renders only for tickers with a score present, so
-  // an empty map degrades cleanly to "no chips" on any row.
-  compositeByTicker?: Record<string, number>;
   // Ticker → framework composite scores (bo = Blue Ocean, rb =
   // Rule Breaker) from data/screens/*.json. Optional — chips
   // only render when data exists (auto-hidden while
@@ -267,20 +260,13 @@ export function WatchlistTable({
   const [group, setGroup] = useState<Group>("flat");
   const [selectedIdx, setSelectedIdx] = useState<number>(0);
   const [tier, setTier] = useState<TierFilter>("any");
-  // Composite threshold — null = any, otherwise the minimum
-  // ranking.compositeScore required to pass the filter. Absent
-  // scores fail every non-null threshold (would be misleading to
-  // include unranked tickers when the user is explicitly filtering
-  // by signal strength).
-  const [minComposite, setMinComposite] = useState<number | null>(null);
-
   // Reset keyboard cursor whenever the visible row set changes. Without
   // this, applying a filter that shrinks the list can leave selectedIdx
   // pointing past the new bounds, and switching group modes reorders
   // rows so the previous selectedIdx highlights the wrong row.
   useEffect(() => {
     setSelectedIdx(0);
-  }, [filter, tier, reportingSoon, group, sortKey, minComposite]);
+  }, [filter, tier, reportingSoon, group, sortKey]);
   // Canonical-listings-only by default — so NVIDIA counts once in
   // large-cap tech instead of four times (once per BDR / MM / TB / CN
   // wrapper listing). Portfolio rows (isCore) always show regardless,
@@ -409,12 +395,6 @@ export function WatchlistTable({
     if (tier !== "any") {
       list = list.filter((r) => (r.entity.capTier ?? "unknown") === tier);
     }
-    if (minComposite !== null) {
-      list = list.filter((r) => {
-        const c = compositeByTicker[r.ticker];
-        return typeof c === "number" && c >= minComposite;
-      });
-    }
     if (!showAllListings) {
       // Canonical-only default. isCore is a hard OVERRIDE — the 17
       // covered tickers always show even if the audit picked a
@@ -488,19 +468,6 @@ export function WatchlistTable({
           const bv = b.reactionPoints?.find((p) => p.horizon === "m1")?.absReturn ?? Infinity;
           return av - bv;
         }
-        case "composite": {
-          // Ranking.compositeScore desc — tickers without a ranking
-          // match sink to the bottom via -Infinity.
-          const av = compositeByTicker[a.ticker] ?? -Infinity;
-          const bv = compositeByTicker[b.ticker] ?? -Infinity;
-          return bv - av;
-        }
-        case "composite-loss": {
-          // Weakest composites first — same handling for missing.
-          const av = compositeByTicker[a.ticker] ?? Infinity;
-          const bv = compositeByTicker[b.ticker] ?? Infinity;
-          return av - bv;
-        }
         case "freshness": {
           const order = { fresh: 0, overdue: 1, stale: 2, never: 3 } as const;
           return order[a.freshness] - order[b.freshness];
@@ -531,7 +498,7 @@ export function WatchlistTable({
       }
     });
     return list;
-  }, [rows, filter, reportingSoon, sortKey, tier, prices, focusSet, compositeByTicker, minComposite]);
+  }, [rows, filter, reportingSoon, sortKey, tier, prices, focusSet]);
 
   const grouped = useMemo(() => {
     if (group === "flat") {
@@ -701,9 +668,6 @@ export function WatchlistTable({
         showAllListings={showAllListings}
         setShowAllListings={setShowAllListings}
         availableMetrics={availableMetrics}
-        minComposite={minComposite}
-        setMinComposite={setMinComposite}
-        hasComposite={Object.keys(compositeByTicker).length > 0}
       />
 
       <div
@@ -786,7 +750,6 @@ export function WatchlistTable({
                   (!lastSeenMap[r.ticker] ||
                     r.latestItemAt > lastSeenMap[r.ticker])
                 }
-                composite={compositeByTicker[r.ticker]}
                 framework={frameworkByTicker[r.ticker]}
               />
             ))}
@@ -888,7 +851,6 @@ function Row({
   siblingTickers,
   columnMetric,
   hasNewSinceVisit,
-  composite,
   framework,
 }: {
   r: WatchlistRow;
@@ -903,10 +865,6 @@ function Row({
   // True when latestItemAt > localStorage lastSeenAt[ticker]. Computed
   // once on the client after hydration and threaded down to the row.
   hasNewSinceVisit?: boolean;
-  // Composite score from data/ranking.json (Feature 3A). Absent when
-  // the ticker isn't in the ranking universe (foreign wrappers, ETFs,
-  // etc.) or ranking hasn't been computed. Renders a small pill.
-  composite?: number;
   // Framework composite scores (Feature 4C). bo = Blue Ocean, rb =
   // Rule Breaker. Each optional; only renders when workflow has
   // covered the ticker.
@@ -995,24 +953,6 @@ function Row({
           </span>
           <span className="flex items-center gap-2 truncate font-mono text-[11px] text-tx-mid">
             {r.ticker}
-            {composite != null ? (
-              <span
-                title="Composite score from /ideas (reaction + surprise + trend, tanh-scaled)"
-                className={clsx(
-                  "rounded-[4px] px-[5px] py-[1px] text-[10px] tabular-nums",
-                  composite >= 0.5
-                    ? "bg-[rgba(18,183,106,0.10)] text-success-fg"
-                    : composite >= 0
-                    ? "bg-[rgba(47,127,255,0.10)] text-brand-fg"
-                    : composite >= -0.5
-                    ? "bg-s3 text-tx-mid"
-                    : "bg-[rgba(180,35,24,0.10)] text-danger",
-                )}
-              >
-                {composite >= 0 ? "+" : ""}
-                {composite.toFixed(2)}
-              </span>
-            ) : null}
             {framework?.bo != null ? (
               <span
                 title="Blue Ocean framework composite (Kim/Mauborgne value-innovation, 0-100)"
@@ -1179,9 +1119,6 @@ function FilterBar({
   showAllListings,
   setShowAllListings,
   availableMetrics,
-  minComposite,
-  setMinComposite,
-  hasComposite,
 }: {
   filter: Filter;
   setFilter: (f: Filter) => void;
@@ -1196,9 +1133,6 @@ function FilterBar({
   showAllListings: boolean;
   setShowAllListings: (v: boolean) => void;
   availableMetrics: Array<{ key: string; label: string; unit: string | null; count: number; surpriseCount: number }>;
-  minComposite: number | null;
-  setMinComposite: (v: number | null) => void;
-  hasComposite: boolean;
 }) {
   return (
     <div className="flex flex-wrap items-center gap-2">
@@ -1236,34 +1170,6 @@ function FilterBar({
           </button>
         ))}
       </div>
-      {/* Composite threshold — inline chip strip. Only renders when
-          any ranking data exists (otherwise it would filter to zero
-          rows on every setting). */}
-      {hasComposite ? (
-        <div className="flex items-center gap-2 rounded-button border border-bd bg-s1 px-2 py-[3px] text-[12px]">
-          <span className="text-tx-mid">Composite</span>
-          {(
-            [
-              { v: null, label: "any" },
-              { v: 0, label: "≥ 0" },
-              { v: 0.5, label: "≥ +0.5" },
-            ] as const
-          ).map((opt, i) => (
-            <button
-              key={i}
-              onClick={() => setMinComposite(opt.v)}
-              className={clsx(
-                "rounded-[4px] px-[7px] py-[2px] font-mono text-[11px]",
-                minComposite === opt.v
-                  ? "bg-s3 text-tx"
-                  : "text-tx-mid hover:text-tx",
-              )}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
-      ) : null}
       <WatchlistFilterPopover
         sortKey={sortKey}
         setSortKey={setSortKey}

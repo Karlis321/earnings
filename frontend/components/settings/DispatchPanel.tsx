@@ -25,16 +25,10 @@ interface Workflow {
 
 const WORKFLOWS: Workflow[] = [
   {
-    file: "ideas.yml",
-    label: "Ideas — pitch AI",
-    description:
-      "Refreshes ranking + drafts 8-12 pitches to the top-composite tickers. ~10-15 min.",
-  },
-  {
     file: "week-ahead.yml",
     label: "Week-Ahead narrative",
     description:
-      "Refreshes ranking + macro + drafts the narrative + highlights. ~8-12 min. Requires fresh underlying data.",
+      "Refreshes macro + drafts the narrative + highlights. ~8-12 min. Requires fresh underlying data.",
   },
   {
     file: "framework-screen.yml",

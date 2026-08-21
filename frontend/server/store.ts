@@ -79,16 +79,12 @@ export interface Store {
   // hitting Yahoo per visitor.
   readMarketPulse?(): Promise<unknown | null>;
 
-  // Feature 3A signal ranking (data/ranking.json). Written by
-  // scripts/run-ranking.mjs. Consumed by /ideas (Feature 3B).
-  // Returns null when the ranking hasn't been computed yet.
-  readRanking?(): Promise<import("@/lib/types").Ranking | null>;
-
-  // Feature 3C AI pitch cards (data/ideas.json). Written by
-  // .claude/commands/ideas.md via scripts/apply-ideas.mjs. Overwritten
-  // 3×/week (Mon/Wed/Fri) by .github/workflows/ideas.yml. Consumed
-  // by /ideas as a top-strip above the ranking table.
-  readIdeas?(): Promise<import("@/lib/types").Ideas | null>;
+  // Sector-level rollup for /themes (data/sector-signals.json).
+  // Written by scripts/aggregate-by-sector.mjs — mechanical, no LLM.
+  // Consumed by /themes as a grid of sector cards.
+  readSectorSignals?(): Promise<
+    import("@/lib/types").SectorSignals | null
+  >;
 
   // Feature 2C macro extremity signals (data/macro-signals.json).
   // Written by scripts/refresh-macro.mjs (phase in refresh-universe).
@@ -130,14 +126,6 @@ export interface Store {
   // Refreshed by scripts/refresh-commodities.mjs. Consumed by the
   // commodity strip on /week-ahead.
   readCommodities?(): Promise<import("@/lib/types").Commodities | null>;
-
-  // Feature 3.1 ranking history (data/ranking-history.jsonl).
-  // Appended daily by scripts/append-ranking-history.mjs. Filtered
-  // to `ticker` when provided (cheap: one grep pass over the
-  // file). Consumed by /s/[ticker] composite sparkline.
-  readRankingHistory?(
-    ticker?: string,
-  ): Promise<import("@/lib/types").RankingHistoryRow[]>;
 
   readDocument(id: string): Promise<Document | null>;
   writeDocument(doc: Document): Promise<void>;

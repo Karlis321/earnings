@@ -141,90 +141,41 @@ export interface MacroSignals {
   errors?: string[];
 }
 
-// Feature 3C — AI pitch cards over the top-N ranked tickers.
-// Written by .claude/commands/ideas.md via scripts/apply-ideas.mjs.
-// Consumed by /ideas (3B) as a top-strip above the ranking table.
-export interface IdeaSourceRef {
-  kind: "summary" | "shard" | "ranking" | "filing" | "release";
-  ref: string;
-}
-export interface IdeaCatalyst {
-  label: string;
-  date?: string;
-}
-export interface IdeaPitch {
+// Sector-level rollup for /themes. Aggregated by
+// scripts/aggregate-by-sector.mjs from events-index + shards. One
+// entry per sectorTag with ≥3 tickers; sectors sorted by
+// |medianReaction3d| descending so the strongest theme is first.
+export interface SectorTopMover {
   ticker: string;
-  rank: number;
-  compositeScore: number;
-  thesis: string;
-  rationale: string;
-  risks: string[];
-  catalyst: IdeaCatalyst;
-  sources: IdeaSourceRef[];
-}
-export interface Ideas {
-  schema: "ideas/v1";
-  generatedAt: string;
-  universe: string;
-  disclaimer: string;
-  pitches: IdeaPitch[];
-}
-
-// Feature 3.1 — one row per ticker per day appended to
-// data/ranking-history.jsonl. Consumed by the composite sparkline
-// on /s/[ticker] (Phase 3.2).
-export interface RankingHistoryRow {
-  date: string; // YYYY-MM-DD
-  ticker: string;
-  composite: number;
-  rank: number;
-  reaction: number | null;
-  surprise: number | null;
-  trend: number | null;
-}
-
-// Feature 3A — ranking output. Written by scripts/run-ranking.mjs
-// to data/ranking.json. Consumed by /ideas (3B).
-export interface RankingComponent {
-  score: number; // tanh-scaled to [-1, 1]
-  raw: number; // original percentage
-  horizon?: "d3"; // reaction component only
-  basis?: "revenue_usd_m" | "eps_usd"; // trend component only
-}
-export interface RankingRow {
-  ticker: string;
-  companyId: string | null;
   displayName: string;
-  capTier: CapTier;
-  marketCapUsd: number | null;
-  compositeScore: number;
-  componentsPresent: number;
-  components: {
-    reaction: RankingComponent | null;
-    surprise: RankingComponent | null;
-    trend: RankingComponent | null;
-  };
-  rank: number;
-  lastPeriod: string | null;
+  reaction3d: number | null;
+  lastSurprisePct: number | null;
   lastEventDate: string | null;
-  nextScheduled: string | null;
+  lastPeriod: string | null;
 }
-export interface Ranking {
-  schema: "ranking/v1";
+export interface SectorHeadline {
+  ticker: string;
+  headline: string;
+  time: string;
+  source: string;
+  url: string | null;
+}
+export interface Sector {
+  sector: string;
+  tickerCount: number;
+  medianReaction3d: number | null;
+  medianSurprise: number | null;
+  newsCountAll: number;
+  topMovers: SectorTopMover[];
+  recentHeadlines: SectorHeadline[];
+  tickers: string[];
+}
+export interface SectorSignals {
+  schema: "sector-signals/v1";
   generatedAt: string;
-  universe: string;
-  weights: { reaction: number; surprise: number; trend: number };
-  scales: { reaction: number; surprise: number; trend: number };
-  stats: {
-    total: number;
-    scored: number;
-    dropped: number;
-    hasReaction: number;
-    hasSurprise: number;
-    hasTrend: number;
-    hasAllThree: number;
-  };
-  rows: RankingRow[];
+  newsWindowDays: number;
+  minTickersPerSector: number;
+  sectors: Sector[];
 }
 
 export type SecurityType = "operating" | "developer" | "etf";

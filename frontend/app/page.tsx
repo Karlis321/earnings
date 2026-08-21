@@ -21,29 +21,21 @@ const EMPTY_INDEX: EventsIndex = {
 };
 
 export default async function OverviewPage() {
-  const [entities, index, state, ranking, blueOcean, ruleBreaker] =
-    await Promise.all([
-      store.readRegistry(),
-      store.readEventsIndex?.() ?? Promise.resolve(EMPTY_INDEX),
-      store.readSharedState(),
-      store.readRanking ? store.readRanking() : Promise.resolve(null),
-      store.readScreen
-        ? store.readScreen("blue-ocean")
-        : Promise.resolve(null),
-      store.readScreen
-        ? store.readScreen("rule-breaker")
-        : Promise.resolve(null),
-    ]);
+  const [entities, index, state, blueOcean, ruleBreaker] = await Promise.all([
+    store.readRegistry(),
+    store.readEventsIndex?.() ?? Promise.resolve(EMPTY_INDEX),
+    store.readSharedState(),
+    store.readScreen
+      ? store.readScreen("blue-ocean")
+      : Promise.resolve(null),
+    store.readScreen
+      ? store.readScreen("rule-breaker")
+      : Promise.resolve(null),
+  ]);
   const focusTickers = state.preferences?.focusTickers ?? [];
-  // Slim map of ticker → composite score for the watchlist chip.
-  // Only 2 fields per entry keeps the payload cheap even at 1,006 rows.
-  const compositeByTicker: Record<string, number> = {};
-  for (const r of ranking?.rows ?? []) {
-    compositeByTicker[r.ticker] = r.compositeScore;
-  }
-  // Framework scores (Feature 4C) — same slim projection. Empty
-  // when the framework-screen workflow hasn't landed for a ticker
-  // yet (chip auto-hides on absence).
+  // Framework scores (Feature 4C) — slim projection. Empty when the
+  // framework-screen workflow hasn't landed for a ticker yet (chip
+  // auto-hides on absence).
   const frameworkByTicker: Record<
     string,
     { bo?: number; rb?: number }
@@ -92,7 +84,6 @@ export default async function OverviewPage() {
       <WatchlistTable
         rows={rows}
         focusTickers={focusTickers}
-        compositeByTicker={compositeByTicker}
         frameworkByTicker={frameworkByTicker}
       />
     </div>

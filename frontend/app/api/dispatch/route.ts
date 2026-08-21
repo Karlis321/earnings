@@ -16,7 +16,6 @@ export const dynamic = "force-dynamic";
 // updating this list — deliberate friction to keep the surface
 // narrow.
 const ALLOWED_WORKFLOWS = new Set<string>([
-  "ideas.yml",
   "week-ahead.yml",
   "framework-screen.yml",
 ]);

@@ -13,21 +13,29 @@ import { SettingsDiagnostics } from "./SettingsDiagnostics";
 export const dynamic = "force-dynamic";
 
 export default async function SettingsPage() {
-  const [state, entities, ranking, ideas, macro, narrative, blueOcean, ruleBreaker] =
-    await Promise.all([
-      store.readSharedState(),
-      store.readRegistry(),
-      store.readRanking ? store.readRanking() : Promise.resolve(null),
-      store.readIdeas ? store.readIdeas() : Promise.resolve(null),
-      store.readMacroSignals ? store.readMacroSignals() : Promise.resolve(null),
-      store.readWeekAheadNarrative
-        ? store.readWeekAheadNarrative()
-        : Promise.resolve(null),
-      store.readScreen ? store.readScreen("blue-ocean") : Promise.resolve(null),
-      store.readScreen
-        ? store.readScreen("rule-breaker")
-        : Promise.resolve(null),
-    ]);
+  const [
+    state,
+    entities,
+    sectorSignals,
+    macro,
+    narrative,
+    blueOcean,
+    ruleBreaker,
+  ] = await Promise.all([
+    store.readSharedState(),
+    store.readRegistry(),
+    store.readSectorSignals
+      ? store.readSectorSignals()
+      : Promise.resolve(null),
+    store.readMacroSignals ? store.readMacroSignals() : Promise.resolve(null),
+    store.readWeekAheadNarrative
+      ? store.readWeekAheadNarrative()
+      : Promise.resolve(null),
+    store.readScreen ? store.readScreen("blue-ocean") : Promise.resolve(null),
+    store.readScreen
+      ? store.readScreen("rule-breaker")
+      : Promise.resolve(null),
+  ]);
 
   return (
     <div className="mx-auto max-w-[1400px] px-10 py-8">
@@ -38,8 +46,7 @@ export default async function SettingsPage() {
       <div className="flex flex-col gap-4">
         <PreferencesForm initialState={state} initialEntities={entities} />
         <DataSnapshotsPanel
-          ranking={ranking}
-          ideas={ideas}
+          sectorSignals={sectorSignals}
           macro={macro}
           narrative={narrative}
           blueOcean={blueOcean}
