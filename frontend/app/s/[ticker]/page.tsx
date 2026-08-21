@@ -14,6 +14,7 @@ import { SummaryPanel } from "@/components/security/SummaryPanel";
 import { SummarizeButton } from "@/components/security/SummarizeButton";
 import { ExtendedMetricsPanel } from "@/components/security/ExtendedMetricsPanel";
 import { TickerSignals } from "@/components/security/TickerSignals";
+import { SectorChips } from "@/components/security/SectorChips";
 import { FocusToggle } from "@/components/security/FocusToggle";
 import { ReturnChip } from "@/components/shell/ReturnChip";
 import { GuidanceTimeline, Panel } from "@/components/primitives";
@@ -39,12 +40,15 @@ export const dynamic = "force-dynamic";
 export default async function SecurityDetailPage({ params }: Props) {
   const { ticker: raw } = await params;
   const ticker = decodeURIComponent(raw);
-  const [entities, blueOcean, ruleBreaker, qarv, sharedState] =
+  const [entities, blueOcean, ruleBreaker, qarv, sectorSignals, sharedState] =
     await Promise.all([
       store.readRegistry(),
       store.readScreen ? store.readScreen("blue-ocean") : Promise.resolve(null),
       store.readScreen ? store.readScreen("rule-breaker") : Promise.resolve(null),
       store.readScreen ? store.readScreen("qarv") : Promise.resolve(null),
+      store.readSectorSignals
+        ? store.readSectorSignals()
+        : Promise.resolve(null),
       store.readSharedState(),
     ]);
   const initialInFocus =
@@ -166,6 +170,12 @@ export default async function SecurityDetailPage({ params }: Props) {
           initialState={sharedState}
         />
       </div>
+
+      {/* Sector-theme chips → deep-link into /themes with the sector
+          card scrolled into view. Only renders tags currently present
+          in the rollup — otherwise the click would land on a
+          missing anchor. */}
+      <SectorChips entity={entity} sectorSignals={sectorSignals} />
 
       {/* Cross-referenced framework signals — renders only sub-cards
           that have data for THIS ticker. Zero-signal tickers → no strip. */}

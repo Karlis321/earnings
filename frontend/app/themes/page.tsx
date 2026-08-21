@@ -68,7 +68,10 @@ function HeadlineRow({ h }: { h: SectorHeadline }) {
 
 function SectorCard({ s }: { s: Sector }) {
   return (
-    <section className="rounded-[8px] border border-bd bg-panel">
+    <section
+      id={`sector-${s.sector}`}
+      className="scroll-mt-24 rounded-[8px] border border-bd bg-panel"
+    >
       <header className="border-b border-bd px-4 py-3">
         <div className="flex items-baseline gap-3">
           <h2 className="text-[16px] font-semibold capitalize tracking-[-0.01em] text-tx">
