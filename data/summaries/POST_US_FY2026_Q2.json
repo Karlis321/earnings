@@ -1,0 +1,128 @@
+{
+  "ticker": "POST US",
+  "period": "FY2026 Q2",
+  "reported_at": "2026-08-06",
+  "generated_at": "2026-08-21T00:00:00.000Z",
+  "headline": "Profit falls on volume losses; EBITDA outlook narrowed",
+  "depth": "filing",
+  "kpis": [
+    {
+      "label": "Net sales",
+      "value": "$1,948.0M",
+      "delta": "-1.8%",
+      "delta_basis": "y/y",
+      "direction": "down"
+    },
+    {
+      "label": "Gross profit",
+      "value": "$566.3M",
+      "delta": "-5.0%",
+      "delta_basis": "y/y",
+      "direction": "down"
+    },
+    {
+      "label": "Adjusted EBITDA",
+      "value": "$377.3M",
+      "delta": "-5.0%",
+      "delta_basis": "y/y",
+      "direction": "down"
+    },
+    {
+      "label": "Operating profit (GAAP)",
+      "value": "$189.3M",
+      "delta": "-19.3%",
+      "delta_basis": "y/y",
+      "direction": "down"
+    },
+    {
+      "label": "Net income",
+      "value": "$63.4M",
+      "delta": "-41.7%",
+      "delta_basis": "y/y",
+      "direction": "down"
+    },
+    {
+      "label": "Diluted EPS (GAAP)",
+      "value": "$1.29",
+      "delta": "-27.9%",
+      "delta_basis": "y/y",
+      "direction": "down"
+    },
+    {
+      "label": "Adjusted Diluted EPS",
+      "value": "$1.78",
+      "delta": "-12.3%",
+      "delta_basis": "y/y",
+      "direction": "down"
+    },
+    {
+      "label": "Free Cash Flow (9M FY2026)",
+      "value": "$401.5M",
+      "delta": "+19.3%",
+      "delta_basis": "y/y",
+      "direction": "up"
+    },
+    {
+      "label": "Long-term debt",
+      "value": "$7,631.3M",
+      "delta": "+3.9%",
+      "delta_basis": "y/y",
+      "direction": "up"
+    },
+    {
+      "label": "Total shareholders' equity",
+      "value": "$3,078.0M",
+      "delta": "-23.0%",
+      "delta_basis": "y/y",
+      "direction": "down"
+    }
+  ],
+  "summary_short": "Post's fiscal third-quarter net sales fell 1.8% y/y to $1,948.0M and net income dropped 41.7% to $63.4M, with GAAP diluted EPS down 27.9% to $1.29 as pet food and value cereal volume declines and the lapping of avian-influenza pricing weighed on results.",
+  "summary_long": "Net sales fell 1.8% y/y as Post Consumer Brands pet food and value cereal volumes declined and Foodservice/Refrigerated Retail lapped prior-year avian-influenza-driven pricing, only partly offset by the 8th Avenue acquisition. Gross margin compressed to 29.1% of sales from 30.0%; SG&A rose to 16.7% of sales from 15.7%. Operating profit fell 19.3% and net income fell 41.7% on lower profit plus higher interest expense (higher debt balances and rates). Nine-month free cash flow rose 19.3% to $401.5M on lower capex. Post repurchased $198.9M of stock in the quarter ($908.8M nine-month), shrinking shareholders' equity 23.0% y/y. Management narrowed FY2026 Adjusted EBITDA guidance to $1,560-$1,570M (from $1,550-$1,580M) and reiterated FY2026 capex of $370-$390M.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/1530950/000153095026000076/ex99-1q32026er.htm",
+  "confidence_notes": "REGENERATION: this summary was produced in force-regenerate mode per explicit instruction; the resolver reported summaryExists=false so no prior file was actually overwritten, but the run executed under the force-regen directive regardless. FISCAL-PERIOD LABEL MISMATCH (flagging, not fixing): the shard/event tags this report as \"FY2026 Q2\", but the source press release explicitly and repeatedly identifies it as \"Post Holdings Reports Results for the Third Quarter of Fiscal Year 2026\" for the quarter ended June 30, 2026 (Post's fiscal year ends September 30, so a June-30 quarter-end is fiscal Q3, not fiscal Q2 on a calendar-quarter mapping). The eventDate (2026-08-06) and the underlying SEC-verbatim financial figures on the shard correctly correspond to this quarter; only the period LABEL is wrong. This is the same class of fiscal-offset labeling bug already documented in CLAUDE.md for other issuers (and recently also found on PFGC) — worth adding Post Holdings to that known-affected list and correcting the shard's period field in a follow-up pass; out of scope for this /earnings run, which must write to the resolver-assigned path/period to stay consistent with the pipeline. EPS BASIS NOTE: the shard's own \"eps_usd\" KPI entry is GAAP basic EPS ($1.41 actual vs $1.71 q/q, $1.95 y/y priors, all same-basis SEC figures) — this summary instead leads with GAAP diluted EPS ($1.29 vs $1.79 y/y) and Adjusted Diluted EPS ($1.78 vs $2.03 y/y) since both are explicitly stated side-by-side in the release; no cross-basis pairing was used. \"Free Cash Flow (9M FY2026)\" and its y/y comparison are nine-month year-to-date figures (the release's cash-flow statement is presented YTD only, not quarterly) — flagged so it isn't mistaken for a quarterly figure. The FY2026 Adjusted EBITDA guidance range narrowed to the same $1,565M midpoint as the prior $1,550-$1,580M range (tightened, not raised or lowered), recorded here with move=\"held\".",
+  "drivers": [
+    {
+      "metric": "overall",
+      "direction": "down",
+      "explanation": "Release attributes the quarter to volume declines in Post Consumer Brands (pet food, value cereal) and the lapping of prior-year avian-influenza-driven pricing in Foodservice and Refrigerated Retail.",
+      "basis": "company-disclosed"
+    },
+    {
+      "metric": "Net sales",
+      "direction": "down",
+      "explanation": "Excluding acquisitions/divestitures, sales declined across Post Consumer Brands, Foodservice, and Refrigerated Retail; Weetabix was flat. 8th Avenue contributed $141.8M of inorganic sales.",
+      "basis": "company-disclosed"
+    },
+    {
+      "metric": "Gross profit",
+      "direction": "down",
+      "explanation": "Margin fell to 29.1% of sales from 30.0% alongside the segment-level volume and pricing declines noted for net sales; no separate cost driver disclosed.",
+      "basis": "derived-arithmetic"
+    },
+    {
+      "metric": "Operating profit (GAAP)",
+      "direction": "down",
+      "explanation": "SG&A rose to 16.7% of sales from 15.7% (+$14.0M) while gross profit fell $29.9M, compounding the operating-profit decline; specific SG&A driver not itemized.",
+      "basis": "derived-arithmetic"
+    },
+    {
+      "metric": "Net income",
+      "direction": "down",
+      "explanation": "Lower operating profit combined with higher interest expense, net ($108.2M vs $88.5M), driven by higher average debt balances, a higher weighted-average rate, and lower interest income.",
+      "basis": "company-disclosed"
+    },
+    {
+      "metric": "Free Cash Flow (9M FY2026)",
+      "direction": "up",
+      "explanation": "Nine-month capex fell to $289.8M from $360.5M even as operating cash flow was roughly flat ($691.3M vs $697.0M), lifting free cash flow.",
+      "basis": "company-disclosed"
+    },
+    {
+      "metric": "Total shareholders' equity",
+      "direction": "down",
+      "explanation": "Post repurchased $908.8M of stock over nine months (including $198.9M in the quarter) against $242.1M of nine-month net income, a net equity drawdown.",
+      "basis": "derived-arithmetic"
+    }
+  ]
+}
