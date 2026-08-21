@@ -1,0 +1,39 @@
+{
+  "ticker": "MPT US",
+  "period": "FY2026 Q2",
+  "reported_at": "2026-08-10",
+  "generated_at": "2026-08-21T00:00:00.000Z",
+  "headline": "Loss narrows sharply as refinancing extends debt runway",
+  "depth": "filing",
+  "kpis": [
+    { "label": "Revenue", "value": "$259.3M", "delta": "+7.9%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Net income (loss)", "value": "-$2.6M", "delta": "+$95.8M", "delta_basis": "y/y", "direction": "up" },
+    { "label": "EPS (diluted)", "value": "-$0.01", "delta": "+$0.15", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Normalized FFO", "value": "$92.2M", "delta": "+13.4%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Normalized FFO per share", "value": "$0.15", "delta": "+$0.01", "delta_basis": "y/y", "direction": "up" },
+    { "label": "FFO (Nareit)", "value": "$78.1M", "delta": "+$118.2M", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Interest expense", "value": "$135.3M", "delta": "+4.3%", "delta_basis": "y/y", "direction": "up" },
+    { "label": "Cash and cash equivalents", "value": "$396.6M", "delta": "-6.7%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Debt, net", "value": "$9,705.0M", "delta": "+0.4%", "delta_basis": "q/q", "direction": "flat" },
+    { "label": "Shareholders' equity", "value": "$4,498.8M", "delta": "-1.0%", "delta_basis": "q/q", "direction": "down" },
+    { "label": "Dividend per share", "value": "$0.09", "delta": "+12.5%", "delta_basis": "y/y", "direction": "up" }
+  ],
+  "summary_short": "MPT's Q2 2026 net loss narrowed to $2.6M (-$0.01/share) from $98.4M (-$0.16/share) a year ago as revenue rose 7.9% to $259.3M and Normalized FFO climbed 13.4% to $92.2M ($0.15/share).",
+  "summary_long": "Net loss narrowed to $2.6M ($0.01/share) from $98.4M a year ago, mainly because a $124.4M prior-year non-cash fair-value charge shrank to $1.9M this quarter. Revenue rose 7.9% to $259.3M as transition tenants continued ramping rent payments. Normalized FFO grew 13.4% to $92.2M ($0.15/share); Nareit FFO swung to $78.1M from a $40.2M loss. Interest expense rose 4.3% to $135.3M. Cash fell 6.7% q/q to $396.6M and equity edged down 1.0% q/q, while debt was roughly flat at $9,705.0M. Subsequent to quarter-end, MPT closed a $2.4B note refinancing extending maturities and expects ~$172M from a pending asset sale in Q3. Dividend raised to $0.09/share.",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/1287865/000119312526341434/d115341dex991.htm",
+  "confidence_notes": "FORCE-REGENERATED per operator instruction: this is a fresh compose run under force-regenerate mode, produced by skipping the Step-0 already-exists guard as directed; no prior MPT_US_FY2026_Q2.json existed on disk at run time, so this run created rather than literally overwrote the file — the force-regenerate directive was honored regardless. The shard's event-level sourceLink pointed at an unrelated debt-refinancing 8-K (items 1.01/2.03, accession 0001193125-26-342713, closing $2.4B of secured notes) filed the same day as the actual earnings 8-K; this summary instead sources from the correct results-of-operations 8-K (items 2.02/7.01/9.01, accession 0001193125-26-341434) and its EX-99.1 press release. The shard's stored eps_usd actual (0.0129, Yahoo earningsChart provenance) conflicts with the SEC filing's GAAP diluted EPS of -$0.01; this summary uses the SEC-verbatim filing figure per the SEC-verbatim rule and flags the shard value as likely stale pending the next secVerbatim cron pass. Cash, debt, and equity q/q deltas cross-reference the prior MPT_US_FY2026_Q1.json summary's reported Mar 31, 2026 balances, because this exhibit's balance sheet shows only Jun 30, 2026 vs Dec 31, 2025 columns. This press-release exhibit contains no cash-flow statement, so capex, free cash flow, and buyback extended metrics could not be extracted this quarter (only FFO/share and dividend/share were available with confidence ≥0.7). The $172M pending asset-sale proceeds and $35M remaining Infracore IPO proceeds disclosed as expected in Q3 2026 were captured in the event shard's guidance array rather than as KPIs, since neither was received/closed as of quarter-end.",
+  "drivers": [
+    { "metric": "overall", "direction": "up", "explanation": "CEO cited strong performance across the global operator portfolio and transition tenants ramping rent payments as expected, alongside continued balance-sheet actions (refinancing, asset sales).", "basis": "company-disclosed" },
+    { "metric": "Net income (loss)", "direction": "up", "explanation": "Loss narrowed mainly because 'Other (including fair value adjustments on securities)' fell to a $1.9M expense from $124.4M a year ago, per the income statement.", "basis": "derived-arithmetic" },
+    { "metric": "Revenue", "direction": "up", "explanation": "Rent billed rose to $203.4M from $177.9M y/y; the release attributes portfolio strength to transition tenants ramping rent payments as expected, without a dollar-by-dollar breakdown.", "basis": "company-disclosed" },
+    { "metric": "EPS (diluted)", "direction": "up", "explanation": "EPS improved in step with the narrower net loss; weighted average diluted shares were little changed at 597.96M.", "basis": "derived-arithmetic" },
+    { "metric": "Normalized FFO", "direction": "up", "explanation": "NFFO growth mirrors the net loss narrowing and revenue growth flowing through the Nareit-to-normalized reconciliation; no single driver is called out separately in the release.", "basis": "derived-arithmetic" },
+    { "metric": "Normalized FFO per share", "direction": "up", "explanation": "Per-share NFFO rose in step with aggregate NFFO growth; diluted share count was little changed y/y.", "basis": "derived-arithmetic" },
+    { "metric": "FFO (Nareit)", "direction": "up", "explanation": "FFO swung positive as the net loss narrowed and the depreciation/amortization add-back rose slightly to $86.0M from $81.3M, per the reconciliation table.", "basis": "derived-arithmetic" },
+    { "metric": "Interest expense", "direction": "up", "explanation": "Not explained in the release; the increase is consistent with a larger average debt balance carried ahead of the August 10 refinancing.", "basis": "derived-arithmetic" },
+    { "metric": "Cash and cash equivalents", "direction": "down", "explanation": "Not broken out as a single driver; likely reflects the dividend payment, the quarter's $50M HSA working-capital advance, and other investing/financing outflows.", "basis": "derived-arithmetic" },
+    { "metric": "Debt, net", "direction": "flat", "explanation": "Balance was little-changed during the quarter itself; the $2.4B refinancing that reshapes maturities closed August 10, after quarter-end.", "basis": "company-disclosed" },
+    { "metric": "Shareholders' equity", "direction": "down", "explanation": "Accumulated other comprehensive income fell roughly $33M on currency translation, and dividends declared exceeded net income, both pulling equity down q/q.", "basis": "derived-arithmetic" },
+    { "metric": "Dividend per share", "direction": "up", "explanation": "Board declared $0.09/share for the quarter, up from $0.08 a year ago and unchanged from Q1 2026.", "basis": "company-disclosed" }
+  ]
+}
