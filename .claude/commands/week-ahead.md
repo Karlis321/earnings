@@ -1,6 +1,6 @@
 ---
 name: week-ahead
-description: Draft the weekly narrative for /week-ahead. Reads events-index + ranking + macro-signals + market-pulse. Output → data/week-ahead-narrative.json.
+description: Draft the weekly narrative for /week-ahead. Reads events-index + sector-signals + macro-signals + market-pulse. Output → data/week-ahead-narrative.json.
 ---
 
 # /week-ahead — weekly earnings + macro narrative
@@ -15,8 +15,8 @@ Runs Sunday 22:00 UTC. Writes a single JSON file
 (`data/week-ahead-narrative.json`) — one overwritten record per
 week. Rendered as a panel above the macro strip on `/week-ahead`.
 
-Universe scope: the same SP500 ∪ R1000 ∪ isCore operating set
-used by the Ideas leaderboard.
+Universe scope: displayable operating entities in
+SP500 ∪ R1000 ∪ isCore (mirrors the `/week-ahead` view).
 
 **Disclaimer copy** (mandatory, verbatim in the output file):
 
@@ -28,7 +28,8 @@ used by the Ideas leaderboard.
 Load the four inputs. All must exist:
 
 1. `data/events-index.json` — every ticker's `nextScheduled`.
-2. `data/ranking.json` — composite scores + rank.
+2. `data/sector-signals.json` — sector-level rollup (median reaction,
+   top movers, recent news per sector).
 3. `data/macro-signals.json` — 10 market-priced z-scores.
 4. `data/market-pulse.json` — 4 indices × 3 ranges of bars.
 
@@ -45,8 +46,8 @@ today's date in UTC). The narrative covers Mon-Fri.
 
 Filter `events-index.json` entries: `nextScheduled` between weekOf
 and weekOf+4 days. Restrict to operating entities in
-SP500 ∪ R1000 ∪ isCore (mirror the `/week-ahead` view universe
-via entity registry lookup). This is `eventsCount` for the payload.
+SP500 ∪ R1000 ∪ isCore via entity registry lookup. This is
+`eventsCount` for the payload.
 
 ## Step 2 — Draft 3 sections
 
@@ -63,30 +64,37 @@ Include one line from `market-pulse.json` on where the S&P (or
 Nasdaq) sits over the last 1mo range.
 
 **Section 2 — "What to watch"** (specific events, 3-5 sentences).
-Grab the top 3-5 upcoming events by `ranking.compositeScore` (join
-events-index nextScheduled tickers against ranking rows). Name the
-ticker, the day of the week, and the composite score. Cite ONE
-component number per ticker (reaction, surprise, or trend) that
-justifies the pick. Prefer tickers whose ticker + day gives a
-diverse mix (not all Tuesday).
+Cross-index the eventsCount pool from Step 1 against
+`sector-signals.json`:
+- For each upcoming event's ticker, look up which sectors it
+  belongs to (any sector whose `tickers[]` contains this ticker).
+- Prefer tickers reporting in sectors with the strongest recent
+  |medianReaction3d| (top-3 sectors by |median|).
+- Pick 3-5 events. Name the ticker, day of week, and which sector
+  theme it plugs into (e.g., "Wed: HBM US reports into the copper
+  cluster, median +6.6% off Q2 prints").
+- Diverse day/sector mix over homogeneity.
 
-**Section 3 — "Signals to trust"** (which components carry weight
-this week, 1-3 sentences). From `ranking.stats`: which components
-have the widest coverage this week? Which is most concentrated on
-the tickers reporting? E.g.
-"Reaction signal is thick this week (44 of 45 Wed reporters have
-a d3 reaction ≥ 90 days matured); surprise is sparse (only 8
-tickers carry a clean same-basis surprisePct)."
+**Section 3 — "Signals to trust"** (which sector themes carry
+weight this week, 1-3 sentences). From `sector-signals.json`
+top 3 by |medianReaction3d|:
+- Name each sector + its median reaction + ticker count.
+- Note whether the news window count is unusually thick (>1000
+  items across the sector's tickers is thick).
+- Example: "Copper (+6.6% median, 6 tickers, 247 news items) leads
+  the reaction table; oil-gas the other way at −2.2% on 33 names."
 
 ## Step 3 — Draft 3-8 highlights
 
-Cross-index `ranking.json` top rows with `events-index`
-`nextScheduled`. Each highlight:
+Cross-index the eventsCount pool with `sector-signals` sector
+membership. Each highlight:
 
-- `ticker`: from ranking + events-index
-- `note`: 20-240 chars. ONE sentence. Cite composite or a
-  component number. Optionally note macro alignment (e.g. "reports
-  into gold z=+1.4 — extra weight on cost-side commentary").
+- `ticker`: from events-index (must have `nextScheduled` in the
+  weekOf..weekOf+4 window)
+- `note`: 20-240 chars. ONE sentence. Cite the ticker's sector
+  membership + that sector's median reaction. Optionally reference
+  macro-signals alignment (e.g., "reports into gold z=+1.4 — extra
+  weight on cost-side commentary").
 - `eventDate`: nextScheduled from events-index
 
 **Cross-check:** the apply script rejects any highlight whose
@@ -133,7 +141,7 @@ force-push — the workflow's allowlist blocks these regardless.
    trade calls.** This is context, not signal.
 3. **Verbatim disclaimer** — the apply script rejects modifications.
 4. **3-8 highlights.** Fewer → skip cleanly ("RESULT: skipped —
-   fewer than 3 rankable events this week").
+   fewer than 3 highlights this week").
 5. **Structured, not prose-dumped.** Sections have real headings.
    The UI renders them as separate blocks.
 
@@ -144,7 +152,7 @@ produce ≥ 3 highlights, exit with
 `RESULT: skipped — <one-line reason>`.
 
 The `/week-ahead` view degrades gracefully: absent narrative =
-macro strip + day grid only (same as pre-2F behavior).
+macro strip + day grid only.
 
 ## Result line
 

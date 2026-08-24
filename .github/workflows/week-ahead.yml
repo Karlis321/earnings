@@ -56,14 +56,14 @@ jobs:
           echo "sha=$SHA" >> "$GITHUB_OUTPUT"
           echo "baseline SHA recorded: $SHA"
 
-      # Refresh the ranking + macro snapshots before Claude runs so
-      # the narrative pulls from same-day data. Both are cheap and
-      # non-blocking; failures don't fail the whole workflow (the
-      # /week-ahead command's Step 0 will emit "skipped — stale"
-      # if either is missing).
-      - name: Refresh ranking snapshot
+      # Refresh the sector-signals + macro snapshots before Claude
+      # runs so the narrative pulls from same-day data. Both are
+      # cheap and non-blocking; failures don't fail the whole
+      # workflow (the /week-ahead command's Step 0 will emit
+      # "skipped — stale" if either is missing).
+      - name: Refresh sector-signals snapshot
         continue-on-error: true
-        run: node scripts/run-ranking.mjs
+        run: node scripts/aggregate-by-sector.mjs
 
       - name: Refresh macro snapshot
         continue-on-error: true
