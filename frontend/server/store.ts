@@ -94,6 +94,15 @@ export interface Store {
     import("@/lib/types").SectorIdeas | null
   >;
 
+  // Sector history jsonl — one row per sector per day. Appended
+  // daily by scripts/append-sector-history.mjs. Consumed by
+  // /themes for the week-over-week delta chip on each sector card.
+  // Filtered to `sector` when provided (cheap: one pass over the
+  // file). Returns [] on missing file / read error.
+  readSectorHistory?(
+    sector?: string,
+  ): Promise<import("@/lib/types").SectorHistoryRow[]>;
+
   // Feature 2C macro extremity signals (data/macro-signals.json).
   // Written by scripts/refresh-macro.mjs (phase in refresh-universe).
   // Consumed by /week-ahead as an extremity strip above the day grid.

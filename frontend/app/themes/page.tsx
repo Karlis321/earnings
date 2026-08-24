@@ -1,6 +1,10 @@
 import { store } from "@/server/store";
 import { EmptyState } from "@/components/primitives";
 import { ThemesView } from "@/components/themes/ThemesView";
+import type {
+  SectorHistoryRow,
+  SectorSignals,
+} from "@/lib/types";
 
 // /themes — server shell that fetches sector-signals + sector-ideas
 // and hands both to the client ThemesView. All rendering + the
@@ -8,14 +12,64 @@ import { ThemesView } from "@/components/themes/ThemesView";
 
 export const dynamic = "force-dynamic";
 
+// For each sector in today's snapshot, find the reference reaction
+// value from ~7 days ago (any history row 5-14 days old works; we
+// take the CLOSEST to 7 days back). Returns a map sector → prior
+// reaction number. Sectors without a prior row are absent from the
+// map and the UI silently skips the delta chip for them.
+function buildPriorReactionMap(
+  data: SectorSignals,
+  history: SectorHistoryRow[],
+): Record<string, number> {
+  const todayIso = (data.generatedAt ?? "").slice(0, 10);
+  if (!todayIso) return {};
+  const todayMs = new Date(todayIso + "T00:00:00Z").getTime();
+  const MIN_MS = 5 * 86_400_000;
+  const MAX_MS = 14 * 86_400_000;
+
+  // Group history rows per sector
+  const bySector = new Map<string, SectorHistoryRow[]>();
+  for (const r of history) {
+    if (r.medianReaction3d == null) continue;
+    if (!bySector.has(r.sector)) bySector.set(r.sector, []);
+    bySector.get(r.sector)!.push(r);
+  }
+
+  const out: Record<string, number> = {};
+  for (const s of data.sectors) {
+    const rows = bySector.get(s.sector);
+    if (!rows) continue;
+    // Pick the row closest to 7 days back within [5, 14].
+    let best: SectorHistoryRow | null = null;
+    let bestDelta = Infinity;
+    for (const r of rows) {
+      const rowMs = new Date(r.date + "T00:00:00Z").getTime();
+      const ageMs = todayMs - rowMs;
+      if (ageMs < MIN_MS || ageMs > MAX_MS) continue;
+      const d = Math.abs(ageMs - 7 * 86_400_000);
+      if (d < bestDelta) {
+        bestDelta = d;
+        best = r;
+      }
+    }
+    if (best && best.medianReaction3d != null) {
+      out[s.sector] = best.medianReaction3d;
+    }
+  }
+  return out;
+}
+
 export default async function ThemesPage() {
-  const [data, ideas] = await Promise.all([
+  const [data, ideas, history] = await Promise.all([
     store.readSectorSignals
       ? store.readSectorSignals()
       : Promise.resolve(null),
     store.readSectorIdeas
       ? store.readSectorIdeas()
       : Promise.resolve(null),
+    store.readSectorHistory
+      ? store.readSectorHistory()
+      : Promise.resolve([]),
   ]);
 
   if (!data) {
@@ -50,7 +104,11 @@ export default async function ThemesPage() {
         </p>
       </div>
 
-      <ThemesView data={data} ideas={ideas} />
+      <ThemesView
+        data={data}
+        ideas={ideas}
+        priorReactionBySector={buildPriorReactionMap(data, history)}
+      />
     </div>
   );
 }

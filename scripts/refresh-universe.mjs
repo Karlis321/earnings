@@ -144,6 +144,11 @@ const PHASES = [
   // recent headlines. Mechanical, no LLM. Writes
   // data/sector-signals.json; consumed by /themes.
   { key: "sector-signals", label: "Sector rollup (mechanical)", script: "aggregate-by-sector.mjs", optional: true },
+  // Append today's sector medians to sector-history.jsonl — feeds
+  // the week-over-week delta chip on /themes. Idempotent per
+  // (date, sector). Silent when nothing new. Optional so a
+  // sector-signals miss doesn't break the daily refresh.
+  { key: "sector-history", label: "Sector history append", script: "append-sector-history.mjs", optional: true },
   // Phase 4.1 — pairwise return-correlation snapshot over the
   // watchlist. Small (~17 tickers × 6mo daily bars = ~5 s of Yahoo
   // calls). Optional; the /correlation page renders "no snapshot"

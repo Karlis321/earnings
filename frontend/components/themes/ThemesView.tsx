@@ -152,7 +152,41 @@ function ThemeCard({ t }: { t: SectorTheme }) {
   );
 }
 
-function SectorCard({ s }: { s: Sector }) {
+function WeekDelta({
+  current,
+  prior,
+}: {
+  current: number | null;
+  prior: number | undefined;
+}) {
+  if (current === null || prior === undefined) return null;
+  const delta = current - prior;
+  if (Math.abs(delta) < 0.1) return null;
+  const sign = delta >= 0 ? "+" : "";
+  const arrow = delta >= 0 ? "↑" : "↓";
+  const color =
+    delta >= 0.5
+      ? "border-success/40 bg-success/8 text-success-fg"
+      : delta <= -0.5
+      ? "border-danger/40 bg-danger/8 text-danger"
+      : "border-bd bg-panel3/40 text-tx-mid";
+  return (
+    <span
+      className={`rounded-[3px] border px-1 py-[1px] font-mono text-[9.5px] tabular-nums ${color}`}
+      title={`Week-over-week: ${prior.toFixed(2)}% → ${current.toFixed(2)}% (${sign}${delta.toFixed(2)}pp)`}
+    >
+      {arrow} {sign}{delta.toFixed(1)}pp
+    </span>
+  );
+}
+
+function SectorCard({
+  s,
+  priorReaction,
+}: {
+  s: Sector;
+  priorReaction?: number;
+}) {
   return (
     <section
       id={`sector-${s.sector}`}
@@ -169,6 +203,7 @@ function SectorCard({ s }: { s: Sector }) {
           >
             {fmtPct(s.medianReaction3d)}
           </span>
+          <WeekDelta current={s.medianReaction3d} prior={priorReaction} />
           <span className="ml-auto font-mono text-[10.5px] text-tx3">
             {s.tickerCount} tickers · {s.newsCountAll} news items
           </span>
@@ -281,9 +316,11 @@ function FamilyChips({
 export function ThemesView({
   data,
   ideas,
+  priorReactionBySector,
 }: {
   data: SectorSignals;
   ideas: SectorIdeas | null;
+  priorReactionBySector?: Record<string, number>;
 }) {
   const [family, setFamily] = useState<SectorFamily | "all">("all");
 
@@ -362,7 +399,11 @@ export function ThemesView({
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
           {filteredSectors.map((s) => (
-            <SectorCard key={s.sector} s={s} />
+            <SectorCard
+              key={s.sector}
+              s={s}
+              priorReaction={priorReactionBySector?.[s.sector]}
+            />
           ))}
         </div>
       )}

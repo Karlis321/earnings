@@ -167,6 +167,9 @@ export const inMemoryStore: Store = {
   async readSectorIdeas() {
     return null;
   },
+  async readSectorHistory() {
+    return [];
+  },
   async readMacroSignals() {
     return null;
   },

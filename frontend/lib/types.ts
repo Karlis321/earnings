@@ -188,6 +188,18 @@ export interface SectorSignals {
   sectors: Sector[];
 }
 
+// One row per sector per day in data/sector-history.jsonl. Written
+// daily by scripts/append-sector-history.mjs after
+// aggregate-by-sector completes. Consumed by /themes to compute a
+// week-over-week delta chip per sector card.
+export interface SectorHistoryRow {
+  date: string; // YYYY-MM-DD
+  sector: string;
+  medianReaction3d: number | null;
+  tickerCount: number;
+  newsCountAll: number;
+}
+
 // LLM-drafted narrative themes on top of sector-signals. Written by
 // .claude/commands/sector-ideas.md via scripts/apply-sector-ideas.mjs.
 // Rendered on /themes as a panel above the mechanical grid.

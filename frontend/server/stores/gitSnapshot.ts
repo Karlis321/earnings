@@ -276,6 +276,7 @@ const P = {
   marketPulse: "data/market-pulse.json",
   sectorSignals: "data/sector-signals.json",
   sectorIdeas: "data/sector-ideas.json",
+  sectorHistory: "data/sector-history.jsonl",
   macroSignals: "data/macro-signals.json",
   weekAheadNarrative: "data/week-ahead-narrative.json",
   weekAheadArchiveDir: "data/week-ahead-archive",
@@ -917,6 +918,59 @@ export function gitSnapshotStore(cfg: GhConfig): Store {
         return r?.content ?? null;
       } catch {
         return null;
+      }
+    },
+    async readSectorHistory(sector?: string) {
+      // jsonl — line-delimited; readCached's JSON.parse would fail,
+      // so fetch raw via download_url. Mirrors the ranking-history
+      // pattern we used to have. Filtered per sector when passed.
+      try {
+        const url =
+          `${GH_API}/repos/${cfg.owner}/${cfg.repo}/contents/${encodeURIComponent(P.sectorHistory)}` +
+          `?ref=${encodeURIComponent(cfg.branch)}`;
+        const meta = await fetch(url, {
+          headers: headers(cfg),
+          cache: "no-store",
+        });
+        if (meta.status === 404) return [];
+        if (!meta.ok) return [];
+        const j = (await meta.json()) as {
+          content?: string;
+          encoding?: string;
+          download_url?: string;
+        };
+        let raw = "";
+        if (!j.content || j.content.length === 0) {
+          if (!j.download_url) return [];
+          const dl = await fetch(j.download_url, {
+            headers: {
+              Authorization: `Bearer ${cfg.pat}`,
+              "User-Agent": "EarningsDashboard/1.0",
+            },
+            cache: "no-store",
+          });
+          if (!dl.ok) return [];
+          raw = await dl.text();
+        } else {
+          raw =
+            j.encoding === "base64"
+              ? Buffer.from(j.content, "base64").toString("utf8")
+              : j.content;
+        }
+        const rows: import("@/lib/types").SectorHistoryRow[] = [];
+        for (const line of raw.split("\n")) {
+          if (!line.trim()) continue;
+          try {
+            const row = JSON.parse(line) as import("@/lib/types").SectorHistoryRow;
+            if (sector && row.sector !== sector) continue;
+            rows.push(row);
+          } catch {
+            // skip malformed row
+          }
+        }
+        return rows;
+      } catch {
+        return [];
       }
     },
     async readMacroSignals() {
