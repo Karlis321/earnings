@@ -178,6 +178,37 @@ export interface SectorSignals {
   sectors: Sector[];
 }
 
+// LLM-drafted narrative themes on top of sector-signals. Written by
+// .claude/commands/sector-ideas.md via scripts/apply-sector-ideas.mjs.
+// Rendered on /themes as a panel above the mechanical grid.
+// Every claim must be defensible from data/sector-signals.json —
+// apply-script cross-checks each theme's sector, each supporting
+// ticker's sector membership, and each headline against the real
+// recentHeadlines[] for that sector.
+export interface SectorThemeHeadline {
+  ticker: string;
+  headline: string;
+  source: string;
+}
+export interface SectorTheme {
+  sector: string;
+  thesis: string; // 60-200 chars — the one-line pitch
+  rationale: string; // 200-600 chars — supporting body
+  supportingTickers: string[]; // 3-6 tickers, must be members of `sector`
+  keyHeadlines: SectorThemeHeadline[]; // 3-5 headlines, must exist in sector's recentHeadlines
+  dataPoints: {
+    medianReaction3d: number | null;
+    newsCountAll: number;
+    tickerCount: number;
+  };
+}
+export interface SectorIdeas {
+  schema: "sector-ideas/v1";
+  generatedAt: string;
+  themes: SectorTheme[]; // 5-8 themes per run
+  disclaimer: string;
+}
+
 export type SecurityType = "operating" | "developer" | "etf";
 export type CapTier = "small" | "mid" | "large" | "mega" | "unknown";
 export type Freshness = "fresh" | "overdue" | "stale" | "never";

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { store } from "@/server/store";
 import { EmptyState } from "@/components/primitives";
+import { ThemesPanel } from "@/components/themes/ThemesPanel";
 import type { Sector, SectorHeadline } from "@/lib/types";
 
 // /themes — sector-level rollup replacing the per-ticker Ideas
@@ -147,9 +148,14 @@ function SectorCard({ s }: { s: Sector }) {
 }
 
 export default async function ThemesPage() {
-  const data = store.readSectorSignals
-    ? await store.readSectorSignals()
-    : null;
+  const [data, ideas] = await Promise.all([
+    store.readSectorSignals
+      ? store.readSectorSignals()
+      : Promise.resolve(null),
+    store.readSectorIdeas
+      ? store.readSectorIdeas()
+      : Promise.resolve(null),
+  ]);
 
   if (!data) {
     return (
@@ -166,18 +172,29 @@ export default async function ThemesPage() {
   return (
     <div className="mx-auto max-w-[1400px] px-10 py-8">
       <div className="mb-6">
-        <div className="mono-eyebrow mb-3">§ Themes · Sector rollup</div>
+        <div className="mono-eyebrow mb-3">§ Themes</div>
         <h1 className="text-[28px] font-semibold leading-tight tracking-[-0.02em]">
-          {data.sectors.length} sectors ranked by |median reaction|
+          {ideas ? `${ideas.themes.length} AI themes · ` : ""}
+          {data.sectors.length} sectors mechanically rolled up
         </h1>
         <p className="mt-2 max-w-[68ch] text-[13px] text-tx-mid">
-          Each ticker in the tracked universe contributes to every
-          sector tag it carries. Median reaction is the 3-day
-          post-earnings excess return; recent news pulled from the
-          top movers within the last {data.newsWindowDays} days.
-          Sectors with fewer than {data.minTickersPerSector} tickers
-          drop off. Last refresh: {generatedDate}.
+          Two layers: an LLM-drafted panel of narrative themes at the
+          top (weekly refresh, every claim grounded in the mechanical
+          layer below), followed by the full sector grid ranked by
+          |median 3-day reaction|. Each ticker in the tracked universe
+          contributes to every sector tag it carries. Sectors with
+          fewer than {data.minTickersPerSector} tickers drop off.
+          Sector data refreshed {generatedDate}.
         </p>
+      </div>
+
+      {ideas ? <ThemesPanel ideas={ideas} /> : null}
+
+      <div className="mb-3 flex items-baseline gap-3">
+        <div className="mono-eyebrow text-tx3">§ Sector rollup</div>
+        <span className="font-mono text-[10.5px] text-tx3">
+          {data.sectors.length} sectors · ranked by |median|
+        </span>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">

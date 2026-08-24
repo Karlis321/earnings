@@ -86,6 +86,14 @@ export interface Store {
     import("@/lib/types").SectorSignals | null
   >;
 
+  // LLM-drafted sector themes (data/sector-ideas.json). Written by
+  // .claude/commands/sector-ideas.md via scripts/apply-sector-ideas.mjs.
+  // Overwritten weekly (Sun 21:00 UTC). Consumed by /themes as a
+  // panel above the mechanical grid.
+  readSectorIdeas?(): Promise<
+    import("@/lib/types").SectorIdeas | null
+  >;
+
   // Feature 2C macro extremity signals (data/macro-signals.json).
   // Written by scripts/refresh-macro.mjs (phase in refresh-universe).
   // Consumed by /week-ahead as an extremity strip above the day grid.

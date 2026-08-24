@@ -17,6 +17,7 @@ export const dynamic = "force-dynamic";
 // narrow.
 const ALLOWED_WORKFLOWS = new Set<string>([
   "week-ahead.yml",
+  "sector-ideas.yml",
   "framework-screen.yml",
 ]);
 

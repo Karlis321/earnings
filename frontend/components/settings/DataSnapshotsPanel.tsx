@@ -8,12 +8,14 @@ import { Panel } from "@/components/primitives";
 import type {
   MacroSignals,
   Screen,
+  SectorIdeas,
   SectorSignals,
   WeekAheadNarrative,
 } from "@/lib/types";
 
 interface Props {
   sectorSignals: SectorSignals | null;
+  sectorIdeas: SectorIdeas | null;
   macro: MacroSignals | null;
   narrative: WeekAheadNarrative | null;
   blueOcean: Screen | null;
@@ -56,6 +58,7 @@ function ageBadge(hours: number | null): {
 
 export function DataSnapshotsPanel({
   sectorSignals,
+  sectorIdeas,
   macro,
   narrative,
   blueOcean,
@@ -63,12 +66,21 @@ export function DataSnapshotsPanel({
 }: Props) {
   const rows: Row[] = [
     {
-      label: "Sector themes",
+      label: "Sector rollup",
       file: "data/sector-signals.json",
       generatedAt: sectorSignals?.generatedAt ?? null,
       count: sectorSignals?.sectors.length ?? null,
       countLabel: "sectors",
       cadence: "on demand (aggregate-by-sector.mjs)",
+      route: "/themes",
+    },
+    {
+      label: "Sector themes (AI)",
+      file: "data/sector-ideas.json",
+      generatedAt: sectorIdeas?.generatedAt ?? null,
+      count: sectorIdeas?.themes.length ?? null,
+      countLabel: "themes",
+      cadence: "Sunday · 21:00 UTC",
       route: "/themes",
     },
     {

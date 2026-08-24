@@ -275,6 +275,7 @@ const P = {
   pipelineReport: "data/pipeline-report.json",
   marketPulse: "data/market-pulse.json",
   sectorSignals: "data/sector-signals.json",
+  sectorIdeas: "data/sector-ideas.json",
   macroSignals: "data/macro-signals.json",
   weekAheadNarrative: "data/week-ahead-narrative.json",
   weekAheadArchiveDir: "data/week-ahead-archive",
@@ -901,6 +902,17 @@ export function gitSnapshotStore(cfg: GhConfig): Store {
         const r = await readCached<import("@/lib/types").SectorSignals>(
           cfg,
           P.sectorSignals,
+        );
+        return r?.content ?? null;
+      } catch {
+        return null;
+      }
+    },
+    async readSectorIdeas() {
+      try {
+        const r = await readCached<import("@/lib/types").SectorIdeas>(
+          cfg,
+          P.sectorIdeas,
         );
         return r?.content ?? null;
       } catch {

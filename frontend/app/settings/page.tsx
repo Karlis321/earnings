@@ -17,6 +17,7 @@ export default async function SettingsPage() {
     state,
     entities,
     sectorSignals,
+    sectorIdeas,
     macro,
     narrative,
     blueOcean,
@@ -26,6 +27,9 @@ export default async function SettingsPage() {
     store.readRegistry(),
     store.readSectorSignals
       ? store.readSectorSignals()
+      : Promise.resolve(null),
+    store.readSectorIdeas
+      ? store.readSectorIdeas()
       : Promise.resolve(null),
     store.readMacroSignals ? store.readMacroSignals() : Promise.resolve(null),
     store.readWeekAheadNarrative
@@ -47,6 +51,7 @@ export default async function SettingsPage() {
         <PreferencesForm initialState={state} initialEntities={entities} />
         <DataSnapshotsPanel
           sectorSignals={sectorSignals}
+          sectorIdeas={sectorIdeas}
           macro={macro}
           narrative={narrative}
           blueOcean={blueOcean}

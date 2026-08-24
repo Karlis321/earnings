@@ -25,10 +25,16 @@ interface Workflow {
 
 const WORKFLOWS: Workflow[] = [
   {
+    file: "sector-ideas.yml",
+    label: "Sector themes (AI)",
+    description:
+      "Refreshes sector-signals + drafts 5-8 narrative themes on top. ~8-12 min. Every claim grounded in the mechanical rollup.",
+  },
+  {
     file: "week-ahead.yml",
     label: "Week-Ahead narrative",
     description:
-      "Refreshes macro + drafts the narrative + highlights. ~8-12 min. Requires fresh underlying data.",
+      "Refreshes sector-signals + macro + drafts the narrative + highlights. ~8-12 min. Requires fresh underlying data.",
   },
   {
     file: "framework-screen.yml",
