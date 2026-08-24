@@ -166,15 +166,52 @@ export function SourceViewer() {
   }, [doc, locator]);
 
   // Iframe reset when the URL changes and hosted mode misses.
+  // Timeout budget: 3.5s. If neither onLoad-with-content nor onError
+  // fires by then, treat as framing-blocked (X-Frame-Options / CSP
+  // frame-ancestors deny; browser sometimes silently blocks without
+  // firing either event).
   useEffect(() => {
     if (!open || doc.status !== "miss") return;
     setIframeStatus("loading");
     setIframeKey((k) => k + 1);
     const t = setTimeout(() => {
       setIframeStatus((s) => (s === "loading" ? "blocked" : s));
-    }, 4000);
+    }, 3500);
     return () => clearTimeout(t);
   }, [open, url, doc.status]);
+
+  // onLoad handler with rendered-content check. The default onLoad
+  // fires even for framing-blocked pages that render an inline error
+  // placeholder, or for JS-required SPAs whose body starts empty.
+  // Trusting onLoad unconditionally locks us into a blank pane; audit
+  // §C flagged this as the ECG/OZK "preview not available" class.
+  //
+  // Strategy:
+  //   · Same-origin (proxy path or same-host): read contentDocument.
+  //     Body with < 3 direct children → treat as blocked. The proxy
+  //     returns full HTML with dozens of children for legit filings,
+  //     so this floor is conservative.
+  //   · Cross-origin: contentDocument throws (SecurityError). Modern
+  //     browsers don't fire onLoad on X-Frame-blocked cross-origin
+  //     pages, so reaching this branch means the frame actually
+  //     loaded successfully at the origin. Mark ok.
+  const handleIframeLoad = (e: React.SyntheticEvent<HTMLIFrameElement>) => {
+    const iframe = e.currentTarget;
+    try {
+      const doc = iframe.contentDocument;
+      if (doc) {
+        const body = doc.body;
+        if (!body || body.children.length < 3) {
+          setIframeStatus("blocked");
+          return;
+        }
+      }
+      setIframeStatus("ok");
+    } catch {
+      // Cross-origin — SecurityError. Load event fired → real doc.
+      setIframeStatus("ok");
+    }
+  };
 
   // Single source of truth: any host the server is willing to proxy
   // (INGESTABLE_HOSTS) can be embedded inline. Previously this list
@@ -258,7 +295,10 @@ export function SourceViewer() {
             />
           ) : doc.status === "loading" ? (
             <div className="flex flex-1 items-center justify-center rounded-panel border border-bd bg-s1 text-[13px] text-tx-mid">
-              <RefreshCw size={14} className="mr-2 animate-spin" />
+              <RefreshCw
+                size={14}
+                className="mr-2 animate-spin motion-reduce:animate-none"
+              />
               Checking hosted archive…
             </div>
           ) : isSearchFallback ? (
@@ -276,12 +316,15 @@ export function SourceViewer() {
                     className="h-full min-h-[520px] w-full"
                     referrerPolicy="no-referrer"
                     sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
-                    onLoad={() => setIframeStatus("ok")}
+                    onLoad={handleIframeLoad}
                     onError={() => setIframeStatus("blocked")}
                   />
                   {iframeStatus === "loading" ? (
                     <div className="absolute inset-0 flex items-center justify-center bg-s1/80 text-[13px] text-tx-mid">
-                      <RefreshCw size={14} className="mr-2 animate-spin" />
+                      <RefreshCw
+                        size={14}
+                        className="mr-2 animate-spin motion-reduce:animate-none"
+                      />
                       Loading preview…
                     </div>
                   ) : null}
