@@ -1,0 +1,138 @@
+name: audit-weekly
+
+# Read-only weekly drift detector. Reuses scripts/audits/full-audit.mjs
+# (the deterministic §A/B/D/E/F15/F17/F18 on-disk checks) and compares
+# each run to the prior week via scripts/audits/detect-drift.mjs.
+#
+# Cadence: Sunday 09:00 UTC — off-peak window that avoids collision
+# with the daily 03:00 refresh, 04:30 sweep, 21:00 sector-ideas,
+# 22:00 week-ahead, and the monthly framework-screen (1st/2nd @
+# 12:00 UTC — Sun@09 is at least 3h before those on the rare
+# calendar overlaps).
+#
+# CONSTRAINTS (baked into steps below):
+#   · READ-ONLY on real state — no writes to data/, no fixes.
+#   · Commits ONLY scripts/audits/history/<ISO>.json (nothing else).
+#   · Ancestry tripwire: HEAD must descend from pre-run baseline
+#     (defense against accidental orphan commits).
+#   · Push is workflow-controlled (plain git push), no force.
+#   · Red run IS the signal. GitHub emails + red badge on regression.
+
+on:
+  schedule:
+    - cron: "0 9 * * 0"
+  workflow_dispatch:
+    inputs:
+      note:
+        description: "Trigger label (shown in the run title)."
+        required: false
+        default: ""
+
+concurrency:
+  group: audit-weekly
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+run-name: >-
+  audit-weekly · ${{
+    github.event_name == 'schedule' && 'scheduled (Sun 09:00 UTC)'
+    || (github.event.inputs.note != '' && format('manual · {0}', github.event.inputs.note))
+    || 'manual'
+  }}
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 20
+
+      - name: Configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Snapshot origin baseline
+        id: snapshot
+        run: |
+          SHA=$(git rev-parse HEAD)
+          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+          echo "baseline SHA recorded: $SHA"
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Compute artifact path
+        id: paths
+        run: |
+          ISO=$(date -u +%Y-%m-%dT%H-%M-%SZ)
+          mkdir -p scripts/audits/history
+          OUT="scripts/audits/history/full-audit-$ISO.json"
+          echo "out=$OUT" >> "$GITHUB_OUTPUT"
+          echo "artifact path: $OUT"
+
+      - name: Run /audit (deterministic on-disk checks)
+        run: |
+          node scripts/audits/full-audit.mjs --out "${{ steps.paths.outputs.out }}"
+
+      - name: Commit history artifact (only)
+        id: commit
+        run: |
+          # Restrict staging to the new history artifact — never data/,
+          # never any code file. Any accidental side-effect writes
+          # would remain unstaged + surface in the tripwire step.
+          git add "${{ steps.paths.outputs.out }}"
+          # Fail loudly if anything OUTSIDE scripts/audits/history/ is
+          # staged. This is the READ-ONLY invariant.
+          STAGED_OUTSIDE=$(git diff --cached --name-only | grep -v "^scripts/audits/history/" || true)
+          if [ -n "$STAGED_OUTSIDE" ]; then
+            echo "::error::audit-weekly attempted to commit files outside history/:"
+            echo "$STAGED_OUTSIDE"
+            exit 1
+          fi
+          # Commit — the message names what changed so a git log skim
+          # tells you if drift happened without opening the JSON.
+          git commit -m "audit-weekly: snapshot $(date -u +%Y-%m-%d)" || {
+            echo "nothing to commit — full-audit produced no artifact?"
+            exit 1
+          }
+
+      - name: Verify commit ancestry (orphan tripwire)
+        if: always()
+        run: |
+          BASELINE="${{ steps.snapshot.outputs.sha }}"
+          HEAD_SHA=$(git rev-parse HEAD)
+          if [ "$HEAD_SHA" = "$BASELINE" ]; then
+            echo "HEAD unchanged from baseline — nothing to verify"
+            exit 0
+          fi
+          if ! git merge-base --is-ancestor "$BASELINE" HEAD; then
+            echo "::error::ORPHAN TRIPWIRE FIRED — HEAD ($HEAD_SHA) does not descend from pre-run baseline ($BASELINE)."
+            exit 1
+          fi
+          if ! git rev-parse HEAD^ >/dev/null 2>&1; then
+            echo "::error::ORPHAN TRIPWIRE FIRED — HEAD ($HEAD_SHA) has no parent commit."
+            exit 1
+          fi
+          echo "✓ ancestry verified — HEAD $HEAD_SHA descends from $BASELINE"
+
+      - name: Push artifact (workflow-controlled, no force)
+        run: |
+          # Pull-rebase in case of concurrent commits between the
+          # baseline snapshot and now; retry the push once.
+          git fetch origin main
+          git pull --rebase origin main || true
+          git push origin main
+
+      - name: Detect drift vs prior artifact (RED-ON-REGRESSION)
+        # Run AFTER the commit so the artifact is always recorded,
+        # even if drift is detected. The point of this step is to
+        # make the run visibly red — the artifact is the receipt.
+        run: |
+          node scripts/audits/detect-drift.mjs

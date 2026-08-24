@@ -382,6 +382,14 @@ async function main() {
       events_total: pipeline.events_total,
       reactions_computed: pipeline.reactions_computed,
       duplicates_detected: pipeline.duplicates_detected,
+      // Raw counters — stamp them regardless of whether they crossed
+      // the run-pipeline-check thresholds that raise reasons[].
+      // detect-drift.mjs needs the raw numbers to catch a metric that
+      // grew below the alarm floor (e.g., 12 → 25) without waiting for
+      // the reason to fire.
+      reported_without_document: pipeline.reported_without_document,
+      reported_without_document_structural: pipeline.reported_without_document_structural,
+      sp500_complete_pct: pipeline.sp500_complete_pct,
     };
     if (pipeline.status !== "ok") {
       finding("§F15.pipeline", "DEGRADED", `pipeline-report status=${pipeline.status}`, { reasons: pipeline.reasons });
