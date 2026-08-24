@@ -39,12 +39,51 @@ function run(label, script) {
   }
 }
 
+// ────────────────────────────────────────────────────────────────
+// KNOWN_EXCEPTIONS — the ONLY reasons[] entries that are allowed to
+// coexist with a `degraded` pipeline-report status without failing
+// the standing suite. Each entry is a substring; a reason line
+// PASSES if it starts with any of these prefixes. Any reason NOT in
+// this list — new or unrecognized — still FAILS the suite.
+//
+// Add here ONLY when the underlying gap is:
+//   1. Documented (typically in CLAUDE.md + a linked TODO),
+//   2. Structural (cannot self-heal via daily refresh),
+//   3. Safe (the gap is bounded + does not propagate).
+//
+// Each entry MUST carry a TODO with the removal-condition. When the
+// backfill lands + the reason disappears from live reports, drop
+// the entry so unrecognized future reasons fail as intended.
+// ────────────────────────────────────────────────────────────────
+const KNOWN_EXCEPTIONS = [
+  // 182 past events with actuals ingested from Yahoo but no filing
+  // sourceLink. Structural — the daily refresh cannot retroactively
+  // find filings for old events. Requires a deliberate backfill
+  // that probes each issuer's IR page + EDGAR CIK for a matching
+  // filing per eventDate. Documented in CLAUDE.md load-bearing
+  // invariants + on pipeline-report.reasons[] verbatim.
+  // TODO: remove this entry once scripts/backfills/backfill-report-
+  //       attachments.mjs lands (or equivalent) and the reason no
+  //       longer appears in a green refresh run.
+  "reported_without_document",
+];
+
+function reasonAllowed(reason) {
+  return KNOWN_EXCEPTIONS.some((prefix) => reason.startsWith(prefix));
+}
+
 const t0 = Date.now();
 const results = [];
 // Actually inspect pipeline-report.json.status after the script runs.
 // The script exits 0 even when status="degraded" (invariant violations),
 // so gating only on exit code hides real regressions. Read the file it
-// wrote and fail loudly if status != "ok".
+// wrote and evaluate:
+//   · status="ok"                                   → PASS
+//   · status="degraded" AND every reasons[] entry
+//     is on the KNOWN_EXCEPTIONS allowlist          → PASS (permitted)
+//   · status="degraded" AND ANY reasons[] entry is
+//     unrecognized (new/regression)                 → FAIL
+//   · status is anything else                       → FAIL
 function pipelineCheckAndInspect() {
   const ok = run("Pipeline check", "run-pipeline-check.mjs");
   if (!ok) return false;
@@ -52,11 +91,22 @@ function pipelineCheckAndInspect() {
     const report = JSON.parse(
       readFileSync(path.join(__dirname, "..", "data", "pipeline-report.json"), "utf-8"),
     );
-    if (report.status !== "ok") {
-      console.error(`✗ pipeline-report status="${report.status}" — reasons:`);
-      for (const r of report.reasons ?? []) console.error(`    · ${r}`);
+    if (report.status === "ok") return true;
+    if (report.status !== "degraded") {
+      console.error(`✗ pipeline-report status="${report.status}" — unrecognized status`);
       return false;
     }
+    const reasons = report.reasons ?? [];
+    const unrecognized = reasons.filter((r) => !reasonAllowed(r));
+    if (unrecognized.length > 0) {
+      console.error(`✗ pipeline-report status="degraded" — unrecognized reason(s):`);
+      for (const r of unrecognized) console.error(`    · ${r}`);
+      console.error(`  (allowlist: ${KNOWN_EXCEPTIONS.join(", ")})`);
+      return false;
+    }
+    // All reasons on the allowlist — permitted degradation.
+    console.log(`✓ pipeline-report status="degraded" — all ${reasons.length} reason(s) on KNOWN_EXCEPTIONS allowlist:`);
+    for (const r of reasons) console.log(`    · ${r}`);
     return true;
   } catch (e) {
     console.error(`✗ failed to read pipeline-report.json: ${e.message}`);

@@ -102,16 +102,21 @@ async function main() {
 
   const baseline = runCheck("BASELINE");
 
-  // If baseline is already above the 98% floor, a single-member
-  // corruption may not push pct below it. Pick additional COMPLETE
-  // members whose doc layer we'll remove alongside the plant, so the
-  // corrupted pct drops meaningfully (5 removals ≈ 1pp drop).
+  // Pick additional COMPLETE members whose doc layer we'll remove
+  // alongside the plant, so the corrupted pct drops meaningfully
+  // below the 95% floor enforced by run-pipeline-check.mjs (line ~534:
+  // `sp500_complete_pct < 95` raises a reason). Each removal drops
+  // pct by ≈ 100/N where N is the SP500 membership count in the
+  // registry (~500), so ≈ 0.2pp per corruption.
+  //
+  // Baseline as of 2026-08-24 is 97.4%. Prior versions used 7
+  // corruptions (~1.4pp drop) which lands at 95.9% — ABOVE the 95%
+  // floor, so the invariant never fired and the test always failed.
+  // Bumped to 15 corruptions (~3pp drop) to safely cross 95% even
+  // as baseline drifts up to ~99%.
   const extraCorruptions = [];
   for (const e of sp500) {
-    // 7 corruptions ≈ 1.4pp drop, safely below the 98% floor. Was 5
-    // when baseline was ~95%; now baseline is ~99% and the floor
-    // requires strict inequality (< 98), so more corruptions needed.
-    if (extraCorruptions.length >= 7) break;
+    if (extraCorruptions.length >= 15) break;
     if (e.ticker === target.ticker) continue;
     const shardP = path.join(EVENTS_DIR, tickerSlug(e.ticker) + ".json");
     let jj;
@@ -155,7 +160,7 @@ async function main() {
   targetEv.sourceLink = { kind: "fallback", url: "https://www.google.com/search?q=x" };
   await fs.writeFile(shardPath, JSON.stringify(j, null, 2));
   // Also remove documents from the extra corruption set so we push
-  // pct BELOW the 98% floor even when baseline is right at the edge.
+  // pct BELOW the 95% floor even when baseline is right at the edge.
   for (const c of extraCorruptions) {
     c.event.sourceLink = { kind: "fallback", url: "https://www.google.com/search?q=extra" };
     await fs.writeFile(c.path, JSON.stringify(c.wrapped ? c.body : (c.body), null, 2));

@@ -37,14 +37,22 @@ function runCheck(label) {
   return { count, reasons };
 }
 
+// Plant N corruptions so the counter safely crosses the invariant's
+// threshold (`reported_without_document > 20` per run-pipeline-check).
+// Baseline is ~12 post-backfill; adding 10 corruptions lands ~22,
+// safely above the alarm floor. Prior version corrupted 1 event —
+// only enough when the > 100 threshold was live (baseline ~180).
+// Kept in sync with the run-pipeline-check floor.
+const CORRUPTIONS_TO_PLANT = 10;
+
 async function main() {
-  // Find a past event on a US-primary ticker (ends " US") with
+  // Find N past events on US-primary tickers (ends " US") with
   // actuals AND a valid filing sourceLink. The counter's degrade
   // path fires only on US-primary CIK-bearing tickers, so a
   // foreign-listing corruption wouldn't move it (structural bucket).
   const files = (await fs.readdir(EVENTS_DIR)).filter((f) => f.endsWith(".json") && f.endsWith("_US.json"));
-  let target = null;
-  for (const f of files) {
+  const targets = [];
+  outer: for (const f of files) {
     const p = path.join(EVENTS_DIR, f);
     const j = JSON.parse(await fs.readFile(p, "utf-8"));
     const events = Array.isArray(j) ? j : j.events ?? [];
@@ -55,47 +63,53 @@ async function main() {
       if (!hasActuals) continue;
       const link = e.sourceLink;
       if (link && link.kind === "filing" && link.url && !/google\.com\/search/i.test(link.url)) {
-        target = { path: p, wrapped: !Array.isArray(j), body: j, event: e };
+        targets.push({ path: p, originalText: null, wrapped: !Array.isArray(j), body: j, event: e });
+        if (targets.length >= CORRUPTIONS_TO_PLANT) break outer;
+        // Move to next file — one corruption per ticker so the
+        // resulting delta is exactly N.
         break;
       }
     }
-    if (target) break;
   }
-  if (!target) {
-    console.log("no past event with actuals + filing sourceLink to corrupt — the rule may already be violated everywhere");
+  if (targets.length < CORRUPTIONS_TO_PLANT) {
+    console.log(`only ${targets.length} corruptable events found — need ${CORRUPTIONS_TO_PLANT}. rule may already be violated everywhere`);
     console.log("SKIPPING (baseline already inconsistent — corruption test can't discriminate).");
     process.exit(0);
   }
+  // Capture originals BEFORE mutating so restore is exact.
+  for (const t of targets) t.originalText = await fs.readFile(t.path, "utf-8");
 
-  console.log(`Target: ${target.event.ticker} · ${target.event.period}`);
-  console.log(`  original sourceLink: ${JSON.stringify(target.event.sourceLink)}`);
+  console.log(`Targets (${targets.length}):`);
+  for (const t of targets) console.log(`  · ${t.event.ticker} ${t.event.period}`);
 
-  const original = await fs.readFile(target.path, "utf-8");
   const baseline = runCheck("BASELINE");
 
-  // Corrupt: replace filing sourceLink with a Google search fallback.
-  target.event.sourceLink = {
-    kind: "fallback",
-    url: `https://www.google.com/search?q=${encodeURIComponent(target.event.ticker)}+${encodeURIComponent(target.event.period ?? "")}+earnings`,
-  };
-  await fs.writeFile(
-    target.path,
-    JSON.stringify(target.wrapped ? target.body : (target.body), null, 2),
-  );
+  // Corrupt each: replace filing sourceLink with a Google search fallback.
+  for (const t of targets) {
+    t.event.sourceLink = {
+      kind: "fallback",
+      url: `https://www.google.com/search?q=${encodeURIComponent(t.event.ticker)}+${encodeURIComponent(t.event.period ?? "")}+earnings`,
+    };
+    await fs.writeFile(
+      t.path,
+      JSON.stringify(t.wrapped ? t.body : (t.body), null, 2),
+    );
+  }
 
   const corrupted = runCheck("AFTER CORRUPTION");
 
-  await fs.writeFile(target.path, original);
+  // Restore all N targets from their captured originals.
+  for (const t of targets) await fs.writeFile(t.path, t.originalText);
   const restored = runCheck("AFTER RESTORE");
 
   console.log(`\n=== RESULT ===`);
   console.log(`  baseline counter:          ${baseline.count}`);
   console.log(`  after-corruption counter:  ${corrupted.count}`);
   console.log(`  after-restore counter:     ${restored.count}`);
-  const rose = corrupted.count === baseline.count + 1;
+  const rose = corrupted.count === baseline.count + CORRUPTIONS_TO_PLANT;
   const back = restored.count === baseline.count;
   const flagged = /reported_without_document/.test(corrupted.reasons);
-  console.log(`  counter increased by 1?    ${rose}`);
+  console.log(`  counter increased by ${CORRUPTIONS_TO_PLANT}?  ${rose}`);
   console.log(`  reason cited in reasons[]? ${flagged}`);
   console.log(`  restored to baseline?      ${back}`);
   if (rose && back && flagged) {

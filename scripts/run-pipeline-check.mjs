@@ -519,11 +519,19 @@ async function compute() {
       `freshness.stale=${report.freshness.stale} — >10 tickers have an expected report >7 days past with no matching event`,
     );
   }
-  // Relaxed 2026-08-19: > 0 → > 100. See rationale in
-  // frontend/server/lib/pipelineReport.ts (fallback-kind sourceLinks
-  // are valid documents; the mechanical attach-sec-filings pass fails
-  // for ~50-60 tickers/week due to date-drift on SEC filings).
-  if (report.reported_without_document > 100) {
+  // Threshold history:
+  //   > 0   (initial)      — every miss alarmed; too noisy.
+  //   > 100 (2026-08-19)   — accepted the ~180-event systemic gap
+  //                          from R1000-tail long-history residue.
+  //   > 20  (2026-08-24)   — after attach-sec-filings --scope=all
+  //                          resolved 170 of 182, the gap dropped
+  //                          to 12. Threshold retightened to 20
+  //                          so the alarm now catches real
+  //                          regressions (daily ingest dropping
+  //                          filings) without noise from the
+  //                          small residue (small-cap late-filers
+  //                          outside the 100-day window).
+  if (report.reported_without_document > 20) {
     reasons.push(
       `reported_without_document=${report.reported_without_document} — past events with actuals but no filing sourceLink (systemic gap)`,
     );

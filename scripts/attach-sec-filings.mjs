@@ -304,7 +304,10 @@ async function main() {
       const url = accessionUrl(entity.edgarCik, filing.accession, filing.primaryDoc);
       const probeOk = await probeUrl(url);
       if (!probeOk) { rollup.events_probe_failed++; continue; }
-      // Attach.
+      // Attach. Provenance discipline: every attached link carries
+      // provenance (data source), method (which script attached it),
+      // and asOf (when we resolved it). Existing consumers ignore
+      // unknown fields; this is additive.
       ev.sourceLink = {
         kind: "filing",
         url,
@@ -312,6 +315,9 @@ async function main() {
         form: filing.form,
         accession: filing.accession,
         filingDate: filing.filingDate,
+        provenance: "edgar",
+        method: "attach-sec-filings",
+        asOf: new Date().toISOString(),
       };
       rollup.events_attached++;
       rollup.updates.push({ ticker, period: ev.period, eventDate: ev.eventDate, form: filing.form, filingDate: filing.filingDate });
@@ -321,14 +327,17 @@ async function main() {
       const body = shard.wrapped ? { ...shard.body, events } : events;
       await fs.writeFile(shard.path, JSON.stringify(body, null, 2));
     }
-    checkpoint.add(ticker);
+    // Dry-run must not taint the checkpoint — otherwise a subsequent
+    // real apply would skip these tickers as "already done". Only
+    // record completion for non-dry runs.
+    if (!DRY) checkpoint.add(ticker);
     rollup.tickers_processed++;
     if (rollup.tickers_processed % 25 === 0) {
-      await saveCheckpoint(checkpoint);
+      if (!DRY) await saveCheckpoint(checkpoint);
       console.log(`  ${rollup.tickers_processed}/${candidateTickers.length} · attached=${rollup.events_attached} · no-match=${rollup.events_no_match} · probe-fail=${rollup.events_probe_failed}`);
     }
   }
-  await saveCheckpoint(checkpoint);
+  if (!DRY) await saveCheckpoint(checkpoint);
 
   console.log(`\n=== attach-sec-filings · ${SCOPE} ===`);
   console.log(`  tickers processed:      ${rollup.tickers_processed}`);
