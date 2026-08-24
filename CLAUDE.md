@@ -83,15 +83,15 @@ earnings_dashboard/
 │   ├── backfill-source-links.mjs       populate event.sourceLink where missing
 │   ├── inherit-from-siblings.mjs       copy past events from richer sibling in same companyId
 │   ├── fill-sec-empty-shards.mjs       SEC XBRL for empty-shard CIK entities
-│   ├── ── dashboard signal layer (Phases 3-4) ──
-│   ├── run-ranking.mjs                 composite ranking over the universe (data/ranking.json)
-│   ├── append-ranking-history.mjs      appends today's ranking to data/ranking-history.jsonl (feeds sparkline)
+│   ├── ── dashboard signal layer (sector themes + screens) ──
+│   ├── aggregate-by-sector.mjs         mechanical sector rollup — reads events-index + shards for top-mover headlines, writes data/sector-signals.json (17 sectors incl. hotSectorCount per top-mover for cross-signal convergence)
+│   ├── append-sector-history.mjs       one row per sector per day → data/sector-history.jsonl (feeds week-over-week delta chip)
 │   ├── refresh-correlations.mjs        pairwise Pearson correlation over the watchlist (data/correlations.json)
 │   ├── refresh-commodities.mjs         Yahoo commodity futures basket (data/commodities.json)
 │   ├── run-qarv-screen.mjs             mechanical Quality/Assets/Revisions/Value screen (data/screens/qarv.json)
 │   ├── refresh-macro.mjs               FRED z-score extremity signals (data/macro-signals.json)
 │   ├── refresh-market-pulse.mjs        index chart snapshot (data/market-pulse.json)
-│   ├── apply-ideas.mjs                 validate + persist LLM ideas payload (data/ideas.json)
+│   ├── apply-sector-ideas.mjs          validate + persist LLM sector themes (rejects invented tickers/headlines)
 │   ├── apply-week-ahead.mjs            validate + persist weekly narrative (+ per-week archive)
 │   ├── apply-screen.mjs                validate + merge LLM framework screens (blue-ocean, rule-breaker)
 │   ├── backfills/             43 one-shot repair scripts (archived — see below)
@@ -124,7 +124,10 @@ earnings_dashboard/
 | Same-basis surprise rule        | `scripts/enforce-same-basis-surprise.mjs` + `SurprisePill.crossBasisCleared` |
 | One-shot repair evidence        | `scripts/audits/<name>.json` + `scripts/backfills/<name>.mjs`                |
 | Sweep dry-run                   | `node scripts/sweep-dry-run.mjs`                                               |
-| Composite ranking + sparkline   | `scripts/run-ranking.mjs` → `data/ranking.json`; history via `append-ranking-history.mjs` → `data/ranking-history.jsonl`; UI on /ideas + sparkline on /s/[ticker] |
+| Sector rollup + themes          | mechanical: `scripts/aggregate-by-sector.mjs` → `data/sector-signals.json`; AI narrative: `.claude/commands/sector-ideas.md` → `apply-sector-ideas.mjs` → `data/sector-ideas.json`; history: `append-sector-history.mjs` → `data/sector-history.jsonl`; UI on `/themes` |
+| Cross-sector conviction badge   | `aggregate-by-sector.mjs` computes `hotSectorCount` per top-mover (count of hot sectors = |median|≥2%); UI: `×N` chip in `ThemesView.tsx` when count ≥ 2 |
+| Week-over-week delta chip       | `page.tsx buildPriorReactionMap` picks the row 5-14 days old closest to 7d back from `data/sector-history.jsonl`; UI: `WeekDelta` in `ThemesView.tsx` (silent when no prior row exists) |
+| Family filter chips             | `frontend/lib/sectorFamily.ts` — opinionated map from sector tag → family (metals / energy / tech / financials / real-estate / healthcare / consumer / industrials / other); rendered as chip strip in `ThemesView.tsx` |
 | Pairwise correlation heatmap    | `scripts/refresh-correlations.mjs` → `data/correlations.json`; UI at `/correlation`                              |
 | Commodity basket strip          | `scripts/refresh-commodities.mjs` → `data/commodities.json`; UI in `CommodityStrip.tsx` on /week-ahead           |
 | QARV mechanical screen          | `scripts/run-qarv-screen.mjs` → `data/screens/qarv.json`; UI at `/screens?framework=qarv`                        |
@@ -157,12 +160,33 @@ X get this value" or "what was the state before Y ran".
 
 ### How the pieces connect
 
+- **Daily 03:00 UTC (Mon-Fri)** — `.github/workflows/refresh-data.yml`
+  runs `scripts/refresh-universe.mjs` — a 28+ phase pipeline that
+  ingests Yahoo shards, matures reactions, rebuilds shards +
+  events-index, then runs the daily signal-layer phases:
+  `market-pulse` → `macro` → `sector-signals`
+  (`aggregate-by-sector.mjs`) → `sector-history`
+  (`append-sector-history.mjs`) → `correlations` → `commodities`
+  → `qarv`. All the mechanical dashboard signals land in one
+  commit per weekday.
 - **Daily 06:30 UTC** — GitHub Actions runs `.github/workflows/ claude-summarize.yml` on cron, which spawns Claude Code with the
   /sweep prompt. Sweep reads `data/covered.json`, resolves each via
   `resolve-earnings-target.mjs`, calls /earnings per due ticker,
   which writes `data/summaries/*.json` + optional `data/events/*.json`
   guidance-array updates. One commit per sweep. Verify step then
   confirms a summary landed.
+- **Sunday 21:00 UTC** — `.github/workflows/sector-ideas.yml` runs
+  `.claude/commands/sector-ideas.md` — reads sector-signals.json
+  only (never raw filings), drafts 5-8 narrative themes, writes
+  `data/sector-ideas.json`. Rendered as the AI panel on `/themes`
+  above the mechanical grid.
+- **Sunday 22:00 UTC** — `.github/workflows/week-ahead.yml` drafts
+  the weekly narrative from events-index + sector-signals +
+  macro + market-pulse. Writes `data/week-ahead-narrative.json` +
+  per-week archive.
+- **1st + 2nd of month, 12:00 UTC** — framework-screen.yml self-
+  chains through 8-ticker batches over the SP500 ∪ R1000 ∪ isCore
+  universe; blue-ocean on the 1st, rule-breaker on the 2nd.
 - **On push to main** — `.github/workflows/standing-tests.yml`
   runs `scripts/test-standing.mjs`, which sequentially runs
   `run-pipeline-check.mjs` (invariant counters, must report
@@ -197,6 +221,42 @@ X get this value" or "what was the state before Y ran".
 ## Load-bearing invariants (non-obvious, easy to violate)
 
 These are the rules that come from reading multiple sections together:
+
+- **Sector themes are a two-layer pipeline; the LLM never reads
+  raw filings.** `/themes` stacks two rendering surfaces:
+  **Layer 1 (mechanical)** — `scripts/aggregate-by-sector.mjs`
+  runs in the daily refresh, reads `data/events-index.json` +
+  `data/entity-registry.json` + per-ticker event shards for
+  recent headlines, and writes `data/sector-signals.json` (17
+  sector groupings with median 3-day reaction, ticker count,
+  news count, top movers, and up to 20 recent headlines per
+  sector drawn from the union of top-movers-by-reaction and
+  top-30-by-news-volume). No LLM here — plain Node aggregation
+  over data the refresh already ingested from Yahoo, SEC, and
+  Google News.
+  **Layer 2 (LLM narrative)** — `.claude/commands/sector-ideas.md`
+  reads ONLY `sector-signals.json` (never a shard, never a raw
+  filing, never a transcript). Its job is to pick 5-8 sectors
+  from the pre-digested rollup, write a thesis + rationale for
+  each, cite 3-5 headlines that already exist in that sector's
+  `recentHeadlines[]`, and list 3-6 supporting tickers from
+  that sector's `tickers[]` membership. The output is validated
+  by `scripts/apply-sector-ideas.mjs` which HARD-REJECTS the
+  payload if: any sector key isn't in `sector-signals.json`,
+  any supportingTicker isn't in that sector's `tickers[]`, or
+  any keyHeadline's `(ticker, headline)` pair isn't verbatim
+  in that sector's `recentHeadlines[]`. The apply script also
+  overwrites the LLM's `dataPoints` block with the real
+  mechanical values so the UI can't drift from source of truth.
+  Net effect: the AI is a summarizer of pre-digested data, not
+  a reader of raw reports. No hallucinated tickers, no fake
+  headlines, no fabricated numbers. If the LLM can't find
+  enough sectors with ≥3 real headlines, it exits with
+  `RESULT: skipped` and no file lands. This is the reason
+  Sun 2026-08-24's first run took only 2m12s and produced
+  nothing — the mechanical layer was only sampling top movers
+  for headlines, starving Claude of citation material; fixed
+  by widening to the top-30-by-news union.
 
 - **Reuse the reference connections exactly.** Endpoints, headers, params,
   parsing, and fallback shapes are fixed by PRD Appendices A/B (they encode
@@ -559,14 +619,14 @@ naming the missing endpoint, so it's obvious what's still stubbed.
 - `/s/:ticker` — Security detail (operating / developer / etf, type-routed)
 - `/s/:ticker/e/:eventId` — Event (print) detail
 - `/week-ahead` — Upcoming earnings + macro strip + commodity strip + weekly narrative (with `?week=YYYY-MM-DD` archive picker)
-- `/ideas` — Composite-ranking leaderboard + AI pitch cards
+- `/themes` — Sector-level rollup: mechanical grid (17 sectors) + LLM narrative panel (5-8 themes) + family filter chips
 - `/screens` — Framework screens (`?framework=blue-ocean|rule-breaker|qarv`)
 - `/correlation` — Pairwise return correlation heatmap over the watchlist
 - `/news` — Fanout news feed
 - `/sectors`, `/sectors/:sectorId` — Sector view (flagged)
 - `/admin`, `/admin/securities/new`, `/admin/securities/:ticker`,
   `/admin/entry/:ticker`, `/admin/sources`, `/admin/feedback` — Admin surfaces
-- `/settings` — Theme, feature flags, data status, manual dispatch of Ideas/Week-ahead/Framework-screen workflows
+- `/settings` — Theme, feature flags, data status, manual dispatch of Sector-ideas/Week-ahead/Framework-screen workflows
 - `/gallery` — Component gallery (every primitive in every state)
 
 ## Backend integration flags — where the front end plugs in
