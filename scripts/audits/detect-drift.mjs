@@ -25,7 +25,12 @@ import { fileURLToPath } from "node:url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const HISTORY_DIR = path.join(__dirname, "history");
+// --history <dir> override lets the fires-and-clears spec point at
+// a synthetic temp directory without touching real history/.
+const dirIdx = process.argv.indexOf("--history");
+const HISTORY_DIR = dirIdx >= 0
+  ? path.resolve(process.argv[dirIdx + 1])
+  : path.join(__dirname, "history");
 
 // KNOWN_EXCEPTIONS — MUST match the allowlist in
 // scripts/test-standing.mjs. Duplicated intentionally to keep this
