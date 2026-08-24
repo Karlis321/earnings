@@ -1,0 +1,115 @@
+{
+  "schema": "audit-report/v1",
+  "generatedAt": "2026-08-24T10:37:31.681Z",
+  "sections": {
+    "D14": {
+      "ok": false,
+      "tail": "1214/1214 passed\n\n===============================\n  ✗  pipeline-report status=ok\n  ✓  cross-listing invariant fires + clears\n  ✓  surprise-inconsistency invariant fires + clears\n  ✓  freshness.stale>10 invariant fires + clears\n  ✓  news normalizer handles malformed fixture\n  ✓  report-attachment invariant fires + clears\n  ✗  sp500_complete_pct floor fires + clears\n  ✓  every index event id resolves in its shard\n  ✓  summaries validate against schema\nElapsed: 99.7s\n\n✗ 2 test(s) failed\n\n✗ pipeline-report status=\"degraded\" — reasons:\n    · reported_without_document=182 — past events with actuals but no filing sourceLink (systemic gap)\n✗ SP500 completeness corruption test failed (exit 1)\n"
+    },
+    "F17_sector_ideas": {
+      "themes": 6,
+      "ok": 6,
+      "sectorFail": 0,
+      "tickerFail": 0,
+      "headlineFail": 0,
+      "dataPointsFail": 0
+    },
+    "F17_week_ahead": {
+      "highlights": 7,
+      "ok": 7,
+      "bad": 0
+    },
+    "F17_summaries": {
+      "total": 1214,
+      "sampled": 10,
+      "ok": 10,
+      "missingTicker": 0,
+      "note": "sample-only — 1204 summaries unverified in this pass"
+    },
+    "A_completeness": {
+      "universe": 1038,
+      "operating": 1032,
+      "developer": 3,
+      "etf": 3,
+      "noMetrics": 0,
+      "noNextDate": 0,
+      "noReactions": 0
+    },
+    "E_correlations": {
+      "tickers": 17,
+      "asym": 0,
+      "nanCells": 0,
+      "nullCells": 0,
+      "diagBad": 0
+    },
+    "E_commodities": {
+      "items": 8,
+      "errored": []
+    },
+    "E_sector_history": {
+      "rows": 17,
+      "uniqueDates": 1,
+      "dupes": 0
+    },
+    "F15_pipeline": {
+      "status": "degraded",
+      "reasons": [
+        "reported_without_document=182 — past events with actuals but no filing sourceLink (systemic gap)"
+      ],
+      "events_total": 21496,
+      "reactions_computed": 70609,
+      "duplicates_detected": 0
+    },
+    "F18_git": {
+      "head": "2e5d4e4f31ab7c1026d665937fc09edf8ef46cf7",
+      "parent": "a9e25495cee68d38dedd9dcbc51573f9e974f98b",
+      "hasAncestry": true
+    }
+  },
+  "findings": [
+    {
+      "section": "§D14",
+      "severity": "FAIL",
+      "msg": "standing tests: 2 test(s) failed",
+      "evidence": {
+        "tail": "1214/1214 passed\n\n===============================\n  ✗  pipeline-report status=ok\n  ✓  cross-listing invariant fires + clears\n  ✓  surprise-inconsistency invariant fires + clears\n  ✓  freshness.stale>10 invariant fires + clears\n  ✓  news normalizer handles malformed fixture\n  ✓  report-attachment invariant fires + clears\n  ✗  sp500_complete_pct floor fires + clears\n  ✓  every index event id resolves in its shard\n  ✓  summaries validate against schema\nElapsed: 99.7s\n\n✗ 2 test(s) failed\n\n✗ pipeline-report status=\"degraded\" — reasons:\n    · reported_without_document=182 — past events with actuals but no filing sourceLink (systemic gap)\n✗ SP500 completeness corruption test failed (exit 1)\n"
+      }
+    },
+    {
+      "section": "§F15.pipeline",
+      "severity": "DEGRADED",
+      "msg": "pipeline-report status=degraded",
+      "evidence": {
+        "reasons": [
+          "reported_without_document=182 — past events with actuals but no filing sourceLink (systemic gap)"
+        ]
+      }
+    }
+  ],
+  "unverified": [
+    {
+      "section": "§F17.blue-ocean",
+      "reason": "data/screens/blue-ocean.json missing (first workflow fire scheduled Sept 1-2)"
+    },
+    {
+      "section": "§F17.rule-breaker",
+      "reason": "data/screens/rule-breaker.json missing (first workflow fire scheduled Sept 1-2)"
+    },
+    {
+      "section": "§F17.summaries.full",
+      "reason": "only 10 of 1214 summaries sampled — full corpus reconciliation is out of scope for the thin first-pass audit"
+    },
+    {
+      "section": "§C.source-previews",
+      "reason": "requires api/documents/proxy against live deploy"
+    },
+    {
+      "section": "§G.endpoint-health",
+      "reason": "requires HTTP sampling against live deploy"
+    },
+    {
+      "section": "§F16.workflow-schedule",
+      "reason": "requires GitHub Actions run-history read (auth-gated)"
+    }
+  ]
+}
