@@ -39,6 +39,7 @@ import {
 } from "@/components/primitives";
 import { EARNINGS_FIXTURE } from "@/lib/fixtures/earnings";
 import { ETF_DETAILS } from "@/lib/fixtures/etf";
+import { GOOGLE_SEARCH_FIXTURE_ITEM } from "@/lib/fixtures/viewerFixtures";
 import { useState } from "react";
 
 function Section({
@@ -199,6 +200,20 @@ export default function GalleryPage() {
           </Card>
           <div className="flex flex-col gap-4">
             <SourceItemCard item={intel.sources.items[0]} />
+            {/* FIXTURE-ONLY — used by scripts/audits/viewer-source-check.mjs
+                to runtime-prove the SearchFallbackCard code path. The item's
+                url is a google.com/search link, which trips isSearchFallback
+                in SourceViewer.tsx (line 73) and routes to SearchFallbackCard
+                without ever mounting an iframe. Not real data. */}
+            <div
+              data-testid="viewer-fixture-google-search"
+              className="rounded-panel border border-dashed border-bd bg-s1/60 p-4"
+            >
+              <div className="mono-eyebrow mb-2 text-tx3">
+                Fixture · google-search item (audit-only)
+              </div>
+              <SourceItemCard item={GOOGLE_SEARCH_FIXTURE_ITEM} />
+            </div>
             <div className="rounded-panel border border-bd2 bg-s2 p-4 shadow-[var(--sh-popover)]">
               <div className="mono-eyebrow mb-3">Fact popover · inline demo</div>
               <FactPopover

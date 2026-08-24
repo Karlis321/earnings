@@ -87,9 +87,9 @@ const CASES = [
   },
   {
     name: "2. Google-search fallback — SearchFallbackCard immediately",
-    ticker: "CS CN",
+    ticker: "__gallery-fixture__",
     expectation: "search-fallback-card",
-    unreachableViaMetricClicks: true,
+    galleryFixture: true,
   },
   {
     name: "3. Framing-blocked (best-effort) — anything but blank",
@@ -165,16 +165,46 @@ async function runCase(browser, c) {
   const evidence = [];
   try {
     evidence.push(`base=${BASE} · ticker=${c.ticker}`);
-    // Case 2 is not reachable via metric-Fact clicks — mark SKIP
-    // with rationale rather than pretending to test it.
-    if (c.unreachableViaMetricClicks) {
-      record(c.name, "SKIP", [
-        ...evidence,
-        "SearchFallbackCard is triggered when the viewer opens with a URL matching google.com/search;",
-        "no metric-Fact.source.url or SourceItem.url in the current corpus matches that pattern.",
-        "Code path is verified by diff-review (isSearchFallback → SearchFallbackCard at SourceViewer.tsx:73-82,264).",
-        "To test in-browser, seed a SourceItem with url='https://www.google.com/search?q=...' and open it.",
-      ]);
+    // Case 2 uses a seeded SourceItem on /gallery (frontend/lib/
+    // fixtures/viewerFixtures.ts). Real corpus has no google.com/
+    // search Fact.source.url or SourceItem.url, so this is the
+    // only runtime-reachable trigger of the SearchFallbackCard path.
+    if (c.galleryFixture) {
+      await page.goto(`${BASE}/gallery`, {
+        waitUntil: "domcontentloaded",
+        timeout: 20_000,
+      });
+      await page.waitForTimeout(2500); // hydrate
+      const fixtureBlock = page.locator("[data-testid=viewer-fixture-google-search]");
+      const fixtureCount = await fixtureBlock.count();
+      if (fixtureCount === 0) {
+        record(c.name, "FAIL", [
+          ...evidence,
+          "fixture block [data-testid=viewer-fixture-google-search] not found on /gallery",
+        ]);
+        return;
+      }
+      // Click the headline OR "View source →" inside the fixture card.
+      const trigger = fixtureBlock.locator("button:has-text(\"View source\")").first();
+      const t0 = Date.now();
+      await trigger.click({ timeout: 3000 });
+      // Race outcomes: iframe mounts (fail) vs SearchFallbackCard (pass)
+      // vs neither (fail — blank pane).
+      const outcome = await Promise.race([
+        page.waitForSelector("iframe", { timeout: 3000 }).then(() => "iframe"),
+        page.locator("text=/Primary filing not on record|Open Google search/i").waitFor({ timeout: 3000 }).then(() => "search-card"),
+        page.waitForTimeout(3100).then(() => "timeout"),
+      ]).catch((e) => `error:${e.message?.slice(0, 80)}`);
+      const elapsed = Date.now() - t0;
+      const iframeCount = await page.locator("iframe").count();
+      const cardVisible = await page
+        .locator("text=/Primary filing not on record|Open Google search/i")
+        .isVisible()
+        .catch(() => false);
+      evidence.push(`fixture trigger · outcome=${outcome} in ${elapsed}ms`);
+      evidence.push(`iframe count=${iframeCount} · SearchFallbackCard visible=${cardVisible}`);
+      const pass = iframeCount === 0 && cardVisible;
+      record(c.name, pass ? "PASS" : "FAIL", evidence);
       return;
     }
     const found = await openSource(page, c.ticker);
