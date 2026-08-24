@@ -189,16 +189,19 @@ async function runCase(browser, c) {
       const t0 = Date.now();
       await trigger.click({ timeout: 3000 });
       // Race outcomes: iframe mounts (fail) vs SearchFallbackCard (pass)
-      // vs neither (fail — blank pane).
+      // vs neither (fail — blank pane). Use .first() because the
+      // SearchFallbackCard renders the pattern twice (title + button)
+      // and Playwright's strict mode errors on multiple matches.
       const outcome = await Promise.race([
         page.waitForSelector("iframe", { timeout: 3000 }).then(() => "iframe"),
-        page.locator("text=/Primary filing not on record|Open Google search/i").waitFor({ timeout: 3000 }).then(() => "search-card"),
+        page.locator("text=/Primary filing not on record|Open Google search/i").first().waitFor({ timeout: 3000 }).then(() => "search-card"),
         page.waitForTimeout(3100).then(() => "timeout"),
       ]).catch((e) => `error:${e.message?.slice(0, 80)}`);
       const elapsed = Date.now() - t0;
       const iframeCount = await page.locator("iframe").count();
       const cardVisible = await page
         .locator("text=/Primary filing not on record|Open Google search/i")
+        .first()
         .isVisible()
         .catch(() => false);
       evidence.push(`fixture trigger · outcome=${outcome} in ${elapsed}ms`);
