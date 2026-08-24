@@ -85,7 +85,7 @@ jobs:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           prompt: ${{ steps.prompt.outputs.text }}
           show_full_output: true
-          # git allowlist — identical to ideas.yml / claude-summarize.yml.
+          # git allowlist — identical to sector-ideas.yml / claude-summarize.yml.
           # Additive safe commands only. Blocks: git init, git reset,
           # git rebase --root/-i, git filter-branch, git worktree,
           # git gc, git prune, git clean -f, git push --force / -f.
@@ -117,7 +117,7 @@ jobs:
             "Bash(grep *)"
             Read Write Edit
 
-      # Ancestry tripwire — identical logic to ideas.yml + claude-
+      # Ancestry tripwire — identical logic to sector-ideas.yml + claude-
       # summarize.yml. Fails loud if Claude produces a HEAD that
       # doesn't descend from the pre-run baseline.
       - name: Verify commit ancestry (orphan tripwire)
