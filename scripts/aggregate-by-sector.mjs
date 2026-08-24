@@ -182,10 +182,36 @@ async function main() {
       .filter((v) => typeof v === "number");
     const totalSourceCount = rows.reduce((s, r) => s + (r.sourceCount ?? 0), 0);
 
-    // Pull headlines only for top movers (bounded shard reads)
+    // Pull headlines from a WIDER net: top movers + top by news
+    // volume. The initial version capped at 5 top movers, which
+    // starved big news-rich sectors like industrials (7312 items
+    // across 500 tickers but 0-2 headlines because the 5 top movers
+    // happened to be news-quiet). Take the top-30 by news + top
+    // movers (union, deduped) so a news-thick sector always has
+    // enough recentHeadlines[] for /sector-ideas to draw from.
+    const HEADLINE_CANDIDATES = 30;
+    const byNews = rows
+      .slice()
+      .sort((a, b) => (b.sourceCount ?? 0) - (a.sourceCount ?? 0))
+      .slice(0, HEADLINE_CANDIDATES);
+    const seenTickers = new Set();
+    const headlineFrom = [];
+    for (const m of topMovers) {
+      if (!seenTickers.has(m.ticker)) {
+        headlineFrom.push(m);
+        seenTickers.add(m.ticker);
+      }
+    }
+    for (const r of byNews) {
+      if (!seenTickers.has(r.ticker)) {
+        headlineFrom.push(r);
+        seenTickers.add(r.ticker);
+      }
+    }
+
     const headlines = [];
-    for (const mover of topMovers) {
-      const list = await readShardHeadlines(mover.ticker, cutoffIso);
+    for (const r of headlineFrom) {
+      const list = await readShardHeadlines(r.ticker, cutoffIso);
       headlines.push(...list);
     }
     // Sort headlines newest-first, keep the top 20 for the panel
