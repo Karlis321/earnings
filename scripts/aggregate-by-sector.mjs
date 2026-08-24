@@ -244,11 +244,40 @@ async function main() {
     return bv - av;
   });
 
+  // Cross-sector conviction — count how many "hot" sectors each
+  // ticker participates in. A hot sector is one where the median
+  // 3-day reaction crosses the same 2% threshold sector-ideas uses.
+  // A ticker landing in 2+ hot sectors is genuine convergence — e.g.
+  // HBM US in both mining +6.6% and copper +2.6% is a real
+  // cross-signal, not a coincidence.
+  const HOT_REACTION_THRESHOLD = 2.0;
+  const hotSectors = new Set(
+    sectorsOut
+      .filter((s) => Math.abs(s.medianReaction3d ?? 0) >= HOT_REACTION_THRESHOLD)
+      .map((s) => s.sector),
+  );
+  const hotCountByTicker = new Map();
+  for (const s of sectorsOut) {
+    if (!hotSectors.has(s.sector)) continue;
+    for (const t of s.tickers) {
+      hotCountByTicker.set(t, (hotCountByTicker.get(t) ?? 0) + 1);
+    }
+  }
+  // Stamp onto each top mover so the UI can render a ×N badge
+  // without needing to recompute at render time.
+  for (const s of sectorsOut) {
+    for (const m of s.topMovers) {
+      m.hotSectorCount = hotCountByTicker.get(m.ticker) ?? 0;
+    }
+  }
+
   const out = {
     schema: "sector-signals/v1",
     generatedAt: new Date().toISOString(),
     newsWindowDays: NEWS_WINDOW_DAYS,
     minTickersPerSector: MIN_TICKERS_PER_SECTOR,
+    hotReactionThreshold: HOT_REACTION_THRESHOLD,
+    hotSectors: [...hotSectors].sort(),
     sectors: sectorsOut,
   };
 

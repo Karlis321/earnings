@@ -196,6 +196,14 @@ function SectorCard({ s }: { s: Sector }) {
                   <span className="font-mono text-brand-fg">{m.ticker}</span>
                   <span className="ml-1.5 text-tx-mid">{m.displayName}</span>
                 </Link>
+                {(m.hotSectorCount ?? 0) >= 2 ? (
+                  <span
+                    className="rounded-[3px] border border-brand/40 bg-brand/10 px-1 py-[1px] font-mono text-[9.5px] uppercase tracking-[0.06em] text-brand-fg"
+                    title={`In ${m.hotSectorCount} hot sectors — cross-signal conviction`}
+                  >
+                    ×{m.hotSectorCount}
+                  </span>
+                ) : null}
                 <span
                   className={`ml-auto font-mono text-[11.5px] tabular-nums ${reactionClass(m.reaction3d)}`}
                 >

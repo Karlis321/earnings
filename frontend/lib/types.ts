@@ -152,6 +152,11 @@ export interface SectorTopMover {
   lastSurprisePct: number | null;
   lastEventDate: string | null;
   lastPeriod: string | null;
+  // Count of "hot" sectors (median |reaction3d| >= threshold) the
+  // ticker participates in. Rendered as a ×N conviction badge on
+  // /themes when >= 2 (multi-hot participation = real convergence).
+  // Optional so older snapshots without the field still parse.
+  hotSectorCount?: number;
 }
 export interface SectorHeadline {
   ticker: string;
@@ -175,6 +180,11 @@ export interface SectorSignals {
   generatedAt: string;
   newsWindowDays: number;
   minTickersPerSector: number;
+  // Threshold used to classify a sector as "hot" for cross-sector
+  // conviction. A sector is hot when |medianReaction3d| >= this.
+  // Optional so older snapshots without the field still parse.
+  hotReactionThreshold?: number;
+  hotSectors?: string[];
   sectors: Sector[];
 }
 
