@@ -159,11 +159,19 @@ function buildIndexEntry(ticker, events, entity) {
       const out = {};
       for (const m of latest.metrics ?? []) {
         if (m.actual?.value == null || !m.key) continue;
+        // crossBasisCleared surfaces on the index so the watchlist row
+        // can render 'reported · basis mismatch' instead of the more
+        // ambiguous 'reported · no est' when sanitize-basis cleared
+        // the surprise. Presence of any _crossBasisSurprise entry means
+        // we DID have both sides — they were just on incompatible bases.
+        const crossBasisCleared = Array.isArray(m._crossBasisSurprise)
+          && m._crossBasisSurprise.length > 0;
         out[m.key] = {
           value: m.actual.value,
           unit: m.actual.unit ?? null,
           surprisePct: m.surprisePct ?? null,
           label: m.displayLabel ?? m.key,
+          crossBasisCleared,
         };
       }
       return Object.keys(out).length > 0 ? out : undefined;

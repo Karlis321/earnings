@@ -705,6 +705,11 @@ export interface WatchlistRow {
       unit: string | null;
       surprisePct: number | null;
       label: string;
+      // true when the metric had BOTH sides but sanitize-basis cleared
+      // surprisePct because they came from incompatible accounting
+      // bases (e.g. SEC GAAP actual vs Yahoo adjusted-EPS consensus).
+      // Optional so older index files parse cleanly.
+      crossBasisCleared?: boolean;
     }
   >;
   // These three are populated by the builders but not consumed by any
@@ -798,6 +803,11 @@ export interface EventsIndexEntry {
       unit: string | null;
       surprisePct: number | null;
       label: string;
+      // true when the metric had BOTH sides but sanitize-basis cleared
+      // surprisePct because they came from incompatible accounting
+      // bases (e.g. SEC GAAP actual vs Yahoo adjusted-EPS consensus).
+      // Optional so older index files parse cleanly.
+      crossBasisCleared?: boolean;
     }
   >;
 }

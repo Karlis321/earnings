@@ -894,6 +894,12 @@ function Row({
     ? (autoPicked ? { ...autoPicked, key: undefined } : null)
     : r.latestMetrics?.[columnMetric];
   const columnMetricSurprise = colMetricEntry?.surprisePct ?? null;
+  // Cross-basis flag on the picked metric — set by shard-earnings when
+  // sanitize-basis had both sides but cleared the surprise as
+  // incompatible. Drives the 'reported · basis mismatch' pill label.
+  const columnMetricCrossBasisCleared =
+    (colMetricEntry as { crossBasisCleared?: boolean } | null | undefined)
+      ?.crossBasisCleared === true;
   const metricMissing = columnMetric !== "__auto__" && !r.latestMetrics?.[columnMetric];
   // Raw Yahoo lastQuarter.surprisePct is intentionally excluded from
   // this fallback chain. Yahoo computes surprise as (actual-est)/est
@@ -1059,6 +1065,12 @@ function Row({
             // for this ticker — the actual is reported, we just may not
             // have an estimate to compare against.
             hasActual={r.lastPeriod != null}
+            // When the picked metric's surprise was cleared as
+            // cross-basis (SEC GAAP actual vs analyst adjusted
+            // estimate), render 'reported · basis mismatch' instead of
+            // 'reported · no est' — we HAD both sides, they were just
+            // apples-to-oranges.
+            crossBasisCleared={surprise == null && columnMetricCrossBasisCleared}
             compact
           />
         )}
