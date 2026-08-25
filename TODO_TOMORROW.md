@@ -2,6 +2,77 @@
 
 Small named items that need a follow-up, not fresh design work.
 
+## Rederive SEC-XBRL match bug (2026-08-25)
+
+Universe audit turned up systemic revenue-value mismatches vs SEC —
+same class of bug across every fiscal-offset issuer. Full evidence
+at `scripts/audits/revenue-reality-check.json`
+(schema `revenue-reality-check/v1`).
+
+**Root cause.** SEC's XBRL API returns each pure-quarter fact TWICE:
+once when originally filed (labeled with the reporting fiscal year)
+and again as a prior-year comparative in the NEXT year's 10-Q
+(labeled with THAT filing's fiscal year — even though the fact's
+actual `end` is a year earlier). Both facts pass an `fy+fp+80-100d`
+filter, so `scripts/backfills/rederive-sec-xbrl.mjs`'s
+`extractQuarterValues()` picks the WRONG one on issuers whose fiscal
+calendar creates label overlap (NVDA, INTU, MU, AAPL international,
+etc.). The right key is SEC `filed`-date proximity to the event's
+`eventDate`, then pick the fact whose `end` is closest to but
+before `filed` (the reporting quarter, not the year-old comparative).
+
+**Audit results — top offenders (101 flagged, 38 CIKs, 8204 checked):**
+
+| CIK | Company | Listings | Events | Max Δ |
+|---|---|---:|---:|---:|
+| 1045810 | NVDA | 5 (US + MM + BZ + CN + TB) | 21 | 85% |
+| 104169 | WMT | 3 | 9 | 7% |
+| 88941 | SMTC | 2 | 8 | 16% |
+| 320193 | AAPL | 3 international | 6 | 23% |
+| 100591 | ARG FP / 871 GR | 2 | 4 | 50% |
+| 924805 | FRHC US | 1 | 2 | 110% |
+| 896878 | INTU | 1 | 2 | 84% |
+| 723125 | MU | 1 | 2 | 75% |
+| 1666700 | DD US | 1 | 2 | 46% |
+
+Delta bands: 60 events at 5-20%, 30 at 20-50%, 10 at 50-100%, 1 >100%.
+
+**Two-part fix (~30 min total):**
+
+1. **Fix `rederive-sec-xbrl.mjs`** — replace the `fy+fp` matcher in
+   `extractQuarterValues()` with a `filed`-date matcher, mirroring
+   `pickMatchingFact()` in `scripts/audits/revenue-reality-check.mjs`.
+   Match by SEC `filed` within ±3 days of `event.eventDate`, then
+   among matches pick the fact whose `filed - end` gap is smallest
+   (the current-quarter fact, not the year-old comparative).
+
+2. **Rerun rederive on the 38 flagged CIKs** — targeted, not
+   universe-wide. After it lands, regenerate `data/events-index.json`
+   so the watchlist Y/Y-growth chip uses the corrected values.
+   Spot-check NVDA + INTU + MU + AAPL post-run.
+
+**Also worth adding as belt-and-suspenders:** wire the reality-check
+into a nightly guard (`scripts/audits/revenue-reality-check.mjs` as
+a new phase in `scripts/audits/full-audit.mjs`, or its own audit
+step). Failing loud on new mismatches is cheaper than the manual
+audit we ran today.
+
+## Watchlist Y/Y-growth chip — follow-ups from 2026-08-25
+
+Everything else from the same session:
+
+- **NVDA Y/Y showed -46%** in the Y/Y-rev-growth chip that shipped in
+  commit `b8a743cc8`. Root cause is the rederive bug above (value
+  swap in shard). Will auto-clear once the CIK rederive fix lands.
+- **`_crossBasisSurprise` label wording** — the pill currently says
+  "reported · basis mismatch" for the SP500 rows without Y/Y data.
+  Consider tightening the tooltip explanation (only ~4 rows fall
+  into this bucket now, but the label still shows).
+- **Two `SortKey` types living in separate files** (WatchlistTable +
+  WatchlistFilterPopover) — unify. Non-urgent; caused a Vercel
+  build break during the pill-strip commit but the fix was a
+  one-line add.
+
 ## Post-refresh follow-ups (2026-08-05)
 
 Not blocking, but worth doing when you have time:
