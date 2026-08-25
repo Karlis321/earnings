@@ -895,11 +895,19 @@ function Row({
     : r.latestMetrics?.[columnMetric];
   const columnMetricSurprise = colMetricEntry?.surprisePct ?? null;
   const metricMissing = columnMetric !== "__auto__" && !r.latestMetrics?.[columnMetric];
+  // Raw Yahoo lastQuarter.surprisePct is intentionally excluded from
+  // this fallback chain. Yahoo computes surprise as (actual-est)/est
+  // without any basis reconciliation, so cases like GOOGL Q2 2026
+  // (SEC GAAP actual 9.11 including a $99B unrealized SpaceX gain
+  // vs Yahoo analyst-consensus adjusted estimate 2.89) produce
+  // meaningless numbers like +214%. Our stored r.lastSurprisePct and
+  // columnMetricSurprise DO have the same-basis check applied — when
+  // they're null we should render 'reported · basis mismatch' or
+  // 'reported · no est', not fall through to Yahoo's raw math.
   const surprise =
     columnMetricSurprise ??
     reactionPct ??
     r.lastSurprisePct ??
-    yahoo?.lastQuarter?.surprisePct ??
     null;
   const nextIso = r.nextEvent.date ?? yahoo?.nextEarningsDate ?? null;
   // Date-only diff (via daysUntil helper) — both sides anchor at UTC
