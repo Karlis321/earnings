@@ -49,6 +49,11 @@ function slimReactionPoint(
     horizon: p.horizon,
     absReturn: p.absReturn,
   };
+  // excessReturn kept on the row shape (was previously stripped) so
+  // the watchlist Quick-Sort pill 'Reaction d3' can rank by
+  // excess-vs-benchmark. Small wire cost — 4 numbers × 3500 rows ≈
+  // negligible against the 12MB events-index baseline.
+  if (p.excessReturn != null) out.excessReturn = p.excessReturn;
   if (p.clipped) out.clipped = true;
   if (p.contaminated) out.contaminated = true;
   if (p.status) out.status = p.status;

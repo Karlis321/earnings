@@ -668,6 +668,11 @@ export type WatchlistEntity = Pick<
 export interface WatchlistReactionPoint {
   horizon: Horizon;
   absReturn: number | null;
+  // Present when the row builder emitted it (post-2026-08-25). Used
+  // by the watchlist Quick-Sort pill 'Reaction d3'. Kept optional so
+  // older index snapshots parse cleanly and event-detail views can
+  // still fetch a fresh reaction from the shard when they need one.
+  excessReturn?: number | null;
   clipped?: boolean;
   contaminated?: boolean;
   // Rendering gate on WatchlistTable's "Last surprise" column — only

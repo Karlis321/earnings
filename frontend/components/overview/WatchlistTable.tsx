@@ -133,6 +133,7 @@ type FixedSortKey =
   | "surprise-rev"
   | "reaction"
   | "reaction-d3"
+  | "reaction-d3-excess"
   | "reaction-w1"
   | "reaction-m1"
   | "reaction-loss"
@@ -436,6 +437,14 @@ export function WatchlistTable({
         case "reaction-d3": {
           const av = a.reactionPoints?.find((p) => p.horizon === "d3")?.absReturn ?? -Infinity;
           const bv = b.reactionPoints?.find((p) => p.horizon === "d3")?.absReturn ?? -Infinity;
+          return bv - av;
+        }
+        case "reaction-d3-excess": {
+          // Quick-Sort pill: excess return at d3 (vs assigned benchmark).
+          // Rows without a d3 point OR without excessReturn on that
+          // point sink to the bottom.
+          const av = a.reactionPoints?.find((p) => p.horizon === "d3")?.excessReturn ?? -Infinity;
+          const bv = b.reactionPoints?.find((p) => p.horizon === "d3")?.excessReturn ?? -Infinity;
           return bv - av;
         }
         case "reaction-w1": {
@@ -1187,6 +1196,42 @@ function FilterBar({
             )}
           >
             {f.label}
+          </button>
+        ))}
+      </div>
+      {/*
+        Quick-Sort pills. Three keys that are populated on essentially
+        every operating row in the events-index — safe to sort by
+        without leaving big chunks of the universe unranked. The
+        popover on the right still has the full sort/group/tier
+        surface for expert use.
+      */}
+      <div className="flex rounded-button border border-bd bg-s1 p-[3px]">
+        {(
+          [
+            { id: "cap", label: "Market cap" },
+            { id: "reaction-d3-excess", label: "Reaction d3" },
+            { id: "next", label: "Next event" },
+          ] as { id: FixedSortKey; label: string }[]
+        ).map((s) => (
+          <button
+            key={s.id}
+            onClick={() => setSortKey(s.id)}
+            className={clsx(
+              "rounded-[6px] px-3 py-[5px] text-[12.5px]",
+              sortKey === s.id
+                ? "bg-s3 font-medium text-tx"
+                : "text-tx2 hover:text-tx",
+            )}
+            title={
+              s.id === "cap"
+                ? "Sort largest cap first"
+                : s.id === "reaction-d3-excess"
+                ? "Sort by 3-day excess return vs benchmark (strongest first)"
+                : "Sort by soonest upcoming report"
+            }
+          >
+            {s.label}
           </button>
         ))}
       </div>
