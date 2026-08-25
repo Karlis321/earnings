@@ -15,13 +15,41 @@ export function SurprisePill({
   // than they inform. Show a specific label so the reader knows why
   // there's no number.
   crossBasisCleared = false,
+  // Y/Y revenue growth fallback — when there's no clean surprise to
+  // show, but we DO know how the reported quarter compares to the
+  // same quarter last year, surface that as a labeled chip instead
+  // of the generic 'reported · basis mismatch' / 'reported · no est'.
+  // Universal signal that works for 84% of operating rows (Yahoo
+  // doesn't publish revenue estimates but the actuals are on file).
+  yoyRevGrowthPct = null,
 }: {
   surprisePct: number | null;
   compact?: boolean;
   hasActual?: boolean | null;
   crossBasisCleared?: boolean;
+  yoyRevGrowthPct?: number | null;
 }) {
   if (surprisePct === null) {
+    // Prefer the Y/Y revenue-growth chip when we have it — universally
+    // populated and more informative than the generic 'basis mismatch'
+    // or 'no est' labels. Renders as a labeled '+X% y/y rev' chip in
+    // the same shape as the beat/miss pill, but styled tx-mid (not
+    // green/red) so it reads as ancillary rather than headline.
+    if (yoyRevGrowthPct !== null && yoyRevGrowthPct !== undefined && Number.isFinite(yoyRevGrowthPct)) {
+      const sign = yoyRevGrowthPct > 0 ? "+" : "";
+      return (
+        <span
+          className="inline-flex items-center rounded-[6px] border border-bd2 bg-s3 px-[7px] py-[2px] font-mono text-[11.5px] text-tx2 tabular-nums"
+          title={
+            crossBasisCleared
+              ? "EPS surprise was cleared (GAAP actual vs adjusted-EPS consensus). Showing Y/Y revenue growth on the latest reported quarter instead."
+              : "No same-basis EPS surprise available. Showing Y/Y revenue growth on the latest reported quarter."
+          }
+        >
+          {sign}{yoyRevGrowthPct.toFixed(1)}% y/y rev
+        </span>
+      );
+    }
     if (crossBasisCleared) {
       return (
         <span

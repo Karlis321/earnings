@@ -699,6 +699,12 @@ export interface WatchlistRow {
   // Revenue surprise on the latest reported event, if present with a
   // same-basis actual + estimate. Sort dimension on the watchlist.
   lastRevenueSurprisePct?: number | null;
+  // Y/Y revenue growth on the latest reported quarter. Computed at
+  // shard-earnings time by matching latest.period to same-quarter
+  // one fiscal year back (FY2026 Q2 → FY2025 Q2). Used as the
+  // Beat/miss column fallback when a same-basis surprise isn't
+  // available. Optional so older index snapshots parse cleanly.
+  yoyRevenueGrowthPct?: number | null;
   // Per-metric snapshot from the latest reported event. Keyed by
   // metric.key (e.g. "revenue_usd_m", "operating_income_usd_m",
   // "capex_total"). Enables dynamic "sort by <specific metric>"
@@ -761,6 +767,13 @@ export interface EventsIndexEntry {
   lastEventDate: string | null; // ISO YYYY-MM-DD
   lastPeriod: string | null;
   lastSurprisePct: number | null;
+  // Y/Y revenue growth on the latest reported quarter. Computed by
+  // shard-earnings.mjs when both the latest and same-quarter-prior
+  // events carry revenue_usd_m actuals. Fills the Beat/miss column
+  // when the same-basis surprise isn't available (most SP500 rows,
+  // since Yahoo doesn't publish revenue estimates for most tickers
+  // and the EPS estimate is adjusted-basis vs SEC GAAP actual).
+  yoyRevenueGrowthPct?: number | null;
   nextEventId: string | null;
   nextScheduled: string | null; // ISO YYYY-MM-DD
   nextPeriod: string | null;

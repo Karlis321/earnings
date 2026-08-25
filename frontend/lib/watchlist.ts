@@ -343,6 +343,7 @@ export function buildWatchlistRowsFromIndex(
       },
       lastPeriod: idx?.lastPeriod ?? null,
       lastSurprisePct: idx?.lastSurprisePct ?? null,
+      yoyRevenueGrowthPct: idx?.yoyRevenueGrowthPct ?? null,
       // Revenue surprise · derived by walking idx.latestMetrics for
       // any revenue-family key that has a surprisePct.
       lastRevenueSurprisePct: (() => {

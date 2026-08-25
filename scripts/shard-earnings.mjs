@@ -62,6 +62,31 @@ function buildIndexEntry(ticker, events, entity) {
       ? latest.reaction.points
       : undefined;
 
+  // Y/Y revenue growth on the latest reported quarter. Fills the
+  // "Beat/miss" column when a same-basis surprise isn't available
+  // (which is 98% of the SP500 universe — Yahoo doesn't publish
+  // revenue estimates for most tickers, and the EPS estimate is
+  // adjusted-basis so it can't compare to SEC GAAP). Match by period
+  // label: latest 'FY2026 Q2' pairs with prior 'FY2025 Q2'. Fiscal
+  // labels flow through unchanged (Japanese banks, SAP, ABI report
+  // fiscal quarters not calendar — the label carries the invariant).
+  let yoyRevenueGrowthPct = undefined;
+  if (latest?.period) {
+    const revActual = (latest.metrics ?? []).find((m) => m.key === "revenue_usd_m")?.actual?.value ?? null;
+    if (revActual != null && revActual !== 0) {
+      const priorPeriod = latest.period.replace(/FY(\d{4})/, (_, y) => `FY${parseInt(y, 10) - 1}`);
+      if (priorPeriod !== latest.period) {
+        const priorEvent = past.find((e) => e.period === priorPeriod);
+        const priorRev = priorEvent
+          ? ((priorEvent.metrics ?? []).find((m) => m.key === "revenue_usd_m")?.actual?.value ?? null)
+          : null;
+        if (priorRev != null && priorRev !== 0) {
+          yoyRevenueGrowthPct = ((revActual - priorRev) / Math.abs(priorRev)) * 100;
+        }
+      }
+    }
+  }
+
   // Forward-growth signal for the ranking script (Feature 3A). Compare
   // the next event's analyst estimate vs. the latest past actual for
   // the same metric. Prefer revenue (most-often-populated on the
@@ -102,6 +127,10 @@ function buildIndexEntry(ticker, events, entity) {
     lastEventDate: latest?.eventDate ?? null,
     lastPeriod: latest?.period ?? null,
     lastSurprisePct,
+    // Y/Y revenue growth on the latest reported quarter. Fallback
+    // display for the Beat/miss column when the same-basis surprise
+    // isn't available. See computation above.
+    yoyRevenueGrowthPct,
     nextEventId: nextEvent?.id ?? null,
     nextScheduled: nextEvent?.scheduledDate ?? null,
     nextPeriod: nextEvent?.period ?? null,

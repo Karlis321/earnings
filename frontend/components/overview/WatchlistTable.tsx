@@ -1080,6 +1080,10 @@ function Row({
             // 'reported · no est' — we HAD both sides, they were just
             // apples-to-oranges.
             crossBasisCleared={surprise == null && columnMetricCrossBasisCleared}
+            // Y/Y revenue growth fallback for the 98% of SP500 rows
+            // where a same-basis surprise isn't computable. Rendered
+            // as a labeled '+X% y/y rev' chip inside SurprisePill.
+            yoyRevGrowthPct={r.yoyRevenueGrowthPct}
             compact
           />
         )}
@@ -1196,42 +1200,6 @@ function FilterBar({
             )}
           >
             {f.label}
-          </button>
-        ))}
-      </div>
-      {/*
-        Quick-Sort pills. Three keys that are populated on essentially
-        every operating row in the events-index — safe to sort by
-        without leaving big chunks of the universe unranked. The
-        popover on the right still has the full sort/group/tier
-        surface for expert use.
-      */}
-      <div className="flex rounded-button border border-bd bg-s1 p-[3px]">
-        {(
-          [
-            { id: "cap", label: "Market cap" },
-            { id: "reaction-d3-excess", label: "Reaction d3" },
-            { id: "next", label: "Next event" },
-          ] as { id: FixedSortKey; label: string }[]
-        ).map((s) => (
-          <button
-            key={s.id}
-            onClick={() => setSortKey(s.id)}
-            className={clsx(
-              "rounded-[6px] px-3 py-[5px] text-[12.5px]",
-              sortKey === s.id
-                ? "bg-s3 font-medium text-tx"
-                : "text-tx2 hover:text-tx",
-            )}
-            title={
-              s.id === "cap"
-                ? "Sort largest cap first"
-                : s.id === "reaction-d3-excess"
-                ? "Sort by 3-day excess return vs benchmark (strongest first)"
-                : "Sort by soonest upcoming report"
-            }
-          >
-            {s.label}
           </button>
         ))}
       </div>
