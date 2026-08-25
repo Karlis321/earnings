@@ -417,6 +417,38 @@ async function main() {
         };
       });
 
+      // Narrow-window decay. Same 90-day threshold as the empty-bars
+      // and pickBaselineIdx-fails decays above. Catches the case where
+      // Yahoo returns SOME bars (baseline seeds successfully) but the
+      // bar window has zero forward span from the baseline — every
+      // horizon offset lands at-or-past the last bar, and the compute
+      // loop's `else return p;` at line 388 leaves the point unchanged.
+      // Silent leak: baselineDate keeps getting re-stamped as today
+      // (bars[0]) while points stay pending forever. RELIANCE.BO /
+      // ITC.BO / etc. show exactly this — baselineDate=today but points
+      // still have computedAt from 5 days ago.
+      const ageDays = (now - new Date(anchor)) / 86_400_000;
+      const anyAdvanced = nextPoints.some(
+        (p) => p.absReturn != null || p.status === "unavailable",
+      );
+      if (!anyAdvanced && ageDays > 90) {
+        const decayed = nextPoints.map((p) => {
+          if (p.absReturn != null) return p;
+          if (p.status === "unavailable") return p;
+          rollup.totals.pointsUnavailable++;
+          return { ...p, status: "unavailable", computedAt: nowIso };
+        });
+        e.reaction = {
+          ...(e.reaction ?? {}),
+          benchmark: t.entity.benchmark ?? e.reaction?.benchmark ?? "",
+          baselineDate,
+          baselineClose,
+          points: decayed,
+        };
+        mutated = true;
+        continue;
+      }
+
       e.reaction = {
         ...(e.reaction ?? {}),
         benchmark: t.entity.benchmark ?? e.reaction?.benchmark ?? "",
