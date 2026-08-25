@@ -178,17 +178,20 @@ X get this value" or "what was the state before Y ran".
   is due (all covered names inside the 5-day freshness window) the
   workflow exits green with 0 commits — expected behaviour, not a
   silent failure.
-- **Daily 06:00 UTC (Mon-Fri)** — `.github/workflows/audit-daily.yml`
+- **Daily 06:00 UTC (Mon-Fri)** — `.github/workflows/sector-ideas.yml`
+  runs `.claude/commands/sector-ideas.md` — reads sector-signals.json
+  only (never raw filings), drafts 5-8 narrative themes, writes
+  `data/sector-ideas.json`. Rendered as the AI panel on `/themes`
+  above the mechanical grid. Runs BEFORE audit-daily so §F17
+  reconcile compares today's regenerated ideas against today's
+  fresh sector-signals (same-snapshot check, no stale-reference
+  false positives).
+- **Daily 06:30 UTC (Mon-Fri)** — `.github/workflows/audit-daily.yml`
   runs `scripts/audits/full-audit.mjs` + compares to the prior
   artifact via `detect-drift.mjs`. READ-ONLY: commits ONLY the new
   `scripts/audits/history/<ISO>.json`; a grep-guard fails the run if
   anything stages outside that path. Fires-and-clears spec at
   `scripts/audits/detect-drift.spec.mjs` (7 cases).
-- **Daily 06:30 UTC (Mon-Fri)** — `.github/workflows/sector-ideas.yml`
-  runs `.claude/commands/sector-ideas.md` — reads sector-signals.json
-  only (never raw filings), drafts 5-8 narrative themes, writes
-  `data/sector-ideas.json`. Rendered as the AI panel on `/themes`
-  above the mechanical grid.
 - **Daily 07:00 UTC (Mon-Fri)** — `.github/workflows/week-ahead.yml`
   drafts the weekly narrative from events-index + sector-signals +
   macro + market-pulse. Writes `data/week-ahead-narrative.json` +

@@ -7,12 +7,14 @@ name: sector-ideas
 # Consumed by /themes as a panel above the mechanical grid.
 
 on:
-  # Mon–Fri 06:30 UTC — reads data/sector-signals.json which the
+  # Mon–Fri 06:00 UTC — reads data/sector-signals.json which the
   # daily refresh (03:00) rewrites via aggregate-by-sector.mjs.
-  # Fires 30m after audit-daily (06:00) and 30m before week-ahead
-  # (07:00), so week-ahead can reference today's themes.
+  # MUST run BEFORE audit-daily (06:30) so §F17 reconcile compares
+  # today's regenerated sector-ideas against today's fresh
+  # sector-signals (same snapshot, no stale-reference false
+  # positives). Week-ahead (07:00) then references today's themes.
   schedule:
-    - cron: "30 6 * * 1-5"
+    - cron: "0 6 * * 1-5"
   workflow_dispatch:
     inputs:
       note:
@@ -30,7 +32,7 @@ permissions:
 
 run-name: >-
   sector-ideas · ${{
-    github.event_name == 'schedule' && 'scheduled (Mon–Fri 06:30 UTC)'
+    github.event_name == 'schedule' && 'scheduled (Mon–Fri 06:00 UTC)'
     || (github.event.inputs.note != '' && format('manual · {0}', github.event.inputs.note))
     || 'manual'
   }}

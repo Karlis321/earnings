@@ -4,11 +4,15 @@ name: audit-daily
 # (the deterministic §A/B/D/E/F15/F17/F18 on-disk checks) and compares
 # each run to the prior artifact via scripts/audits/detect-drift.mjs.
 #
-# Cadence: Mon–Fri 06:00 UTC — 1h after refresh-data (03:00) has
-# landed all mechanical signals, and 30m before sector-ideas fires
-# at 06:30. Weekends skipped because refresh-data is Mon–Fri only;
-# running the audit on a stale snapshot would just re-fire the same
-# artifact.
+# Cadence: Mon–Fri 06:30 UTC — 3.5h after refresh-data (03:00) has
+# landed all mechanical signals, and 30m AFTER sector-ideas (06:00)
+# has regenerated data/sector-ideas.json against today's fresh
+# data/sector-signals.json. Order matters: if audit ran BEFORE
+# sector-ideas each day, §F17 would compare yesterday's frozen
+# sector-ideas.json against today's rebuilt recentHeadlines[]
+# window and fire spurious HALLUCINATION findings whenever a
+# headline rolled out of the top-20. Running after is honest.
+# Weekends skipped because refresh-data is Mon–Fri only.
 #
 # CONSTRAINTS (baked into steps below):
 #   · READ-ONLY on real state — no writes to data/, no fixes.
@@ -20,7 +24,7 @@ name: audit-daily
 
 on:
   schedule:
-    - cron: "0 6 * * 1-5"
+    - cron: "30 6 * * 1-5"
   workflow_dispatch:
     inputs:
       note:
@@ -37,7 +41,7 @@ permissions:
 
 run-name: >-
   audit-daily · ${{
-    github.event_name == 'schedule' && 'scheduled (Mon–Fri 06:00 UTC)'
+    github.event_name == 'schedule' && 'scheduled (Mon–Fri 06:30 UTC)'
     || (github.event.inputs.note != '' && format('manual · {0}', github.event.inputs.note))
     || 'manual'
   }}
@@ -64,7 +68,7 @@ jobs:
           echo "baseline SHA recorded: $SHA"
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: "22"
 
