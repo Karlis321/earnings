@@ -15,16 +15,27 @@
  *   - Groups every entity with a persisted yahooSymbol into batches
  *     of ≤100 symbols per Yahoo v7 `/quote` call.
  *   - Performs the same crumb + cookie handshake as the TS wrapper.
+ *   - v10 quoteSummary fallback (per-symbol) for the no-data tail from
+ *     the v7 batch pass. Different endpoint — Yahoo has been observed
+ *     to soft-block GHA runner IPs on v7 batch while still serving v10.
+ *     Root cause of the 2026-08-17 → 2026-08-25 marketcap freeze that
+ *     tripped audit-daily on 2026-08-25.
+ *   - Per-batch introspection log: http status, row count, cap-populated
+ *     count. If a phase goes dark from GHA again, the log pinpoints
+ *     where instead of showing a silent "no-data: N" line.
+ *   - HARD-FAIL if fewer than 50% of targeted symbols resolve after
+ *     both passes. Kills the silent-successful bug that let the phase
+ *     report ✓ ok even when it wrote zero updates.
  *   - Converts marketCap → USD via live Yahoo `<CCY>USD=X` rates
  *     (falls back to a hardcoded 2026-mid table on transient 401).
  *   - Writes back to data/entity-registry.json ONLY entities whose
  *     marketCapUsd, capTier, or marketCapAsOf actually changed.
+ *     Partial progress persists across a hard-fail (whatever resolved
+ *     gets written; the exit=1 is a separate signal to the orchestrator).
  *   - Rate limit: single ~100-symbol call every 500ms — Yahoo v7
  *     tolerates this comfortably.
- *   - Per-request timeout: 8s (matches CLAUDE.md batch-script rule).
- *   - Concurrency: 1 (batches are sequential; the "concurrency" in
- *     the CLAUDE.md rule refers to per-request parallelism inside
- *     a phase, not batch-to-batch here).
+ *   - Per-request timeout: 8s (v7 batch) / 6s (v10 fallback per-symbol).
+ *   - Concurrency: 1 (batches are sequential).
  *
  * CLI:
  *   node scripts/refresh-marketcap.mjs               # write
@@ -161,7 +172,7 @@ async function tryGetCrumb() {
 }
 
 async function fetchQuotesRaw(symbols, state) {
-  if (symbols.length === 0) return [];
+  if (symbols.length === 0) return { rows: [], http: null };
   const url =
     `https://query1.finance.yahoo.com/v7/finance/quote` +
     `?symbols=${encodeURIComponent(symbols.join(","))}` +
@@ -169,21 +180,49 @@ async function fetchQuotesRaw(symbols, state) {
   const r = await fetchWithTimeout(url, {
     headers: { ...YAHOO_HEADERS, Cookie: state.cookieHeader },
   });
-  if (!r.ok) return [];
+  if (!r.ok) return { rows: [], http: r.status };
   const j = await r.json();
-  return (j.quoteResponse?.result ?? []).map((row) => ({
+  const rows = (j.quoteResponse?.result ?? []).map((row) => ({
     yahooSymbol: row.symbol ?? "",
     currency: row.currency ?? "USD",
     marketCap: row.marketCap ?? row.netAssets ?? row.totalAssets ?? null,
     regularMarketPrice: row.regularMarketPrice ?? null,
   }));
+  return { rows, http: r.status };
+}
+
+// Fallback path: for a single symbol, hit v10 quoteSummary. Different
+// endpoint from v7 batch — Yahoo has been observed to soft-block GHA
+// runner IPs on the batch call while still serving v10. Only invoked
+// for the no-data tail from the v7 pass; single-symbol call so timeouts
+// don't take down the whole batch.
+async function fetchQuoteSummary(sym, state) {
+  const url =
+    `https://query1.finance.yahoo.com/v10/finance/quoteSummary/${encodeURIComponent(sym)}` +
+    `?modules=price,summaryDetail&formatted=true` +
+    `&crumb=${encodeURIComponent(state.crumb)}`;
+  try {
+    const r = await fetchWithTimeout(url, {
+      headers: { ...YAHOO_HEADERS, Cookie: state.cookieHeader },
+    }, 6000);
+    if (!r.ok) return null;
+    const j = await r.json();
+    const result = j.quoteSummary?.result?.[0];
+    if (!result) return null;
+    const price = result.price ?? {};
+    const summary = result.summaryDetail ?? {};
+    const mc = price.marketCap?.raw ?? summary.marketCap?.raw ?? null;
+    if (mc == null) return null;
+    const ccy = price.currency ?? summary.currency ?? "USD";
+    return { yahooSymbol: sym, currency: ccy, marketCap: mc };
+  } catch { return null; }
 }
 
 async function fetchFxRates(state) {
   const symbols = Object.keys(FX_FALLBACK).filter((c) => c !== "USD").map((c) => `${c}USD=X`);
   const rates = { USD: 1 };
   try {
-    const rows = await fetchQuotesRaw(symbols, state);
+    const { rows } = await fetchQuotesRaw(symbols, state);
     for (const row of rows) {
       const ccy = row.yahooSymbol.replace(/USD=X$/, "");
       if (typeof row.regularMarketPrice === "number" && row.regularMarketPrice > 0) {
@@ -234,29 +273,68 @@ async function main() {
   const asOfDate = new Date().toISOString().slice(0, 10);
   const bySymbol = new Map();
   let batchCount = 0;
+  let batchesWithZeroRows = 0;
+  let batchesWithZeroCap = 0;
   for (let i = 0; i < limited.length; i += BATCH_SIZE) {
     const batch = limited.slice(i, i + BATCH_SIZE).map((e) => e.yahooSymbol);
-    let rows = await fetchQuotesRaw(batch, state);
+    let { rows, http } = await fetchQuotesRaw(batch, state);
     // Retry once on empty result — could be a transient 401 that
     // needs a fresh crumb.
     if (rows.length === 0) {
       const fresh = await getCrumb();
-      if (fresh) rows = await fetchQuotesRaw(batch, fresh);
+      if (fresh) ({ rows, http } = await fetchQuotesRaw(batch, fresh));
     }
+    const withCap = rows.filter((r) => r.marketCap != null).length;
+    if (rows.length === 0) batchesWithZeroRows++;
+    else if (withCap === 0) batchesWithZeroCap++;
     for (const row of rows) {
+      if (row.marketCap == null) continue;
       bySymbol.set(row.yahooSymbol, {
         marketCapUsd: toUsd(row.marketCap, row.currency, rates),
       });
     }
     batchCount++;
-    if (batchCount % 5 === 0) {
-      console.log(`  batch ${batchCount} · symbols resolved: ${bySymbol.size}/${i + batch.length}`);
-    }
+    // Per-batch introspection every batch (not every 5) so the log
+    // pinpoints exactly where Yahoo goes dark from a GHA runner.
+    console.log(
+      `  batch ${String(batchCount).padStart(2)} · http=${http ?? "?"} · rows=${rows.length}/${batch.length} · withCap=${withCap} · running total ${bySymbol.size}`,
+    );
     // 500ms gap between batches — Yahoo v7 doesn't rate-limit here in
     // practice, but keeps us well under whatever soft ceilings exist.
     await new Promise((r) => setTimeout(r, 500));
   }
-  console.log(`resolved: ${bySymbol.size}/${limited.length} symbols`);
+  console.log(`\nv7 batch pass · resolved ${bySymbol.size}/${limited.length}`);
+  if (batchesWithZeroRows > 0) console.log(`  batches with 0 rows: ${batchesWithZeroRows}`);
+  if (batchesWithZeroCap > 0) console.log(`  batches with 0 caps: ${batchesWithZeroCap}`);
+
+  // v10 quoteSummary fallback for the no-data tail. Different endpoint
+  // from v7 batch — Yahoo has been observed to soft-block GHA runner
+  // IPs on the batch call while still serving v10. Skips symbols v7
+  // already resolved. Serial, 250ms gap, per-request 6s timeout to
+  // bound tail latency when v10 also goes dark.
+  const noDataSymbols = limited
+    .map((e) => e.yahooSymbol)
+    .filter((s) => !bySymbol.has(s));
+  if (noDataSymbols.length > 0) {
+    console.log(`\nv10 quoteSummary fallback · ${noDataSymbols.length} symbols`);
+    let fallbackResolved = 0;
+    for (let j = 0; j < noDataSymbols.length; j++) {
+      const sym = noDataSymbols[j];
+      const q = await fetchQuoteSummary(sym, state);
+      if (q?.marketCap != null) {
+        bySymbol.set(sym, {
+          marketCapUsd: toUsd(q.marketCap, q.currency, rates),
+        });
+        fallbackResolved++;
+      }
+      if ((j + 1) % 50 === 0) {
+        console.log(`  fallback progress · ${j + 1}/${noDataSymbols.length} · resolved ${fallbackResolved}`);
+      }
+      await new Promise((r) => setTimeout(r, 250));
+    }
+    console.log(`  fallback resolved: ${fallbackResolved}/${noDataSymbols.length}`);
+  }
+  console.log(`\ntotal resolved: ${bySymbol.size}/${limited.length}`);
 
   let updated = 0;
   let unchanged = 0;
@@ -306,6 +384,21 @@ async function main() {
     for (const c of tierChanges.slice(0, 10)) {
       console.log(`    ${c.ticker.padEnd(15)} ${c.priorTier} → ${c.newTier}`);
     }
+  }
+
+  // Hard-fail floor. Kills the silent-successful bug that let this
+  // phase log ✓ ok even when Yahoo returned no-data for every symbol
+  // (the 2026-08-05 log showed updated=0, unchanged=0, no-data=3355
+  // and exited 0). If <50% of targeted symbols resolved after BOTH
+  // the v7 pass and the v10 fallback, Yahoo is genuinely dark to us
+  // for this run — go red so refresh-universe.mjs sees ✗ marketcap
+  // and the pipeline-report picks up the freshness gap.
+  const resolveRate = limited.length > 0 ? bySymbol.size / limited.length : 1;
+  if (resolveRate < 0.5) {
+    console.error(
+      `::error::refresh-marketcap resolve rate ${(resolveRate * 100).toFixed(1)}% below 50% floor — Yahoo returning empty responses (likely GHA IP soft-block); pipeline-report will flag marketcap_stale_count next run`,
+    );
+    process.exit(1);
   }
 }
 
