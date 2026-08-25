@@ -21,6 +21,7 @@ type FixedSortKey =
   | "surprise-rev"
   | "reaction"
   | "reaction-d3"
+  | "reaction-d3-excess"
   | "reaction-w1"
   | "reaction-m1"
   | "reaction-loss"
