@@ -193,7 +193,7 @@ async function main() {
 
   console.log("=== DRIFT DETECTED ===");
   for (const d of drift) console.log(`  [${d.signal}] ${d.msg}`);
-  console.log(`\n${drift.length} drift signal(s) — audit-weekly will go red.`);
+  console.log(`\n${drift.length} drift signal(s) — audit-daily will go red.`);
   process.exit(1);
 }
 

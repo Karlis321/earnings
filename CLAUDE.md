@@ -169,19 +169,28 @@ X get this value" or "what was the state before Y ran".
   (`append-sector-history.mjs`) → `correlations` → `commodities`
   → `qarv`. All the mechanical dashboard signals land in one
   commit per weekday.
-- **Daily 06:30 UTC** — GitHub Actions runs `.github/workflows/ claude-summarize.yml` on cron, which spawns Claude Code with the
-  /sweep prompt. Sweep reads `data/covered.json`, resolves each via
-  `resolve-earnings-target.mjs`, calls /earnings per due ticker,
-  which writes `data/summaries/*.json` + optional `data/events/*.json`
-  guidance-array updates. One commit per sweep. Verify step then
-  confirms a summary landed.
-- **Sunday 21:00 UTC** — `.github/workflows/sector-ideas.yml` runs
-  `.claude/commands/sector-ideas.md` — reads sector-signals.json
+- **Daily 05:30 UTC (Mon-Fri)** — `.github/workflows/claude-summarize.yml`
+  spawns Claude Code with the /sweep prompt. Sweep reads
+  `data/covered.json`, resolves each via `resolve-earnings-target.mjs`,
+  calls /earnings per due ticker, which writes `data/summaries/*.json`
+  + optional `data/events/*.json` guidance-array updates. One commit
+  per sweep. Verify step then confirms a summary landed. When nothing
+  is due (all covered names inside the 5-day freshness window) the
+  workflow exits green with 0 commits — expected behaviour, not a
+  silent failure.
+- **Daily 06:00 UTC (Mon-Fri)** — `.github/workflows/audit-daily.yml`
+  runs `scripts/audits/full-audit.mjs` + compares to the prior
+  artifact via `detect-drift.mjs`. READ-ONLY: commits ONLY the new
+  `scripts/audits/history/<ISO>.json`; a grep-guard fails the run if
+  anything stages outside that path. Fires-and-clears spec at
+  `scripts/audits/detect-drift.spec.mjs` (7 cases).
+- **Daily 06:30 UTC (Mon-Fri)** — `.github/workflows/sector-ideas.yml`
+  runs `.claude/commands/sector-ideas.md` — reads sector-signals.json
   only (never raw filings), drafts 5-8 narrative themes, writes
   `data/sector-ideas.json`. Rendered as the AI panel on `/themes`
   above the mechanical grid.
-- **Sunday 22:00 UTC** — `.github/workflows/week-ahead.yml` drafts
-  the weekly narrative from events-index + sector-signals +
+- **Daily 07:00 UTC (Mon-Fri)** — `.github/workflows/week-ahead.yml`
+  drafts the weekly narrative from events-index + sector-signals +
   macro + market-pulse. Writes `data/week-ahead-narrative.json` +
   per-week archive.
 - **1st + 2nd of month, 12:00 UTC** — framework-screen.yml self-

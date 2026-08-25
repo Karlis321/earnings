@@ -1,14 +1,14 @@
-name: audit-weekly
+name: audit-daily
 
-# Read-only weekly drift detector. Reuses scripts/audits/full-audit.mjs
+# Read-only daily drift detector. Reuses scripts/audits/full-audit.mjs
 # (the deterministic §A/B/D/E/F15/F17/F18 on-disk checks) and compares
-# each run to the prior week via scripts/audits/detect-drift.mjs.
+# each run to the prior artifact via scripts/audits/detect-drift.mjs.
 #
-# Cadence: Sunday 09:00 UTC — off-peak window that avoids collision
-# with the daily 03:00 refresh, 04:30 sweep, 21:00 sector-ideas,
-# 22:00 week-ahead, and the monthly framework-screen (1st/2nd @
-# 12:00 UTC — Sun@09 is at least 3h before those on the rare
-# calendar overlaps).
+# Cadence: Mon–Fri 06:00 UTC — 1h after refresh-data (03:00) has
+# landed all mechanical signals, and 30m before sector-ideas fires
+# at 06:30. Weekends skipped because refresh-data is Mon–Fri only;
+# running the audit on a stale snapshot would just re-fire the same
+# artifact.
 #
 # CONSTRAINTS (baked into steps below):
 #   · READ-ONLY on real state — no writes to data/, no fixes.
@@ -20,7 +20,7 @@ name: audit-weekly
 
 on:
   schedule:
-    - cron: "0 9 * * 0"
+    - cron: "0 6 * * 1-5"
   workflow_dispatch:
     inputs:
       note:
@@ -29,15 +29,15 @@ on:
         default: ""
 
 concurrency:
-  group: audit-weekly
+  group: audit-daily
   cancel-in-progress: false
 
 permissions:
   contents: write
 
 run-name: >-
-  audit-weekly · ${{
-    github.event_name == 'schedule' && 'scheduled (Sun 09:00 UTC)'
+  audit-daily · ${{
+    github.event_name == 'schedule' && 'scheduled (Mon–Fri 06:00 UTC)'
     || (github.event.inputs.note != '' && format('manual · {0}', github.event.inputs.note))
     || 'manual'
   }}
@@ -92,13 +92,13 @@ jobs:
           # staged. This is the READ-ONLY invariant.
           STAGED_OUTSIDE=$(git diff --cached --name-only | grep -v "^scripts/audits/history/" || true)
           if [ -n "$STAGED_OUTSIDE" ]; then
-            echo "::error::audit-weekly attempted to commit files outside history/:"
+            echo "::error::audit-daily attempted to commit files outside history/:"
             echo "$STAGED_OUTSIDE"
             exit 1
           fi
           # Commit — the message names what changed so a git log skim
           # tells you if drift happened without opening the JSON.
-          git commit -m "audit-weekly: snapshot $(date -u +%Y-%m-%d)" || {
+          git commit -m "audit-daily: snapshot $(date -u +%Y-%m-%d)" || {
             echo "nothing to commit — full-audit produced no artifact?"
             exit 1
           }

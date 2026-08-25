@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Fires-and-clears spec for scripts/audits/detect-drift.mjs and the
- * READ-ONLY grep-guard in audit-weekly.yml.
+ * READ-ONLY grep-guard in audit-daily.yml.
  *
  *   node scripts/audits/detect-drift.spec.mjs
  *
@@ -17,7 +17,7 @@
  *   4. reported_without_document increased          → red
  *   5. Silent-zero (events_total >0 → 0)            → red
  *   6. Clean current == prior (no drift)            → green
- *   7. audit-weekly grep-guard fires on
+ *   7. audit-daily grep-guard fires on
  *      a staged file outside scripts/audits/history/ → red
  */
 
@@ -241,7 +241,7 @@ console.log("=== detect-drift.spec · fires-and-clears ===\n");
 }
 
 // -----------------------------------------------------------
-// 7. audit-weekly grep-guard — READ-ONLY invariant
+// 7. audit-daily grep-guard — READ-ONLY invariant
 //
 // Replicates the workflow YAML's exact pipeline:
 //   STAGED=$(git diff --cached --name-only | grep -v "^scripts/audits/history/" || true)
@@ -253,7 +253,7 @@ console.log("=== detect-drift.spec · fires-and-clears ===\n");
   const dir = mkScratch();
   // Explicit bash — Windows defaults to cmd.exe which doesn't
   // understand $STAGED substitution or the `|| true` pattern.
-  // The audit-weekly workflow runs on ubuntu-latest, so bash IS
+  // The audit-daily workflow runs on ubuntu-latest, so bash IS
   // the target shell. Testing with the same shell here is honest.
   const runSh = (cmd) =>
     spawnSync(cmd, { shell: "bash", cwd: dir, encoding: "utf-8" });
@@ -265,7 +265,7 @@ console.log("=== detect-drift.spec · fires-and-clears ===\n");
     fs.writeFileSync(path.join(dir, "scripts/audits/history/a.json"), "{}");
     fs.writeFileSync(path.join(dir, "data/leak.json"), "{}"); // <-- stray file
     runSh("git add scripts/audits/history/a.json data/leak.json");
-    // Guard command from audit-weekly.yml verbatim:
+    // Guard command from audit-daily.yml verbatim:
     const guard = runSh(
       'STAGED=$(git diff --cached --name-only | grep -v "^scripts/audits/history/" || true); if [ -n "$STAGED" ]; then echo "OUTSIDE: $STAGED"; exit 1; else exit 0; fi',
     );

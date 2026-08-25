@@ -13,18 +13,11 @@ name: regenerate-summaries
 # API calls, it doesn't itself invoke Claude Code).
 
 on:
-  # Auto-restart every 5 hours (UTC): 00:00, 05:00, 10:00, 15:00, 20:00 UTC.
-  # Runs SP500 gap-fill with default inputs (source=sp500, start_at=0,
-  # blank limit = iterate whole pool with SKIP_IF_EXTENDED). Rationale:
-  # Anthropic Opus quota resets on a rolling window; 5-hour cadence
-  # gives ~5 firings/day (up from 4) so a batch that dies from
-  # quota exhaustion restarts sooner. GitHub concurrency group
-  # `regenerate-summaries` ensures scheduled fires DON'T stomp on a
-  # still-running batch — new run queues behind current one (max 1
-  # queued at a time).
-  # Note: 24h ÷ 5 = 4.8 firings/day; the 20:00→00:00 gap is 4h. Fine.
-  schedule:
-    - cron: "0 0,5,10,15,20 * * *"
+  # Manual dispatch only (2026-08-25). The 5x/day cron was retired
+  # after the extended-metrics backfill completed and no covered
+  # names remained gap-filled by the loop. The scheduled fires had
+  # been landing zero commits for weeks; dispatch when you want a
+  # forced-refresh batch (pass source + limit + delay in the UI).
   workflow_dispatch:
     inputs:
       source:

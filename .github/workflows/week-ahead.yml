@@ -6,13 +6,13 @@ name: week-ahead
 # Consumed by /week-ahead as a panel above the macro strip.
 
 on:
-  # Sunday 22:00 UTC = Monday 07:00 CET / 10:00 GMT+8 / 06:00 ET
-  # (well before the US open). Deliberately far from the daily 03:00
-  # refresh + 05:30 sweep so the AI quota pool doesn't contend.
-  # Weekly cadence — the narrative describes Mon-Fri, so writing it
-  # once on Sunday evening covers the whole week.
+  # Mon–Fri 07:00 UTC — reads today's fresh events-index +
+  # sector-signals (both rewritten by refresh-data at 03:00) +
+  # sector-ideas (which fires at 06:30, 30m earlier). Weekends
+  # skipped because refresh-data is Mon–Fri; running on stale
+  # inputs would just churn identical narratives.
   schedule:
-    - cron: "0 22 * * 0"
+    - cron: "0 7 * * 1-5"
   workflow_dispatch:
     inputs:
       note:
@@ -30,7 +30,7 @@ permissions:
 
 run-name: >-
   week-ahead · ${{
-    github.event_name == 'schedule' && 'scheduled (Sun 22:00 UTC)'
+    github.event_name == 'schedule' && 'scheduled (Mon–Fri 07:00 UTC)'
     || (github.event.inputs.note != '' && format('manual · {0}', github.event.inputs.note))
     || 'manual'
   }}
