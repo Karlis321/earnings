@@ -328,7 +328,32 @@ async function main() {
           rollup.totals.baselinesSeeded++;
         }
       }
-      if (!baselineDate || baselineClose == null) continue;
+      // Bars-outside-event-window decay. pickBaselineIdx returned -1 —
+      // meaning Yahoo did return bars for this symbol but the earliest
+      // bar is AFTER the event date (event is older than the 1y bar
+      // window, OR Yahoo throttled the response to a narrow window —
+      // .BO / .BK / thinly-traded foreign tickers commonly return
+      // only 28 bars regardless of range=1y). Without this decay
+      // these events silently stay pending forever: every day
+      // mature-reactions retries, every day the same too-narrow bar
+      // window comes back, still can't baseline, still can't decay.
+      // That was the root cause of reactions_pending drifting up
+      // ~+9/day without new events (audit-daily 2026-08-25 finding).
+      // Same 90-day threshold as the secBars.length === 0 decay path
+      // above — consistent bookkeeping.
+      if (!baselineDate || baselineClose == null) {
+        const ageDays = (now - new Date(anchor)) / 86_400_000;
+        if (ageDays > 90) {
+          e.reaction = e.reaction ?? { benchmark: t.entity.benchmark ?? "", baselineDate: null, baselineClose: null, points: [] };
+          e.reaction.points = (e.reaction.points ?? []).map((p) => {
+            if (p.absReturn != null) return p;
+            rollup.totals.pointsUnavailable++;
+            return { ...p, status: "unavailable", computedAt: nowIso };
+          });
+          mutated = true;
+        }
+        continue;
+      }
 
       const secBaseIdx = findBaselineIndex(secBars, baselineDate);
       if (secBaseIdx < 0) continue;
@@ -423,12 +448,20 @@ async function main() {
   console.log(`Points unavailable:   ${rollup.totals.pointsUnavailable}`);
   console.log(`Errors:               ${rollup.totals.errors}`);
 
-  await fs.mkdir(OUT_DIR, { recursive: true });
-  await fs.writeFile(
-    path.join(OUT_DIR, "mature-reactions.json"),
-    JSON.stringify(rollup, null, 2),
-  );
-  console.log(`✓ audit → scripts/audits/mature-reactions.json`);
+  // --dry must not overwrite the audit — the audit is the record
+  // of what the last PRODUCTION run did, and stomping it with a dry
+  // preview means we lose evidence of what actually happened at
+  // 03:00 UTC. Only write in live mode.
+  if (!DRY) {
+    await fs.mkdir(OUT_DIR, { recursive: true });
+    await fs.writeFile(
+      path.join(OUT_DIR, "mature-reactions.json"),
+      JSON.stringify(rollup, null, 2),
+    );
+    console.log(`✓ audit → scripts/audits/mature-reactions.json`);
+  } else {
+    console.log(`(--dry: skipping audit write)`);
+  }
 }
 
 main().catch((e) => { console.error(e); process.exit(1); });
