@@ -29,27 +29,48 @@ export function SurprisePill({
   crossBasisCleared?: boolean;
   yoyRevGrowthPct?: number | null;
 }) {
+  // Y/Y revenue growth is now the PRIMARY chip when populated,
+  // regardless of whether surprisePct exists. This makes the column
+  // display a consistent metric across the whole grid — every row
+  // shows the SAME comparison type (Y/Y rev growth) rather than a
+  // mix of beat/miss %, Y/Y rev, basis-mismatch labels, and
+  // no-est labels depending on data availability per row.
+  //
+  // Universe coverage: Y/Y revenue growth = 81.3% of operating rows.
+  // Only 6.3% currently populate a same-basis EPS surprise (mostly
+  // Korean/Chinese listings) — those get the Y/Y chip too. The
+  // green/red beat/miss chip below is now a fallback for rows
+  // without Y/Y coverage.
+  if (yoyRevGrowthPct !== null && yoyRevGrowthPct !== undefined && Number.isFinite(yoyRevGrowthPct)) {
+    // Color-code by direction: growth green, decline red, ~flat neutral.
+    const isGrowth = yoyRevGrowthPct > 0.5;
+    const isDecline = yoyRevGrowthPct < -0.5;
+    const cls = isGrowth
+      ? "text-success-fg bg-[rgba(18,183,106,0.10)] border-[rgba(18,183,106,0.28)]"
+      : isDecline
+      ? "text-danger bg-[rgba(180,35,24,0.08)] border-[rgba(180,35,24,0.28)]"
+      : "text-tx2 bg-s3 border-bd2";
+    const sign = yoyRevGrowthPct > 0 ? "+" : "";
+    return (
+      <span
+        className={clsx(
+          "inline-flex items-center rounded-[6px] border px-[7px] py-[3px] font-mono text-[12px] font-medium tabular-nums",
+          cls,
+        )}
+        title={
+          surprisePct !== null
+            ? `Y/Y revenue growth on the latest reported quarter. (EPS surprise available: ${surprisePct > 0 ? "+" : ""}${surprisePct.toFixed(1)}%.)`
+            : crossBasisCleared
+              ? "Y/Y revenue growth on the latest reported quarter. EPS surprise cleared (GAAP actual vs adjusted-EPS consensus)."
+              : "Y/Y revenue growth on the latest reported quarter."
+        }
+        aria-label={`Revenue ${isGrowth ? "grew" : isDecline ? "declined" : "was roughly flat"} ${Math.abs(yoyRevGrowthPct).toFixed(1)} percent year over year`}
+      >
+        {sign}{yoyRevGrowthPct.toFixed(1)}% y/y rev
+      </span>
+    );
+  }
   if (surprisePct === null) {
-    // Prefer the Y/Y revenue-growth chip when we have it — universally
-    // populated and more informative than the generic 'basis mismatch'
-    // or 'no est' labels. Renders as a labeled '+X% y/y rev' chip in
-    // the same shape as the beat/miss pill, but styled tx-mid (not
-    // green/red) so it reads as ancillary rather than headline.
-    if (yoyRevGrowthPct !== null && yoyRevGrowthPct !== undefined && Number.isFinite(yoyRevGrowthPct)) {
-      const sign = yoyRevGrowthPct > 0 ? "+" : "";
-      return (
-        <span
-          className="inline-flex items-center rounded-[6px] border border-bd2 bg-s3 px-[7px] py-[2px] font-mono text-[11.5px] text-tx2 tabular-nums"
-          title={
-            crossBasisCleared
-              ? "EPS surprise was cleared (GAAP actual vs adjusted-EPS consensus). Showing Y/Y revenue growth on the latest reported quarter instead."
-              : "No same-basis EPS surprise available. Showing Y/Y revenue growth on the latest reported quarter."
-          }
-        >
-          {sign}{yoyRevGrowthPct.toFixed(1)}% y/y rev
-        </span>
-      );
-    }
     if (crossBasisCleared) {
       return (
         <span
