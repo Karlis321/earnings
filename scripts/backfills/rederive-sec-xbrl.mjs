@@ -47,6 +47,13 @@ const args = new Map(
 );
 const DRY = args.get("dry") === true;
 const LIMIT = args.get("limit") ? parseInt(args.get("limit"), 10) : Infinity;
+// Comma-separated CIK filter — e.g. --cik=1045810,320193 to touch only
+// NVDA + AAPL. Handy for surgical fix runs on the 38-CIK list from
+// scripts/audits/revenue-reality-check.json. Numeric or zero-padded
+// forms accepted; normalized to unpadded numeric for the compare.
+const CIK_FILTER = args.get("cik")
+  ? new Set(String(args.get("cik")).split(",").map((c) => String(parseInt(c, 10))))
+  : null;
 const REQ_INTERVAL_MS = 1000;
 
 // SEC EDGAR's fair-access policy requires a real contact email in the
@@ -157,16 +164,39 @@ async function fetchCompanyFacts(cik, limiter, cache) {
   }
 }
 
-// Given SEC facts + period-end target, find the strict-quarter value for
-// each XBRL_MAP metric family. Returns a Map<metricKey, {value, unit, source}>.
-function extractQuarterValues(facts, periodEnd) {
+// Given SEC facts + the event's 10-Q filing date, find the reporting-
+// quarter value for each XBRL_MAP metric family. Returns a
+// Map<metricKey, {value, unit, source}>.
+//
+// The old matcher derived a calendar period-end from event.period
+// ("FY2026 Q1" → 2026-03-31) and picked the SEC fact with the closest
+// `end`. That silently broke on fiscal-offset issuers whose real
+// quarter-end is 1-6 months off from the calendar quarter, and
+// catastrophically broke on issuers like NVDA (Feb-Jan FY) where the
+// calendar anchor lands 11-12 months off — the ±31-day tolerance
+// then latched onto the NEXT fiscal year's same-quarter value.
+// NVDA's FY2026 Q1 stored $81,615M (real: $44,062M) — the $81.6B is
+// FY2027 Q1's value, picked because 2026-04-26 was 26 days from the
+// wrong 2026-03-31 anchor. Universe audit
+// (`scripts/audits/revenue-reality-check.mjs`) flagged 101 events
+// across 38 CIKs as a result.
+//
+// New matcher keys off `filed`-date proximity to event.eventDate
+// (which IS the 10-Q filing date). Each 10-Q filing includes both
+// the reporting quarter AND the prior-year comparative as separate
+// facts sharing the same `filed` date — we disambiguate by picking
+// the one whose `end` is closer to `filed` (the reporting quarter's
+// end is 30-90 days before file; the comparative's end is ~365 days
+// before). Same pattern as `pickMatchingFact` in the audit script.
+function extractQuarterValues(facts, eventDate) {
   const out = new Map();
-  const periodEndMs = new Date(periodEnd).getTime();
+  if (!eventDate) return out;
+  const eventMs = new Date(eventDate).getTime();
+  const MAX_FILED_DELTA_DAYS = 3;
   for (const spec of XBRL_MAP) {
     if (out.has(spec.metricKey)) continue; // higher-priority spec already won
     const taxo = facts?.[spec.taxo];
     if (!taxo) continue;
-    const maxDeltaDays = spec.type === "instant" ? 7 : 31;
     for (const k of spec.keys) {
       const item = taxo[k];
       if (!item) continue;
@@ -174,39 +204,44 @@ function extractQuarterValues(facts, periodEnd) {
       const unitKey = ["USD", "USD/shares"].find((u) => units[u]) ?? Object.keys(units)[0];
       if (!unitKey) continue;
       const values = units[unitKey] ?? [];
-      let best = null;
-      let bestDelta = Infinity;
-      let bestFiled = "";
-      for (const v of values) {
+      // Step 1: keep only facts filed within ±3 days of the event
+      // date AND passing the shape check (pure-quarter for duration
+      // metrics, instant for balance-sheet metrics).
+      const candidates = values.filter((v) => {
+        if (!v.filed) return false;
         const ok = spec.type === "instant" ? isInstant(v) : isPureQuarter(v);
-        if (!ok) continue;
-        const d = Math.abs((new Date(v.end).getTime() - periodEndMs) / 86_400_000);
-        // Prefer closer period-end match; on ties, prefer LATER filing
-        // date (10-Q/A amendments supersede the original 10-Q).
-        if (d < bestDelta || (d === bestDelta && (v.filed ?? "") > bestFiled)) {
-          bestDelta = d;
-          best = v;
-          bestFiled = v.filed ?? "";
-        }
-      }
-      if (best && bestDelta <= maxDeltaDays) {
-        // Inherit SEC's actual reported unit — never assume USD. The
-        // XBRL_MAP's `spec.unit` is only the DEFAULT (used when SEC
-        // has USD available); foreign filers like Enbridge report only
-        // in CAD under us-gaap:Revenues, and Novo Nordisk only in DKK
-        // via ifrs-full — those unit labels must survive intact so the
-        // cross-listing invariant compares apples-to-apples.
-        out.set(spec.metricKey, {
-          value: best.val / spec.scale,
-          unit: unitKey,
-          xbrlKey: k,
-          taxonomy: spec.taxo,
-          matched_end: best.end,
-          form: best.form,
-          accession: best.accn,
-        });
-        break;
-      }
+        if (!ok) return false;
+        const filedDelta = Math.abs(new Date(v.filed).getTime() - eventMs) / 86_400_000;
+        return filedDelta <= MAX_FILED_DELTA_DAYS;
+      });
+      if (candidates.length === 0) continue;
+      // Step 2: among facts filed at this event's date, pick the one
+      // whose end-to-filed gap is smallest. The reporting quarter's
+      // end is 30-90 days before file; a prior-year comparative that
+      // shares the same filing date has end ~365 days before. Sort
+      // ascending on (filed - end) picks the reporting quarter.
+      candidates.sort((a, b) => {
+        const aGap = new Date(a.filed).getTime() - new Date(a.end).getTime();
+        const bGap = new Date(b.filed).getTime() - new Date(b.end).getTime();
+        return aGap - bGap;
+      });
+      const best = candidates[0];
+      // Inherit SEC's actual reported unit — never assume USD. The
+      // XBRL_MAP's `spec.unit` is only the DEFAULT (used when SEC
+      // has USD available); foreign filers like Enbridge report only
+      // in CAD under us-gaap:Revenues, and Novo Nordisk only in DKK
+      // via ifrs-full — those unit labels must survive intact so the
+      // cross-listing invariant compares apples-to-apples.
+      out.set(spec.metricKey, {
+        value: best.val / spec.scale,
+        unit: unitKey,
+        xbrlKey: k,
+        taxonomy: spec.taxo,
+        matched_end: best.end,
+        form: best.form,
+        accession: best.accn,
+      });
+      break;
     }
   }
   return out;
@@ -291,6 +326,14 @@ async function main() {
     // "any" is fine.
     const members = co.events.map((ev) => entityByTicker.get(ev.ticker)).filter(Boolean);
     const canonical = members.find((e) => e.isCanonical);
+    // --cik filter (unpadded numeric compare) — early skip so the SEC
+    // fetch never fires for out-of-scope CIKs.
+    if (CIK_FILTER) {
+      const cikOnCompany = (canonical?.edgarCik ?? members.find((m) => m?.edgarCik)?.edgarCik) ?? null;
+      if (!cikOnCompany) continue;
+      const normalized = String(parseInt(cikOnCompany, 10));
+      if (!CIK_FILTER.has(normalized)) continue;
+    }
     let cik =
       canonical?.edgarCik ?? members.find((e) => e.edgarCik)?.edgarCik ?? null;
     if (!cik) {
@@ -305,13 +348,14 @@ async function main() {
     let anyChange = false;
     const beforeAfterSamples = [];
     for (const ev of co.events) {
-      // Derive period-end from the event's period label — "FY2026 Q2"
-      // → 2026-06-30. This is the CORRECT anchor for SEC XBRL matching.
-      // Do NOT use metric.actual.asOf: prior backfill runs stamped that
-      // with the fetchedAt timestamp (today), so it mis-anchors every
-      // historical event onto today's date and my earlier dry-run
-      // picked the same nearest-SEC-entry for every historical quarter.
-      const anchor = periodEndFromLabel(ev.period) ?? ev.eventDate ?? ev.scheduledDate;
+      // Match SEC facts to this event by `filed`-date proximity to
+      // event.eventDate (the 10-Q's actual filing date). The prior
+      // approach — derive a calendar period-end from ev.period —
+      // silently broke on fiscal-offset issuers (see
+      // extractQuarterValues header for the NVDA post-mortem).
+      // eventDate is authoritative for the reporting quarter's filing
+      // window; SEC's `filed` metadata is the join key.
+      const anchor = ev.eventDate ?? ev.scheduledDate;
       if (!anchor) continue;
       const rederivedValues = extractQuarterValues(cikState.facts, anchor);
       if (rederivedValues.size === 0) {
