@@ -7,13 +7,14 @@ description: Draft the weekly narrative for /week-ahead. Reads events-index + se
 
 **Purpose:** distill what's coming this trading week into a short,
 sourced narrative. Two audiences: (1) the reader who wants a
-5-minute Sunday-evening read on setup + tickers to watch, (2) the
-reader Monday morning who wants "what's on today" context beyond
-the raw event grid.
+5-minute daily read on setup + tickers to watch, (2) the reader
+who wants "what's on today" context beyond the raw event grid.
 
-Runs Sunday 22:00 UTC. Writes a single JSON file
+Runs daily Mon–Fri 07:00 UTC (right after /sector-ideas at 06:00
+and /audit-daily at 06:30, so this command can reference today's
+freshly-committed themes). Writes a single JSON file
 (`data/week-ahead-narrative.json`) — one overwritten record per
-week. Rendered as a panel above the macro strip on `/week-ahead`.
+run. Rendered as a panel above the macro strip on `/week-ahead`.
 
 Universe scope: displayable operating entities in
 SP500 ∪ R1000 ∪ isCore (mirrors the `/week-ahead` view).

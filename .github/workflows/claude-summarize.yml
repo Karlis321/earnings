@@ -33,7 +33,7 @@ run-name: >-
     || (github.event.client_payload.ticker != null && format('/earnings {0} (button)', github.event.client_payload.ticker))
     || '/sweep'
   }} · ${{
-    github.event_name == 'schedule' && 'scheduled (04:30 UTC)'
+    github.event_name == 'schedule' && 'scheduled (Mon–Fri 05:30 UTC)'
     || github.event_name == 'repository_dispatch' && 'button'
     || (github.event.inputs.note != '' && format('manual · {0}', github.event.inputs.note))
     || 'manual'

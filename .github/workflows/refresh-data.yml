@@ -53,7 +53,7 @@ on:
 
 run-name: >-
   refresh-data · ${{
-    github.event_name == 'schedule' && 'scheduled (06:00 UTC)'
+    github.event_name == 'schedule' && 'scheduled (Mon–Fri 03:00 UTC)'
     || (github.event.inputs.note != '' && format('manual · {0}', github.event.inputs.note))
     || 'manual'
   }}${{ github.event.inputs.only != '' && format(' · only={0}', github.event.inputs.only) || '' }}${{ github.event.inputs.dry_run == 'true' && ' · dry-run' || '' }}

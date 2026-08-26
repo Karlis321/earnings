@@ -440,9 +440,9 @@ export function WatchlistTable({
           return bv - av;
         }
         case "reaction-d3-excess": {
-          // Quick-Sort pill: excess return at d3 (vs assigned benchmark).
-          // Rows without a d3 point OR without excessReturn on that
-          // point sink to the bottom.
+          // Popover sort option: excess return at d3 (vs assigned
+          // benchmark). Rows without a d3 point OR without excessReturn
+          // on that point sink to the bottom.
           const av = a.reactionPoints?.find((p) => p.horizon === "d3")?.excessReturn ?? -Infinity;
           const bv = b.reactionPoints?.find((p) => p.horizon === "d3")?.excessReturn ?? -Infinity;
           return bv - av;
