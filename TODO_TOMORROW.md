@@ -2,10 +2,28 @@
 
 Small named items that need a follow-up, not fresh design work.
 
-## Sector-ideas guard/audit mismatch — 13 hallucinations landed (2026-08-26)
+## ✅ FIXED — Sector-ideas guard/audit mismatch (2026-08-26)
 
-First daily-cadence audit-daily run fired RED on `NEW_HALLUCINATION × 13`
-against today's committed `data/sector-ideas.json`. Evidence at
+**Root cause found + fixed same day.** The sector-ideas workflow's
+step 1 re-runs `aggregate-by-sector.mjs` before Claude fires, to
+give the narrative writer a freshened headline window. Claude
+validates against that freshened `sector-signals.json` (v2). But
+the playbook's git-add line only staged `data/sector-ideas.json`,
+NOT `sector-signals.json` — so origin stayed at v1 (from 03:00
+refresh) while sector-ideas cited v2 headlines. Audit at 06:30
+checked out v1 and flagged every rolled-over headline as
+`NEW_HALLUCINATION`.
+
+Fix in `a95d3b8b1`: playbooks (`.claude/commands/sector-ideas.md`
+Step 4 + `.claude/commands/week-ahead.md` Step 5) now stage the
+regenerated snapshots alongside the primary output. Tomorrow's
+audit-daily should see 0 sector-ideas hallucinations.
+
+Verify by watching Thu 2026-08-27 06:30 UTC audit — if it goes
+green (or at least has `hallucinations: 0` in the artifact), the
+fix took.
+
+Original evidence at
 `scripts/audits/history/full-audit-2026-08-26T07-06-38Z.json`.
 
 **What made it through the write-time guard that shouldn't have.**
@@ -47,7 +65,56 @@ explicit "don't cite SEC compliance-filing titles (Form 3/4/8-K/144)
 as thematic evidence" line. Those forms are the SEC's own
 housekeeping and never carry the narrative signal a theme needs.
 
-## Rederive SEC-XBRL match bug (2026-08-25)
+## ✅ FIXED — Rederive SEC-XBRL match bug (2026-08-25 → fixed 2026-08-26)
+
+**Root cause found + fixed same day.** `extractQuarterValues()`
+in `rederive-sec-xbrl.mjs` anchored to a calendar-quarter end
+derived from event.period ("FY2026 Q1" → "2026-03-31") and picked
+the SEC fact whose `end` was within ±31 days. For fiscal-offset
+issuers (NVDA Feb-Jan, AAPL Sep-Sep, MU Aug-Aug, INTU Jul-Jul,
+SMTC Feb-Jan) the label-derived calendar anchor lands 11-12 months
+off from the real quarter-end, and the ±31-day tolerance latched
+onto the NEXT fiscal year's same-quarter value. NVDA's FY2026 Q1
+stored $81.6B (real: $44.1B — the $81.6B is FY2027 Q1's value).
+
+Fix in `157aaa005`: match by SEC `filed`-date proximity to
+event.eventDate (±3 days), then among facts sharing the filing
+date pick the one with the smallest `filed - end` gap (the
+reporting quarter, not the year-old comparative). Same pattern as
+`pickMatchingFact` in `scripts/audits/revenue-reality-check.mjs`.
+
+Also added `--cik=<csv>` filter for surgical fix runs.
+
+**Live rerun in `2aefa6704`** on all 38 CIKs from the audit:
+  · 155 events touched
+  · 1054 metrics replaced, 784 added
+  · 59 shards updated
+
+Post-fix universe re-audit in progress at time of TODO update —
+at 22% coverage: 0 flagged (vs 67 at same point pre-fix).
+
+**Y/Y-growth chip check post-fix:**
+  NVDA US → +85.2% (was -46%)  ✓ real Q1 FY2027 vs FY2026
+  GOOGL US → +24.2% (unchanged) ✓
+  AAPL US → +16.4% (unchanged) ✓
+  INTU US → +10.4% (previously flagged, now sane)
+
+**Two residuals worth eyeing tomorrow:**
+  MU US → +345.7% (large; Micron sold their subsidiary in 2024 so
+    the revenue base did move materially, but 345% seems too much
+    — possibly a separate class of ingest mislabel that our Q1-Q4
+    filter misses. Check whether MU stores an fp='FY' fact that
+    slipped through).
+  APTV US → -37.1% (Aptiv corporate carve-outs in flight; check
+    whether the shift is stored correctly).
+
+Original evidence at `scripts/audits/revenue-reality-check.json`
+(pre-fix) and `scripts/audits/revenue-reality-check-post-fix.log`
+(post-fix run).
+
+---
+
+## Original TODO from 2026-08-25 — Rederive SEC-XBRL match bug
 
 Universe audit turned up systemic revenue-value mismatches vs SEC —
 same class of bug across every fiscal-offset issuer. Full evidence
