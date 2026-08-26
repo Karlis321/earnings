@@ -281,7 +281,16 @@ async function main() {
       // Even a listing without its OWN CIK is eligible if a SIBLING in
       // its company group has one — the whole point of the fix is that
       // ALL listings inherit the same SEC value.
-      const cid = entity?.companyId;
+      //
+      // Fallback: an operating ticker with edgarCik but NO companyId
+      // still deserves a SEC rederive — they're just orphaned in the
+      // registry (141 such rows at last audit including CTRE US /
+      // SANM US / RMBS US / APPN US). Group them under a synthetic
+      // "solo-<ticker>" key so the rederive loop touches them.
+      let cid = entity?.companyId;
+      if (!cid && cikOnMember) {
+        cid = `solo-${ev.ticker}`;
+      }
       if (!cid) continue;
       totalEligible++;
       if (!eventsByCompany.has(cid)) eventsByCompany.set(cid, { events: [], shards: new Map() });
