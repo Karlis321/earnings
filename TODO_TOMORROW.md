@@ -2,6 +2,51 @@
 
 Small named items that need a follow-up, not fresh design work.
 
+## Sector-ideas guard/audit mismatch — 13 hallucinations landed (2026-08-26)
+
+First daily-cadence audit-daily run fired RED on `NEW_HALLUCINATION × 13`
+against today's committed `data/sector-ideas.json`. Evidence at
+`scripts/audits/history/full-audit-2026-08-26T07-06-38Z.json`.
+
+**What made it through the write-time guard that shouldn't have.**
+`apply-sector-ideas.mjs`'s `headlineIndex check` (see the guard at
+`scripts/apply-sector-ideas.mjs:158-184`) is supposed to reject any
+LLM `keyHeadline` that isn't in the sector's `recentHeadlines[]`
+with matching `ticker + "||" + headline`. Yet 13 cited headlines
+made it through. Same key format is used by the audit's F17 check
+in `scripts/audits/full-audit.mjs:148-160`, so if the guard passed
+them the audit should too — but the audit is finding mismatches.
+
+**Pattern in the flagged rows:** most are SEC-filing auto-titles the
+LLM shouldn't cite as themes at all —
+`"4 - Statement of changes in beneficial ownership of securities"`,
+`"3 - Initial statement of beneficial ownership of securities"`,
+`"8-K - Current report"`, `"144 - Report of proposed sale of
+securities"`. Plus a handful of real news that got mismatched
+(SHEL/EOG/COIN/INTC — the last two are cross-sector cites where
+the ticker/headline pair exists in ONE sector's `recentHeadlines[]`
+but not the one the theme claims).
+
+Two probable causes to investigate:
+1. **Guard/audit reading different snapshots.** The guard reads
+   `sector-signals.json` at 06:00 UTC (sector-ideas time); audit
+   reads it at 06:30 UTC. If some phase mutates sector-signals
+   between them (unlikely per current phase order, but check),
+   the two would see different `recentHeadlines[]` sets. Confirm
+   by running the same F17 check against sector-signals.json
+   **as of the sector-ideas write time** (git-log at 07:04 UTC on
+   `data/sector-signals.json`).
+2. **Subtle string normalization difference.** The guard might
+   trim/normalize whitespace (SEC titles often have double-space
+   between form number and dash — `"4  - Statement"`) while the
+   audit does exact match, or vice-versa. Log the raw `key`
+   strings on both sides of a mismatch to compare.
+
+**Also worth adding to the sector-ideas prompt / command:** an
+explicit "don't cite SEC compliance-filing titles (Form 3/4/8-K/144)
+as thematic evidence" line. Those forms are the SEC's own
+housekeeping and never carry the narrative signal a theme needs.
+
 ## Rederive SEC-XBRL match bug (2026-08-25)
 
 Universe audit turned up systemic revenue-value mismatches vs SEC —
