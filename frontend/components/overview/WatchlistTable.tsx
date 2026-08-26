@@ -810,6 +810,18 @@ function HeaderRow({ columnMetric, setColumnMetric, metricOptions, onMetricChang
           specific ones from the extendedMetricsRegistry). Changing
           the selection auto-sorts by that metric's surprise desc,
           bubbling rows without the metric to the bottom. */}
+      {/*
+        Column-metric dropdown, trimmed from ~15+ options to a fixed
+        3-option set. Universe-audit of latestMetrics coverage showed
+        the 20+ sector-specific keys (aisc_gold, arr, nim, rotce, etc.)
+        are all at 0% coverage in the events-index — they were
+        aspirational, always fell through to eps_usd anyway. The three
+        options below are the only ones with real, meaningful
+        universal coverage:
+          · auto       — per-row headline picker (fallback to eps → rev)
+          · eps_usd    — 94% of operating rows
+          · revenue_usd_m — 84%
+      */}
       <span className="flex items-center gap-1 -my-1">
         <select
           value={columnMetric}
@@ -818,28 +830,11 @@ function HeaderRow({ columnMetric, setColumnMetric, metricOptions, onMetricChang
             onMetricChange(e.target.value);
           }}
           className="h-6 max-w-full rounded-[4px] border border-bd bg-s2 px-1 font-mono text-[10px] uppercase tracking-[0.06em] text-tx2 hover:text-tx focus:border-brand/40 focus:outline-none"
-          title="Auto = each row shows its own sector-relevant headline metric. Or pick a specific metric — options are limited to those with populated surprise% coverage across visible rows."
+          title="Auto = each row shows its own headline metric (EPS by default). Or pick EPS or Revenue explicitly."
         >
-          <option value="__auto__">Auto · per-row sector metric</option>
-          {surpriseCapable.length > 0 ? (
-            <optgroup label="With surprise% data">
-              {surpriseCapable.map((o) => (
-                <option key={o.key} value={o.key}>
-                  {o.label} ({o.surpriseCount})
-                </option>
-              ))}
-            </optgroup>
-          ) : null}
-          <optgroup label="Value only (no surprise% available)">
-            {metricOptions
-              .filter((o) => o.surpriseCount === 0)
-              .slice(0, 15)
-              .map((o) => (
-                <option key={o.key} value={o.key}>
-                  {o.label} ({o.count})
-                </option>
-              ))}
-          </optgroup>
+          <option value="__auto__">Auto · per-row headline</option>
+          <option value="eps_usd">EPS</option>
+          <option value="revenue_usd_m">Revenue</option>
         </select>
       </span>
       <span>Price · 1M</span>
