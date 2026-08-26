@@ -20,7 +20,7 @@ const PLAYWRIGHT_ENTRY = path.resolve(__dirname, "..", "..", "frontend", "node_m
 const { chromium } = await import(pathToFileURL(PLAYWRIGHT_ENTRY).href);
 
 const URL = "https://earnings-karlis123.vercel.app/";
-const TARGET = "GOOGL";
+const TARGET = "chip pattern audit";
 
 async function launch() {
   try { return await chromium.launch({ channel: "msedge", headless: true }); }
@@ -32,8 +32,8 @@ const context = await browser.newContext({ viewport: { width: 1400, height: 900 
 const page = await context.newPage();
 console.log(`loading ${URL} …`);
 await page.goto(URL, { waitUntil: "networkidle", timeout: 30_000 });
-// Wait a beat for the initial hydration.
-await page.waitForTimeout(2000);
+// Wait long enough for client-side hydration + row-fetch to finish
+await page.waitForTimeout(5000);
 // Default filter is "Our portfolio" (14 covered names — no GOOGL).
 // Click the S&P 500 tab so GOOGL appears in the row set. The tab is
 // rendered as text, not a semantic button — locator by text.
@@ -89,10 +89,42 @@ if (rowText.length === 0) {
   }
 }
 
-// Also do a whole-page grep for +214 and 'basis mismatch'.
+// Chip pattern audit — count how many of each chip type actually render.
 const fullText = await page.evaluate(() => document.body.innerText ?? "");
-console.log(`\n=== summary ===`);
-console.log(`  page mentions '214': ${/214[.,]?\d?%/.test(fullText)}`);
-console.log(`  page mentions 'basis mismatch': ${/basis mismatch/i.test(fullText)}`);
+console.log(`\n=== chip pattern audit (default watchlist view) ===`);
+const patterns = {
+  "y/y rev chip": /y\/y\s*rev/gi,
+  "Beat +X%": /Beat\s*\+\d+\.\d+%/g,
+  "Miss -X%": /Miss\s*-?\d+\.\d+%/g,
+  "basis mismatch": /basis mismatch/gi,
+  "reported · no est": /reported\s*[·.]?\s*no est/gi,
+  "not reported": /\bnot reported\b/gi,
+};
+for (const [label, re] of Object.entries(patterns)) {
+  const matches = fullText.match(re) ?? [];
+  console.log(`  ${String(matches.length).padStart(3)}  ${label}`);
+}
+
+// Column-metric dropdown — should carry exactly 3 options now
+// (Auto · per-row headline, EPS, Revenue). Any more = deploy stale.
+const dropdownOptions = await page.evaluate(() => {
+  const selects = Array.from(document.querySelectorAll("select"));
+  for (const s of selects) {
+    const optTexts = Array.from(s.querySelectorAll("option")).map((o) => o.textContent?.trim() ?? "");
+    if (optTexts.some((t) => /Auto.*headline|Auto.*sector metric/i.test(t))) {
+      return optTexts;
+    }
+  }
+  return null;
+});
+console.log(`\n=== column-metric dropdown ===`);
+if (!dropdownOptions) {
+  console.log(`  ✗ not found on this view (may need to be visible in DOM)`);
+} else {
+  console.log(`  option count: ${dropdownOptions.length}`);
+  for (const t of dropdownOptions) console.log(`    · ${t}`);
+  const expected = 3;
+  console.log(`  ${dropdownOptions.length === expected ? "✓" : "✗"} expected exactly ${expected} options — got ${dropdownOptions.length}`);
+}
 
 await browser.close();
