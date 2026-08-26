@@ -133,7 +133,15 @@ from the source of truth.
 
 `node scripts/validate.js` — must pass. Then:
 
-`git add data/sector-ideas.json && git commit -m "sector-ideas: <N> themes · <date>" && git push origin main`
+`git add data/sector-ideas.json data/sector-signals.json && git commit -m "sector-ideas: <N> themes · <date>" && git push origin main`
+
+The `sector-signals.json` add is **critical**: this workflow's step 1
+re-runs `aggregate-by-sector.mjs` to give the LLM the freshest headline
+window (30 min newer than what the 03:00 refresh committed). The
+freshened signals are the ones we validated against. If we don't
+commit them, the next audit-daily run at 06:30 reads the STALE
+signals from origin and flags every keyHeadline as a HALLUCINATION
+(13 spurious findings on 2026-08-26 — see TODO note). Ship both files.
 
 Standard git allowlist. NO `git init`, NO `git reset --hard`, NO
 force-push — the workflow's allowlist blocks these regardless.

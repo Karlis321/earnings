@@ -127,7 +127,15 @@ Payload envelope:
 
 `node scripts/validate.js` — must pass. Then:
 
-`git add data/week-ahead-narrative.json && git commit -m "week-ahead: <weekOf>" && git push origin main`
+`git add data/week-ahead-narrative.json data/sector-signals.json data/macro-signals.json && git commit -m "week-ahead: <weekOf>" && git push origin main`
+
+The `sector-signals.json` and `macro-signals.json` adds are for
+consistency with the sector-ideas fix (see that command's Step 4).
+Both workflows re-run `aggregate-by-sector.mjs` / `refresh-macro.mjs`
+before the LLM fires to give it the freshest inputs; committing the
+regenerated snapshots keeps origin in lockstep with what the
+narrative was actually validated against. `git add` on an unchanged
+file is a no-op.
 
 Standard git allowlist. NO `git init`, NO `git reset --hard`, NO
 force-push — the workflow's allowlist blocks these regardless.
