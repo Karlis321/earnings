@@ -160,7 +160,11 @@ X get this value" or "what was the state before Y ran".
 
 ### How the pieces connect
 
-- **Daily 03:00 UTC (Mon-Fri)** — `.github/workflows/refresh-data.yml`
+All scheduled jobs run overnight in Latvia (2026-08-27 move) — cron
+times below are UTC, with the corresponding Latvia local hour in
+parens (`EEST` = summer UTC+3, `EET` = winter UTC+2).
+
+- **Sun–Thu 23:00 UTC (02:00 EEST / 01:00 EET)** — `.github/workflows/refresh-data.yml`
   runs `scripts/refresh-universe.mjs` — a 28+ phase pipeline that
   ingests Yahoo shards, matures reactions, rebuilds shards +
   events-index, then runs the daily signal-layer phases:
@@ -168,8 +172,10 @@ X get this value" or "what was the state before Y ran".
   (`aggregate-by-sector.mjs`) → `sector-history`
   (`append-sector-history.mjs`) → `correlations` → `commodities`
   → `qarv`. All the mechanical dashboard signals land in one
-  commit per weekday.
-- **Daily 05:30 UTC (Mon-Fri)** — `.github/workflows/claude-summarize.yml`
+  commit per weekday. Day-of-week shifts by 1 vs the others
+  because 23:00 UTC on Sun is Monday morning Latvia — so the
+  cron uses `0-4` (Sun-Thu) to land Mon-Fri Latvia.
+- **Mon–Fri 00:45 UTC (03:45 EEST / 02:45 EET)** — `.github/workflows/claude-summarize.yml`
   spawns Claude Code with the /sweep prompt. Sweep reads
   `data/covered.json`, resolves each via `resolve-earnings-target.mjs`,
   calls /earnings per due ticker, which writes `data/summaries/*.json`
@@ -178,7 +184,7 @@ X get this value" or "what was the state before Y ran".
   is due (all covered names inside the 5-day freshness window) the
   workflow exits green with 0 commits — expected behaviour, not a
   silent failure.
-- **Daily 06:00 UTC (Mon-Fri)** — `.github/workflows/sector-ideas.yml`
+- **Mon–Fri 01:00 UTC (04:00 EEST / 03:00 EET)** — `.github/workflows/sector-ideas.yml`
   runs `.claude/commands/sector-ideas.md` — reads sector-signals.json
   only (never raw filings), drafts 5-8 narrative themes, writes
   `data/sector-ideas.json`. Rendered as the AI panel on `/themes`
@@ -186,19 +192,20 @@ X get this value" or "what was the state before Y ran".
   reconcile compares today's regenerated ideas against today's
   fresh sector-signals (same-snapshot check, no stale-reference
   false positives).
-- **Daily 06:30 UTC (Mon-Fri)** — `.github/workflows/audit-daily.yml`
+- **Mon–Fri 01:15 UTC (04:15 EEST / 03:15 EET)** — `.github/workflows/audit-daily.yml`
   runs `scripts/audits/full-audit.mjs` + compares to the prior
   artifact via `detect-drift.mjs`. READ-ONLY: commits ONLY the new
   `scripts/audits/history/<ISO>.json`; a grep-guard fails the run if
   anything stages outside that path. Fires-and-clears spec at
   `scripts/audits/detect-drift.spec.mjs` (7 cases).
-- **Daily 07:00 UTC (Mon-Fri)** — `.github/workflows/week-ahead.yml`
+- **Mon–Fri 01:30 UTC (04:30 EEST / 03:30 EET)** — `.github/workflows/week-ahead.yml`
   drafts the weekly narrative from events-index + sector-signals +
   macro + market-pulse. Writes `data/week-ahead-narrative.json` +
   per-week archive.
-- **1st + 2nd of month, 12:00 UTC** — framework-screen.yml self-
-  chains through 8-ticker batches over the SP500 ∪ R1000 ∪ isCore
-  universe; blue-ocean on the 1st, rule-breaker on the 2nd.
+- **23:30 UTC on 30-31 of month + 1st of month (02:30 EEST / 01:30 EET
+  on 1st + 2nd of month)** — `framework-screen.yml` self-chains
+  through 8-ticker batches over the SP500 ∪ R1000 ∪ isCore universe;
+  blue-ocean on the 1st, rule-breaker on the 2nd.
 - **On push to main** — `.github/workflows/standing-tests.yml`
   runs `scripts/test-standing.mjs`, which sequentially runs
   `run-pipeline-check.mjs` (invariant counters, must report

@@ -9,7 +9,7 @@ on:
     # state) → refresh at 04:41 (updates it). Tickers that reported
     # overnight were missed. New order: refresh matures reports first,
     # sweep uses the fresh state to find due candidates.
-    - cron: "30 5 * * 1-5"
+    - cron: "45 0 * * 1-5"
   workflow_dispatch:
     inputs:
       ticker:
@@ -33,7 +33,7 @@ run-name: >-
     || (github.event.client_payload.ticker != null && format('/earnings {0} (button)', github.event.client_payload.ticker))
     || '/sweep'
   }} · ${{
-    github.event_name == 'schedule' && 'scheduled (Mon–Fri 05:30 UTC)'
+    github.event_name == 'schedule' && 'scheduled (Mon–Fri 00:45 UTC · 03:45 Latvia)'
     || github.event_name == 'repository_dispatch' && 'button'
     || (github.event.inputs.note != '' && format('manual · {0}', github.event.inputs.note))
     || 'manual'

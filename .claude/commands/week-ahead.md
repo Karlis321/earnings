@@ -10,9 +10,10 @@ sourced narrative. Two audiences: (1) the reader who wants a
 5-minute daily read on setup + tickers to watch, (2) the reader
 who wants "what's on today" context beyond the raw event grid.
 
-Runs daily Mon–Fri 07:00 UTC (right after /sector-ideas at 06:00
-and /audit-daily at 06:30, so this command can reference today's
-freshly-committed themes). Writes a single JSON file
+Runs daily Mon–Fri 01:30 UTC / 04:30 Latvia summer (right after
+/sector-ideas at 01:00 and /audit-daily at 01:15, so this command
+can reference today's freshly-committed themes). Writes a single
+JSON file
 (`data/week-ahead-narrative.json`) — one overwritten record per
 run. Rendered as a panel above the macro strip on `/week-ahead`.
 

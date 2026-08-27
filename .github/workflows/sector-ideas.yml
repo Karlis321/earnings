@@ -14,7 +14,7 @@ on:
   # sector-signals (same snapshot, no stale-reference false
   # positives). Week-ahead (07:00) then references today's themes.
   schedule:
-    - cron: "0 6 * * 1-5"
+    - cron: "0 1 * * 1-5"
   workflow_dispatch:
     inputs:
       note:
@@ -32,7 +32,7 @@ permissions:
 
 run-name: >-
   sector-ideas · ${{
-    github.event_name == 'schedule' && 'scheduled (Mon–Fri 06:00 UTC)'
+    github.event_name == 'schedule' && 'scheduled (Mon–Fri 01:00 UTC · 04:00 Latvia)'
     || (github.event.inputs.note != '' && format('manual · {0}', github.event.inputs.note))
     || 'manual'
   }}

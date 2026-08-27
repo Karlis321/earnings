@@ -35,7 +35,10 @@ on:
   # runs everything locally inside the Actions runner, no Vercel
   # 300s ceiling, no RSS fanout duplication across slices.
   schedule:
-    - cron: "0 3 * * 1-5"
+    # Sun-Thu 23:00 UTC → Mon-Fri 02:00 Latvia summer (EEST) / 01:00
+    # Latvia winter (EET). Runs while Karlis is asleep, so summaries
+    # + fresh data are ready before he opens the dashboard.
+    - cron: "0 23 * * 0-4"
   workflow_dispatch:
     inputs:
       note:
@@ -53,7 +56,7 @@ on:
 
 run-name: >-
   refresh-data · ${{
-    github.event_name == 'schedule' && 'scheduled (Mon–Fri 03:00 UTC)'
+    github.event_name == 'schedule' && 'scheduled (Sun–Thu 23:00 UTC · Mon-Fri 02:00 Latvia)'
     || (github.event.inputs.note != '' && format('manual · {0}', github.event.inputs.note))
     || 'manual'
   }}${{ github.event.inputs.only != '' && format(' · only={0}', github.event.inputs.only) || '' }}${{ github.event.inputs.dry_run == 'true' && ' · dry-run' || '' }}

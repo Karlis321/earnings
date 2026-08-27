@@ -24,7 +24,7 @@ name: audit-daily
 
 on:
   schedule:
-    - cron: "30 6 * * 1-5"
+    - cron: "15 1 * * 1-5"
   workflow_dispatch:
     inputs:
       note:
@@ -41,7 +41,7 @@ permissions:
 
 run-name: >-
   audit-daily · ${{
-    github.event_name == 'schedule' && 'scheduled (Mon–Fri 06:30 UTC)'
+    github.event_name == 'schedule' && 'scheduled (Mon–Fri 01:15 UTC · 04:15 Latvia)'
     || (github.event.inputs.note != '' && format('manual · {0}', github.event.inputs.note))
     || 'manual'
   }}

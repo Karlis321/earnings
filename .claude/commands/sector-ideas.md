@@ -10,7 +10,7 @@ into narrative themes a reader can actually parse. The mechanical
 layer says "mining +6.62% median, 144 tickers, 2626 news items."
 Your job is: which of these are actual themes worth naming, and why?
 
-Runs daily Mon–Fri 06:00 UTC (30 min before /audit-daily so the
+Runs daily Mon–Fri 01:00 UTC / 04:00 Latvia summer (15 min before /audit-daily so the
 audit's §F17 reconcile compares today's ideas against today's
 refreshed sector-signals, and 1 hour before /week-ahead so that
 command can incorporate any newly-committed themes). Writes

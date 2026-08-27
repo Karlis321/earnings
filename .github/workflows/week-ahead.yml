@@ -12,7 +12,7 @@ on:
   # skipped because refresh-data is Mon–Fri; running on stale
   # inputs would just churn identical narratives.
   schedule:
-    - cron: "0 7 * * 1-5"
+    - cron: "30 1 * * 1-5"
   workflow_dispatch:
     inputs:
       note:
@@ -30,7 +30,7 @@ permissions:
 
 run-name: >-
   week-ahead · ${{
-    github.event_name == 'schedule' && 'scheduled (Mon–Fri 07:00 UTC)'
+    github.event_name == 'schedule' && 'scheduled (Mon–Fri 01:30 UTC · 04:30 Latvia)'
     || (github.event.inputs.note != '' && format('manual · {0}', github.event.inputs.note))
     || 'manual'
   }}
