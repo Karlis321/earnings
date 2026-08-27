@@ -103,6 +103,16 @@ const PHASES = [
   // promoted. Uses median-gap cadence to project forward.
   { key: "roll-stale", label: "Roll stale scheduledDate shells forward", script: "roll-stale-shells.mjs" },
   { key: "sec-verbatim", label: "SEC-verbatim rederive (CIK universe)", script: "backfills/rederive-sec-xbrl.mjs", optional: true },
+  // Fix event.period labels on CIK-bearing US canonicals that our
+  // Yahoo ingest labels one-quarter-behind on fiscal-offset issuers
+  // (AAPL, MSFT, NVDA, MU, AMAT, CSCO, HD, ARG etc.). Uses SEC's
+  // fy+fp on the matched fact. Runs AFTER sec-verbatim so values are
+  // SEC-verified first, then labels line up so cross-listing
+  // invariant sees consistent (companyId, period) groups. See
+  // scripts/backfills/fix-period-labels-from-sec.mjs for the
+  // three matching strategies (filed-date ±3d, end-proximity
+  // 10-100d, value-match ±0.5%).
+  { key: "fix-period-labels", label: "Fix period labels vs SEC (fiscal-offset issuers)", script: "backfills/fix-period-labels-from-sec.mjs", optional: true },
   // sec-shells removed — the backfill script is DEPRECATED (reads/
   // writes the gitignored data/earnings.json monolith). Its function
   // is covered by attach-sec-filings.mjs which stores accession URLs
