@@ -204,27 +204,48 @@ function extractQuarterValues(facts, eventDate) {
       const unitKey = ["USD", "USD/shares"].find((u) => units[u]) ?? Object.keys(units)[0];
       if (!unitKey) continue;
       const values = units[unitKey] ?? [];
-      // Step 1: keep only facts filed within ±3 days of the event
-      // date AND passing the shape check (pure-quarter for duration
-      // metrics, instant for balance-sheet metrics).
-      const candidates = values.filter((v) => {
+      // Shape check (pure-quarter for duration metrics, instant for
+      // balance-sheet metrics).
+      const shapeOk = values.filter((v) => {
         if (!v.filed) return false;
-        const ok = spec.type === "instant" ? isInstant(v) : isPureQuarter(v);
-        if (!ok) return false;
+        return spec.type === "instant" ? isInstant(v) : isPureQuarter(v);
+      });
+      // Strategy A — filed-date within ±3 days of event.eventDate.
+      // Catches the case where our eventDate IS the 10-Q filing date.
+      let candidates = shapeOk.filter((v) => {
         const filedDelta = Math.abs(new Date(v.filed).getTime() - eventMs) / 86_400_000;
         return filedDelta <= MAX_FILED_DELTA_DAYS;
       });
+      let matchStrategy = "filed";
+      if (candidates.length === 0) {
+        // Strategy B — end-date proximity. Event.eventDate is the
+        // earnings announcement; SEC end is 10-100 days BEFORE. This
+        // catches AMAT / CSCO / HD / ARG US style events where the
+        // announcement precedes the 10-Q filing by a week or so.
+        candidates = shapeOk.filter((v) => {
+          const endToEvent = (eventMs - new Date(v.end).getTime()) / 86_400_000;
+          return endToEvent >= 10 && endToEvent <= 100;
+        });
+        matchStrategy = "end";
+      }
       if (candidates.length === 0) continue;
-      // Step 2: among facts filed at this event's date, pick the one
-      // whose end-to-filed gap is smallest. The reporting quarter's
-      // end is 30-90 days before file; a prior-year comparative that
-      // shares the same filing date has end ~365 days before. Sort
-      // ascending on (filed - end) picks the reporting quarter.
-      candidates.sort((a, b) => {
-        const aGap = new Date(a.filed).getTime() - new Date(a.end).getTime();
-        const bGap = new Date(b.filed).getTime() - new Date(b.end).getTime();
-        return aGap - bGap;
-      });
+      // Disambiguate: reporting quarter has smallest (filed - end)
+      // gap (30-90 days); comparative has ~365. On end-strategy hits
+      // use (event - end) proximity instead — the most recent
+      // completed quarter before the event wins.
+      if (matchStrategy === "end") {
+        candidates.sort((a, b) => {
+          const aGap = eventMs - new Date(a.end).getTime();
+          const bGap = eventMs - new Date(b.end).getTime();
+          return aGap - bGap;
+        });
+      } else {
+        candidates.sort((a, b) => {
+          const aGap = new Date(a.filed).getTime() - new Date(a.end).getTime();
+          const bGap = new Date(b.filed).getTime() - new Date(b.end).getTime();
+          return aGap - bGap;
+        });
+      }
       const best = candidates[0];
       // Inherit SEC's actual reported unit — never assume USD. The
       // XBRL_MAP's `spec.unit` is only the DEFAULT (used when SEC

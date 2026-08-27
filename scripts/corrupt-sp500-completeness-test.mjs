@@ -109,14 +109,13 @@ async function main() {
   // pct by ≈ 100/N where N is the SP500 membership count in the
   // registry (~500), so ≈ 0.2pp per corruption.
   //
-  // Baseline as of 2026-08-24 is 97.4%. Prior versions used 7
-  // corruptions (~1.4pp drop) which lands at 95.9% — ABOVE the 95%
-  // floor, so the invariant never fired and the test always failed.
-  // Bumped to 15 corruptions (~3pp drop) to safely cross 95% even
-  // as baseline drifts up to ~99%.
+  // Baseline as of 2026-08-27 drifted to 98.8%. Prior versions used
+  // 15 corruptions (~3pp drop) landing at ~95.8% — AT the 95% floor
+  // but still above it. Bumped to 25 corruptions (~5pp drop) so we
+  // reliably cross <95% even when baseline hits 99%.
   const extraCorruptions = [];
   for (const e of sp500) {
-    if (extraCorruptions.length >= 15) break;
+    if (extraCorruptions.length >= 25) break;
     if (e.ticker === target.ticker) continue;
     const shardP = path.join(EVENTS_DIR, tickerSlug(e.ticker) + ".json");
     let jj;

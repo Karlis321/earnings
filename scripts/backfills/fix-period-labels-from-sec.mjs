@@ -103,17 +103,51 @@ async function fetchQuarterlyRevenueFacts(cik) {
   return all;
 }
 
-// Given SEC facts + an event's filing date, return the reporting-
-// quarter fact (fy+fp of the CURRENT quarter, not the year-old
-// comparative that shares the same filed date).
+// Given SEC facts + an event, return the reporting-quarter fact.
+// Two match strategies:
+//   Strategy A (filed-date proximity): SEC's `filed` within ±3 days
+//     of event.eventDate. Fast, catches events where our eventDate
+//     is the actual 10-Q filing date (typical for foreign listings
+//     that ingest the filing-date directly).
+//   Strategy B (end-date proximity): SEC's `end` is 10-100 days
+//     BEFORE event.eventDate. Catches events where our eventDate
+//     is the earnings ANNOUNCEMENT (typically ~15-45 days after
+//     quarter-end; actual 10-Q lands ~1 week later). AMAT US /
+//     CSCO US / HD US / ARG US all report this way.
+// Among candidates from either strategy, disambiguate the reporting
+// quarter from the year-old comparative (both share the same
+// filed date on later 10-Qs) by picking the smallest (filed - end)
+// gap — the reporting quarter's end is 30-90 days before filed,
+// the comparative's end is ~365 days before.
 function pickReportingQuarter(facts, eventDate) {
   if (!eventDate) return null;
   const eventMs = new Date(eventDate).getTime();
-  const candidates = facts.filter((f) => {
+  let candidates = facts.filter((f) => {
     const filedDelta = Math.abs(new Date(f.filed).getTime() - eventMs) / 86_400_000;
     return filedDelta <= 3;
   });
-  if (candidates.length === 0) return null;
+  if (candidates.length === 0) {
+    // Fall back to end-date proximity — event.eventDate is likely
+    // the earnings announcement; SEC's end should be 10-100 days
+    // BEFORE the event.
+    candidates = facts.filter((f) => {
+      const endToEvent = (eventMs - new Date(f.end).getTime()) / 86_400_000;
+      return endToEvent >= 10 && endToEvent <= 100;
+    });
+    if (candidates.length === 0) return null;
+    // Pick the fact whose end is CLOSEST to event.eventDate (the
+    // most recently completed quarter before the event). Do NOT
+    // use the (filed - end) gap here because a comparative fact
+    // with end~365d-before also has small filed-end delta.
+    candidates.sort((a, b) => {
+      const aGap = eventMs - new Date(a.end).getTime();
+      const bGap = eventMs - new Date(b.end).getTime();
+      return aGap - bGap;
+    });
+    return candidates[0];
+  }
+  // Strategy A hits — filed date matches. Disambiguate reporting
+  // quarter vs comparative by smallest (filed - end) gap.
   candidates.sort((a, b) => {
     const aGap = new Date(a.filed).getTime() - new Date(a.end).getTime();
     const bGap = new Date(b.filed).getTime() - new Date(b.end).getTime();
@@ -166,7 +200,23 @@ async function main() {
       for (const ev of events) {
         if (!ev.eventDate || !ev.period) continue;
         stats.events_checked++;
-        const secFact = pickReportingQuarter(facts, ev.eventDate);
+        let secFact = pickReportingQuarter(facts, ev.eventDate);
+        // Strategy C — if date-based matching failed, try matching
+        // by the stored revenue value itself. If our shard already
+        // has $39.9B on this event and SEC has exactly one Revenues
+        // fact at $39.9B, the fact's fy+fp is authoritative for this
+        // event regardless of eventDate drift.
+        if (!secFact) {
+          const stored = (ev.metrics ?? []).find((m) => m.key === "revenue_usd_m")?.actual?.value;
+          if (stored != null) {
+            const target = stored * 1e6; // stored is in USD millions
+            const valMatches = facts.filter((f) => {
+              const delta = Math.abs(f.val - target) / Math.max(Math.abs(target), 1);
+              return delta < 0.005; // within 0.5%
+            });
+            if (valMatches.length === 1) secFact = valMatches[0];
+          }
+        }
         if (!secFact) { stats.events_no_match++; continue; }
         const secPeriod = `FY${secFact.fy} ${secFact.fp}`;
         if (secPeriod === ev.period) continue;
