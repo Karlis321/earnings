@@ -2,6 +2,49 @@
 
 Small named items that need a follow-up, not fresh design work.
 
+## Fiscal-quarter period labels on US canonicals (2026-08-26 EOD)
+
+Universe consistency check (pipeline-report at commit 92fa0dd15):
+`companies_with_inconsistent_financials = 10`. All 10 are US
+canonicals with fiscal-offset calendars where the shard's `period`
+LABELS on the US listing don't align with SEC's actual reported
+fiscal quarter, while international siblings correctly label the
+same event.
+
+**Concrete evidence — AAPL:**
+
+```
+AAPL US    · eventDate=2026-07-30 · period=FY2026 Q2 · rev=109417
+AAPL MM    · eventDate=2026-07-28 · period=FY2026 Q3 · rev=109417
+AAPL34 BZ  · eventDate=2026-05-01 · period=FY2026 Q2 · rev=111184
+AAPL CN    · eventDate=2026-05-01 · period=FY2026 Q2 · rev=111184
+```
+
+International sees the July filing as Q3 (SEC-correct). US canonical
+labels it Q2 — one quarter behind. Cross-listing invariant then
+fires because it groups by (companyId, period) and sees Q2 = 109417
+on the US side vs 111184 on the international side.
+
+The 10 affected companies (from pipeline-report samples):
+`co-01f774ce0f` (ARG US), `co-58f3e88c79` (AAPL US),
+`co-615cb261a4` (AMAT US), `co-7f46f61734` (CSCO US),
+`co-f42b130ba6` (HD US), plus 5 more with same pattern.
+
+Values per event are already correct after today's
+rederive-sec-xbrl fix. Only the period LABEL on the US canonical
+needs remapping — probably a Yahoo ingest that assumed calendar
+quarters when the issuer files against a fiscal year.
+
+**Fix path:** for each of the 10 CIKs, read SEC's `fp+fy` on the
+current-quarter fact matched to each event's `eventDate` (same
+filed-date match already implemented in rederive), then overwrite
+`event.period` to `FY<sec.fy> Q<sec.fp[1]>`. Scripted, ~15 min.
+
+Ship this and standing-tests goes green (only reason
+`pipeline-report status = degraded` is still stuck on that
+`companies_with_inconsistent_financials=10` reason, which isn't on
+`KNOWN_EXCEPTIONS`).
+
 ## ✅ FIXED — Sector-ideas guard/audit mismatch (2026-08-26)
 
 **Root cause found + fixed same day.** The sector-ideas workflow's
