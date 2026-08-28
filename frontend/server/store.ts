@@ -144,6 +144,10 @@ export interface Store {
   // commodity strip on /week-ahead.
   readCommodities?(): Promise<import("@/lib/types").Commodities | null>;
 
+  // Feature 3A — mechanical composite ranking (data/ranking.json).
+  // Written by scripts/run-ranking.mjs; consumed by /ideas.
+  readRanking?(): Promise<import("@/lib/types").Ranking | null>;
+
   readDocument(id: string): Promise<Document | null>;
   writeDocument(doc: Document): Promise<void>;
 

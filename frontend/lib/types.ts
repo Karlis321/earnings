@@ -842,6 +842,40 @@ export interface EventsIndex {
 // prioritized subset the user actively cares about within that set,
 // used to filter/rank the overview. Themes live here so subsequent
 // Feature 2/3 features can key off the same object.
+// Feature 3A — mechanical composite ranking output. Written by
+// scripts/run-ranking.mjs; rendered by /ideas. Components ride along
+// on every row so the UI can defend a ranking by pointing at inputs.
+export interface RankingRow {
+  ticker: string;
+  displayName: string;
+  capTier: CapTier;
+  period: string | null;
+  eventDate: string;
+  composite: number;
+  components: {
+    reaction: {
+      absReturn: number | null;
+      excessReturn: number | null;
+      score: number;
+    };
+    surprise: {
+      pct: number | null;
+      score: number;
+    };
+  };
+}
+
+export interface Ranking {
+  schema: "ranking/v1";
+  generatedAt: string;
+  windowDays: number;
+  universeSize: number;
+  filteredSplitArtifacts: number;
+  weights: { reaction: number; surprise: number };
+  caps: { reactionAbsReturn: number; surpriseAbsPct: number };
+  rows: RankingRow[];
+}
+
 export interface Preferences {
   focusTickers: string[];
   themes: Array<{ id: string; label: string; active: boolean }>;
