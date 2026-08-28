@@ -172,6 +172,12 @@ const PHASES = [
   // ~2 s. Deterministic — safe to re-run whenever the events
   // index has changed.
   { key: "qarv", label: "QARV screen (Quality/Assets/Revisions/Value)", script: "run-qarv-screen.mjs", optional: true },
+  // Phase 4.5 — Mechanical composite ranking (Feature 3A). Reads
+  // events-index + registry; scores tickers on |d3 reaction| +
+  // |lastSurprisePct|, writes data/ranking.json. Consumed by
+  // /ideas. Runs after qarv so the shared events-index it depends
+  // on is fresh from the earlier phases.
+  { key: "ranking", label: "Composite ranking (reaction + surprise)", script: "run-ranking.mjs", optional: true },
   // Google News + wire RSS fanout — ported to
   // scripts/refresh-google-news.mjs on 2026-08-03. Single fetch pass
   // (29 feeds), distributes matched items via displayName / aliases /
