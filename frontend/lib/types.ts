@@ -850,6 +850,16 @@ export interface Preferences {
     weekAhead: boolean;
     ideasDigest: boolean;
   };
+  // Rolling last-visit timestamps for the "new since your last visit"
+  // badge. Two-slot design avoids the "everything is new on first
+  // load" bug: the CURRENT visit only becomes the cutoff on the NEXT
+  // visit. `previous` is the cutoff shown as "new since <this time>";
+  // `current` is stamped on load and becomes `previous` next time.
+  // Both may be null before the user has visited (badges suppressed).
+  lastVisit?: {
+    previous: string | null; // ISO — cutoff used to render "new" badges
+    current: string | null;  // ISO — when the current session started
+  };
 }
 
 export interface SharedState {

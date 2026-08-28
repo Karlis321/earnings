@@ -14,6 +14,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import clsx from "clsx";
 import type { CapTier } from "@/lib/types";
+import { useLastVisit, isNewSince } from "@/lib/useLastVisit";
 
 export interface MoverRow {
   ticker: string;
@@ -48,6 +49,7 @@ function fmtDate(iso: string): string {
 
 export function MoversStrip({ rows }: { rows: MoverRow[] }) {
   const [filter, setFilter] = useState<CapTier | "all">("all");
+  const { cutoff } = useLastVisit();
 
   const filtered = useMemo(() => {
     const scoped = filter === "all" ? rows : rows.filter((r) => r.capTier === filter);
@@ -99,6 +101,7 @@ export function MoversStrip({ rows }: { rows: MoverRow[] }) {
           {filtered.map((r) => {
             const posD3 = r.absD3 >= 0;
             const posExcess = r.excessD3 != null && r.excessD3 >= 0;
+            const isNew = isNewSince(r.eventDate, cutoff);
             return (
               <Link
                 key={r.ticker}
@@ -110,6 +113,14 @@ export function MoversStrip({ rows }: { rows: MoverRow[] }) {
                     <span className="font-mono text-[11.5px] text-brand-fg">
                       {r.ticker}
                     </span>
+                    {isNew ? (
+                      <span
+                        className="rounded-[3px] border border-brand/40 bg-brand/10 px-1 font-mono text-[9px] uppercase tracking-[0.06em] text-brand-fg"
+                        title={`Event date newer than your last visit (${cutoff?.slice(0, 10)})`}
+                      >
+                        new
+                      </span>
+                    ) : null}
                     <span className="truncate text-[11px] text-tx-mid">
                       {r.displayName}
                     </span>
