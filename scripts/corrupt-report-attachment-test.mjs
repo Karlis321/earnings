@@ -39,11 +39,13 @@ function runCheck(label) {
 
 // Plant N corruptions so the counter safely crosses the invariant's
 // threshold (`reported_without_document > 20` per run-pipeline-check).
-// Baseline is ~12 post-backfill; adding 10 corruptions lands ~22,
-// safely above the alarm floor. Prior version corrupted 1 event —
-// only enough when the > 100 threshold was live (baseline ~180).
+// Baseline history:
+//   · pre-backfill (~180): 1 corruption was enough vs. the > 100 floor
+//   · mid-backfill (~12): 10 corruptions landed near ~22, safely over 20
+//   · post-Phase-1 (~5): needs ≥ 16 corruptions to land > 20; bumped to
+//     20 to leave headroom for baseline drift from future refreshes.
 // Kept in sync with the run-pipeline-check floor.
-const CORRUPTIONS_TO_PLANT = 10;
+const CORRUPTIONS_TO_PLANT = 20;
 
 async function main() {
   // Find N past events on US-primary tickers (ends " US") with
