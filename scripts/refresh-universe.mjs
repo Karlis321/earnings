@@ -94,6 +94,21 @@ const PHASES = [
   { key: "mature-reported", label: "Newly-reported promotion", script: "mature-any-reported.mjs" },
   { key: "mature-stale", label: "Mature stale upcoming shells", script: "mature-stale-upcoming.mjs" },
   { key: "mature-if-actual", label: "Mature upcoming with actuals present", script: "mature-if-actual-present.mjs" },
+  // SEC catch-up — for US-CIK entities whose 10-Q/10-K already
+  // filed but Yahoo `earningsChart.reportedDate` hasn't propagated
+  // yet, the Yahoo-based mature-*.mjs phases above miss them.
+  // Runs the audit → promote pair: audit checks SEC submissions.json
+  // per CIK to find shells where the most-recent 10-Q/10-K
+  // reportDate is fresher than the shard's lastEventDate; promoter
+  // consumes that audit JSON and stamps the shell with eventDate +
+  // SEC filing sourceLink. Metrics stay empty here — sec-verbatim
+  // below fills them from XBRL companyfacts.
+  //
+  // Audit is throttled 1.1s/req per SEC fair-access policy; ~50
+  // CIKs → ~1 min. Both phases optional so a SEC hiccup can't tank
+  // the whole run.
+  { key: "audit-stale-upcoming", label: "SEC catch-up · audit stale upcoming shells", script: "audits/audit-stale-upcoming-shells.mjs", optional: true },
+  { key: "promote-stale-upcoming", label: "SEC catch-up · promote stale shells", script: "backfills/promote-stale-upcoming-shells.mjs", optional: true },
   // Roll-stale-shells — bumps scheduledDate forward for upcoming events
   // whose date has already passed AND that couldn't be matured (typically
   // foreign ADRs like BOLSY/B3 where Yahoo doesn't have earningsChart
