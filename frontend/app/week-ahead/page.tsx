@@ -2,7 +2,6 @@ import { store } from "@/server/store";
 import { EmptyState } from "@/components/primitives";
 import { MarketPulse } from "@/components/overview/MarketPulse";
 import { WeekAheadGrid } from "@/components/week-ahead/WeekAheadGrid";
-import { MacroStrip } from "@/components/week-ahead/MacroStrip";
 import { CommodityStrip } from "@/components/week-ahead/CommodityStrip";
 import { NarrativePanel } from "@/components/week-ahead/NarrativePanel";
 import { isDisplayable } from "@/lib/displayFilter";
@@ -40,7 +39,6 @@ export default async function WeekAheadPage({ searchParams }: Props) {
     entities,
     index,
     state,
-    macro,
     commodities,
     currentNarrative,
     archiveWeeks,
@@ -50,7 +48,6 @@ export default async function WeekAheadPage({ searchParams }: Props) {
     store.readEventsIndex?.() ??
       Promise.resolve({ schema: "events-index/v1", updatedAt: "", entries: [] }),
     store.readSharedState(),
-    store.readMacroSignals ? store.readMacroSignals() : Promise.resolve(null),
     store.readCommodities ? store.readCommodities() : Promise.resolve(null),
     store.readWeekAheadNarrative
       ? store.readWeekAheadNarrative()
@@ -159,7 +156,7 @@ export default async function WeekAheadPage({ searchParams }: Props) {
           {archivedWeek ? ` for week ${archivedWeek}` : ""}. The{" "}
           <code className="text-tx-mid">week-ahead</code> workflow fires
           Sunday 22:00 UTC and writes The setup + What to watch + Signals
-          to trust sections based on macro + market-pulse state.
+          to trust sections based on market-pulse + sector-signals state.
           Day grid below still renders from events-index directly.
         </div>
       )}
@@ -190,10 +187,6 @@ export default async function WeekAheadPage({ searchParams }: Props) {
 
       {commodities && commodities.items.length > 0 ? (
         <CommodityStrip data={commodities} />
-      ) : null}
-
-      {macro && macro.signals.length > 0 ? (
-        <MacroStrip signals={macro} />
       ) : null}
 
       <WeekAheadGrid
