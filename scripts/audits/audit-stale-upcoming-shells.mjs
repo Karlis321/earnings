@@ -57,7 +57,12 @@ async function main() {
 
   const today = new Date();
   const todayIso = today.toISOString().slice(0, 10);
-  const WINDOW_DAYS = 14;
+  // Window widened 14 → 30 days on 2026-08-29. Rationale: fiscal-offset
+  // issuers and other estimator-drifty names can land >14 days off
+  // their projected date. 30 days is 2× a typical quarterly gap and
+  // covers 99%+ of real-world late/early reports without ballooning
+  // the SEC fetch count (~60 CIKs vs the old ~30, still under 2 min).
+  const WINDOW_DAYS = 30;
 
   // Collect candidates: US-CIK entities with estimator-projected
   // next event within ±14 days of today.

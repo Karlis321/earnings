@@ -104,18 +104,19 @@ async function main() {
 
   // Pick additional COMPLETE members whose doc layer we'll remove
   // alongside the plant, so the corrupted pct drops meaningfully
-  // below the 95% floor enforced by run-pipeline-check.mjs (line ~534:
-  // `sp500_complete_pct < 95` raises a reason). Each removal drops
-  // pct by ≈ 100/N where N is the SP500 membership count in the
-  // registry (~500), so ≈ 0.2pp per corruption.
+  // below the 90% floor enforced by run-pipeline-check.mjs. Each
+  // removal drops pct by ≈ 100/N where N is the SP500 membership
+  // count in the registry (~500), so ≈ 0.2pp per corruption.
   //
-  // Baseline as of 2026-08-27 drifted to 98.8%. Prior versions used
-  // 15 corruptions (~3pp drop) landing at ~95.8% — AT the 95% floor
-  // but still above it. Bumped to 25 corruptions (~5pp drop) so we
-  // reliably cross <95% even when baseline hits 99%.
+  // History:
+  //   · pre-2026-08-27: 15 corruptions (~3pp) vs 95% floor
+  //   · 2026-08-27: 25 (~5pp) after baseline drift to 98.8%
+  //   · 2026-08-29: floor lowered to 90% (see run-pipeline-check.mjs
+  //     rationale); bumped to 50 corruptions (~10pp drop) so we
+  //     reliably cross <90% even when baseline hits 99%.
   const extraCorruptions = [];
   for (const e of sp500) {
-    if (extraCorruptions.length >= 25) break;
+    if (extraCorruptions.length >= 50) break;
     if (e.ticker === target.ticker) continue;
     const shardP = path.join(EVENTS_DIR, tickerSlug(e.ticker) + ".json");
     let jj;

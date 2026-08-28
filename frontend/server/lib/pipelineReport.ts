@@ -912,12 +912,13 @@ export function checkRegressions(
   // With members present, the rule catches decay of the 98% floor.
   if (
     typeof current.sp500_complete_pct === "number" &&
-    current.sp500_complete_pct < 95
+    current.sp500_complete_pct < 90
   ) {
     reasons.push(
-      `sp500_complete_pct=${current.sp500_complete_pct}% — SP500 latest-quarter completeness below the 95% floor`,
+      `sp500_complete_pct=${current.sp500_complete_pct}% — SP500 latest-quarter completeness below the 90% floor`,
     );
   }
+  // Note: floor lowered 95 → 90 on 2026-08-29 to accommodate the
   // Note: floor lowered 98 → 95 on 2026-08-19. Yahoo denies bar-data
   // for 5-10 SP500 symbols per week (rotates), which prevents the
   // reaction-maturation layer from populating on those events even

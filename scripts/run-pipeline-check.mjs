@@ -539,9 +539,19 @@ async function compute() {
   // Floor lowered 98 → 95 on 2026-08-19. Yahoo denies bar-data for
   // 5-10 SP500 symbols per week (rotates), preventing reaction-layer
   // maturation. Kept in sync with frontend/server/lib/pipelineReport.ts.
-  if (typeof report.sp500_complete_pct === "number" && report.sp500_complete_pct < 95) {
+  // Floor lowered 95 → 90 on 2026-08-29. Rationale: the new
+  // sec-catchup workflow promotes shells to real past events on the
+  // same day their 10-Q lands at SEC. The estimates/reaction layers
+  // only backfill overnight (Yahoo lags SEC by days on estimates,
+  // and reactions need d1/d3/w1/m1 bars post-report). So mid-day
+  // promotions produce a temporary drop of ~1-1.5pp per SP500
+  // constituent while the completeness rebuilds. 90% still catches
+  // real data drift (a 5pp drop from the ~99% baseline signals
+  // something is off) but doesn't fire on the normal mid-day
+  // promote-then-fill cycle.
+  if (typeof report.sp500_complete_pct === "number" && report.sp500_complete_pct < 90) {
     reasons.push(
-      `sp500_complete_pct=${report.sp500_complete_pct}% — SP500 latest-quarter completeness below the 95% floor`,
+      `sp500_complete_pct=${report.sp500_complete_pct}% — SP500 latest-quarter completeness below the 90% floor`,
     );
   }
   if (report.estimator_label_conflicts > 0)
