@@ -8,6 +8,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Panel } from "@/components/primitives";
 import { useSourceViewer } from "@/providers/SourceViewerProvider";
 import { fmtRelative } from "@/lib/format";
+import { useLastVisit, isNewSince } from "@/lib/useLastVisit";
 import { Loader2, RefreshCw } from "lucide-react";
 import {
   ShareEmailButton,
@@ -71,6 +72,7 @@ export default function NewsPage() {
   const [query, setQuery] = useState("");
   const [active, setActive] = useState<string>("all");
   const [days, setDays] = useState<number>(7);
+  const { cutoff } = useLastVisit();
   const { openSource } = useSourceViewer();
 
   const load = async (q?: string, d = days) => {
@@ -230,6 +232,14 @@ export default function NewsPage() {
                   <span>{CATEGORY_LABELS[it.category] ?? it.category}</span>
                   <span>·</span>
                   <span>{fmtRelative(it.time)}</span>
+                  {isNewSince(it.time, cutoff) ? (
+                    <span
+                      className="rounded-[3px] border border-brand/40 bg-brand/10 px-1 font-mono text-[9px] uppercase tracking-[0.06em] text-brand-fg"
+                      title={`Published after your last visit (${cutoff?.slice(0, 10)})`}
+                    >
+                      new
+                    </span>
+                  ) : null}
                 </div>
                 <ShareEmailButton
                   {...shareArticleProps(headline, it.url, source)}
