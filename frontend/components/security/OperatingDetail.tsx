@@ -16,6 +16,7 @@ import {
 } from "@/components/primitives";
 import { SecurityPriceChart } from "./SecurityPriceChart";
 import { CompanyNewsPanel } from "./CompanyNewsPanel";
+import { FundamentalsStrip } from "./FundamentalsStrip";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { fmtMoney } from "@/lib/format";
 import {
@@ -147,6 +148,8 @@ export function OperatingDetail({ entity, events }: Props) {
         displayName={entity.displayName}
         currency={entity.currency}
       />
+
+      <FundamentalsStrip entity={entity} />
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1.4fr_1fr]">
       <div className="flex flex-col gap-4">
