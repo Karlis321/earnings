@@ -58,6 +58,13 @@ jobs:
           git config user.name  "sec-catchup-bot"
           git config user.email "sec-catchup-bot@users.noreply.github.com"
           echo "STEP · configure-git · OK"
+          echo "## sec-catchup diagnostic" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| step | outcome |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|---|---|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| checkout | ok |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| setup-node | ok |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| configure-git | ok |" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Audit stale upcoming shells
         env:
@@ -65,7 +72,13 @@ jobs:
         run: |
           set -eo pipefail
           echo "STEP · audit · START"
-          node scripts/audits/audit-stale-upcoming-shells.mjs
+          node scripts/audits/audit-stale-upcoming-shells.mjs || {
+            RC=$?
+            echo "| audit | **FAIL exit=$RC** |" >> "$GITHUB_STEP_SUMMARY"
+            exit $RC
+          }
+          STALE=$(node -e "try { const a = require('./scripts/audits/stale-upcoming-shells.json'); console.log((a.stale||[]).length); } catch { console.log('?'); }")
+          echo "| audit | ok · $STALE stale shells found |" >> "$GITHUB_STEP_SUMMARY"
           echo "STEP · audit · OK"
 
       - name: Early exit if nothing to promote
@@ -97,7 +110,13 @@ jobs:
         run: |
           set -eo pipefail
           echo "STEP · promote · START"
-          node scripts/backfills/promote-stale-upcoming-shells.mjs
+          node scripts/backfills/promote-stale-upcoming-shells.mjs || {
+            RC=$?
+            echo "| promote | **FAIL exit=$RC** |" >> "$GITHUB_STEP_SUMMARY"
+            exit $RC
+          }
+          PROMOTED=$(node -e "try { const a = require('./scripts/audits/promote-stale-upcoming-shells.json'); console.log(a.totals && a.totals.promoted || 0); } catch { console.log('?'); }")
+          echo "| promote | ok · $PROMOTED events promoted |" >> "$GITHUB_STEP_SUMMARY"
           echo "STEP · promote · OK"
 
       - name: SEC-verbatim rederive scoped to just-promoted CIKs
@@ -132,7 +151,12 @@ jobs:
           fi
           NCIKS=$(echo "$CIKS" | tr ',' '\n' | wc -l)
           echo "running rederive-sec-xbrl on $NCIKS CIKs"
-          node scripts/backfills/rederive-sec-xbrl.mjs --cik="$CIKS"
+          node scripts/backfills/rederive-sec-xbrl.mjs --cik="$CIKS" || {
+            RC=$?
+            echo "| scoped-rederive | **FAIL exit=$RC (nciks=$NCIKS)** |" >> "$GITHUB_STEP_SUMMARY"
+            exit $RC
+          }
+          echo "| scoped-rederive | ok · $NCIKS CIKs |" >> "$GITHUB_STEP_SUMMARY"
           echo "STEP · scoped-rederive · OK"
 
       - name: Rebuild events-index
@@ -140,7 +164,12 @@ jobs:
         run: |
           set -eo pipefail
           echo "STEP · rebuild · START"
-          node scripts/shard-earnings.mjs
+          node scripts/shard-earnings.mjs || {
+            RC=$?
+            echo "| rebuild | **FAIL exit=$RC** |" >> "$GITHUB_STEP_SUMMARY"
+            exit $RC
+          }
+          echo "| rebuild | ok |" >> "$GITHUB_STEP_SUMMARY"
           echo "STEP · rebuild · OK"
 
       - name: Refresh ranking
@@ -149,7 +178,7 @@ jobs:
         run: |
           set -eo pipefail
           echo "STEP · rerank · START"
-          node scripts/run-ranking.mjs
+          node scripts/run-ranking.mjs && echo "| rerank | ok |" >> "$GITHUB_STEP_SUMMARY" || echo "| rerank | skipped (non-fatal) |" >> "$GITHUB_STEP_SUMMARY"
           echo "STEP · rerank · OK"
 
       - name: Commit + push if anything changed
@@ -179,12 +208,23 @@ jobs:
             echo "STEP · commit-push · OK (no-op · 0 promoted)"
             exit 0
           fi
-          git commit -m "sec-catchup: promoted $COUNT stale upcoming shells"
-          git fetch origin main
+          git commit -m "sec-catchup: promoted $COUNT stale upcoming shells" || {
+            echo "| commit-push | **FAIL: git commit failed** |" >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          }
+          git fetch origin main || {
+            echo "| commit-push | **FAIL: git fetch failed** |" >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          }
           if ! git rebase -X ours origin/main; then
             echo "::error::rebase conflict — aborting"
             git rebase --abort || true
+            echo "| commit-push | **FAIL: rebase conflict** |" >> "$GITHUB_STEP_SUMMARY"
             exit 1
           fi
-          git push
+          git push || {
+            echo "| commit-push | **FAIL: git push failed (probably auth or protected branch)** |" >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          }
+          echo "| commit-push | ok · pushed $COUNT-shell commit |" >> "$GITHUB_STEP_SUMMARY"
           echo "STEP · commit-push · OK · pushed $COUNT-shell commit"
