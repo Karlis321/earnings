@@ -9,12 +9,18 @@
 import type { Entity } from "@/lib/types";
 import { fmtPct, fmtNumber } from "@/lib/format";
 
+// Yahoo reports enterpriseValue in the filer's local currency
+// (financialCurrency), not USD — Samsung Electronics 005930 KS
+// comes back as 1.53e15 KRW ≈ $1.09T USD, not $1.5 quadrillion.
+// Suffix scales to the local unit; the currency label lives in the
+// section header (§ TTM fundamentals · KRW) so the reader can
+// interpret the raw number.
 function fmtEnterpriseValue(v: number | null | undefined): string {
   if (v == null) return "—";
-  if (v >= 1e12) return `$${(v / 1e12).toFixed(2)}T`;
-  if (v >= 1e9) return `$${(v / 1e9).toFixed(1)}B`;
-  if (v >= 1e6) return `$${(v / 1e6).toFixed(0)}M`;
-  return `$${v.toLocaleString()}`;
+  if (v >= 1e12) return `${(v / 1e12).toFixed(2)}T`;
+  if (v >= 1e9) return `${(v / 1e9).toFixed(1)}B`;
+  if (v >= 1e6) return `${(v / 1e6).toFixed(0)}M`;
+  return v.toLocaleString();
 }
 
 export function FundamentalsStrip({ entity }: { entity: Entity }) {
