@@ -121,7 +121,13 @@ export function SourcesPanel({ event }: { event: EventRecord }) {
 
       {/* Per-engine status row */}
       <div className="flex flex-wrap items-center gap-2 border-b border-bd bg-panel2 px-5 py-[10px]">
-        {event.sources.engineStatus.map((es) =>
+        {event.sources.engineStatus
+          // Hide the twitter engine chip when the key isn't set —
+          // it's a paid feature that renders as noise on every event
+          // page when unconfigured. When the key IS set (es.ok===true)
+          // the chip renders normally alongside other engines.
+          .filter((es) => !(es.engine === "twitter" && !es.ok))
+          .map((es) =>
           es.ok ? (
             <span
               key={es.engine}
@@ -141,11 +147,7 @@ export function SourcesPanel({ event }: { event: EventRecord }) {
             <SourceUnavailableChip
               key={es.engine}
               engine={es.engine}
-              reason={
-                es.engine === "twitter"
-                  ? "TWITTERAPI_IO_KEY unset"
-                  : "fetch failed"
-              }
+              reason="fetch failed"
               lastGood={es.lastGood}
             />
           ),
