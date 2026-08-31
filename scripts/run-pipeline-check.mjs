@@ -185,7 +185,25 @@ export function classifyFreshness(events, entities, now = new Date()) {
     const datesAny = past.map((e) => new Date(e.eventDate).getTime()).sort((a, b) => a - b);
     const cadence = _fresh_medianGap(datesReal.length >= 2 ? datesReal : datesAny);
     const anchor = pastReal[0]?.eventDate ?? past[0].eventDate;
-    if (!cadence || !anchor) { counts.unknown++; continue; }
+    // Single-event fallback: entities with exactly 1 past event
+    // can't compute a cadence but still have DATA COVERAGE. Treat
+    // as fresh if that 1 event is within 200 days of today (covers
+    // annual + semiannual cadences with headroom for fiscal-offset
+    // variance). Otherwise fall through to the stale bucket below.
+    // Prevents fresh_pct dips from newly-promoted first events on
+    // entities where our history goes back only 1 quarter.
+    if (!cadence || !anchor) {
+      const singleAnchor = past[0]?.eventDate;
+      const singleDaysPast = singleAnchor
+        ? Math.floor((new Date(todayIso).getTime() - new Date(singleAnchor).getTime()) / 86_400_000)
+        : Infinity;
+      if (singleAnchor && singleDaysPast <= 200 && _fresh_hasActuals(past[0])) {
+        counts.fresh++;
+        continue;
+      }
+      counts.unknown++;
+      continue;
+    }
     const upcomingIso = upcoming[0]?.scheduledDate ?? null;
     const projectedIso = new Date(new Date(anchor).getTime() + cadence * 86_400_000)
       .toISOString().slice(0, 10);

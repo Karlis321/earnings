@@ -492,7 +492,26 @@ function classifyFreshness(
     }
     const cadence = median(gaps);
     const anchorPast = pastReal[0]?.eventDate ?? latestPast.eventDate ?? null;
-    if (!cadence || !anchorPast) { unknown++; continue; }
+    // Single-event fallback: entities with exactly 1 past event
+    // can't compute a cadence but still have DATA COVERAGE. Treat
+    // as fresh if that 1 event is within 200 days of today (covers
+    // annual + semiannual cadences with headroom for fiscal-offset
+    // variance). Kept in sync with scripts/run-pipeline-check.mjs.
+    if (!cadence || !anchorPast) {
+      const singleDaysPast = anchorPast
+        ? Math.floor((nowTs - Date.parse(anchorPast)) / 86_400_000)
+        : Infinity;
+      if (
+        anchorPast &&
+        singleDaysPast <= 200 &&
+        (latestPast.metrics ?? []).some((m) => m.actual?.value != null)
+      ) {
+        fresh++;
+        continue;
+      }
+      unknown++;
+      continue;
+    }
     const shellIso = upcoming[0]?.scheduledDate ?? null;
     const cadenceProjectedIso = new Date(
       Date.parse(anchorPast) + cadence * 86_400_000,
