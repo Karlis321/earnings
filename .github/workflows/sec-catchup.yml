@@ -212,19 +212,43 @@ jobs:
             echo "| commit-push | **FAIL: git commit failed** |" >> "$GITHUB_STEP_SUMMARY"
             exit 1
           }
-          git fetch origin main || {
-            echo "| commit-push | **FAIL: git fetch failed** |" >> "$GITHUB_STEP_SUMMARY"
-            exit 1
-          }
-          if ! git rebase -X ours origin/main; then
-            echo "::error::rebase conflict — aborting"
-            git rebase --abort || true
-            echo "| commit-push | **FAIL: rebase conflict** |" >> "$GITHUB_STEP_SUMMARY"
-            exit 1
-          fi
-          git push || {
-            echo "| commit-push | **FAIL: git push failed (probably auth or protected branch)** |" >> "$GITHUB_STEP_SUMMARY"
-            exit 1
-          }
-          echo "| commit-push | ok · pushed $COUNT-shell commit |" >> "$GITHUB_STEP_SUMMARY"
-          echo "STEP · commit-push · OK · pushed $COUNT-shell commit"
+          # Push with retry: if origin moved during our ~4-min run,
+          # re-fetch, cherry-pick our commit onto latest origin/main,
+          # and push again. Avoid `git rebase -X ours` because the
+          # ours strategy doesn't handle every conflict shape (the
+          # 2026-08-31 sec-catchup #37 hit an unresolvable rebase
+          # conflict against a concurrent sweep push).
+          MAX_ATTEMPTS=3
+          for attempt in $(seq 1 $MAX_ATTEMPTS); do
+            git fetch origin main || {
+              echo "| commit-push | **FAIL: fetch attempt $attempt** |" >> "$GITHUB_STEP_SUMMARY"
+              exit 1
+            }
+            if git push 2>/tmp/push.err; then
+              echo "| commit-push | ok · pushed $COUNT-shell commit (attempt $attempt) |" >> "$GITHUB_STEP_SUMMARY"
+              echo "STEP · commit-push · OK · pushed $COUNT-shell commit"
+              exit 0
+            fi
+            echo "push attempt $attempt failed:"
+            cat /tmp/push.err
+            # Non-fast-forward → cherry-pick onto latest origin/main.
+            SHA=$(git rev-parse HEAD)
+            git reset --hard origin/main
+            if git cherry-pick "$SHA"; then
+              continue
+            fi
+            # Cherry-pick conflict — the promoted shells collide with
+            # a concurrent commit. Auto-resolve by preferring OUR
+            # (the sec-catchup pass has authoritative SEC data).
+            git checkout --ours -- data/events/ data/events-index.json data/ranking.json \
+              scripts/audits/stale-upcoming-shells.json \
+              scripts/audits/promote-stale-upcoming-shells.json 2>/dev/null || true
+            git add -A
+            if ! git -c core.editor=true cherry-pick --continue; then
+              git cherry-pick --abort || true
+              echo "| commit-push | **FAIL: cherry-pick conflict on attempt $attempt** |" >> "$GITHUB_STEP_SUMMARY"
+              exit 1
+            fi
+          done
+          echo "| commit-push | **FAIL: exhausted $MAX_ATTEMPTS push attempts** |" >> "$GITHUB_STEP_SUMMARY"
+          exit 1
