@@ -22,11 +22,14 @@ import {
   familyOf,
   type SectorFamily,
 } from "@/lib/sectorFamily";
+import { fmtSurprisePct } from "@/lib/format";
 
+// Local wrapper: themes view surfaces medianReaction3d in
+// percentage-value form (Yahoo emits pre-multiplied) at 2-decimal
+// precision, and NaN needs to render as "—" alongside null.
 function fmtPct(v: number | null): string {
   if (v === null || Number.isNaN(v)) return "—";
-  const sign = v > 0 ? "+" : "";
-  return `${sign}${v.toFixed(2)}%`;
+  return fmtSurprisePct(v, "—", 2);
 }
 
 function reactionClass(v: number | null): string {

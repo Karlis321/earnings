@@ -11,6 +11,7 @@ import Link from "next/link";
 import clsx from "clsx";
 import type { CapTier, RankingRow } from "@/lib/types";
 import { useLastVisit, isNewSince } from "@/lib/useLastVisit";
+import { fmtPct, fmtSurprisePct, fmtMonthDay } from "@/lib/format";
 
 type SortMode = "composite" | "reaction" | "surprise" | "date";
 
@@ -28,23 +29,6 @@ const SORT_MODES: Array<{ id: SortMode; label: string }> = [
   { id: "surprise", label: "Surprise" },
   { id: "date", label: "Recency" },
 ];
-
-function fmtPct(v: number | null | undefined, digits = 1): string {
-  if (v == null) return "—";
-  const p = v * 100;
-  return `${p >= 0 ? "+" : ""}${p.toFixed(digits)}%`;
-}
-
-function fmtSurpPct(v: number | null | undefined): string {
-  if (v == null) return "—";
-  return `${v >= 0 ? "+" : ""}${v.toFixed(1)}%`;
-}
-
-function fmtDate(iso: string): string {
-  const d = new Date(iso + "T00:00:00Z");
-  const mo = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][d.getUTCMonth()];
-  return `${mo} ${d.getUTCDate()}`;
-}
 
 export function IdeasTable({
   rows,
@@ -217,7 +201,7 @@ export function IdeasTable({
                       {r.period ?? "—"}
                     </td>
                     <td className="px-3 py-1.5 font-mono text-[11px] text-tx-mid">
-                      {fmtDate(r.eventDate)}
+                      {fmtMonthDay(r.eventDate)}
                     </td>
                     <td
                       className={clsx(
@@ -241,7 +225,7 @@ export function IdeasTable({
                         surp == null ? "text-tx3" : surp >= 0 ? "text-success" : "text-danger",
                       )}
                     >
-                      {fmtSurpPct(surp)}
+                      {fmtSurprisePct(surp)}
                     </td>
                     <td className="px-3 py-1.5 text-right font-mono font-semibold tabular-nums text-tx">
                       {r.composite.toFixed(3)}

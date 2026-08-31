@@ -12,6 +12,7 @@
 // watchlist expanded row.
 
 import type { Horizon, ReactionPoint, WatchlistReactionPoint } from "@/lib/types";
+import { fmtPct } from "@/lib/format";
 
 // Renderer reads only horizon, absReturn, clipped, contaminated —
 // accept either the full ReactionPoint (event-detail path, from the
@@ -26,12 +27,6 @@ const HORIZON_LABEL: Record<Horizon, string> = {
   m1: "1m",
 };
 const HORIZON_ORDER: Horizon[] = ["d1", "d3", "w1", "m1"];
-
-function fmtPct(v: number): string {
-  const pct = v * 100;
-  const sign = pct >= 0 ? "+" : "";
-  return `${sign}${pct.toFixed(1)}%`;
-}
 
 export function ReactionRow({
   points,

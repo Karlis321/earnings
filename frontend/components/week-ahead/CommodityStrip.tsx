@@ -6,6 +6,7 @@
 
 import clsx from "clsx";
 import type { Commodities, CommodityItem } from "@/lib/types";
+import { fmtSurprisePct as fmtPct } from "@/lib/format";
 
 interface Props {
   data: Commodities;
@@ -16,12 +17,6 @@ function pctClass(v: number | null): string {
   if (v > 0.2) return "text-success-fg";
   if (v < -0.2) return "text-danger";
   return "text-tx-mid";
-}
-
-function fmtPct(v: number | null): string {
-  if (v === null) return "—";
-  const sign = v > 0 ? "+" : "";
-  return `${sign}${v.toFixed(1)}%`;
 }
 
 function fmtPrice(v: number, unit: string): string {

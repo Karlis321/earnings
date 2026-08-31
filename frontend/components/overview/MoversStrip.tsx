@@ -15,6 +15,7 @@ import Link from "next/link";
 import clsx from "clsx";
 import type { CapTier } from "@/lib/types";
 import { useLastVisit, isNewSince } from "@/lib/useLastVisit";
+import { fmtPct, fmtMonthDay } from "@/lib/format";
 
 export interface MoverRow {
   ticker: string;
@@ -34,18 +35,6 @@ const CAP_TIERS: Array<{ id: CapTier | "all"; label: string }> = [
   { id: "mid", label: "Mid" },
   { id: "small", label: "Small" },
 ];
-
-function fmtPct(v: number | null | undefined): string {
-  if (v == null) return "—";
-  const p = v * 100;
-  return `${p >= 0 ? "+" : ""}${p.toFixed(1)}%`;
-}
-
-function fmtDate(iso: string): string {
-  const d = new Date(iso + "T00:00:00Z");
-  const mo = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][d.getUTCMonth()];
-  return `${mo} ${d.getUTCDate()}`;
-}
 
 export function MoversStrip({ rows }: { rows: MoverRow[] }) {
   const [filter, setFilter] = useState<CapTier | "all">("all");
@@ -128,7 +117,7 @@ export function MoversStrip({ rows }: { rows: MoverRow[] }) {
                   <div className="mt-[1px] flex items-baseline gap-2 font-mono text-[10.5px] text-tx3">
                     <span>{r.period}</span>
                     <span>·</span>
-                    <span>{fmtDate(r.eventDate)}</span>
+                    <span>{fmtMonthDay(r.eventDate)}</span>
                     {r.surprisePct != null ? (
                       <>
                         <span>·</span>

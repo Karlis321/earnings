@@ -9,17 +9,7 @@ import Link from "next/link";
 import { Info } from "lucide-react";
 import type { WeekAheadNarrative } from "@/lib/types";
 import { TickerLogo } from "@/components/primitives/TickerLogo";
-
-function fmtDate(iso: string): string {
-  // "2026-08-24" → "Mon Aug 24"
-  const d = new Date(iso + "T00:00:00Z");
-  const day = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][d.getUTCDay()];
-  const mo = [
-    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
-  ][d.getUTCMonth()];
-  return `${day} ${mo} ${d.getUTCDate()}`;
-}
+import { fmtWeekdayMonthDay as fmtDate } from "@/lib/format";
 
 export function NarrativePanel({
   narrative,

@@ -72,10 +72,14 @@ export function fmtPct(value: number | null, dp = 1): string {
   return `${sign}${(value * 100).toFixed(dp)}%`;
 }
 
-export function fmtSurprisePct(value: number | null): string {
-  if (value === null) return "n/a — no estimate";
+export function fmtSurprisePct(
+  value: number | null | undefined,
+  nullLabel = "—",
+  digits = 1,
+): string {
+  if (value == null) return nullLabel;
   const sign = value > 0 ? "+" : "";
-  return `${sign}${value.toFixed(1)}%`;
+  return `${sign}${value.toFixed(digits)}%`;
 }
 
 export function fmtDate(iso: string | null): string {
@@ -95,6 +99,29 @@ export function fmtDateShort(iso: string | null): string {
     day: "2-digit",
     month: "short",
   });
+}
+
+// UTC-anchored English "Aug 24" — deterministic across locales, no
+// leading zero. Consumed by MoversStrip, IdeasTable, and any surface
+// that needs a compact date column that renders the same everywhere.
+const MONTH_ABBR = [
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+] as const;
+const WEEKDAY_ABBR = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
+
+export function fmtMonthDay(iso: string | null): string {
+  if (!iso) return "—";
+  const d = new Date(iso + "T00:00:00Z");
+  return `${MONTH_ABBR[d.getUTCMonth()]} ${d.getUTCDate()}`;
+}
+
+// UTC-anchored "Mon Aug 24" — same rules as fmtMonthDay but prefixes
+// the weekday. Used by /week-ahead narrative panel.
+export function fmtWeekdayMonthDay(iso: string | null): string {
+  if (!iso) return "—";
+  const d = new Date(iso + "T00:00:00Z");
+  return `${WEEKDAY_ABBR[d.getUTCDay()]} ${MONTH_ABBR[d.getUTCMonth()]} ${d.getUTCDate()}`;
 }
 
 export function fmtRelative(iso: string | null, now = new Date()): string {
