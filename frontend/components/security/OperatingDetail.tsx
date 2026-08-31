@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import type { Entity, EventRecord, MetricEntry } from "@/lib/types";
+import { useLastVisit, isNewSince } from "@/lib/useLastVisit";
 import {
   Card,
   MetricRow,
@@ -115,6 +116,7 @@ export function OperatingDetail({ entity, events }: Props) {
   const primary = latestPast ?? upcoming ?? events[0];
 
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+  const { cutoff } = useLastVisit();
   const toggleExpanded = (id: string) => {
     setExpandedIds((prev) => {
       const next = new Set(prev);
@@ -266,7 +268,17 @@ export function OperatingDetail({ entity, events }: Props) {
                     className="grid cursor-pointer grid-cols-[24px_minmax(80px,1fr)_minmax(120px,1.2fr)_minmax(80px,1fr)_minmax(80px,1fr)_minmax(80px,1fr)_[beat-miss]140px_[reaction]80px_[open]60px] items-center gap-3 px-4 py-2.5 text-[12.5px] hover:bg-hover"
                   >
                     <Chevron size={14} className="text-tx3" />
-                    <span className="text-tx">{e.period}</span>
+                    <span className="flex items-center gap-1.5 text-tx">
+                      {e.period}
+                      {isNewSince(e.eventDate, cutoff) ? (
+                        <span
+                          className="rounded-[3px] border border-brand/40 bg-brand/10 px-1 font-mono text-[9px] uppercase tracking-[0.06em] text-brand-fg"
+                          title={`Reported after your last visit (${cutoff?.slice(0, 10)})`}
+                        >
+                          new
+                        </span>
+                      ) : null}
+                    </span>
                     <span
                       className={
                         "font-mono text-[12px] " +

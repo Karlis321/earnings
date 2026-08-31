@@ -5,7 +5,6 @@ import { data as F } from "./data";
 import type {
   DiscoverFeedResult,
   Document,
-  EarningsSnapshot,
   EngineStatus,
   EventRecord,
   Entity,
@@ -134,10 +133,6 @@ export const api = {
     } catch {
       return F.getEvent(eventId);
     }
-  },
-
-  async getSnapshot(): Promise<EarningsSnapshot> {
-    return safeFetch("/api/earnings/snapshot", () => F.getSnapshot());
   },
 
   async getEtfDetail(ticker: string): Promise<EtfDetail | undefined> {
