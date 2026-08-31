@@ -18,9 +18,22 @@ function formatStamp(iso: string): string {
 
 export function DataStatusPill() {
   const { health } = useHealth();
-  const iso = health?.lastCronRun ?? health?.snapshotAt ?? null;
+  // Pick the MOST RECENT of `lastCronRun` (when refresh-universe last
+  // wrote cron-status.json) and `snapshotAt` (when events-index was
+  // last rebuilt — bumped by mid-day sec-catchup + any local shard
+  // rebuild). Previously the pill always fell back to snapshotAt only
+  // when lastCronRun was null, so a stale cron-status was shown even
+  // when a fresher events-index rebuild had already landed.
+  const cronIso = health?.lastCronRun ?? null;
+  const snapIso = health?.snapshotAt ?? null;
+  const iso =
+    cronIso && snapIso
+      ? cronIso > snapIso
+        ? cronIso
+        : snapIso
+      : cronIso ?? snapIso ?? null;
   const stamp = iso ? formatStamp(iso) : "—";
-  const label = health?.lastCronRun ? "Cron" : "Snapshot";
+  const label = iso === cronIso && cronIso ? "Cron" : "Data";
 
   let dot = "bg-tx3";
   if (health) {
