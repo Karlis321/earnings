@@ -128,6 +128,18 @@ const PHASES = [
   // three matching strategies (filed-date ±3d, end-proximity
   // 10-100d, value-match ±0.5%).
   { key: "fix-period-labels", label: "Fix period labels vs SEC (fiscal-offset issuers)", script: "backfills/fix-period-labels-from-sec.mjs", optional: true },
+  // Cross-listing drift cleanup — for foreign-only companies that
+  // SEC-verbatim can't anchor (no CIK on any sibling), Yahoo's
+  // per-ingest values often diverge across listings. This script
+  // drops the minority-valued events on the diverging sibling and
+  // keeps the majority. Idempotent — a no-op when siblings agree.
+  // Runs AFTER sec-verbatim + fix-period-labels so the values on
+  // CIK-bearing companies are already reconciled first, and this
+  // phase only touches the residual foreign-listing drift.
+  // Without this phase, the overnight refresh reintroduces the
+  // same 7-10 companies_with_inconsistent_financials entries every
+  // day (TotalEnergies, Novo Nordisk, Figma, Arko, AES, Enbridge…).
+  { key: "drop-mismatched", label: "Drop mismatched cross-listing events", script: "backfills/drop-mismatched-sibling-events.mjs", optional: true },
   // sec-shells removed — the backfill script is DEPRECATED (reads/
   // writes the gitignored data/earnings.json monolith). Its function
   // is covered by attach-sec-filings.mjs which stores accession URLs
