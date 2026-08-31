@@ -18,13 +18,9 @@ name: sec-catchup
 on:
   schedule:
     # 13:30 UTC — after typical BMO (before market open) reports.
-    # US BMO reports land 12:00-13:00 UTC; we run just after so a
-    # 12:15 UTC filing is caught in the same window.
     - cron: "30 13 * * 1-5"
     # 17:30 UTC — after typical mid-day / lunch reports and the
-    # first wave of AMC (after market close) reports. AMC reports
-    # start landing 20:00 UTC so this catches earlier movers.
-    # cron-nudge: 2026-08-29 (initial commit).
+    # first wave of AMC (after market close) reports.
     - cron: "30 17 * * 1-5"
   workflow_dispatch:
     inputs:
@@ -48,6 +44,9 @@ jobs:
         uses: actions/checkout@v5
         with:
           fetch-depth: 0
+          # Persist credentials so `git push` at the end works with
+          # the auto-provisioned GITHUB_TOKEN.
+          persist-credentials: true
 
       - name: Setup Node 24
         uses: actions/setup-node@v5
@@ -58,88 +57,134 @@ jobs:
         run: |
           git config user.name  "sec-catchup-bot"
           git config user.email "sec-catchup-bot@users.noreply.github.com"
+          echo "STEP · configure-git · OK"
 
       - name: Audit stale upcoming shells
         env:
           EDGAR_CONTACT_EMAIL: ${{ vars.EDGAR_CONTACT_EMAIL || 'klpp@bluorbank.lv' }}
         run: |
-          set -euo pipefail
+          set -eo pipefail
+          echo "STEP · audit · START"
           node scripts/audits/audit-stale-upcoming-shells.mjs
+          echo "STEP · audit · OK"
+
+      - name: Early exit if nothing to promote
+        id: early-exit
+        run: |
+          set -eo pipefail
+          echo "STEP · early-exit-check · START"
+          if [ ! -f scripts/audits/stale-upcoming-shells.json ]; then
+            echo "no audit file — nothing to do"
+            echo "empty=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          COUNT=$(node -e "
+            try {
+              const a = require('./scripts/audits/stale-upcoming-shells.json');
+              console.log((a.stale || []).length);
+            } catch (e) { console.log('0'); }
+          ")
+          echo "audit found $COUNT stale shells"
+          if [ "$COUNT" = "0" ]; then
+            echo "empty=true" >> $GITHUB_OUTPUT
+          else
+            echo "empty=false" >> $GITHUB_OUTPUT
+          fi
+          echo "STEP · early-exit-check · OK · empty=$([ \"$COUNT\" = \"0\" ] && echo yes || echo no)"
 
       - name: Promote stale shells
+        if: steps.early-exit.outputs.empty != 'true'
         run: |
-          set -euo pipefail
+          set -eo pipefail
+          echo "STEP · promote · START"
           node scripts/backfills/promote-stale-upcoming-shells.mjs
+          echo "STEP · promote · OK"
 
       - name: SEC-verbatim rederive scoped to just-promoted CIKs
-        # Fills metrics on the freshly-promoted events so
-        # sp500_complete_pct stays above its 95% floor. Full-universe
-        # rederive would take ~30 min; scoped by --cik takes ~5s per
-        # CIK. Skips gracefully when nothing was promoted.
+        if: steps.early-exit.outputs.empty != 'true'
         env:
           EDGAR_CONTACT_EMAIL: ${{ vars.EDGAR_CONTACT_EMAIL || 'klpp@bluorbank.lv' }}
         run: |
-          set -euo pipefail
-          CIKS=$(node -e "
-            const a = require('./scripts/audits/promote-stale-upcoming-shells.json');
-            const promoted = a.promoted || [];
-            if (promoted.length === 0) { process.exit(0); }
-            const reg = require('./data/entity-registry.json').entities;
-            const byT = new Map(reg.map(e => [e.ticker, e]));
-            const ciks = new Set();
-            for (const p of promoted) {
-              const ent = byT.get(p.ticker);
-              if (ent && ent.edgarCik) ciks.add(String(parseInt(ent.edgarCik, 10)));
-            }
-            process.stdout.write([...ciks].join(','));
-          ")
-          if [ -z "$CIKS" ]; then
-            echo "no CIKs promoted this run — skipping scoped sec-verbatim"
+          set -eo pipefail
+          echo "STEP · scoped-rederive · START"
+          if [ ! -f scripts/audits/promote-stale-upcoming-shells.json ]; then
+            echo "no promote audit file — nothing to rederive"
             exit 0
           fi
-          echo "running rederive-sec-xbrl on $(echo $CIKS | tr ',' '\n' | wc -l) CIKs"
+          CIKS=$(node -e '
+            try {
+              const a = require("./scripts/audits/promote-stale-upcoming-shells.json");
+              const promoted = a.promoted || [];
+              if (promoted.length === 0) { process.exit(0); }
+              const reg = require("./data/entity-registry.json").entities;
+              const byT = new Map(reg.map(e => [e.ticker, e]));
+              const ciks = new Set();
+              for (const p of promoted) {
+                const ent = byT.get(p.ticker);
+                if (ent && ent.edgarCik) ciks.add(String(parseInt(ent.edgarCik, 10)));
+              }
+              process.stdout.write([...ciks].join(","));
+            } catch (e) { process.exit(0); }
+          ') || CIKS=""
+          if [ -z "$CIKS" ]; then
+            echo "no CIKs to rederive — skipping"
+            exit 0
+          fi
+          NCIKS=$(echo "$CIKS" | tr ',' '\n' | wc -l)
+          echo "running rederive-sec-xbrl on $NCIKS CIKs"
           node scripts/backfills/rederive-sec-xbrl.mjs --cik="$CIKS"
+          echo "STEP · scoped-rederive · OK"
 
-      - name: Rebuild events-index + shards summary
+      - name: Rebuild events-index
+        if: steps.early-exit.outputs.empty != 'true'
         run: |
-          set -euo pipefail
+          set -eo pipefail
+          echo "STEP · rebuild · START"
           node scripts/shard-earnings.mjs
+          echo "STEP · rebuild · OK"
 
       - name: Refresh ranking
-        # Cheap (~0.5s) and keeps /ideas in sync with just-promoted
-        # events; skips gracefully if run-ranking.mjs errors.
+        if: steps.early-exit.outputs.empty != 'true'
         continue-on-error: true
-        run: node scripts/run-ranking.mjs
-
-      - name: Commit + push (only if shards changed)
         run: |
-          set -euo pipefail
-          # Include any shard changes + audit trail + index + ranking.
-          git add -A data/events/ data/events-index.json data/ranking.json \
-                     scripts/audits/stale-upcoming-shells.json \
-                     scripts/audits/promote-stale-upcoming-shells.json 2>/dev/null || true
-          if git diff --cached --quiet; then
-            echo "no changes to commit — no stale shells promoted this run"
-            exit 0
-          fi
-          # Count promoted rows for the commit subject.
-          COUNT=$(node -e "const a=require('./scripts/audits/promote-stale-upcoming-shells.json'); console.log(a.totals.promoted||0)")
-          if [ "$COUNT" = "0" ]; then
-            echo "audit + rebuild ran but promoted 0 events — skipping commit"
-            git reset HEAD -- .
-            exit 0
-          fi
-          # Rebase before pushing — mid-day catch-up commonly collides
-          # with the /sweep workflow or manual pushes. Prefer OURS on
-          # shard files (we just verified against SEC).
-          git commit -m "sec-catchup: promoted $COUNT stale upcoming shells
+          set -eo pipefail
+          echo "STEP · rerank · START"
+          node scripts/run-ranking.mjs
+          echo "STEP · rerank · OK"
 
-Auto-run of the audit + promote pair to catch US-CIK entities
-whose 10-Q/10-K landed at SEC since the overnight refresh."
+      - name: Commit + push if anything changed
+        if: steps.early-exit.outputs.empty != 'true'
+        run: |
+          set -eo pipefail
+          echo "STEP · commit-push · START"
+          # Stage only known-safe paths. `--` guards against pathspec
+          # collision on paths that don't exist yet.
+          git add -- data/events/ data/events-index.json data/ranking.json 2>/dev/null || true
+          git add -- scripts/audits/stale-upcoming-shells.json 2>/dev/null || true
+          git add -- scripts/audits/promote-stale-upcoming-shells.json 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "no staged changes — skipping commit"
+            echo "STEP · commit-push · OK (no-op)"
+            exit 0
+          fi
+          COUNT=$(node -e "
+            try {
+              const a = require('./scripts/audits/promote-stale-upcoming-shells.json');
+              console.log(a.totals && a.totals.promoted || 0);
+            } catch (e) { console.log(0); }
+          ")
+          if [ "$COUNT" = "0" ]; then
+            echo "0 promoted — skipping commit"
+            git reset -- . || true
+            echo "STEP · commit-push · OK (no-op · 0 promoted)"
+            exit 0
+          fi
+          git commit -m "sec-catchup: promoted $COUNT stale upcoming shells"
           git fetch origin main
           if ! git rebase -X ours origin/main; then
-            echo "::warning::rebase conflict — aborting"
+            echo "::error::rebase conflict — aborting"
             git rebase --abort || true
             exit 1
           fi
           git push
+          echo "STEP · commit-push · OK · pushed $COUNT-shell commit"
