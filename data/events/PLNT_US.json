@@ -483,42 +483,42 @@
       "guidance": [],
       "reaction": {
         "benchmark": "SPX",
-        "baselineDate": "2025-08-29",
-        "baselineClose": 104.80000305175781,
+        "baselineDate": "2025-09-02",
+        "baselineClose": 101.72000122070312,
         "points": [
           {
             "horizon": "d1",
-            "absReturn": -0.029389329593182932,
-            "excessReturn": -0.022467049656321358,
+            "absReturn": 0.0012779910721384296,
+            "excessReturn": -0.003822082555845867,
             "benchmark": "SPX",
-            "computedAt": "2026-08-31T01:45:49.494Z",
+            "computedAt": "2026-09-01T02:15:28.507Z",
             "populatesOn": null,
             "status": "matured"
           },
           {
             "horizon": "d3",
-            "absReturn": -0.017557289252906123,
-            "excessReturn": -0.02403076153068133,
+            "absReturn": 0.027428243040165178,
+            "excessReturn": 0.017146963438465633,
             "benchmark": "SPX",
-            "computedAt": "2026-08-31T01:45:49.494Z",
+            "computedAt": "2026-09-01T02:15:28.507Z",
             "populatesOn": null,
             "status": "matured"
           },
           {
             "horizon": "w1",
-            "absReturn": -0.005438928227346632,
-            "excessReturn": -0.010839661012799037,
+            "absReturn": 0.008454587102153181,
+            "excessReturn": -0.006675834285246464,
             "benchmark": "SPX",
-            "computedAt": "2026-08-31T01:45:49.494Z",
+            "computedAt": "2026-09-01T02:15:28.507Z",
             "populatesOn": null,
             "status": "matured"
           },
           {
             "horizon": "m1",
-            "absReturn": -0.009541984454963496,
-            "excessReturn": -0.04486567167366509,
+            "absReturn": 0.013173381063800999,
+            "excessReturn": -0.032911617930797235,
             "benchmark": "SPX",
-            "computedAt": "2026-08-31T01:45:49.494Z",
+            "computedAt": "2026-09-01T02:15:28.507Z",
             "populatesOn": null,
             "status": "matured"
           }
@@ -2258,7 +2258,7 @@
           "key": "eps_usd",
           "displayLabel": "EPS",
           "isHeadline": true,
-          "surprisePct": 3.9439647535465006,
+          "surprisePct": null,
           "estimate": {
             "value": 0.84661,
             "unit": "USD",
@@ -2274,20 +2274,36 @@
             "confidence": 0.75
           },
           "actual": {
-            "value": 0.88,
+            "value": 0.87,
             "unit": "USD",
             "source": {
-              "url": "https://finance.yahoo.com/quote/PLNT/earnings-history",
-              "label": "Yahoo · earningsChart",
+              "url": "https://finance.yahoo.com/quote/PLNT/financials",
+              "label": "Yahoo · fundamentals-timeseries",
               "provenance": "wire",
               "locator": null
             },
             "asOf": "2026-06-30",
-            "fetchedAt": "2026-08-25T09:37:00.243Z",
+            "fetchedAt": "2026-09-01T01:32:34.167Z",
             "method": "yahoo",
-            "confidence": 0.8
+            "confidence": 0.85
           },
-          "prior": null
+          "prior": null,
+          "superseded": [
+            {
+              "value": 0.88,
+              "unit": "USD",
+              "source": "Yahoo · earningsChart",
+              "from_provenance": "yahoo-earnings-chart"
+            }
+          ],
+          "_crossBasisSurprise": [
+            {
+              "value": 3.9439647535465006,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-09-01T02:40:12.465Z"
+            }
+          ]
         },
         {
           "key": "revenue_usd_m",
@@ -2479,10 +2495,10 @@
           },
           {
             "horizon": "m1",
-            "absReturn": 0.04139821879482977,
-            "excessReturn": 0.04116477987989134,
+            "absReturn": 0.007615688276133731,
+            "excessReturn": 0.01070517568455519,
             "benchmark": "SPX",
-            "computedAt": "2026-08-31T01:45:49.494Z",
+            "computedAt": "2026-09-01T02:15:28.507Z",
             "populatesOn": null,
             "status": "clipped",
             "clipped": true
@@ -2523,7 +2539,58 @@
       "provenance": "estimator-median-gap",
       "provenanceAsOf": "2026-08-25T09:58:21.731Z",
       "cadence": "quarterly",
-      "metrics": [],
+      "metrics": [
+        {
+          "key": "revenue_usd_m",
+          "displayLabel": "Revenue (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": {
+            "value": 348.70068,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/PLNT/analysis",
+              "label": "Yahoo · earningsTrend (16 analysts)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-09-30",
+            "fetchedAt": "2026-09-01T02:14:28.664Z",
+            "method": "yahoo",
+            "confidence": 0.75,
+            "low_usd_m": 334.8384,
+            "high_usd_m": 362,
+            "numberOfAnalysts": 16
+          },
+          "actual": null,
+          "prior": null
+        },
+        {
+          "key": "eps_usd",
+          "displayLabel": "EPS",
+          "isHeadline": true,
+          "surprisePct": null,
+          "estimate": {
+            "value": 0.80147,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/PLNT/analysis",
+              "label": "Yahoo · earningsTrend (15 analysts)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-09-30",
+            "fetchedAt": "2026-09-01T02:14:28.664Z",
+            "method": "yahoo",
+            "confidence": 0.75,
+            "low": 0.76159,
+            "high": 0.84,
+            "numberOfAnalysts": 15
+          },
+          "actual": null,
+          "prior": null
+        }
+      ],
       "guidance": [],
       "reaction": {
         "benchmark": "SPX",
