@@ -1,0 +1,128 @@
+{
+  "schema": "audit-report/v1",
+  "generatedAt": "2026-09-04T05:57:28.669Z",
+  "sections": {
+    "D14": {
+      "ok": false,
+      "tail": "\n===============================\n  ✗  pipeline-report status=ok\n  ✓  cross-listing invariant fires + clears\n  ✓  surprise-inconsistency invariant fires + clears\n  ✓  freshness.stale>10 invariant fires + clears\n  ✓  news normalizer handles malformed fixture\n  ✓  report-attachment invariant fires + clears\n  ✓  sp500_complete_pct floor fires + clears\n  ✓  every index event id resolves in its shard\n  ✓  summaries validate against schema\nElapsed: 62.7s\n\n✗ 1 test(s) failed\n\n✗ pipeline-report status=\"degraded\" — unrecognized reason(s):\n    · companies_with_inconsistent_financials=1 — same-company listings show different revenue in the SAME currency for the same period\n    · marketcap_stale_count=388 (15% of canonicals stale >7d) — sector + search orderings silently corrupt\n  (allowlist: reported_without_document)\n"
+    },
+    "F17_sector_ideas": {
+      "themes": 7,
+      "ok": 7,
+      "sectorFail": 0,
+      "tickerFail": 0,
+      "headlineFail": 0,
+      "dataPointsFail": 0
+    },
+    "F17_week_ahead": {
+      "highlights": 5,
+      "ok": 5,
+      "bad": 0
+    },
+    "F17_blue-ocean": {
+      "cards": 24,
+      "bad": 0
+    },
+    "F17_summaries": {
+      "total": 1262,
+      "sampled": 10,
+      "ok": 10,
+      "missingTicker": 0,
+      "note": "sample-only — 1252 summaries unverified in this pass"
+    },
+    "A_completeness": {
+      "universe": 1038,
+      "operating": 1032,
+      "developer": 3,
+      "etf": 3,
+      "noMetrics": 0,
+      "noNextDate": 8,
+      "noReactions": 0
+    },
+    "E_correlations": {
+      "tickers": 17,
+      "asym": 0,
+      "nanCells": 0,
+      "nullCells": 0,
+      "diagBad": 0
+    },
+    "E_commodities": {
+      "items": 8,
+      "errored": []
+    },
+    "E_sector_history": {
+      "rows": 170,
+      "uniqueDates": 10,
+      "dupes": 0
+    },
+    "F15_pipeline": {
+      "status": "degraded",
+      "reasons": [
+        "companies_with_inconsistent_financials=1 — same-company listings show different revenue in the SAME currency for the same period",
+        "reported_without_document=52 — past events with actuals but no filing sourceLink (systemic gap)",
+        "marketcap_stale_count=388 (15% of canonicals stale >7d) — sector + search orderings silently corrupt"
+      ],
+      "events_total": 21964,
+      "reactions_computed": 71749,
+      "duplicates_detected": 0,
+      "reported_without_document": 52,
+      "reported_without_document_structural": 10288,
+      "sp500_complete_pct": 97.4
+    },
+    "F18_git": {
+      "head": "99eebae6f43399490e016236b7645c7fdf7345a6",
+      "parent": "30be8355f97162fe73da0428b3cbe6a4c28db419",
+      "hasAncestry": true
+    }
+  },
+  "findings": [
+    {
+      "section": "§D14",
+      "severity": "FAIL",
+      "msg": "standing tests: 1 test(s) failed",
+      "evidence": {
+        "tail": "==============\n  ✗  pipeline-report status=ok\n  ✓  cross-listing invariant fires + clears\n  ✓  surprise-inconsistency invariant fires + clears\n  ✓  freshness.stale>10 invariant fires + clears\n  ✓  news normalizer handles malformed fixture\n  ✓  report-attachment invariant fires + clears\n  ✓  sp500_complete_pct floor fires + clears\n  ✓  every index event id resolves in its shard\n  ✓  summaries validate against schema\nElapsed: 62.7s\n\n✗ 1 test(s) failed\n\n✗ pipeline-report status=\"degraded\" — unrecognized reason(s):\n    · companies_with_inconsistent_financials=1 — same-company listings show different revenue in the SAME currency for the same period\n    · marketcap_stale_count=388 (15% of canonicals stale >7d) — sector + search orderings silently corrupt\n  (allowlist: reported_without_document)\n"
+      }
+    },
+    {
+      "section": "§A.completeness",
+      "severity": "INFO",
+      "msg": "8 operating tickers with no nextScheduled (may self-heal)",
+      "evidence": null
+    },
+    {
+      "section": "§F15.pipeline",
+      "severity": "DEGRADED",
+      "msg": "pipeline-report status=degraded",
+      "evidence": {
+        "reasons": [
+          "companies_with_inconsistent_financials=1 — same-company listings show different revenue in the SAME currency for the same period",
+          "reported_without_document=52 — past events with actuals but no filing sourceLink (systemic gap)",
+          "marketcap_stale_count=388 (15% of canonicals stale >7d) — sector + search orderings silently corrupt"
+        ]
+      }
+    }
+  ],
+  "unverified": [
+    {
+      "section": "§F17.rule-breaker",
+      "reason": "data/screens/rule-breaker.json missing (first workflow fire scheduled Sept 1-2)"
+    },
+    {
+      "section": "§F17.summaries.full",
+      "reason": "only 10 of 1262 summaries sampled — full corpus reconciliation is out of scope for the thin first-pass audit"
+    },
+    {
+      "section": "§C.source-previews",
+      "reason": "requires api/documents/proxy against live deploy"
+    },
+    {
+      "section": "§G.endpoint-health",
+      "reason": "requires HTTP sampling against live deploy"
+    },
+    {
+      "section": "§F16.workflow-schedule",
+      "reason": "requires GitHub Actions run-history read (auth-gated)"
+    }
+  ]
+}
