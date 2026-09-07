@@ -928,11 +928,11 @@
       "kind": "earnings",
       "period": "FY2026 Q2",
       "scheduledDate": "2026-09-06",
-      "eventDate": null,
+      "eventDate": "2026-06-30",
       "timing": null,
       "expectation": "unset",
       "guidanceMove": null,
-      "freshness": "stale",
+      "freshness": "fresh",
       "provenance": "estimator-median-gap",
       "provenanceAsOf": "2026-09-03T00:59:30.915Z",
       "cadence": "quarterly",
@@ -959,15 +959,50 @@
             "high_usd_m": 174108,
             "numberOfAnalysts": 1
           },
-          "actual": null,
+          "actual": {
+            "value": 177624,
+            "unit": "CNY",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/BOCN.VI/financials",
+              "label": "Yahoo · fundamentals-timeseries",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-06-30",
+            "fetchedAt": "2026-09-07T00:35:39.906Z",
+            "method": "yahoo",
+            "confidence": 0.85
+          },
+          "prior": null
+        },
+        {
+          "key": "net_income_usd_m",
+          "displayLabel": "Net income (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 66963,
+            "unit": "CNY",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/BOCN.VI/financials",
+              "label": "Yahoo · fundamentals-timeseries",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-06-30",
+            "fetchedAt": "2026-09-07T00:35:39.906Z",
+            "method": "yahoo",
+            "confidence": 0.85
+          },
           "prior": null
         }
       ],
       "guidance": [],
       "reaction": {
         "benchmark": "SPX",
-        "baselineDate": null,
-        "baselineClose": null,
+        "baselineDate": "2026-06-30",
+        "baselineClose": 0.550599992275238,
         "points": [
           {
             "horizon": "d1",
@@ -1014,7 +1049,71 @@
         "items": [],
         "engineStatus": []
       },
-      "scheduledDateSource": "roll-stale-shells/median-gap"
+      "scheduledDateSource": "roll-stale-shells/median-gap",
+      "eventDateSource": "mature-if-actual-present"
+    },
+    {
+      "id": "evt-kpljkg",
+      "ticker": "BOCN AV",
+      "kind": "earnings",
+      "period": "FY2026 Q3",
+      "scheduledDate": "2026-09-29",
+      "eventDate": null,
+      "timing": null,
+      "expectation": "unset",
+      "guidanceMove": null,
+      "freshness": "stale",
+      "provenance": "estimator-median-gap",
+      "provenanceAsOf": "2026-09-07T01:19:17.443Z",
+      "cadence": "quarterly",
+      "metrics": [],
+      "guidance": [],
+      "reaction": {
+        "benchmark": "SPX",
+        "baselineDate": null,
+        "baselineClose": null,
+        "points": [
+          {
+            "horizon": "d1",
+            "absReturn": null,
+            "excessReturn": null,
+            "benchmark": "SPX",
+            "computedAt": null,
+            "populatesOn": "2026-10-02"
+          },
+          {
+            "horizon": "d3",
+            "absReturn": null,
+            "excessReturn": null,
+            "benchmark": "SPX",
+            "computedAt": null,
+            "populatesOn": "2026-10-04"
+          },
+          {
+            "horizon": "w1",
+            "absReturn": null,
+            "excessReturn": null,
+            "benchmark": "SPX",
+            "computedAt": null,
+            "populatesOn": "2026-10-06"
+          },
+          {
+            "horizon": "m1",
+            "absReturn": null,
+            "excessReturn": null,
+            "benchmark": "SPX",
+            "computedAt": null,
+            "populatesOn": "2026-10-22"
+          }
+        ]
+      },
+      "sources": {
+        "windowStart": "2026-09-27",
+        "windowEnd": "2026-11-03",
+        "capturedAt": null,
+        "items": [],
+        "engineStatus": []
+      }
     }
   ]
 }

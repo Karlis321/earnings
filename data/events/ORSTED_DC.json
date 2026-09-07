@@ -922,6 +922,15 @@
               "estimateUnit": "DKK",
               "clearedAt": "2026-09-04T01:44:07.283Z",
               "reason": "absurd_magnitude"
+            },
+            {
+              "value": -640.4809448550636,
+              "actual": -5.7111,
+              "estimate": 1.05667,
+              "actualUnit": "DKK",
+              "estimateUnit": "DKK",
+              "clearedAt": "2026-09-07T01:43:16.683Z",
+              "reason": "absurd_magnitude"
             }
           ]
         },
@@ -1429,6 +1438,12 @@
               "actualFamily": "yahoo-timeseries",
               "estimateFamily": "yahoo-generic",
               "clearedAt": "2026-09-04T01:44:04.124Z"
+            },
+            {
+              "value": -54.92957746478873,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-generic",
+              "clearedAt": "2026-09-07T01:43:12.556Z"
             }
           ]
         },
@@ -2470,14 +2485,27 @@
             "high_usd_m": 17275,
             "numberOfAnalysts": 2
           },
-          "actual": null,
+          "actual": {
+            "value": 18897,
+            "unit": "DKK",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/ORSTED.CO/financials",
+              "label": "Yahoo · fundamentals-timeseries",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-06-30",
+            "fetchedAt": "2026-09-07T00:35:39.906Z",
+            "method": "yahoo",
+            "confidence": 0.85
+          },
           "prior": null
         },
         {
           "key": "eps_usd",
           "displayLabel": "EPS",
           "isHeadline": true,
-          "surprisePct": 40.09756097560977,
+          "surprisePct": null,
           "estimate": {
             "value": 0.82,
             "unit": "DKK",
@@ -2496,18 +2524,166 @@
             "numberOfAnalysts": 1
           },
           "actual": {
-            "value": 1.1488,
+            "value": 0.4,
             "unit": "DKK",
             "source": {
-              "url": "https://finance.yahoo.com/quote/ORSTED.CO/earnings-history",
-              "label": "Yahoo · earningsChart",
+              "url": "https://finance.yahoo.com/quote/ORSTED.CO/financials",
+              "label": "Yahoo · fundamentals-timeseries",
               "provenance": "wire",
               "locator": null
             },
             "asOf": "2026-06-30",
-            "fetchedAt": "2026-08-17T03:41:42.203Z",
+            "fetchedAt": "2026-09-07T00:35:39.906Z",
             "method": "yahoo",
-            "confidence": 0.8
+            "confidence": 0.85
+          },
+          "prior": null,
+          "superseded": [
+            {
+              "value": 1.1488,
+              "unit": "DKK",
+              "source": "Yahoo · earningsChart",
+              "from_provenance": "yahoo-earnings-chart"
+            }
+          ],
+          "_crossBasisSurprise": [
+            {
+              "value": 40.09756097560977,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-trend",
+              "clearedAt": "2026-09-07T01:43:12.556Z"
+            }
+          ]
+        },
+        {
+          "key": "eps_diluted_usd",
+          "displayLabel": "EPS diluted",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 0.4,
+            "unit": "DKK",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/ORSTED.CO/financials",
+              "label": "Yahoo · fundamentals-timeseries",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-06-30",
+            "fetchedAt": "2026-09-07T00:35:39.906Z",
+            "method": "yahoo",
+            "confidence": 0.85
+          },
+          "prior": null
+        },
+        {
+          "key": "net_income_usd_m",
+          "displayLabel": "Net income (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 518,
+            "unit": "DKK",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/ORSTED.CO/financials",
+              "label": "Yahoo · fundamentals-timeseries",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-06-30",
+            "fetchedAt": "2026-09-07T00:35:39.906Z",
+            "method": "yahoo",
+            "confidence": 0.85
+          },
+          "prior": null
+        },
+        {
+          "key": "ebitda_usd_m",
+          "displayLabel": "EBITDA (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 4123,
+            "unit": "DKK",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/ORSTED.CO/financials",
+              "label": "Yahoo · fundamentals-timeseries",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-06-30",
+            "fetchedAt": "2026-09-07T00:35:39.906Z",
+            "method": "yahoo",
+            "confidence": 0.85
+          },
+          "prior": null
+        },
+        {
+          "key": "gross_profit_usd_m",
+          "displayLabel": "Gross profit (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 6349,
+            "unit": "DKK",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/ORSTED.CO/financials",
+              "label": "Yahoo · fundamentals-timeseries",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-06-30",
+            "fetchedAt": "2026-09-07T00:35:39.906Z",
+            "method": "yahoo",
+            "confidence": 0.85
+          },
+          "prior": null
+        },
+        {
+          "key": "ebit_usd_m",
+          "displayLabel": "EBIT (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 1490,
+            "unit": "DKK",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/ORSTED.CO/financials",
+              "label": "Yahoo · fundamentals-timeseries",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-06-30",
+            "fetchedAt": "2026-09-07T00:35:39.906Z",
+            "method": "yahoo",
+            "confidence": 0.85
+          },
+          "prior": null
+        },
+        {
+          "key": "operating_income_usd_m",
+          "displayLabel": "Operating income (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 2787,
+            "unit": "DKK",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/ORSTED.CO/financials",
+              "label": "Yahoo · fundamentals-timeseries",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-06-30",
+            "fetchedAt": "2026-09-07T00:35:39.906Z",
+            "method": "yahoo",
+            "confidence": 0.85
           },
           "prior": null
         }
@@ -2547,14 +2723,13 @@
           },
           {
             "horizon": "m1",
-            "absReturn": -0.05329597319931851,
-            "excessReturn": null,
+            "absReturn": -0.03856942331410184,
+            "excessReturn": -0.028261661116321328,
             "benchmark": "SPX",
-            "computedAt": "2026-09-04T01:18:53.687Z",
+            "computedAt": "2026-09-07T01:19:18.983Z",
             "populatesOn": null,
             "status": "clipped",
-            "clipped": true,
-            "gapFlagged": true
+            "clipped": true
           }
         ]
       },
