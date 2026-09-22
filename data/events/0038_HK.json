@@ -300,6 +300,12 @@
               "actualFamily": "yahoo-timeseries",
               "estimateFamily": "yahoo-generic",
               "clearedAt": "2026-09-18T02:14:03.985Z"
+            },
+            {
+              "value": -35.16666666666668,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-generic",
+              "clearedAt": "2026-09-22T02:13:13.023Z"
             }
           ]
         }
@@ -671,7 +677,20 @@
           "displayLabel": "EPS",
           "isHeadline": true,
           "surprisePct": null,
-          "estimate": null,
+          "estimate": {
+            "value": 0.22,
+            "unit": "HKD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/0038.HK/analysis",
+              "label": "Yahoo · earningsChart (consensus)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-06-30",
+            "fetchedAt": "2026-09-22T01:23:53.598Z",
+            "method": "yahoo",
+            "confidence": 0.75
+          },
           "actual": {
             "value": 0.2,
             "unit": "HKD",
@@ -686,7 +705,15 @@
             "method": "yahoo",
             "confidence": 0.85
           },
-          "prior": null
+          "prior": null,
+          "_crossBasisSurprise": [
+            {
+              "value": -9.090909090909086,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-09-22T02:13:13.023Z"
+            }
+          ]
         }
       ],
       "guidance": [],
@@ -755,7 +782,58 @@
       "provenance": "estimator-median-gap",
       "provenanceAsOf": "2026-09-21T01:29:56.528Z",
       "cadence": "quarterly",
-      "metrics": [],
+      "metrics": [
+        {
+          "key": "revenue_usd_m",
+          "displayLabel": "Revenue (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": {
+            "value": 3607.305,
+            "unit": "HKD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/0038.HK/analysis",
+              "label": "Yahoo · earningsTrend (1 analysts)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-09-30",
+            "fetchedAt": "2026-09-22T02:09:13.420Z",
+            "method": "yahoo",
+            "confidence": 0.75,
+            "low_usd_m": 3607.305,
+            "high_usd_m": 3607.305,
+            "numberOfAnalysts": 1
+          },
+          "actual": null,
+          "prior": null
+        },
+        {
+          "key": "eps_usd",
+          "displayLabel": "EPS",
+          "isHeadline": true,
+          "surprisePct": null,
+          "estimate": {
+            "value": 0.29,
+            "unit": "HKD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/0038.HK/analysis",
+              "label": "Yahoo · earningsTrend (1 analysts)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-09-30",
+            "fetchedAt": "2026-09-22T02:09:13.420Z",
+            "method": "yahoo",
+            "confidence": 0.75,
+            "low": 0.29,
+            "high": 0.29,
+            "numberOfAnalysts": 1
+          },
+          "actual": null,
+          "prior": null
+        }
+      ],
       "guidance": [],
       "reaction": {
         "benchmark": "SPX",
