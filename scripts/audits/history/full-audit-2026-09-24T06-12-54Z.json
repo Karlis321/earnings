@@ -1,0 +1,158 @@
+{
+  "schema": "audit-report/v1",
+  "generatedAt": "2026-09-24T06:12:54.533Z",
+  "sections": {
+    "D14": {
+      "ok": false,
+      "tail": "\n===============================\n  ✗  pipeline-report status=ok\n  ✓  cross-listing invariant fires + clears\n  ✓  surprise-inconsistency invariant fires + clears\n  ✓  freshness.stale>10 invariant fires + clears\n  ✓  news normalizer handles malformed fixture\n  ✓  report-attachment invariant fires + clears\n  ✓  sp500_complete_pct floor fires + clears\n  ✓  every index event id resolves in its shard\n  ✓  summaries validate against schema\nElapsed: 71.8s\n\n✗ 1 test(s) failed\n\n✗ pipeline-report status=\"degraded\" — unrecognized reason(s):\n    · companies_with_inconsistent_financials=1 — same-company listings show different revenue in the SAME currency for the same period\n    · estimator_label_conflicts=11 — forward shells labelled at/before latest reported period\n  (allowlist: reported_without_document)\n"
+    },
+    "F17_sector_ideas": {
+      "themes": 6,
+      "ok": 6,
+      "sectorFail": 0,
+      "tickerFail": 0,
+      "headlineFail": 0,
+      "dataPointsFail": 0
+    },
+    "F17_week_ahead": {
+      "highlights": 5,
+      "ok": 3,
+      "bad": 2
+    },
+    "F17_blue-ocean": {
+      "cards": 24,
+      "bad": 0
+    },
+    "F17_summaries": {
+      "total": 1268,
+      "sampled": 10,
+      "ok": 10,
+      "missingTicker": 0,
+      "note": "sample-only — 1258 summaries unverified in this pass"
+    },
+    "A_completeness": {
+      "universe": 1038,
+      "operating": 1032,
+      "developer": 3,
+      "etf": 3,
+      "noMetrics": 1,
+      "noNextDate": 18,
+      "noReactions": 0
+    },
+    "E_correlations": {
+      "tickers": 17,
+      "asym": 0,
+      "nanCells": 0,
+      "nullCells": 32,
+      "diagBad": 0
+    },
+    "E_commodities": {
+      "items": 8,
+      "errored": []
+    },
+    "E_sector_history": {
+      "rows": 408,
+      "uniqueDates": 24,
+      "dupes": 0
+    },
+    "F15_pipeline": {
+      "status": "degraded",
+      "reasons": [
+        "companies_with_inconsistent_financials=1 — same-company listings show different revenue in the SAME currency for the same period",
+        "reported_without_document=180 — past events with actuals but no filing sourceLink (systemic gap)",
+        "estimator_label_conflicts=11 — forward shells labelled at/before latest reported period"
+      ],
+      "events_total": 24058,
+      "reactions_computed": 77946,
+      "duplicates_detected": 0,
+      "reported_without_document": 180,
+      "reported_without_document_structural": 11901,
+      "sp500_complete_pct": 98.2
+    },
+    "F18_git": {
+      "head": "488623a2b99b59e11ae4eabff4c32e8a966c2ce5",
+      "parent": "8eacdbae19aaca50ee7ab4ce80b1e4caf1e05086",
+      "hasAncestry": true
+    }
+  },
+  "findings": [
+    {
+      "section": "§D14",
+      "severity": "FAIL",
+      "msg": "standing tests: 1 test(s) failed",
+      "evidence": {
+        "tail": "===========================\n  ✗  pipeline-report status=ok\n  ✓  cross-listing invariant fires + clears\n  ✓  surprise-inconsistency invariant fires + clears\n  ✓  freshness.stale>10 invariant fires + clears\n  ✓  news normalizer handles malformed fixture\n  ✓  report-attachment invariant fires + clears\n  ✓  sp500_complete_pct floor fires + clears\n  ✓  every index event id resolves in its shard\n  ✓  summaries validate against schema\nElapsed: 71.8s\n\n✗ 1 test(s) failed\n\n✗ pipeline-report status=\"degraded\" — unrecognized reason(s):\n    · companies_with_inconsistent_financials=1 — same-company listings show different revenue in the SAME currency for the same period\n    · estimator_label_conflicts=11 — forward shells labelled at/before latest reported period\n  (allowlist: reported_without_document)\n"
+      }
+    },
+    {
+      "section": "§F17.week-ahead",
+      "severity": "DATA_DRIFT",
+      "msg": "highlight eventDate 2026-09-29 != index nextScheduled null for HXL US",
+      "evidence": {
+        "ticker": "HXL US",
+        "guard": "apply-week-ahead.mjs eventDate cross-check"
+      }
+    },
+    {
+      "section": "§F17.week-ahead",
+      "severity": "DATA_DRIFT",
+      "msg": "highlight eventDate 2026-09-29 != index nextScheduled null for ELV US",
+      "evidence": {
+        "ticker": "ELV US",
+        "guard": "apply-week-ahead.mjs eventDate cross-check"
+      }
+    },
+    {
+      "section": "§A.completeness",
+      "severity": "INFO",
+      "msg": "1 operating tickers with empty latestMetrics",
+      "evidence": null
+    },
+    {
+      "section": "§A.completeness",
+      "severity": "INFO",
+      "msg": "18 operating tickers with no nextScheduled (may self-heal)",
+      "evidence": null
+    },
+    {
+      "section": "§E.correlations",
+      "severity": "INFO",
+      "msg": "32 null cells (< minSharedBars threshold — expected for thin listings)",
+      "evidence": null
+    },
+    {
+      "section": "§F15.pipeline",
+      "severity": "DEGRADED",
+      "msg": "pipeline-report status=degraded",
+      "evidence": {
+        "reasons": [
+          "companies_with_inconsistent_financials=1 — same-company listings show different revenue in the SAME currency for the same period",
+          "reported_without_document=180 — past events with actuals but no filing sourceLink (systemic gap)",
+          "estimator_label_conflicts=11 — forward shells labelled at/before latest reported period"
+        ]
+      }
+    }
+  ],
+  "unverified": [
+    {
+      "section": "§F17.rule-breaker",
+      "reason": "data/screens/rule-breaker.json missing (first workflow fire scheduled Sept 1-2)"
+    },
+    {
+      "section": "§F17.summaries.full",
+      "reason": "only 10 of 1268 summaries sampled — full corpus reconciliation is out of scope for the thin first-pass audit"
+    },
+    {
+      "section": "§C.source-previews",
+      "reason": "requires api/documents/proxy against live deploy"
+    },
+    {
+      "section": "§G.endpoint-health",
+      "reason": "requires HTTP sampling against live deploy"
+    },
+    {
+      "section": "§F16.workflow-schedule",
+      "reason": "requires GitHub Actions run-history read (auth-gated)"
+    }
+  ]
+}
