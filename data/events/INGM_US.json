@@ -558,42 +558,42 @@
       "guidance": [],
       "reaction": {
         "benchmark": "SPX",
-        "baselineDate": "2025-09-30",
-        "baselineClose": 21.489999771118164,
+        "baselineDate": "2025-10-01",
+        "baselineClose": 22.149999618530273,
         "points": [
           {
             "horizon": "d1",
-            "absReturn": 0.030711952277408906,
-            "excessReturn": 0.027312031442446986,
+            "absReturn": 0.0022573880483207627,
+            "excessReturn": 0.001639033324429716,
             "benchmark": "SPX",
-            "computedAt": "2026-09-30T02:40:20.263Z",
+            "computedAt": "2026-10-01T02:40:56.857Z",
             "populatesOn": null,
             "status": "matured"
           },
           {
             "horizon": "d3",
-            "absReturn": 0.023731979260756396,
-            "excessReturn": 0.01964582515583308,
+            "absReturn": -0.027990922914783535,
+            "excessReturn": -0.03232391686481663,
             "benchmark": "SPX",
-            "computedAt": "2026-09-30T02:40:20.263Z",
+            "computedAt": "2026-10-01T02:40:56.857Z",
             "populatesOn": null,
             "status": "matured"
           },
           {
             "horizon": "w1",
-            "absReturn": -0.018147947594330995,
-            "excessReturn": -0.02205465899951334,
+            "absReturn": -0.011286681909956093,
+            "excessReturn": -0.017622362308962594,
             "benchmark": "SPX",
-            "computedAt": "2026-09-30T02:40:20.263Z",
+            "computedAt": "2026-10-01T02:40:56.857Z",
             "populatesOn": null,
             "status": "matured"
           },
           {
             "horizon": "m1",
-            "absReturn": 0.02280129252382344,
-            "excessReturn": -0.007419398635725358,
+            "absReturn": -0.004063212376428133,
+            "excessReturn": -0.020623536193787435,
             "benchmark": "SPX",
-            "computedAt": "2026-09-30T02:40:20.263Z",
+            "computedAt": "2026-10-01T02:40:56.857Z",
             "populatesOn": null,
             "status": "matured"
           }
@@ -702,6 +702,12 @@
               "actualFamily": "sec",
               "estimateFamily": "yahoo-chart",
               "clearedAt": "2026-08-21T04:08:38.686Z"
+            },
+            {
+              "value": -76.34430858849446,
+              "actualFamily": "sec",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-10-01T02:43:42.836Z"
             }
           ]
         },
@@ -1291,6 +1297,12 @@
               "actualFamily": "yahoo-timeseries",
               "estimateFamily": "yahoo-chart",
               "clearedAt": "2026-08-21T04:08:38.686Z"
+            },
+            {
+              "value": -53.62754082432567,
+              "actualFamily": "sec",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-10-01T02:43:42.836Z"
             }
           ],
           "superseded": [
@@ -1934,7 +1946,20 @@
           "displayLabel": "eps usd",
           "isHeadline": false,
           "surprisePct": null,
-          "estimate": null,
+          "estimate": {
+            "value": 0.72113,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/INGM/analysis",
+              "label": "Yahoo · earningsChart (consensus)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-06-27",
+            "fetchedAt": "2026-10-01T01:45:14.038Z",
+            "method": "yahoo",
+            "confidence": 0.75
+          },
           "actual": {
             "value": 0.42,
             "unit": "USD/shares",
@@ -1949,7 +1974,15 @@
             "method": "filing_manual",
             "confidence": 0.98
           },
-          "prior": null
+          "prior": null,
+          "_crossBasisSurprise": [
+            {
+              "value": -41.758074133651355,
+              "actualFamily": "sec",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-10-01T02:43:42.836Z"
+            }
+          ]
         },
         {
           "key": "eps_diluted_usd",
@@ -2189,11 +2222,12 @@
           },
           {
             "horizon": "d3",
-            "absReturn": null,
-            "excessReturn": null,
+            "absReturn": -0.06557381035993926,
+            "excessReturn": -0.07132751781802382,
             "benchmark": "SPX",
-            "computedAt": null,
-            "populatesOn": "2026-10-01"
+            "computedAt": "2026-10-01T02:40:56.857Z",
+            "populatesOn": "2026-10-01",
+            "status": "matured"
           },
           {
             "horizon": "w1",
@@ -2705,7 +2739,58 @@
       "provenance": "estimator-median-gap",
       "provenanceAsOf": "2026-09-29T03:19:04.232Z",
       "cadence": "quarterly",
-      "metrics": [],
+      "metrics": [
+        {
+          "key": "revenue_usd_m",
+          "displayLabel": "Revenue (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": {
+            "value": 13847.49928,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/INGM/analysis",
+              "label": "Yahoo · earningsTrend (14 analysts)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-09-30",
+            "fetchedAt": "2026-10-01T02:38:04.132Z",
+            "method": "yahoo",
+            "confidence": 0.75,
+            "low_usd_m": 13745.3,
+            "high_usd_m": 14174,
+            "numberOfAnalysts": 14
+          },
+          "actual": null,
+          "prior": null
+        },
+        {
+          "key": "eps_usd",
+          "displayLabel": "EPS",
+          "isHeadline": true,
+          "surprisePct": null,
+          "estimate": {
+            "value": 0.77554,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/INGM/analysis",
+              "label": "Yahoo · earningsTrend (14 analysts)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-09-30",
+            "fetchedAt": "2026-10-01T02:38:04.132Z",
+            "method": "yahoo",
+            "confidence": 0.75,
+            "low": 0.69,
+            "high": 0.83,
+            "numberOfAnalysts": 14
+          },
+          "actual": null,
+          "prior": null
+        }
+      ],
       "guidance": [],
       "reaction": {
         "benchmark": "SPX",
