@@ -400,42 +400,42 @@
       "guidance": [],
       "reaction": {
         "benchmark": "SPX",
-        "baselineDate": "2025-10-02",
-        "baselineClose": 78.5999984741211,
+        "baselineDate": "2025-10-03",
+        "baselineClose": 79.41999816894531,
         "points": [
           {
             "horizon": "d1",
-            "absReturn": 0.01043256629444086,
-            "excessReturn": 0.010367053491704999,
+            "absReturn": -0.009821188583228512,
+            "excessReturn": -0.013467780562921892,
             "benchmark": "SPX",
-            "computedAt": "2026-10-02T02:50:08.513Z",
+            "computedAt": "2026-10-05T02:26:49.513Z",
             "populatesOn": null,
             "status": "matured"
           },
           {
             "horizon": "d3",
-            "absReturn": -0.004325653237799593,
-            "excessReturn": -0.004212441879464703,
+            "absReturn": -0.010072972057509996,
+            "excessReturn": -0.01572088176889593,
             "benchmark": "SPX",
-            "computedAt": "2026-10-02T02:50:08.513Z",
+            "computedAt": "2026-10-05T02:26:49.513Z",
             "populatesOn": null,
             "status": "matured"
           },
           {
             "horizon": "w1",
-            "absReturn": -0.023282466495940356,
-            "excessReturn": -0.02622494385566825,
+            "absReturn": -0.04495089117516694,
+            "excessReturn": -0.020637999841790277,
             "benchmark": "SPX",
-            "computedAt": "2026-10-02T02:50:08.513Z",
+            "computedAt": "2026-10-05T02:26:49.513Z",
             "populatesOn": null,
             "status": "matured"
           },
           {
             "horizon": "m1",
-            "absReturn": -0.0659033130500796,
-            "excessReturn": -0.08449506118541872,
+            "absReturn": -0.08171742650967777,
+            "excessReturn": -0.10199503718379888,
             "benchmark": "SPX",
-            "computedAt": "2026-10-02T02:50:08.513Z",
+            "computedAt": "2026-10-05T02:26:49.513Z",
             "populatesOn": null,
             "status": "matured"
           }
@@ -2036,6 +2036,28 @@
             "confidence": 0.98
           },
           "prior": null
+        },
+        {
+          "key": "ebit_usd_m",
+          "displayLabel": "EBIT (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 382.8,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/UNM/financials",
+              "label": "Yahoo · fundamentals-timeseries",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-06-30",
+            "fetchedAt": "2026-10-05T01:28:32.323Z",
+            "method": "yahoo",
+            "confidence": 0.85
+          },
+          "prior": null
         }
       ],
       "guidance": [],
@@ -2106,16 +2128,67 @@
       "ticker": "UNM US",
       "kind": "earnings",
       "period": "FY2026 Q3",
-      "scheduledDate": "2026-10-27",
+      "scheduledDate": "2026-11-03",
       "eventDate": null,
       "timing": null,
       "expectation": "unset",
       "guidanceMove": null,
       "freshness": "stale",
-      "provenance": "estimator-median-gap",
-      "provenanceAsOf": "2026-10-01T02:40:55.676Z",
+      "provenance": "yahoo-calendar",
+      "provenanceAsOf": "2026-10-05T02:26:42.657Z",
       "cadence": "quarterly",
-      "metrics": [],
+      "metrics": [
+        {
+          "key": "revenue_usd_m",
+          "displayLabel": "Revenue (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": {
+            "value": 2951.72353,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/UNM/analysis",
+              "label": "Yahoo · earningsTrend (3 analysts)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-09-30",
+            "fetchedAt": "2026-10-05T02:25:35.420Z",
+            "method": "yahoo",
+            "confidence": 0.75,
+            "low_usd_m": 2941,
+            "high_usd_m": 2966,
+            "numberOfAnalysts": 3
+          },
+          "actual": null,
+          "prior": null
+        },
+        {
+          "key": "eps_usd",
+          "displayLabel": "EPS",
+          "isHeadline": true,
+          "surprisePct": null,
+          "estimate": {
+            "value": 2.16855,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/UNM/analysis",
+              "label": "Yahoo · earningsTrend (9 analysts)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-09-30",
+            "fetchedAt": "2026-10-05T02:25:35.420Z",
+            "method": "yahoo",
+            "confidence": 0.75,
+            "low": 2.1,
+            "high": 2.21801,
+            "numberOfAnalysts": 9
+          },
+          "actual": null,
+          "prior": null
+        }
+      ],
       "guidance": [],
       "reaction": {
         "benchmark": "SPX",
@@ -2162,7 +2235,8 @@
         "capturedAt": null,
         "items": [],
         "engineStatus": []
-      }
+      },
+      "scheduledDateSource": "yahoo-calendarEvents"
     }
   ]
 }

@@ -500,42 +500,42 @@
       "guidance": [],
       "reaction": {
         "benchmark": "SPX",
-        "baselineDate": "2025-10-02",
-        "baselineClose": 15.430000305175781,
+        "baselineDate": "2025-10-03",
+        "baselineClose": 15.4399995803833,
         "points": [
           {
             "horizon": "d1",
-            "absReturn": 0.0006480411542289738,
-            "excessReturn": 0.0005825283514931126,
+            "absReturn": 0.008419696759971718,
+            "excessReturn": 0.004773104780278339,
             "benchmark": "SPX",
-            "computedAt": "2026-10-02T02:50:08.513Z",
+            "computedAt": "2026-10-05T02:26:49.513Z",
             "populatesOn": null,
             "status": "matured"
           },
           {
             "horizon": "d3",
-            "absReturn": 0.0012961441149581124,
-            "excessReturn": 0.0014093554732930024,
+            "absReturn": 0.00971506323064719,
+            "excessReturn": 0.0040671535192612586,
             "benchmark": "SPX",
-            "computedAt": "2026-10-02T02:50:08.513Z",
+            "computedAt": "2026-10-05T02:26:49.513Z",
             "populatesOn": null,
             "status": "matured"
           },
           {
             "horizon": "w1",
-            "absReturn": -0.011017503106394698,
-            "excessReturn": -0.013959980466122589,
+            "absReturn": -0.03950775085850765,
+            "excessReturn": -0.015194859525130982,
             "benchmark": "SPX",
-            "computedAt": "2026-10-02T02:50:08.513Z",
+            "computedAt": "2026-10-05T02:26:49.513Z",
             "populatesOn": null,
             "status": "matured"
           },
           {
             "horizon": "m1",
-            "absReturn": 0.0998055073052811,
-            "excessReturn": 0.08121375916994197,
+            "absReturn": 0.07189117142771904,
+            "excessReturn": 0.05161356075359793,
             "benchmark": "SPX",
-            "computedAt": "2026-10-02T02:50:08.513Z",
+            "computedAt": "2026-10-05T02:26:49.513Z",
             "populatesOn": null,
             "status": "matured"
           }
@@ -2420,7 +2420,7 @@
           "key": "eps_usd",
           "displayLabel": "EPS",
           "isHeadline": true,
-          "surprisePct": 9.197816043679127,
+          "surprisePct": null,
           "estimate": {
             "value": 0.2381,
             "unit": "USD",
@@ -2436,20 +2436,36 @@
             "confidence": 0.75
           },
           "actual": {
-            "value": 0.26,
+            "value": 0.21,
             "unit": "USD",
             "source": {
-              "url": "https://finance.yahoo.com/quote/HAYW/earnings-history",
-              "label": "Yahoo · earningsChart",
+              "url": "https://finance.yahoo.com/quote/HAYW/financials",
+              "label": "Yahoo · fundamentals-timeseries",
               "provenance": "wire",
               "locator": null
             },
             "asOf": "2026-06-30",
-            "fetchedAt": "2026-09-29T02:27:48.993Z",
+            "fetchedAt": "2026-10-05T01:28:32.323Z",
             "method": "yahoo",
-            "confidence": 0.8
+            "confidence": 0.85
           },
-          "prior": null
+          "prior": null,
+          "superseded": [
+            {
+              "value": 0.26,
+              "unit": "USD",
+              "source": "Yahoo · earningsChart",
+              "from_provenance": "yahoo-earnings-chart"
+            }
+          ],
+          "_crossBasisSurprise": [
+            {
+              "value": 9.197816043679127,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-10-05T02:31:33.138Z"
+            }
+          ]
         }
       ],
       "guidance": [],
@@ -2520,14 +2536,14 @@
       "ticker": "HAYW US",
       "kind": "earnings",
       "period": "FY2026 Q3",
-      "scheduledDate": "2026-10-28",
+      "scheduledDate": "2026-10-27",
       "eventDate": null,
       "timing": null,
       "expectation": "unset",
       "guidanceMove": null,
       "freshness": "stale",
-      "provenance": "estimator-median-gap",
-      "provenanceAsOf": "2026-09-29T03:19:04.232Z",
+      "provenance": "yahoo-calendar",
+      "provenanceAsOf": "2026-10-05T02:26:29.722Z",
       "cadence": "quarterly",
       "metrics": [
         {
@@ -2627,7 +2643,8 @@
         "capturedAt": null,
         "items": [],
         "engineStatus": []
-      }
+      },
+      "scheduledDateSource": "yahoo-calendarEvents"
     }
   ]
 }

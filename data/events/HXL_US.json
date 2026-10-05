@@ -514,42 +514,42 @@
       "guidance": [],
       "reaction": {
         "benchmark": "SPX",
-        "baselineDate": "2025-10-02",
-        "baselineClose": 64,
+        "baselineDate": "2025-10-03",
+        "baselineClose": 64.69000244140625,
         "points": [
           {
             "horizon": "d1",
-            "absReturn": 0.010781288146972656,
-            "excessReturn": 0.010715775344236796,
+            "absReturn": 0.020405003014489363,
+            "excessReturn": 0.016758411034795983,
             "benchmark": "SPX",
-            "computedAt": "2026-10-02T02:50:08.513Z",
+            "computedAt": "2026-10-05T02:26:49.513Z",
             "populatesOn": null,
             "status": "matured"
           },
           {
             "horizon": "d3",
-            "absReturn": 0.019687533378601074,
-            "excessReturn": 0.019800744736935966,
+            "absReturn": 0.013912410921603464,
+            "excessReturn": 0.008264501210217531,
             "benchmark": "SPX",
-            "computedAt": "2026-10-02T02:50:08.513Z",
+            "computedAt": "2026-10-05T02:26:49.513Z",
             "populatesOn": null,
             "status": "matured"
           },
           {
             "horizon": "w1",
-            "absReturn": 0.007343769073486328,
-            "excessReturn": 0.004401291713758437,
+            "absReturn": -0.040964622443462995,
+            "excessReturn": -0.01665173111008633,
             "benchmark": "SPX",
-            "computedAt": "2026-10-02T02:50:08.513Z",
+            "computedAt": "2026-10-05T02:26:49.513Z",
             "populatesOn": null,
             "status": "matured"
           },
           {
             "horizon": "m1",
-            "absReturn": 0.11562502384185791,
-            "excessReturn": 0.09703327570651879,
+            "absReturn": 0.11500996338268164,
+            "excessReturn": 0.09473235270856054,
             "benchmark": "SPX",
-            "computedAt": "2026-10-02T02:50:08.513Z",
+            "computedAt": "2026-10-05T02:26:49.513Z",
             "populatesOn": null,
             "status": "matured"
           }
@@ -2134,7 +2134,7 @@
           "key": "eps_usd",
           "displayLabel": "EPS",
           "isHeadline": true,
-          "surprisePct": 14.331248809049507,
+          "surprisePct": null,
           "estimate": {
             "value": 0.57727,
             "unit": "USD",
@@ -2150,20 +2150,36 @@
             "confidence": 0.75
           },
           "actual": {
-            "value": 0.66,
+            "value": 0.65,
             "unit": "USD",
             "source": {
-              "url": "https://finance.yahoo.com/quote/HXL/earnings-history",
-              "label": "Yahoo · earningsChart",
+              "url": "https://finance.yahoo.com/quote/HXL/financials",
+              "label": "Yahoo · fundamentals-timeseries",
               "provenance": "wire",
               "locator": null
             },
             "asOf": "2026-06-30",
-            "fetchedAt": "2026-10-01T01:46:17.844Z",
+            "fetchedAt": "2026-10-05T01:28:32.323Z",
             "method": "yahoo",
-            "confidence": 0.8
+            "confidence": 0.85
           },
-          "prior": null
+          "prior": null,
+          "superseded": [
+            {
+              "value": 0.66,
+              "unit": "USD",
+              "source": "Yahoo · earningsChart",
+              "from_provenance": "yahoo-earnings-chart"
+            }
+          ],
+          "_crossBasisSurprise": [
+            {
+              "value": 14.331248809049507,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-10-05T02:31:33.269Z"
+            }
+          ]
         },
         {
           "key": "revenue_usd_m",
@@ -2362,6 +2378,72 @@
             "confidence": 0.98
           },
           "prior": null
+        },
+        {
+          "key": "eps_diluted_usd",
+          "displayLabel": "EPS diluted",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 0.64,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/HXL/financials",
+              "label": "Yahoo · fundamentals-timeseries",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-06-30",
+            "fetchedAt": "2026-10-05T01:28:32.323Z",
+            "method": "yahoo",
+            "confidence": 0.85
+          },
+          "prior": null
+        },
+        {
+          "key": "ebit_usd_m",
+          "displayLabel": "EBIT (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 72.7,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/HXL/financials",
+              "label": "Yahoo · fundamentals-timeseries",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-06-30",
+            "fetchedAt": "2026-10-05T01:28:32.323Z",
+            "method": "yahoo",
+            "confidence": 0.85
+          },
+          "prior": null
+        },
+        {
+          "key": "ebitda_usd_m",
+          "displayLabel": "EBITDA (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 102.8,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/HXL/financials",
+              "label": "Yahoo · fundamentals-timeseries",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-06-30",
+            "fetchedAt": "2026-10-05T01:28:32.323Z",
+            "method": "yahoo",
+            "confidence": 0.85
+          },
+          "prior": null
         }
       ],
       "guidance": [],
@@ -2432,16 +2514,67 @@
       "ticker": "HXL US",
       "kind": "earnings",
       "period": "FY2026 Q3",
-      "scheduledDate": "2026-10-28",
+      "scheduledDate": "2026-10-21",
       "eventDate": null,
       "timing": null,
       "expectation": "unset",
       "guidanceMove": null,
       "freshness": "stale",
-      "provenance": "estimator-median-gap",
-      "provenanceAsOf": "2026-10-01T02:40:55.675Z",
+      "provenance": "yahoo-calendar",
+      "provenanceAsOf": "2026-10-05T02:26:30.438Z",
       "cadence": "quarterly",
-      "metrics": [],
+      "metrics": [
+        {
+          "key": "revenue_usd_m",
+          "displayLabel": "Revenue (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": {
+            "value": 503.78421,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/HXL/analysis",
+              "label": "Yahoo · earningsTrend (15 analysts)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-09-30",
+            "fetchedAt": "2026-10-05T02:25:35.420Z",
+            "method": "yahoo",
+            "confidence": 0.75,
+            "low_usd_m": 487,
+            "high_usd_m": 529.436,
+            "numberOfAnalysts": 15
+          },
+          "actual": null,
+          "prior": null
+        },
+        {
+          "key": "eps_usd",
+          "displayLabel": "EPS",
+          "isHeadline": true,
+          "surprisePct": null,
+          "estimate": {
+            "value": 0.49702,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/HXL/analysis",
+              "label": "Yahoo · earningsTrend (15 analysts)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-09-30",
+            "fetchedAt": "2026-10-05T02:25:35.420Z",
+            "method": "yahoo",
+            "confidence": 0.75,
+            "low": 0.42,
+            "high": 0.58,
+            "numberOfAnalysts": 15
+          },
+          "actual": null,
+          "prior": null
+        }
+      ],
       "guidance": [],
       "reaction": {
         "benchmark": "SPX",
@@ -2488,7 +2621,8 @@
         "capturedAt": null,
         "items": [],
         "engineStatus": []
-      }
+      },
+      "scheduledDateSource": "yahoo-calendarEvents"
     }
   ]
 }
