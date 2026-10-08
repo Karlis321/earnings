@@ -424,17 +424,25 @@
             "value": 53.03,
             "unit": "JPY",
             "source": {
-              "url": "https://finance.yahoo.com/quote/1377.T/earnings-history",
-              "label": "Yahoo · earningsChart",
+              "url": "https://finance.yahoo.com/quote/1377.T/financials",
+              "label": "Yahoo · fundamentals-timeseries",
               "provenance": "wire",
               "locator": null
             },
-            "asOf": "2026-08-31",
-            "fetchedAt": "2026-10-07T01:59:12.015Z",
+            "asOf": "2026-09-30",
+            "fetchedAt": "2026-10-08T02:23:37.873Z",
             "method": "yahoo",
-            "confidence": 0.8
+            "confidence": 0.85
           },
-          "prior": null
+          "prior": null,
+          "superseded": [
+            {
+              "value": 53.03,
+              "unit": "JPY",
+              "source": "Yahoo · earningsChart",
+              "from_provenance": "yahoo-earnings-chart"
+            }
+          ]
         }
       ],
       "guidance": [],
@@ -455,35 +463,32 @@
           },
           {
             "horizon": "d3",
-            "absReturn": -0.009478672985781991,
-            "excessReturn": null,
+            "absReturn": -0.014218009478672985,
+            "excessReturn": -0.012023315848698805,
             "benchmark": "SPX",
-            "computedAt": "2026-10-07T03:00:12.642Z",
+            "computedAt": "2026-10-08T03:24:10.983Z",
             "populatesOn": null,
             "status": "clipped",
-            "gapFlagged": true,
             "clipped": true
           },
           {
             "horizon": "w1",
-            "absReturn": -0.009478672985781991,
-            "excessReturn": null,
+            "absReturn": -0.014218009478672985,
+            "excessReturn": -0.012023315848698805,
             "benchmark": "SPX",
-            "computedAt": "2026-10-07T03:00:12.642Z",
+            "computedAt": "2026-10-08T03:24:10.983Z",
             "populatesOn": null,
             "status": "clipped",
-            "gapFlagged": true,
             "clipped": true
           },
           {
             "horizon": "m1",
-            "absReturn": -0.009478672985781991,
-            "excessReturn": null,
+            "absReturn": -0.014218009478672985,
+            "excessReturn": -0.012023315848698805,
             "benchmark": "SPX",
-            "computedAt": "2026-10-07T03:00:12.642Z",
+            "computedAt": "2026-10-08T03:24:10.983Z",
             "populatesOn": null,
             "status": "clipped",
-            "gapFlagged": true,
             "clipped": true
           }
         ]
@@ -508,16 +513,42 @@
       "ticker": "1377 JP",
       "kind": "earnings",
       "period": "FY2027 Q1",
-      "scheduledDate": "2027-04-06",
+      "scheduledDate": "2026-10-06",
       "eventDate": null,
       "timing": null,
       "expectation": "unset",
       "guidanceMove": null,
       "freshness": "stale",
-      "provenance": "estimator-median-gap",
-      "provenanceAsOf": "2026-10-07T03:00:11.321Z",
+      "provenance": "yahoo-calendar",
+      "provenanceAsOf": "2026-10-08T03:23:10.239Z",
       "cadence": "semiannual",
-      "metrics": [],
+      "metrics": [
+        {
+          "key": "revenue_usd_m",
+          "displayLabel": "Revenue (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": {
+            "value": 26040,
+            "unit": "JPY",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/1377.T/analysis",
+              "label": "Yahoo · earningsTrend (2 analysts)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2027-02-28",
+            "fetchedAt": "2026-10-08T03:22:13.355Z",
+            "method": "yahoo",
+            "confidence": 0.75,
+            "low_usd_m": 25180,
+            "high_usd_m": 26900,
+            "numberOfAnalysts": 2
+          },
+          "actual": null,
+          "prior": null
+        }
+      ],
       "guidance": [],
       "reaction": {
         "benchmark": "SPX",
@@ -564,7 +595,8 @@
         "capturedAt": null,
         "items": [],
         "engineStatus": []
-      }
+      },
+      "scheduledDateSource": "yahoo-calendarEvents"
     }
   ]
 }
