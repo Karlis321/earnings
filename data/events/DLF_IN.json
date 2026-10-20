@@ -917,6 +917,12 @@
               "actualFamily": "yahoo-timeseries",
               "estimateFamily": "yahoo-generic",
               "clearedAt": "2026-10-16T02:03:45.739Z"
+            },
+            {
+              "value": 4.516129032258063,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-generic",
+              "clearedAt": "2026-10-20T02:31:50.733Z"
             }
           ]
         },
@@ -1590,6 +1596,12 @@
               "actualFamily": "yahoo-timeseries",
               "estimateFamily": "yahoo-generic",
               "clearedAt": "2026-10-16T02:03:45.739Z"
+            },
+            {
+              "value": -6.909090909090907,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-generic",
+              "clearedAt": "2026-10-20T02:31:50.733Z"
             }
           ]
         },
@@ -3006,6 +3018,12 @@
               "actualFamily": "yahoo-timeseries",
               "estimateFamily": "yahoo-trend",
               "clearedAt": "2026-10-16T02:03:45.739Z"
+            },
+            {
+              "value": -8.285714285714286,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-trend",
+              "clearedAt": "2026-10-20T02:31:50.733Z"
             }
           ]
         },
@@ -3287,39 +3305,42 @@
         "points": [
           {
             "horizon": "d1",
-            "absReturn": null,
-            "excessReturn": null,
+            "absReturn": -0.0031851851851851516,
+            "excessReturn": -0.007270345366851809,
             "benchmark": "SPX",
-            "computedAt": null,
+            "computedAt": "2026-10-20T02:28:25.556Z",
             "populatesOn": null,
-            "status": "pending"
+            "status": "matured"
           },
           {
             "horizon": "d3",
-            "absReturn": null,
-            "excessReturn": null,
+            "absReturn": -0.0031851851851851516,
+            "excessReturn": -0.007270345366851809,
             "benchmark": "SPX",
-            "computedAt": null,
+            "computedAt": "2026-10-20T02:28:25.556Z",
             "populatesOn": null,
-            "status": "pending"
+            "status": "clipped",
+            "clipped": true
           },
           {
             "horizon": "w1",
-            "absReturn": null,
-            "excessReturn": null,
+            "absReturn": -0.0031851851851851516,
+            "excessReturn": -0.007270345366851809,
             "benchmark": "SPX",
-            "computedAt": null,
+            "computedAt": "2026-10-20T02:28:25.556Z",
             "populatesOn": null,
-            "status": "pending"
+            "status": "clipped",
+            "clipped": true
           },
           {
             "horizon": "m1",
-            "absReturn": null,
-            "excessReturn": null,
+            "absReturn": -0.0031851851851851516,
+            "excessReturn": -0.007270345366851809,
             "benchmark": "SPX",
-            "computedAt": null,
+            "computedAt": "2026-10-20T02:28:25.556Z",
             "populatesOn": null,
-            "status": "pending"
+            "status": "clipped",
+            "clipped": true
           }
         ]
       },
@@ -3343,16 +3364,67 @@
       "ticker": "DLF IN",
       "kind": "earnings",
       "period": "FY2026 Q4",
-      "scheduledDate": "2027-01-15",
+      "scheduledDate": "2026-10-29",
       "eventDate": null,
       "timing": null,
       "expectation": "unset",
       "guidanceMove": null,
       "freshness": "stale",
-      "provenance": "estimator-median-gap",
-      "provenanceAsOf": "2026-10-19T01:42:19.701Z",
+      "provenance": "yahoo-calendar",
+      "provenanceAsOf": "2026-10-20T02:28:06.242Z",
       "cadence": "quarterly",
-      "metrics": [],
+      "metrics": [
+        {
+          "key": "revenue_usd_m",
+          "displayLabel": "Revenue (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": {
+            "value": 21331,
+            "unit": "INR",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/DLF.NS/analysis",
+              "label": "Yahoo · earningsTrend (1 analysts)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-12-31",
+            "fetchedAt": "2026-10-20T02:27:04.666Z",
+            "method": "yahoo",
+            "confidence": 0.75,
+            "low_usd_m": 21331,
+            "high_usd_m": 21331,
+            "numberOfAnalysts": 1
+          },
+          "actual": null,
+          "prior": null
+        },
+        {
+          "key": "eps_usd",
+          "displayLabel": "EPS",
+          "isHeadline": true,
+          "surprisePct": null,
+          "estimate": {
+            "value": 4.2,
+            "unit": "INR",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/DLF.NS/analysis",
+              "label": "Yahoo · earningsTrend (1 analysts)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-12-31",
+            "fetchedAt": "2026-10-20T02:27:04.666Z",
+            "method": "yahoo",
+            "confidence": 0.75,
+            "low": 4.2,
+            "high": 4.2,
+            "numberOfAnalysts": 1
+          },
+          "actual": null,
+          "prior": null
+        }
+      ],
       "guidance": [],
       "reaction": {
         "benchmark": "SPX",
@@ -3399,7 +3471,8 @@
         "capturedAt": null,
         "items": [],
         "engineStatus": []
-      }
+      },
+      "scheduledDateSource": "yahoo-calendarEvents"
     }
   ]
 }
