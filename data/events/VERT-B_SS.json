@@ -551,6 +551,12 @@
               "actualFamily": "yahoo-timeseries",
               "estimateFamily": "yahoo-generic",
               "clearedAt": "2026-10-21T02:21:52.016Z"
+            },
+            {
+              "value": -45,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-generic",
+              "clearedAt": "2026-10-22T02:11:57.671Z"
             }
           ]
         },
@@ -1248,6 +1254,12 @@
               "actualFamily": "yahoo-timeseries",
               "estimateFamily": "yahoo-generic",
               "clearedAt": "2026-10-21T02:21:52.016Z"
+            },
+            {
+              "value": -85,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-generic",
+              "clearedAt": "2026-10-22T02:11:57.671Z"
             }
           ]
         },
@@ -1565,7 +1577,20 @@
           "displayLabel": "EPS (basic)",
           "isHeadline": true,
           "surprisePct": null,
-          "estimate": null,
+          "estimate": {
+            "value": 0.2,
+            "unit": "SEK",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/VERT-B.ST/analysis",
+              "label": "Yahoo · earningsChart (consensus)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-07-16",
+            "fetchedAt": "2026-10-22T01:08:59.068Z",
+            "method": "yahoo",
+            "confidence": 0.75
+          },
           "actual": {
             "value": -0.57,
             "unit": "SEK",
@@ -1587,6 +1612,14 @@
               "unit": "USD",
               "source": "Yahoo Finance · earnings",
               "from_provenance": "unknown"
+            }
+          ],
+          "_crossBasisSurprise": [
+            {
+              "value": -385,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-10-22T02:11:57.671Z"
             }
           ]
         },
@@ -2634,13 +2667,13 @@
       "kind": "earnings",
       "period": "FY2026 Q3",
       "scheduledDate": "2026-10-22",
-      "eventDate": null,
+      "eventDate": "2026-10-21",
       "timing": null,
       "expectation": "unset",
       "guidanceMove": null,
-      "freshness": "stale",
-      "provenance": "estimator-median-gap",
-      "provenanceAsOf": "2026-10-19T01:01:12.787Z",
+      "freshness": "fresh",
+      "provenance": "yahoo-earnings-chart",
+      "provenanceAsOf": "2026-10-22T01:09:37.078Z",
       "cadence": "quarterly",
       "metrics": [
         {
@@ -2672,7 +2705,7 @@
           "key": "eps_usd",
           "displayLabel": "EPS",
           "isHeadline": true,
-          "surprisePct": null,
+          "surprisePct": -23.33333333333333,
           "estimate": {
             "value": 0.6,
             "unit": "SEK",
@@ -2690,10 +2723,96 @@
             "high": 0.6,
             "numberOfAnalysts": 1
           },
-          "actual": null,
+          "actual": {
+            "value": 0.46,
+            "unit": "SEK",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/VERT-B.ST/earnings-history",
+              "label": "Yahoo · earningsChart",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-09-30",
+            "fetchedAt": "2026-10-22T01:09:37.078Z",
+            "method": "yahoo",
+            "confidence": 0.8
+          },
           "prior": null
         }
       ],
+      "guidance": [],
+      "reaction": {
+        "benchmark": "NDX",
+        "baselineDate": "2026-10-21",
+        "baselineClose": 63,
+        "points": [
+          {
+            "horizon": "d1",
+            "absReturn": null,
+            "excessReturn": null,
+            "benchmark": "NDX",
+            "computedAt": null,
+            "populatesOn": null,
+            "status": "pending"
+          },
+          {
+            "horizon": "d3",
+            "absReturn": null,
+            "excessReturn": null,
+            "benchmark": "NDX",
+            "computedAt": null,
+            "populatesOn": null,
+            "status": "pending"
+          },
+          {
+            "horizon": "w1",
+            "absReturn": null,
+            "excessReturn": null,
+            "benchmark": "NDX",
+            "computedAt": null,
+            "populatesOn": null,
+            "status": "pending"
+          },
+          {
+            "horizon": "m1",
+            "absReturn": null,
+            "excessReturn": null,
+            "benchmark": "NDX",
+            "computedAt": null,
+            "populatesOn": null,
+            "status": "pending"
+          }
+        ]
+      },
+      "sources": {
+        "windowStart": "2026-10-13",
+        "windowEnd": "2026-11-19",
+        "capturedAt": null,
+        "items": [],
+        "engineStatus": []
+      },
+      "scheduledDateSource": "roll-stale-shells/median-gap",
+      "eventDateSource": "yahoo-earnings-chart-reportedDate",
+      "sourceLink": {
+        "url": "https://finance.yahoo.com/quote/VERT-B.ST/earnings-history",
+        "kind": "fallback"
+      }
+    },
+    {
+      "id": "evt-9antys",
+      "ticker": "VERT-B SS",
+      "kind": "earnings",
+      "period": "FY2026 Q4",
+      "scheduledDate": "2027-01-20",
+      "eventDate": null,
+      "timing": null,
+      "expectation": "unset",
+      "guidanceMove": null,
+      "freshness": "stale",
+      "provenance": "estimator-median-gap",
+      "provenanceAsOf": "2026-10-22T02:08:37.952Z",
+      "cadence": "quarterly",
+      "metrics": [],
       "guidance": [],
       "reaction": {
         "benchmark": "NDX",
@@ -2706,8 +2825,7 @@
             "excessReturn": null,
             "benchmark": "NDX",
             "computedAt": null,
-            "populatesOn": "2026-10-18",
-            "status": "pending"
+            "populatesOn": "2027-01-23"
           },
           {
             "horizon": "d3",
@@ -2715,8 +2833,7 @@
             "excessReturn": null,
             "benchmark": "NDX",
             "computedAt": null,
-            "populatesOn": "2026-10-20",
-            "status": "pending"
+            "populatesOn": "2027-01-25"
           },
           {
             "horizon": "w1",
@@ -2724,8 +2841,7 @@
             "excessReturn": null,
             "benchmark": "NDX",
             "computedAt": null,
-            "populatesOn": "2026-10-22",
-            "status": "pending"
+            "populatesOn": "2027-01-27"
           },
           {
             "horizon": "m1",
@@ -2733,19 +2849,17 @@
             "excessReturn": null,
             "benchmark": "NDX",
             "computedAt": null,
-            "populatesOn": "2026-11-07",
-            "status": "pending"
+            "populatesOn": "2027-02-12"
           }
         ]
       },
       "sources": {
-        "windowStart": "2026-10-13",
-        "windowEnd": "2026-11-19",
+        "windowStart": "2027-01-18",
+        "windowEnd": "2027-02-24",
         "capturedAt": null,
         "items": [],
         "engineStatus": []
-      },
-      "scheduledDateSource": "roll-stale-shells/median-gap"
+      }
     }
   ]
 }
