@@ -512,42 +512,42 @@
       "guidance": [],
       "reaction": {
         "benchmark": "SPX",
-        "baselineDate": "2025-10-23",
-        "baselineClose": 183.22999572753906,
+        "baselineDate": "2025-10-24",
+        "baselineClose": 182.17999267578125,
         "points": [
           {
             "horizon": "d1",
-            "absReturn": -0.005730519435906963,
-            "excessReturn": -0.013632942023780799,
+            "absReturn": -0.010539017708504685,
+            "excessReturn": -0.022829068574175847,
             "benchmark": "SPX",
-            "computedAt": "2026-10-23T02:09:22.852Z",
+            "computedAt": "2026-10-26T02:00:44.205Z",
             "populatesOn": null,
             "status": "matured"
           },
           {
             "horizon": "d3",
-            "absReturn": -0.027015210738763413,
-            "excessReturn": -0.049639170681735775,
+            "absReturn": -0.04061913598632019,
+            "excessReturn": -0.05518103489469002,
             "benchmark": "SPX",
-            "computedAt": "2026-10-23T02:09:22.852Z",
+            "computedAt": "2026-10-26T02:00:44.205Z",
             "populatesOn": null,
             "status": "matured"
           },
           {
             "horizon": "w1",
-            "absReturn": -0.040822986966946896,
-            "excessReturn": -0.053273925622377115,
+            "absReturn": -0.03419692599629393,
+            "excessReturn": -0.04133951559104297,
             "benchmark": "SPX",
-            "computedAt": "2026-10-23T02:09:22.852Z",
+            "computedAt": "2026-10-26T02:00:44.205Z",
             "populatesOn": null,
             "status": "matured"
           },
           {
             "horizon": "m1",
-            "absReturn": 0.043770149317618245,
-            "excessReturn": 0.06387119766249419,
+            "absReturn": 0.04610829670095888,
+            "excessReturn": 0.05885473020508103,
             "benchmark": "SPX",
-            "computedAt": "2026-10-23T02:09:22.852Z",
+            "computedAt": "2026-10-26T02:00:44.205Z",
             "populatesOn": null,
             "status": "matured"
           }
@@ -1839,6 +1839,12 @@
               "actualFamily": "sec",
               "estimateFamily": "yahoo-chart",
               "clearedAt": "2026-10-23T02:11:47.823Z"
+            },
+            {
+              "value": -4.103686304992523,
+              "actualFamily": "sec",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-10-26T02:04:26.975Z"
             }
           ]
         },
@@ -2636,6 +2642,12 @@
               "actualFamily": "sec",
               "estimateFamily": "yahoo-chart",
               "clearedAt": "2026-10-23T02:11:47.823Z"
+            },
+            {
+              "value": 2.0100947489595353,
+              "actualFamily": "sec",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-10-26T02:04:26.975Z"
             }
           ]
         },
@@ -3559,7 +3571,7 @@
       "guidanceMove": null,
       "freshness": "fresh",
       "provenance": "yahoo-earnings-chart",
-      "provenanceAsOf": "2026-10-23T01:09:59.233Z",
+      "provenanceAsOf": "2026-10-26T01:24:16.947Z",
       "cadence": "quarterly",
       "metrics": [
         {
@@ -3584,14 +3596,27 @@
             "high_usd_m": 3089.792,
             "numberOfAnalysts": 11
           },
-          "actual": null,
+          "actual": {
+            "value": 3097,
+            "unit": "USD",
+            "source": {
+              "url": "https://www.sec.gov/Archives/edgar/data/1022079/000102207926000108/",
+              "label": "SEC EDGAR · 10-Q · RevenueFromContractWithCustomerExcludingAssessedTax",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2026-09-30",
+            "fetchedAt": "2026-10-26T01:24:16.947Z",
+            "method": "filing_manual",
+            "confidence": 0.98
+          },
           "prior": null
         },
         {
           "key": "eps_usd",
           "displayLabel": "EPS",
           "isHeadline": true,
-          "surprisePct": 4.772382000104771,
+          "surprisePct": null,
           "estimate": {
             "value": 2.86335,
             "unit": "USD",
@@ -3610,18 +3635,276 @@
             "numberOfAnalysts": 13
           },
           "actual": {
-            "value": 3,
-            "unit": "USD",
+            "value": 2.82,
+            "unit": "USD/shares",
             "source": {
-              "url": "https://finance.yahoo.com/quote/DGX/earnings-history",
-              "label": "Yahoo · earningsChart",
-              "provenance": "wire",
+              "url": "https://www.sec.gov/Archives/edgar/data/1022079/000102207926000108/",
+              "label": "SEC EDGAR · 10-Q · EarningsPerShareBasic",
+              "provenance": "regulatory",
               "locator": null
             },
             "asOf": "2026-09-30",
-            "fetchedAt": "2026-10-23T01:09:59.233Z",
-            "method": "yahoo",
-            "confidence": 0.8
+            "fetchedAt": "2026-10-26T01:24:16.947Z",
+            "method": "filing_manual",
+            "confidence": 0.98
+          },
+          "prior": null,
+          "superseded": [
+            {
+              "value": 3,
+              "unit": "USD",
+              "source": "Yahoo · earningsChart",
+              "from_provenance": "yahoo-earnings-chart"
+            },
+            {
+              "value": 2.82,
+              "unit": "USD",
+              "source": "Yahoo · fundamentals-timeseries",
+              "asOf": "2026-09-30",
+              "fetchedAt": "2026-10-26T00:55:56.855Z",
+              "replaced_at": "2026-10-26T01:24:16.947Z",
+              "replaced_by": "rederive-sec-xbrl",
+              "pct_delta": 0
+            }
+          ],
+          "_crossBasisSurprise": [
+            {
+              "value": 4.772382000104771,
+              "actualFamily": "sec",
+              "estimateFamily": "yahoo-trend",
+              "clearedAt": "2026-10-26T02:04:26.975Z"
+            }
+          ]
+        },
+        {
+          "key": "eps_diluted_usd",
+          "displayLabel": "EPS diluted",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 2.78,
+            "unit": "USD/shares",
+            "source": {
+              "url": "https://www.sec.gov/Archives/edgar/data/1022079/000102207926000108/",
+              "label": "SEC EDGAR · 10-Q · EarningsPerShareDiluted",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2026-09-30",
+            "fetchedAt": "2026-10-26T01:24:16.947Z",
+            "method": "filing_manual",
+            "confidence": 0.98
+          },
+          "prior": null,
+          "superseded": [
+            {
+              "value": 2.78,
+              "unit": "USD",
+              "source": "Yahoo · fundamentals-timeseries",
+              "asOf": "2026-09-30",
+              "fetchedAt": "2026-10-26T00:55:56.855Z",
+              "replaced_at": "2026-10-26T01:24:16.947Z",
+              "replaced_by": "rederive-sec-xbrl",
+              "pct_delta": 0
+            }
+          ]
+        },
+        {
+          "key": "cost_of_revenue_usd_m",
+          "displayLabel": "cost of revenue (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 2055,
+            "unit": "USD",
+            "source": {
+              "url": "https://www.sec.gov/Archives/edgar/data/1022079/000102207926000108/",
+              "label": "SEC EDGAR · 10-Q · CostOfRevenue",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2026-09-30",
+            "fetchedAt": "2026-10-26T01:24:16.947Z",
+            "method": "filing_manual",
+            "confidence": 0.98
+          },
+          "prior": null
+        },
+        {
+          "key": "operating_income_usd_m",
+          "displayLabel": "operating income (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 479,
+            "unit": "USD",
+            "source": {
+              "url": "https://www.sec.gov/Archives/edgar/data/1022079/000102207926000108/",
+              "label": "SEC EDGAR · 10-Q · OperatingIncomeLoss",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2026-09-30",
+            "fetchedAt": "2026-10-26T01:24:16.947Z",
+            "method": "filing_manual",
+            "confidence": 0.98
+          },
+          "prior": null
+        },
+        {
+          "key": "pretax_income_usd_m",
+          "displayLabel": "pretax income (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 416,
+            "unit": "USD",
+            "source": {
+              "url": "https://www.sec.gov/Archives/edgar/data/1022079/000102207926000108/",
+              "label": "SEC EDGAR · 10-Q · IncomeLossFromContinuingOperationsBeforeIncomeTaxesMinorityInterestAndIncomeLossFromEquityMethodInvestments",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2026-09-30",
+            "fetchedAt": "2026-10-26T01:24:16.947Z",
+            "method": "filing_manual",
+            "confidence": 0.98
+          },
+          "prior": null
+        },
+        {
+          "key": "net_income_usd_m",
+          "displayLabel": "net income (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 312,
+            "unit": "USD",
+            "source": {
+              "url": "https://www.sec.gov/Archives/edgar/data/1022079/000102207926000108/",
+              "label": "SEC EDGAR · 10-Q · NetIncomeLoss",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2026-09-30",
+            "fetchedAt": "2026-10-26T01:24:16.947Z",
+            "method": "filing_manual",
+            "confidence": 0.98
+          },
+          "prior": null
+        },
+        {
+          "key": "total_cash_usd_m",
+          "displayLabel": "total cash (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 797,
+            "unit": "USD",
+            "source": {
+              "url": "https://www.sec.gov/Archives/edgar/data/1022079/000102207926000108/",
+              "label": "SEC EDGAR · 10-Q · CashAndCashEquivalentsAtCarryingValue",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2026-09-30",
+            "fetchedAt": "2026-10-26T01:24:16.947Z",
+            "method": "filing_manual",
+            "confidence": 0.98
+          },
+          "prior": null
+        },
+        {
+          "key": "long_term_debt_usd_m",
+          "displayLabel": "long term debt (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 5550,
+            "unit": "USD",
+            "source": {
+              "url": "https://www.sec.gov/Archives/edgar/data/1022079/000102207926000108/",
+              "label": "SEC EDGAR · 10-Q · LongTermDebt",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2026-09-30",
+            "fetchedAt": "2026-10-26T01:24:16.947Z",
+            "method": "filing_manual",
+            "confidence": 0.98
+          },
+          "prior": null
+        },
+        {
+          "key": "short_term_debt_usd_m",
+          "displayLabel": "short term debt (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 10,
+            "unit": "USD",
+            "source": {
+              "url": "https://www.sec.gov/Archives/edgar/data/1022079/000102207926000108/",
+              "label": "SEC EDGAR · 10-Q · LongTermDebtCurrent",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2026-09-30",
+            "fetchedAt": "2026-10-26T01:24:16.947Z",
+            "method": "filing_manual",
+            "confidence": 0.98
+          },
+          "prior": null
+        },
+        {
+          "key": "shareholders_equity_usd_m",
+          "displayLabel": "shareholders equity (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 7632,
+            "unit": "USD",
+            "source": {
+              "url": "https://www.sec.gov/Archives/edgar/data/1022079/000102207926000108/",
+              "label": "SEC EDGAR · 10-Q · StockholdersEquity",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2026-09-30",
+            "fetchedAt": "2026-10-26T01:24:16.947Z",
+            "method": "filing_manual",
+            "confidence": 0.98
+          },
+          "prior": null
+        },
+        {
+          "key": "weighted_diluted_shares_m",
+          "displayLabel": "weighted diluted shares m",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 112,
+            "unit": "shares",
+            "source": {
+              "url": "https://www.sec.gov/Archives/edgar/data/1022079/000102207926000108/",
+              "label": "SEC EDGAR · 10-Q · WeightedAverageNumberOfDilutedSharesOutstanding",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2026-09-30",
+            "fetchedAt": "2026-10-26T01:24:16.947Z",
+            "method": "filing_manual",
+            "confidence": 0.98
           },
           "prior": null
         }
@@ -3634,39 +3917,42 @@
         "points": [
           {
             "horizon": "d1",
-            "absReturn": null,
-            "excessReturn": null,
+            "absReturn": -0.005713578578687195,
+            "excessReturn": -0.0005266062845281135,
             "benchmark": "SPX",
-            "computedAt": null,
+            "computedAt": "2026-10-26T02:00:44.205Z",
             "populatesOn": null,
-            "status": "pending"
+            "status": "matured"
           },
           {
             "horizon": "d3",
-            "absReturn": null,
-            "excessReturn": null,
+            "absReturn": -0.005713578578687195,
+            "excessReturn": -0.0005266062845281135,
             "benchmark": "SPX",
-            "computedAt": null,
+            "computedAt": "2026-10-26T02:00:44.205Z",
             "populatesOn": null,
-            "status": "pending"
+            "status": "clipped",
+            "clipped": true
           },
           {
             "horizon": "w1",
-            "absReturn": null,
-            "excessReturn": null,
+            "absReturn": -0.005713578578687195,
+            "excessReturn": -0.0005266062845281135,
             "benchmark": "SPX",
-            "computedAt": null,
+            "computedAt": "2026-10-26T02:00:44.205Z",
             "populatesOn": null,
-            "status": "pending"
+            "status": "clipped",
+            "clipped": true
           },
           {
             "horizon": "m1",
-            "absReturn": null,
-            "excessReturn": null,
+            "absReturn": -0.005713578578687195,
+            "excessReturn": -0.0005266062845281135,
             "benchmark": "SPX",
-            "computedAt": null,
+            "computedAt": "2026-10-26T02:00:44.205Z",
             "populatesOn": null,
-            "status": "pending"
+            "status": "clipped",
+            "clipped": true
           }
         ]
       },
@@ -4052,6 +4338,87 @@
             "provenance": "regulatory",
             "time": "2026-10-22T10:49:59.000Z",
             "kind": "edgar"
+          },
+          {
+            "id": "pr-dgx_-207926000116indexhtm",
+            "headline": "4  - Statement of changes in beneficial ownership of securities",
+            "url": "https://www.sec.gov/Archives/edgar/data/1022079/000102207926000116/0001022079-26-000116-index.htm",
+            "source": "SEC EDGAR filings",
+            "provenance": "regulatory",
+            "time": "2026-10-23T23:33:34.000Z",
+            "kind": "edgar"
+          },
+          {
+            "id": "pr-dgx_-207926000115indexhtm",
+            "headline": "4  - Statement of changes in beneficial ownership of securities",
+            "url": "https://www.sec.gov/Archives/edgar/data/1022079/000102207926000115/0001022079-26-000115-index.htm",
+            "source": "SEC EDGAR filings",
+            "provenance": "regulatory",
+            "time": "2026-10-23T23:33:17.000Z",
+            "kind": "edgar"
+          },
+          {
+            "id": "pr-dgx_-207926000114indexhtm",
+            "headline": "4  - Statement of changes in beneficial ownership of securities",
+            "url": "https://www.sec.gov/Archives/edgar/data/1022079/000102207926000114/0001022079-26-000114-index.htm",
+            "source": "SEC EDGAR filings",
+            "provenance": "regulatory",
+            "time": "2026-10-23T23:32:55.000Z",
+            "kind": "edgar"
+          },
+          {
+            "id": "pr-dgx_-207926000113indexhtm",
+            "headline": "4  - Statement of changes in beneficial ownership of securities",
+            "url": "https://www.sec.gov/Archives/edgar/data/1022079/000102207926000113/0001022079-26-000113-index.htm",
+            "source": "SEC EDGAR filings",
+            "provenance": "regulatory",
+            "time": "2026-10-23T23:32:33.000Z",
+            "kind": "edgar"
+          },
+          {
+            "id": "pr-dgx_-207926000112indexhtm",
+            "headline": "4  - Statement of changes in beneficial ownership of securities",
+            "url": "https://www.sec.gov/Archives/edgar/data/1022079/000102207926000112/0001022079-26-000112-index.htm",
+            "source": "SEC EDGAR filings",
+            "provenance": "regulatory",
+            "time": "2026-10-23T23:32:07.000Z",
+            "kind": "edgar"
+          },
+          {
+            "id": "pr-dgx_-207926000111indexhtm",
+            "headline": "4  - Statement of changes in beneficial ownership of securities",
+            "url": "https://www.sec.gov/Archives/edgar/data/1022079/000102207926000111/0001022079-26-000111-index.htm",
+            "source": "SEC EDGAR filings",
+            "provenance": "regulatory",
+            "time": "2026-10-23T23:31:48.000Z",
+            "kind": "edgar"
+          },
+          {
+            "id": "pr-dgx_-207926000110indexhtm",
+            "headline": "4  - Statement of changes in beneficial ownership of securities",
+            "url": "https://www.sec.gov/Archives/edgar/data/1022079/000102207926000110/0001022079-26-000110-index.htm",
+            "source": "SEC EDGAR filings",
+            "provenance": "regulatory",
+            "time": "2026-10-23T23:31:27.000Z",
+            "kind": "edgar"
+          },
+          {
+            "id": "pr-dgx_-207926000109indexhtm",
+            "headline": "4  - Statement of changes in beneficial ownership of securities",
+            "url": "https://www.sec.gov/Archives/edgar/data/1022079/000102207926000109/0001022079-26-000109-index.htm",
+            "source": "SEC EDGAR filings",
+            "provenance": "regulatory",
+            "time": "2026-10-23T23:31:05.000Z",
+            "kind": "edgar"
+          },
+          {
+            "id": "pr-dgx_-207926000108indexhtm",
+            "headline": "10-Q  - Quarterly report [Sections 13 or 15(d)]",
+            "url": "https://www.sec.gov/Archives/edgar/data/1022079/000102207926000108/0001022079-26-000108-index.htm",
+            "source": "SEC EDGAR filings",
+            "provenance": "regulatory",
+            "time": "2026-10-23T20:18:01.000Z",
+            "kind": "edgar"
           }
         ],
         "engineStatus": []
@@ -4074,16 +4441,67 @@
       "ticker": "DGX US",
       "kind": "earnings",
       "period": "FY2026 Q4",
-      "scheduledDate": "2027-01-21",
+      "scheduledDate": "2026-10-22",
       "eventDate": null,
       "timing": null,
       "expectation": "unset",
       "guidanceMove": null,
       "freshness": "stale",
-      "provenance": "estimator-median-gap",
-      "provenanceAsOf": "2026-10-23T02:09:21.499Z",
+      "provenance": "yahoo-calendar",
+      "provenanceAsOf": "2026-10-26T02:00:25.055Z",
       "cadence": "quarterly",
-      "metrics": [],
+      "metrics": [
+        {
+          "key": "revenue_usd_m",
+          "displayLabel": "Revenue (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": {
+            "value": 3044.36717,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/DGX/analysis",
+              "label": "Yahoo · earningsTrend (11 analysts)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-12-31",
+            "fetchedAt": "2026-10-26T01:59:22.512Z",
+            "method": "yahoo",
+            "confidence": 0.75,
+            "low_usd_m": 3016,
+            "high_usd_m": 3066,
+            "numberOfAnalysts": 11
+          },
+          "actual": null,
+          "prior": null
+        },
+        {
+          "key": "eps_usd",
+          "displayLabel": "EPS",
+          "isHeadline": true,
+          "surprisePct": null,
+          "estimate": {
+            "value": 2.68253,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/DGX/analysis",
+              "label": "Yahoo · earningsTrend (12 analysts)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-12-31",
+            "fetchedAt": "2026-10-26T01:59:22.512Z",
+            "method": "yahoo",
+            "confidence": 0.75,
+            "low": 2.63,
+            "high": 2.74,
+            "numberOfAnalysts": 12
+          },
+          "actual": null,
+          "prior": null
+        }
+      ],
       "guidance": [],
       "reaction": {
         "benchmark": "SPX",
@@ -4128,9 +4546,371 @@
         "windowStart": "2027-01-19",
         "windowEnd": "2027-02-25",
         "capturedAt": null,
-        "items": [],
+        "items": [
+          {
+            "id": "pr-dgx_-207926000116indexhtm",
+            "headline": "4  - Statement of changes in beneficial ownership of securities",
+            "url": "https://www.sec.gov/Archives/edgar/data/1022079/000102207926000116/0001022079-26-000116-index.htm",
+            "source": "SEC EDGAR filings",
+            "provenance": "regulatory",
+            "time": "2026-10-23T23:33:34.000Z",
+            "kind": "edgar"
+          },
+          {
+            "id": "pr-dgx_-207926000115indexhtm",
+            "headline": "4  - Statement of changes in beneficial ownership of securities",
+            "url": "https://www.sec.gov/Archives/edgar/data/1022079/000102207926000115/0001022079-26-000115-index.htm",
+            "source": "SEC EDGAR filings",
+            "provenance": "regulatory",
+            "time": "2026-10-23T23:33:17.000Z",
+            "kind": "edgar"
+          },
+          {
+            "id": "pr-dgx_-207926000114indexhtm",
+            "headline": "4  - Statement of changes in beneficial ownership of securities",
+            "url": "https://www.sec.gov/Archives/edgar/data/1022079/000102207926000114/0001022079-26-000114-index.htm",
+            "source": "SEC EDGAR filings",
+            "provenance": "regulatory",
+            "time": "2026-10-23T23:32:55.000Z",
+            "kind": "edgar"
+          },
+          {
+            "id": "pr-dgx_-207926000113indexhtm",
+            "headline": "4  - Statement of changes in beneficial ownership of securities",
+            "url": "https://www.sec.gov/Archives/edgar/data/1022079/000102207926000113/0001022079-26-000113-index.htm",
+            "source": "SEC EDGAR filings",
+            "provenance": "regulatory",
+            "time": "2026-10-23T23:32:33.000Z",
+            "kind": "edgar"
+          },
+          {
+            "id": "pr-dgx_-207926000112indexhtm",
+            "headline": "4  - Statement of changes in beneficial ownership of securities",
+            "url": "https://www.sec.gov/Archives/edgar/data/1022079/000102207926000112/0001022079-26-000112-index.htm",
+            "source": "SEC EDGAR filings",
+            "provenance": "regulatory",
+            "time": "2026-10-23T23:32:07.000Z",
+            "kind": "edgar"
+          },
+          {
+            "id": "pr-dgx_-207926000111indexhtm",
+            "headline": "4  - Statement of changes in beneficial ownership of securities",
+            "url": "https://www.sec.gov/Archives/edgar/data/1022079/000102207926000111/0001022079-26-000111-index.htm",
+            "source": "SEC EDGAR filings",
+            "provenance": "regulatory",
+            "time": "2026-10-23T23:31:48.000Z",
+            "kind": "edgar"
+          },
+          {
+            "id": "pr-dgx_-207926000110indexhtm",
+            "headline": "4  - Statement of changes in beneficial ownership of securities",
+            "url": "https://www.sec.gov/Archives/edgar/data/1022079/000102207926000110/0001022079-26-000110-index.htm",
+            "source": "SEC EDGAR filings",
+            "provenance": "regulatory",
+            "time": "2026-10-23T23:31:27.000Z",
+            "kind": "edgar"
+          },
+          {
+            "id": "pr-dgx_-207926000109indexhtm",
+            "headline": "4  - Statement of changes in beneficial ownership of securities",
+            "url": "https://www.sec.gov/Archives/edgar/data/1022079/000102207926000109/0001022079-26-000109-index.htm",
+            "source": "SEC EDGAR filings",
+            "provenance": "regulatory",
+            "time": "2026-10-23T23:31:05.000Z",
+            "kind": "edgar"
+          },
+          {
+            "id": "pr-dgx_-207926000108indexhtm",
+            "headline": "10-Q  - Quarterly report [Sections 13 or 15(d)]",
+            "url": "https://www.sec.gov/Archives/edgar/data/1022079/000102207926000108/0001022079-26-000108-index.htm",
+            "source": "SEC EDGAR filings",
+            "provenance": "regulatory",
+            "time": "2026-10-23T20:18:01.000Z",
+            "kind": "edgar"
+          },
+          {
+            "id": "pr-dgx_-787126000941indexhtm",
+            "headline": "8-K  - Current report",
+            "url": "https://www.sec.gov/Archives/edgar/data/1022079/000094787126000941/0000947871-26-000941-index.htm",
+            "source": "SEC EDGAR filings",
+            "provenance": "regulatory",
+            "time": "2026-10-22T10:53:44.000Z",
+            "kind": "edgar"
+          },
+          {
+            "id": "pr-dgx_-207926000097indexhtm",
+            "headline": "8-K  - Current report",
+            "url": "https://www.sec.gov/Archives/edgar/data/1022079/000102207926000097/0001022079-26-000097-index.htm",
+            "source": "SEC EDGAR filings",
+            "provenance": "regulatory",
+            "time": "2026-10-22T10:49:59.000Z",
+            "kind": "edgar"
+          },
+          {
+            "id": "pr-dgx_-787126000922indexhtm",
+            "headline": "8-K  - Current report",
+            "url": "https://www.sec.gov/Archives/edgar/data/1022079/000094787126000922/0000947871-26-000922-index.htm",
+            "source": "SEC EDGAR filings",
+            "provenance": "regulatory",
+            "time": "2026-10-06T20:30:58.000Z",
+            "kind": "edgar"
+          },
+          {
+            "id": "pr-dgx_-207926000090indexhtm",
+            "headline": "4  - Statement of changes in beneficial ownership of securities",
+            "url": "https://www.sec.gov/Archives/edgar/data/1022079/000102207926000090/0001022079-26-000090-index.htm",
+            "source": "SEC EDGAR filings",
+            "provenance": "regulatory",
+            "time": "2026-10-02T20:33:40.000Z",
+            "kind": "edgar"
+          },
+          {
+            "id": "pr-dgx_-983726000007indexhtm",
+            "headline": "4  - Statement of changes in beneficial ownership of securities",
+            "url": "https://www.sec.gov/Archives/edgar/data/1022079/000159983726000007/0001599837-26-000007-index.htm",
+            "source": "SEC EDGAR filings",
+            "provenance": "regulatory",
+            "time": "2026-09-03T21:05:30.000Z",
+            "kind": "edgar"
+          },
+          {
+            "id": "pr-dgx_-917326006569indexhtm",
+            "headline": "144  - Report of proposed sale of securities",
+            "url": "https://www.sec.gov/Archives/edgar/data/1022079/000195917326006569/0001959173-26-006569-index.htm",
+            "source": "SEC EDGAR filings",
+            "provenance": "regulatory",
+            "time": "2026-09-01T15:06:34.000Z",
+            "kind": "edgar"
+          },
+          {
+            "id": "pr-dgx_-207926000089indexhtm",
+            "headline": "4  - Statement of changes in beneficial ownership of securities",
+            "url": "https://www.sec.gov/Archives/edgar/data/1022079/000102207926000089/0001022079-26-000089-index.htm",
+            "source": "SEC EDGAR filings",
+            "provenance": "regulatory",
+            "time": "2026-08-31T20:37:15.000Z",
+            "kind": "edgar"
+          },
+          {
+            "id": "pr-dgx_-917326006526indexhtm",
+            "headline": "144  - Report of proposed sale of securities",
+            "url": "https://www.sec.gov/Archives/edgar/data/1022079/000195917326006526/0001959173-26-006526-index.htm",
+            "source": "SEC EDGAR filings",
+            "provenance": "regulatory",
+            "time": "2026-08-28T20:08:29.000Z",
+            "kind": "edgar"
+          },
+          {
+            "id": "pr-dgx_-025526000528indexhtm",
+            "headline": "SCHEDULE 13G/A [Amend]  - Statement of Beneficial Ownership by Certain Investors",
+            "url": "https://www.sec.gov/Archives/edgar/data/1022079/000008025526000528/0000080255-26-000528-index.htm",
+            "source": "SEC EDGAR filings",
+            "provenance": "regulatory",
+            "time": "2026-08-14T14:38:27.000Z",
+            "kind": "edgar"
+          },
+          {
+            "id": "pr-dgx_-207926000087indexhtm",
+            "headline": "4  - Statement of changes in beneficial ownership of securities",
+            "url": "https://www.sec.gov/Archives/edgar/data/1022079/000102207926000087/0001022079-26-000087-index.htm",
+            "source": "SEC EDGAR filings",
+            "provenance": "regulatory",
+            "time": "2026-07-29T21:04:48.000Z",
+            "kind": "edgar"
+          },
+          {
+            "id": "pr-dgx_-917326005388indexhtm",
+            "headline": "144  - Report of proposed sale of securities",
+            "url": "https://www.sec.gov/Archives/edgar/data/1022079/000195917326005388/0001959173-26-005388-index.htm",
+            "source": "SEC EDGAR filings",
+            "provenance": "regulatory",
+            "time": "2026-07-28T13:46:22.000Z",
+            "kind": "edgar"
+          },
+          {
+            "id": "pr-dgx_-207926000086indexhtm",
+            "headline": "4  - Statement of changes in beneficial ownership of securities",
+            "url": "https://www.sec.gov/Archives/edgar/data/1022079/000102207926000086/0001022079-26-000086-index.htm",
+            "source": "SEC EDGAR filings",
+            "provenance": "regulatory",
+            "time": "2026-07-27T20:35:39.000Z",
+            "kind": "edgar"
+          },
+          {
+            "id": "pr-dgx_-207926000085indexhtm",
+            "headline": "4  - Statement of changes in beneficial ownership of securities",
+            "url": "https://www.sec.gov/Archives/edgar/data/1022079/000102207926000085/0001022079-26-000085-index.htm",
+            "source": "SEC EDGAR filings",
+            "provenance": "regulatory",
+            "time": "2026-07-27T20:35:17.000Z",
+            "kind": "edgar"
+          },
+          {
+            "id": "pr-dgx_-207926000084indexhtm",
+            "headline": "4  - Statement of changes in beneficial ownership of securities",
+            "url": "https://www.sec.gov/Archives/edgar/data/1022079/000102207926000084/0001022079-26-000084-index.htm",
+            "source": "SEC EDGAR filings",
+            "provenance": "regulatory",
+            "time": "2026-07-27T20:34:58.000Z",
+            "kind": "edgar"
+          },
+          {
+            "id": "pr-dgx_-207926000083indexhtm",
+            "headline": "4  - Statement of changes in beneficial ownership of securities",
+            "url": "https://www.sec.gov/Archives/edgar/data/1022079/000102207926000083/0001022079-26-000083-index.htm",
+            "source": "SEC EDGAR filings",
+            "provenance": "regulatory",
+            "time": "2026-07-27T20:34:17.000Z",
+            "kind": "edgar"
+          },
+          {
+            "id": "pr-dgx_-207926000082indexhtm",
+            "headline": "4  - Statement of changes in beneficial ownership of securities",
+            "url": "https://www.sec.gov/Archives/edgar/data/1022079/000102207926000082/0001022079-26-000082-index.htm",
+            "source": "SEC EDGAR filings",
+            "provenance": "regulatory",
+            "time": "2026-07-27T20:33:59.000Z",
+            "kind": "edgar"
+          },
+          {
+            "id": "pr-dgx_-207926000081indexhtm",
+            "headline": "4  - Statement of changes in beneficial ownership of securities",
+            "url": "https://www.sec.gov/Archives/edgar/data/1022079/000102207926000081/0001022079-26-000081-index.htm",
+            "source": "SEC EDGAR filings",
+            "provenance": "regulatory",
+            "time": "2026-07-27T20:33:28.000Z",
+            "kind": "edgar"
+          },
+          {
+            "id": "pr-dgx_-207926000080indexhtm",
+            "headline": "4  - Statement of changes in beneficial ownership of securities",
+            "url": "https://www.sec.gov/Archives/edgar/data/1022079/000102207926000080/0001022079-26-000080-index.htm",
+            "source": "SEC EDGAR filings",
+            "provenance": "regulatory",
+            "time": "2026-07-27T20:33:06.000Z",
+            "kind": "edgar"
+          },
+          {
+            "id": "pr-dgx_-207926000079indexhtm",
+            "headline": "4  - Statement of changes in beneficial ownership of securities",
+            "url": "https://www.sec.gov/Archives/edgar/data/1022079/000102207926000079/0001022079-26-000079-index.htm",
+            "source": "SEC EDGAR filings",
+            "provenance": "regulatory",
+            "time": "2026-07-27T20:32:47.000Z",
+            "kind": "edgar"
+          },
+          {
+            "id": "pr-dgx_-207926000070indexhtm",
+            "headline": "10-Q  - Quarterly report [Sections 13 or 15(d)]",
+            "url": "https://www.sec.gov/Archives/edgar/data/1022079/000102207926000070/0001022079-26-000070-index.htm",
+            "source": "SEC EDGAR filings",
+            "provenance": "regulatory",
+            "time": "2026-07-23T20:16:54.000Z",
+            "kind": "edgar"
+          },
+          {
+            "id": "pr-dgx_-207926000067indexhtm",
+            "headline": "8-K  - Current report",
+            "url": "https://www.sec.gov/Archives/edgar/data/1022079/000102207926000067/0001022079-26-000067-index.htm",
+            "source": "SEC EDGAR filings",
+            "provenance": "regulatory",
+            "time": "2026-07-23T10:46:37.000Z",
+            "kind": "edgar"
+          },
+          {
+            "id": "pr-dgx_-207926000060indexhtm",
+            "headline": "4  - Statement of changes in beneficial ownership of securities",
+            "url": "https://www.sec.gov/Archives/edgar/data/1022079/000102207926000060/0001022079-26-000060-index.htm",
+            "source": "SEC EDGAR filings",
+            "provenance": "regulatory",
+            "time": "2026-07-02T20:34:21.000Z",
+            "kind": "edgar"
+          },
+          {
+            "id": "pr-dgx_-207926000058indexhtm",
+            "headline": "11-K  - Annual report of employee stock purchase, savings and similar plans",
+            "url": "https://www.sec.gov/Archives/edgar/data/1022079/000102207926000058/0001022079-26-000058-index.htm",
+            "source": "SEC EDGAR filings",
+            "provenance": "regulatory",
+            "time": "2026-06-18T20:12:03.000Z",
+            "kind": "edgar"
+          },
+          {
+            "id": "pr-dgx_-207926000053indexhtm",
+            "headline": "4  - Statement of changes in beneficial ownership of securities",
+            "url": "https://www.sec.gov/Archives/edgar/data/1022079/000102207926000053/0001022079-26-000053-index.htm",
+            "source": "SEC EDGAR filings",
+            "provenance": "regulatory",
+            "time": "2026-06-08T20:32:30.000Z",
+            "kind": "edgar"
+          },
+          {
+            "id": "pr-dgx_-917326004345indexhtm",
+            "headline": "144  - Report of proposed sale of securities",
+            "url": "https://www.sec.gov/Archives/edgar/data/1022079/000195917326004345/0001959173-26-004345-index.htm",
+            "source": "SEC EDGAR filings",
+            "provenance": "regulatory",
+            "time": "2026-06-04T18:52:49.000Z",
+            "kind": "edgar"
+          },
+          {
+            "id": "pr-dgx_-983726000005indexhtm",
+            "headline": "4  - Statement of changes in beneficial ownership of securities",
+            "url": "https://www.sec.gov/Archives/edgar/data/1022079/000159983726000005/0001599837-26-000005-index.htm",
+            "source": "SEC EDGAR filings",
+            "provenance": "regulatory",
+            "time": "2026-06-02T22:38:38.000Z",
+            "kind": "edgar"
+          },
+          {
+            "id": "pr-dgx_-917326004185indexhtm",
+            "headline": "144  - Report of proposed sale of securities",
+            "url": "https://www.sec.gov/Archives/edgar/data/1022079/000195917326004185/0001959173-26-004185-index.htm",
+            "source": "SEC EDGAR filings",
+            "provenance": "regulatory",
+            "time": "2026-06-01T16:26:34.000Z",
+            "kind": "edgar"
+          },
+          {
+            "id": "pr-dgx_-760726000005indexhtm",
+            "headline": "4  - Statement of changes in beneficial ownership of securities",
+            "url": "https://www.sec.gov/Archives/edgar/data/1022079/000119760726000005/0001197607-26-000005-index.htm",
+            "source": "SEC EDGAR filings",
+            "provenance": "regulatory",
+            "time": "2026-05-21T20:59:34.000Z",
+            "kind": "edgar"
+          },
+          {
+            "id": "pr-dgx_-030426000005indexhtm",
+            "headline": "4  - Statement of changes in beneficial ownership of securities",
+            "url": "https://www.sec.gov/Archives/edgar/data/1022079/000151030426000005/0001510304-26-000005-index.htm",
+            "source": "SEC EDGAR filings",
+            "provenance": "regulatory",
+            "time": "2026-05-21T20:58:36.000Z",
+            "kind": "edgar"
+          },
+          {
+            "id": "pr-dgx_-008126000002indexhtm",
+            "headline": "4  - Statement of changes in beneficial ownership of securities",
+            "url": "https://www.sec.gov/Archives/edgar/data/1022079/000172008126000002/0001720081-26-000002-index.htm",
+            "source": "SEC EDGAR filings",
+            "provenance": "regulatory",
+            "time": "2026-05-21T20:57:33.000Z",
+            "kind": "edgar"
+          },
+          {
+            "id": "pr-dgx_-674426000002indexhtm",
+            "headline": "4  - Statement of changes in beneficial ownership of securities",
+            "url": "https://www.sec.gov/Archives/edgar/data/1022079/000119674426000002/0001196744-26-000002-index.htm",
+            "source": "SEC EDGAR filings",
+            "provenance": "regulatory",
+            "time": "2026-05-21T20:57:01.000Z",
+            "kind": "edgar"
+          }
+        ],
         "engineStatus": []
-      }
+      },
+      "scheduledDateSource": "yahoo-calendarEvents"
     }
   ]
 }

@@ -618,42 +618,42 @@
       "guidance": [],
       "reaction": {
         "benchmark": "NDX",
-        "baselineDate": "2025-10-23",
-        "baselineClose": 46,
+        "baselineDate": "2025-10-24",
+        "baselineClose": 46.38999938964844,
         "points": [
           {
             "horizon": "d1",
-            "absReturn": 0.00847824760105299,
-            "excessReturn": -0.0019112706152345782,
+            "absReturn": -0.012933789222143829,
+            "excessReturn": -0.031207615956603842,
             "benchmark": "NDX",
-            "computedAt": "2026-10-23T02:09:22.852Z",
+            "computedAt": "2026-10-26T02:00:44.205Z",
             "populatesOn": "2025-10-18",
             "status": "matured"
           },
           {
             "horizon": "d3",
-            "absReturn": -0.015434762705927309,
-            "excessReturn": -0.051882357444988564,
+            "absReturn": -0.03621470849923443,
+            "excessReturn": -0.06625196074591476,
             "benchmark": "NDX",
-            "computedAt": "2026-10-23T02:09:22.852Z",
+            "computedAt": "2026-10-26T02:00:44.205Z",
             "populatesOn": "2025-10-20",
             "status": "matured"
           },
           {
             "horizon": "w1",
-            "absReturn": -0.03173911053201427,
-            "excessReturn": -0.057136168900057405,
+            "absReturn": -0.03901697741771552,
+            "excessReturn": -0.05873334090955871,
             "benchmark": "NDX",
-            "computedAt": "2026-10-23T02:09:22.852Z",
+            "computedAt": "2026-10-26T02:00:44.205Z",
             "populatesOn": "2025-10-22",
             "status": "matured"
           },
           {
             "horizon": "m1",
-            "absReturn": -0.07195655159328294,
-            "excessReturn": -0.03777613861802731,
+            "absReturn": -0.06747146172227951,
+            "excessReturn": -0.04837265708145337,
             "benchmark": "NDX",
-            "computedAt": "2026-10-23T02:09:22.852Z",
+            "computedAt": "2026-10-26T02:00:44.205Z",
             "populatesOn": "2025-11-07",
             "status": "matured"
           }
@@ -1104,6 +1104,12 @@
               "actualFamily": "yahoo-timeseries",
               "estimateFamily": "yahoo-generic",
               "clearedAt": "2026-10-23T02:11:48.762Z"
+            },
+            {
+              "value": 5.610316460386869,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-generic",
+              "clearedAt": "2026-10-26T02:04:28.212Z"
             }
           ]
         },
@@ -1798,6 +1804,12 @@
               "actualFamily": "yahoo-timeseries",
               "estimateFamily": "yahoo-generic",
               "clearedAt": "2026-10-23T02:11:48.762Z"
+            },
+            {
+              "value": -16.989645064347446,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-generic",
+              "clearedAt": "2026-10-26T02:04:28.212Z"
             }
           ]
         },
@@ -2497,6 +2509,12 @@
               "actualFamily": "yahoo-timeseries",
               "estimateFamily": "yahoo-generic",
               "clearedAt": "2026-10-23T02:11:48.762Z"
+            },
+            {
+              "value": 9.474167887194508,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-generic",
+              "clearedAt": "2026-10-26T02:04:28.212Z"
             }
           ]
         },
@@ -3680,14 +3698,27 @@
             "high_usd_m": 1619.62283,
             "numberOfAnalysts": 6
           },
-          "actual": null,
+          "actual": {
+            "value": 1640.213,
+            "unit": "ZAR",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/KARO/financials",
+              "label": "Yahoo · fundamentals-timeseries",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-08-31",
+            "fetchedAt": "2026-10-26T00:55:56.855Z",
+            "method": "yahoo",
+            "confidence": 0.85
+          },
           "prior": null
         },
         {
           "key": "eps_usd",
           "displayLabel": "EPS",
           "isHeadline": true,
-          "surprisePct": -1.6157075611721312,
+          "surprisePct": null,
           "estimate": {
             "value": 9.4324,
             "unit": "USD",
@@ -3707,17 +3738,165 @@
           },
           "actual": {
             "value": 9.28,
-            "unit": "USD",
+            "unit": "ZAR",
             "source": {
-              "url": "https://finance.yahoo.com/quote/KARO/earnings-history",
-              "label": "Yahoo · earningsChart",
+              "url": "https://finance.yahoo.com/quote/KARO/financials",
+              "label": "Yahoo · fundamentals-timeseries",
               "provenance": "wire",
               "locator": null
             },
             "asOf": "2026-08-31",
-            "fetchedAt": "2026-10-21T01:14:06.296Z",
+            "fetchedAt": "2026-10-26T00:55:56.855Z",
             "method": "yahoo",
-            "confidence": 0.8
+            "confidence": 0.85
+          },
+          "prior": null,
+          "superseded": [
+            {
+              "value": 9.28,
+              "unit": "USD",
+              "source": "Yahoo · earningsChart",
+              "from_provenance": "yahoo-earnings-chart"
+            }
+          ],
+          "_crossBasisSurprise": [
+            {
+              "value": -1.6157075611721312,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-trend",
+              "clearedAt": "2026-10-26T02:04:28.212Z"
+            }
+          ]
+        },
+        {
+          "key": "ebit_usd_m",
+          "displayLabel": "EBIT (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 430.62,
+            "unit": "ZAR",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/KARO/financials",
+              "label": "Yahoo · fundamentals-timeseries",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-08-31",
+            "fetchedAt": "2026-10-26T00:55:56.855Z",
+            "method": "yahoo",
+            "confidence": 0.85
+          },
+          "prior": null
+        },
+        {
+          "key": "operating_income_usd_m",
+          "displayLabel": "Operating income (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 422.322,
+            "unit": "ZAR",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/KARO/financials",
+              "label": "Yahoo · fundamentals-timeseries",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-08-31",
+            "fetchedAt": "2026-10-26T00:55:56.855Z",
+            "method": "yahoo",
+            "confidence": 0.85
+          },
+          "prior": null
+        },
+        {
+          "key": "eps_diluted_usd",
+          "displayLabel": "EPS diluted",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 9.28,
+            "unit": "ZAR",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/KARO/financials",
+              "label": "Yahoo · fundamentals-timeseries",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-08-31",
+            "fetchedAt": "2026-10-26T00:55:56.855Z",
+            "method": "yahoo",
+            "confidence": 0.85
+          },
+          "prior": null
+        },
+        {
+          "key": "ebitda_usd_m",
+          "displayLabel": "EBITDA (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 430.62,
+            "unit": "ZAR",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/KARO/financials",
+              "label": "Yahoo · fundamentals-timeseries",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-08-31",
+            "fetchedAt": "2026-10-26T00:55:56.855Z",
+            "method": "yahoo",
+            "confidence": 0.85
+          },
+          "prior": null
+        },
+        {
+          "key": "net_income_usd_m",
+          "displayLabel": "Net income (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 286.77,
+            "unit": "ZAR",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/KARO/financials",
+              "label": "Yahoo · fundamentals-timeseries",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-08-31",
+            "fetchedAt": "2026-10-26T00:55:56.855Z",
+            "method": "yahoo",
+            "confidence": 0.85
+          },
+          "prior": null
+        },
+        {
+          "key": "gross_profit_usd_m",
+          "displayLabel": "Gross profit (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 1075.132,
+            "unit": "ZAR",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/KARO/financials",
+              "label": "Yahoo · fundamentals-timeseries",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-08-31",
+            "fetchedAt": "2026-10-26T00:55:56.855Z",
+            "method": "yahoo",
+            "confidence": 0.85
           },
           "prior": null
         }
@@ -3748,20 +3927,20 @@
           },
           {
             "horizon": "w1",
-            "absReturn": 0.024959792106979593,
-            "excessReturn": 0.04428504365921242,
+            "absReturn": 0.031723047811733567,
+            "excessReturn": 0.05108752146470079,
             "benchmark": "NDX",
-            "computedAt": "2026-10-23T02:09:22.852Z",
+            "computedAt": "2026-10-26T02:00:44.205Z",
             "populatesOn": null,
             "status": "clipped",
             "clipped": true
           },
           {
             "horizon": "m1",
-            "absReturn": 0.024959792106979593,
-            "excessReturn": 0.04428504365921242,
+            "absReturn": 0.031723047811733567,
+            "excessReturn": 0.05108752146470079,
             "benchmark": "NDX",
-            "computedAt": "2026-10-23T02:09:22.852Z",
+            "computedAt": "2026-10-26T02:00:44.205Z",
             "populatesOn": null,
             "status": "clipped",
             "clipped": true
