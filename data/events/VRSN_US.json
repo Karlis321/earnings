@@ -446,42 +446,42 @@
       "guidance": [],
       "reaction": {
         "benchmark": "SPX",
-        "baselineDate": "2025-10-24",
-        "baselineClose": 247.0800018310547,
+        "baselineDate": "2025-10-27",
+        "baselineClose": 247.22000122070312,
         "points": [
           {
             "horizon": "d1",
-            "absReturn": 0.0005666156249430682,
-            "excessReturn": -0.011723435240728093,
+            "absReturn": -0.027708138782024973,
+            "excessReturn": -0.02999608264242368,
             "benchmark": "SPX",
-            "computedAt": "2026-10-26T02:00:44.205Z",
+            "computedAt": "2026-10-27T02:50:28.694Z",
             "populatesOn": null,
             "status": "matured"
           },
           {
             "horizon": "d3",
-            "absReturn": -0.0577140780360948,
-            "excessReturn": -0.07227597694446462,
+            "absReturn": -0.04700264970395283,
+            "excessReturn": -0.0393198741322474,
             "benchmark": "SPX",
-            "computedAt": "2026-10-26T02:00:44.205Z",
+            "computedAt": "2026-10-27T02:50:28.694Z",
             "populatesOn": null,
             "status": "matured"
           },
           {
             "horizon": "w1",
-            "absReturn": -0.029464136009982315,
-            "excessReturn": -0.036606725604731355,
+            "absReturn": -0.010759662037759979,
+            "excessReturn": -0.007386658227053297,
             "benchmark": "SPX",
-            "computedAt": "2026-10-26T02:00:44.205Z",
+            "computedAt": "2026-10-27T02:50:28.694Z",
             "populatesOn": null,
             "status": "matured"
           },
           {
             "horizon": "m1",
-            "absReturn": 0.010077729782706768,
-            "excessReturn": 0.022824163286828916,
+            "absReturn": 0.03422049758638078,
+            "excessReturn": 0.050115439806476786,
             "benchmark": "SPX",
-            "computedAt": "2026-10-26T02:00:44.205Z",
+            "computedAt": "2026-10-27T02:50:28.694Z",
             "populatesOn": null,
             "status": "matured"
           }
@@ -1725,6 +1725,12 @@
               "actualFamily": "yahoo-timeseries",
               "estimateFamily": "yahoo-chart",
               "clearedAt": "2026-10-26T02:04:30.534Z"
+            },
+            {
+              "value": -2.1161350358395445,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-10-27T02:54:54.685Z"
             }
           ]
         },
@@ -2372,6 +2378,12 @@
               "actualFamily": "yahoo-timeseries",
               "estimateFamily": "yahoo-chart",
               "clearedAt": "2026-10-26T02:04:30.534Z"
+            },
+            {
+              "value": 4.203776273601702,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-10-27T02:54:54.685Z"
             }
           ]
         },
@@ -3129,6 +3141,12 @@
               "actualFamily": "yahoo-timeseries",
               "estimateFamily": "yahoo-chart",
               "clearedAt": "2026-10-26T02:04:30.534Z"
+            },
+            {
+              "value": 1.1130937207919016,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-10-27T02:54:54.685Z"
             }
           ]
         },
@@ -3759,7 +3777,7 @@
           "key": "eps_usd",
           "displayLabel": "EPS",
           "isHeadline": true,
-          "surprisePct": -2.7329958651175703,
+          "surprisePct": null,
           "estimate": {
             "value": 2.41603,
             "unit": "USD",
@@ -3775,20 +3793,36 @@
             "confidence": 0.75
           },
           "actual": {
-            "value": 2.35,
+            "value": 2.36,
             "unit": "USD",
             "source": {
-              "url": "https://finance.yahoo.com/quote/VRSN/earnings-history",
-              "label": "Yahoo · earningsChart",
+              "url": "https://finance.yahoo.com/quote/VRSN/financials",
+              "label": "Yahoo · fundamentals-timeseries",
               "provenance": "wire",
               "locator": null
             },
             "asOf": "2026-09-30",
-            "fetchedAt": "2026-10-26T00:57:16.073Z",
+            "fetchedAt": "2026-10-27T01:46:21.333Z",
             "method": "yahoo",
-            "confidence": 0.8
+            "confidence": 0.85
           },
-          "prior": null
+          "prior": null,
+          "superseded": [
+            {
+              "value": 2.35,
+              "unit": "USD",
+              "source": "Yahoo · earningsChart",
+              "from_provenance": "yahoo-earnings-chart"
+            }
+          ],
+          "_crossBasisSurprise": [
+            {
+              "value": -2.7329958651175703,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-10-27T02:54:54.685Z"
+            }
+          ]
         },
         {
           "key": "revenue_usd_m",
@@ -3965,6 +3999,94 @@
             "confidence": 0.98
           },
           "prior": null
+        },
+        {
+          "key": "eps_diluted_usd",
+          "displayLabel": "EPS diluted",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 2.35,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/VRSN/financials",
+              "label": "Yahoo · fundamentals-timeseries",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-09-30",
+            "fetchedAt": "2026-10-27T01:46:21.333Z",
+            "method": "yahoo",
+            "confidence": 0.85
+          },
+          "prior": null
+        },
+        {
+          "key": "ebit_usd_m",
+          "displayLabel": "EBIT (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 300.8,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/VRSN/financials",
+              "label": "Yahoo · fundamentals-timeseries",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-09-30",
+            "fetchedAt": "2026-10-27T01:46:21.333Z",
+            "method": "yahoo",
+            "confidence": 0.85
+          },
+          "prior": null
+        },
+        {
+          "key": "gross_profit_usd_m",
+          "displayLabel": "Gross profit (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 393.2,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/VRSN/financials",
+              "label": "Yahoo · fundamentals-timeseries",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-09-30",
+            "fetchedAt": "2026-10-27T01:46:21.333Z",
+            "method": "yahoo",
+            "confidence": 0.85
+          },
+          "prior": null
+        },
+        {
+          "key": "ebitda_usd_m",
+          "displayLabel": "EBITDA (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 307.6,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/VRSN/financials",
+              "label": "Yahoo · fundamentals-timeseries",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-09-30",
+            "fetchedAt": "2026-10-27T01:46:21.333Z",
+            "method": "yahoo",
+            "confidence": 0.85
+          },
+          "prior": null
         }
       ],
       "guidance": [],
@@ -3984,30 +4106,30 @@
           },
           {
             "horizon": "d3",
-            "absReturn": -0.014018809104075273,
-            "excessReturn": -0.008831836809916192,
+            "absReturn": 0.013559226936103851,
+            "excessReturn": 0.011818512472213005,
             "benchmark": "SPX",
-            "computedAt": "2026-10-26T02:00:44.205Z",
+            "computedAt": "2026-10-27T02:50:28.694Z",
             "populatesOn": null,
             "status": "clipped",
             "clipped": true
           },
           {
             "horizon": "w1",
-            "absReturn": -0.014018809104075273,
-            "excessReturn": -0.008831836809916192,
+            "absReturn": 0.013559226936103851,
+            "excessReturn": 0.011818512472213005,
             "benchmark": "SPX",
-            "computedAt": "2026-10-26T02:00:44.205Z",
+            "computedAt": "2026-10-27T02:50:28.694Z",
             "populatesOn": null,
             "status": "clipped",
             "clipped": true
           },
           {
             "horizon": "m1",
-            "absReturn": -0.014018809104075273,
-            "excessReturn": -0.008831836809916192,
+            "absReturn": 0.013559226936103851,
+            "excessReturn": 0.011818512472213005,
             "benchmark": "SPX",
-            "computedAt": "2026-10-26T02:00:44.205Z",
+            "computedAt": "2026-10-27T02:50:28.694Z",
             "populatesOn": null,
             "status": "clipped",
             "clipped": true
@@ -4047,7 +4169,58 @@
       "provenance": "estimator-median-gap",
       "provenanceAsOf": "2026-10-26T02:00:42.211Z",
       "cadence": "quarterly",
-      "metrics": [],
+      "metrics": [
+        {
+          "key": "revenue_usd_m",
+          "displayLabel": "Revenue (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": {
+            "value": 452.69762,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/VRSN/analysis",
+              "label": "Yahoo · earningsTrend (4 analysts)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-12-31",
+            "fetchedAt": "2026-10-27T02:49:05.453Z",
+            "method": "yahoo",
+            "confidence": 0.75,
+            "low_usd_m": 452.12346,
+            "high_usd_m": 454,
+            "numberOfAnalysts": 4
+          },
+          "actual": null,
+          "prior": null
+        },
+        {
+          "key": "eps_usd",
+          "displayLabel": "EPS",
+          "isHeadline": true,
+          "surprisePct": null,
+          "estimate": {
+            "value": 2.44852,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/VRSN/analysis",
+              "label": "Yahoo · earningsTrend (3 analysts)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-12-31",
+            "fetchedAt": "2026-10-27T02:49:05.453Z",
+            "method": "yahoo",
+            "confidence": 0.75,
+            "low": 2.41555,
+            "high": 2.47,
+            "numberOfAnalysts": 3
+          },
+          "actual": null,
+          "prior": null
+        }
+      ],
       "guidance": [],
       "reaction": {
         "benchmark": "SPX",
