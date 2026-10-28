@@ -569,6 +569,12 @@
               "actualFamily": "yahoo-timeseries",
               "estimateFamily": "yahoo-generic",
               "clearedAt": "2026-10-27T02:54:50.209Z"
+            },
+            {
+              "value": -1.8867924528301838,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-generic",
+              "clearedAt": "2026-10-28T03:01:55.851Z"
             }
           ]
         },
@@ -1284,6 +1290,12 @@
               "actualFamily": "yahoo-timeseries",
               "estimateFamily": "yahoo-generic",
               "clearedAt": "2026-10-27T02:54:50.209Z"
+            },
+            {
+              "value": 15.97075548334687,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-generic",
+              "clearedAt": "2026-10-28T03:01:55.851Z"
             }
           ]
         },
@@ -1999,6 +2011,12 @@
               "actualFamily": "yahoo-timeseries",
               "estimateFamily": "yahoo-generic",
               "clearedAt": "2026-10-27T02:54:50.209Z"
+            },
+            {
+              "value": 46.11135466900481,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-generic",
+              "clearedAt": "2026-10-28T03:01:55.851Z"
             }
           ]
         },
@@ -3102,7 +3120,7 @@
           "key": "eps_usd",
           "displayLabel": "EPS",
           "isHeadline": false,
-          "surprisePct": -29.006711409395976,
+          "surprisePct": null,
           "estimate": {
             "value": 74.5,
             "unit": "INR",
@@ -3124,17 +3142,33 @@
             "value": 52.89,
             "unit": "INR",
             "source": {
-              "url": "https://finance.yahoo.com/quote/ATUL.NS/earnings-history",
-              "label": "Yahoo · earningsChart",
+              "url": "https://finance.yahoo.com/quote/ATUL.NS/financials",
+              "label": "Yahoo · fundamentals-timeseries",
               "provenance": "wire",
               "locator": null
             },
             "asOf": "2026-09-30",
-            "fetchedAt": "2026-10-27T01:48:15.825Z",
+            "fetchedAt": "2026-10-28T01:58:11.709Z",
             "method": "yahoo",
-            "confidence": 0.8
+            "confidence": 0.85
           },
-          "prior": null
+          "prior": null,
+          "superseded": [
+            {
+              "value": 52.89,
+              "unit": "INR",
+              "source": "Yahoo · earningsChart",
+              "from_provenance": "yahoo-earnings-chart"
+            }
+          ],
+          "_crossBasisSurprise": [
+            {
+              "value": -29.006711409395976,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-trend",
+              "clearedAt": "2026-10-28T03:01:55.851Z"
+            }
+          ]
         },
         {
           "key": "net_income_usd_m",
@@ -3286,30 +3320,30 @@
           },
           {
             "horizon": "d3",
-            "absReturn": -0.039813486370157816,
-            "excessReturn": -0.04677729420651679,
+            "absReturn": -0.029142754662840747,
+            "excessReturn": -0.042118105096512766,
             "benchmark": "SPX",
-            "computedAt": "2026-10-27T02:50:28.694Z",
+            "computedAt": "2026-10-28T02:57:37.756Z",
             "populatesOn": null,
             "status": "clipped",
             "clipped": true
           },
           {
             "horizon": "w1",
-            "absReturn": -0.039813486370157816,
-            "excessReturn": -0.04677729420651679,
+            "absReturn": -0.029142754662840747,
+            "excessReturn": -0.042118105096512766,
             "benchmark": "SPX",
-            "computedAt": "2026-10-27T02:50:28.694Z",
+            "computedAt": "2026-10-28T02:57:37.756Z",
             "populatesOn": null,
             "status": "clipped",
             "clipped": true
           },
           {
             "horizon": "m1",
-            "absReturn": -0.039813486370157816,
-            "excessReturn": -0.04677729420651679,
+            "absReturn": -0.029142754662840747,
+            "excessReturn": -0.042118105096512766,
             "benchmark": "SPX",
-            "computedAt": "2026-10-27T02:50:28.694Z",
+            "computedAt": "2026-10-28T02:57:37.756Z",
             "populatesOn": null,
             "status": "clipped",
             "clipped": true
@@ -3345,7 +3379,33 @@
       "provenance": "estimator-median-gap",
       "provenanceAsOf": "2026-10-27T02:50:26.772Z",
       "cadence": "quarterly",
-      "metrics": [],
+      "metrics": [
+        {
+          "key": "revenue_usd_m",
+          "displayLabel": "Revenue (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": {
+            "value": 18183,
+            "unit": "INR",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/ATUL.NS/analysis",
+              "label": "Yahoo · earningsTrend (1 analysts)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-12-31",
+            "fetchedAt": "2026-10-28T02:56:19.746Z",
+            "method": "yahoo",
+            "confidence": 0.75,
+            "low_usd_m": 18183,
+            "high_usd_m": 18183,
+            "numberOfAnalysts": 1
+          },
+          "actual": null,
+          "prior": null
+        }
+      ],
       "guidance": [],
       "reaction": {
         "benchmark": "SPX",

@@ -615,6 +615,12 @@
               "actualFamily": "sec",
               "estimateFamily": "yahoo-chart",
               "clearedAt": "2026-10-08T03:26:48.201Z"
+            },
+            {
+              "value": 7.142857142857137,
+              "actualFamily": "sec",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-10-28T03:02:00.211Z"
             }
           ],
           "superseded": [
@@ -1154,42 +1160,42 @@
       "guidance": [],
       "reaction": {
         "benchmark": "SPX",
-        "baselineDate": "2025-10-27",
-        "baselineClose": 30,
+        "baselineDate": "2025-10-28",
+        "baselineClose": 31.65999984741211,
         "points": [
           {
             "horizon": "d1",
-            "absReturn": 0.05533332824707031,
-            "excessReturn": 0.053045384386671605,
+            "absReturn": -0.024005061040578573,
+            "excessReturn": -0.023961482785405143,
             "benchmark": "SPX",
-            "computedAt": "2026-10-27T02:50:28.694Z",
+            "computedAt": "2026-10-28T02:57:37.756Z",
             "populatesOn": null,
             "status": "matured"
           },
           {
             "horizon": "d3",
-            "absReturn": -0.03233331044514974,
-            "excessReturn": -0.024650534873444308,
+            "absReturn": -0.06253946783888482,
+            "excessReturn": -0.05518338750665838,
             "benchmark": "SPX",
-            "computedAt": "2026-10-27T02:50:28.694Z",
+            "computedAt": "2026-10-28T02:57:37.756Z",
             "populatesOn": null,
             "status": "matured"
           },
           {
             "horizon": "w1",
-            "absReturn": 0.020999972025553384,
-            "excessReturn": 0.024372975836260066,
+            "absReturn": -0.0723309860775598,
+            "excessReturn": -0.055012420600026805,
             "benchmark": "SPX",
-            "computedAt": "2026-10-27T02:50:28.694Z",
+            "computedAt": "2026-10-28T02:57:37.756Z",
             "populatesOn": null,
             "status": "matured"
           },
           {
             "horizon": "m1",
-            "absReturn": -0.055666669209798174,
-            "excessReturn": -0.03977172698970216,
+            "absReturn": -0.10012634528022783,
+            "excessReturn": -0.08876637989340846,
             "benchmark": "SPX",
-            "computedAt": "2026-10-27T02:50:28.694Z",
+            "computedAt": "2026-10-28T02:57:37.756Z",
             "populatesOn": null,
             "status": "matured"
           }
@@ -1216,13 +1222,13 @@
       "kind": "earnings",
       "period": "FY2026 Q3",
       "scheduledDate": "2026-12-28",
-      "eventDate": null,
+      "eventDate": "2026-10-27",
       "timing": null,
       "expectation": "unset",
       "guidanceMove": null,
-      "freshness": "stale",
-      "provenance": "estimator-median-gap",
-      "provenanceAsOf": "2026-10-27T02:08:00.488Z",
+      "freshness": "fresh",
+      "provenance": "yahoo-earnings-chart",
+      "provenanceAsOf": "2026-10-28T01:59:21.799Z",
       "cadence": "quarterly",
       "metrics": [
         {
@@ -1254,7 +1260,7 @@
           "key": "eps_usd",
           "displayLabel": "EPS",
           "isHeadline": true,
-          "surprisePct": null,
+          "surprisePct": 7.681263460157926,
           "estimate": {
             "value": 0.16716,
             "unit": "USD",
@@ -1272,15 +1278,28 @@
             "high": 0.18,
             "numberOfAnalysts": 8
           },
-          "actual": null,
+          "actual": {
+            "value": 0.18,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/SOFI/earnings-history",
+              "label": "Yahoo · earningsChart",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-09-30",
+            "fetchedAt": "2026-10-28T01:59:21.799Z",
+            "method": "yahoo",
+            "confidence": 0.8
+          },
           "prior": null
         }
       ],
       "guidance": [],
       "reaction": {
         "benchmark": "SPX",
-        "baselineDate": null,
-        "baselineClose": null,
+        "baselineDate": "2026-10-27",
+        "baselineClose": 16.399999618530273,
         "points": [
           {
             "horizon": "d1",
@@ -1288,7 +1307,7 @@
             "excessReturn": null,
             "benchmark": "SPX",
             "computedAt": null,
-            "populatesOn": "2026-10-02",
+            "populatesOn": null,
             "status": "pending"
           },
           {
@@ -1297,7 +1316,7 @@
             "excessReturn": null,
             "benchmark": "SPX",
             "computedAt": null,
-            "populatesOn": "2026-10-04",
+            "populatesOn": null,
             "status": "pending"
           },
           {
@@ -1306,7 +1325,7 @@
             "excessReturn": null,
             "benchmark": "SPX",
             "computedAt": null,
-            "populatesOn": "2026-10-06",
+            "populatesOn": null,
             "status": "pending"
           },
           {
@@ -1315,7 +1334,7 @@
             "excessReturn": null,
             "benchmark": "SPX",
             "computedAt": null,
-            "populatesOn": "2026-10-22",
+            "populatesOn": null,
             "status": "pending"
           }
         ]
@@ -1688,7 +1707,18 @@
         ],
         "engineStatus": []
       },
-      "scheduledDateSource": "roll-stale-shells/median-gap"
+      "scheduledDateSource": "roll-stale-shells/median-gap",
+      "eventDateSource": "yahoo-earnings-chart-reportedDate",
+      "sourceLink": {
+        "kind": "filing",
+        "url": "https://www.sec.gov/Archives/edgar/data/1818874/000181887426000065/sofi-20261027.htm",
+        "form": "8-K",
+        "accession": "0001818874-26-000065",
+        "filingDate": "2026-10-27",
+        "provenance": "edgar",
+        "method": "attach-sec-filings",
+        "asOf": "2026-10-28T03:03:53.628Z"
+      }
     },
     {
       "id": "evt-6in3za",
@@ -1836,6 +1866,12 @@
               "actualFamily": "sec",
               "estimateFamily": "yahoo-chart",
               "clearedAt": "2026-10-08T03:26:48.201Z"
+            },
+            {
+              "value": 8.333333333333341,
+              "actualFamily": "sec",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-10-28T03:02:00.211Z"
             }
           ]
         },
@@ -2088,6 +2124,69 @@
         "provenance": "edgar",
         "method": "attach-sec-filings",
         "asOf": "2026-09-01T02:41:20.074Z"
+      }
+    },
+    {
+      "id": "evt-wbklx1",
+      "ticker": "SOFI US",
+      "kind": "earnings",
+      "period": "FY2026 Q4",
+      "scheduledDate": "2027-01-26",
+      "eventDate": null,
+      "timing": null,
+      "expectation": "unset",
+      "guidanceMove": null,
+      "freshness": "stale",
+      "provenance": "estimator-median-gap",
+      "provenanceAsOf": "2026-10-28T02:57:35.709Z",
+      "cadence": "quarterly",
+      "metrics": [],
+      "guidance": [],
+      "reaction": {
+        "benchmark": "SPX",
+        "baselineDate": null,
+        "baselineClose": null,
+        "points": [
+          {
+            "horizon": "d1",
+            "absReturn": null,
+            "excessReturn": null,
+            "benchmark": "SPX",
+            "computedAt": null,
+            "populatesOn": "2027-01-29"
+          },
+          {
+            "horizon": "d3",
+            "absReturn": null,
+            "excessReturn": null,
+            "benchmark": "SPX",
+            "computedAt": null,
+            "populatesOn": "2027-01-31"
+          },
+          {
+            "horizon": "w1",
+            "absReturn": null,
+            "excessReturn": null,
+            "benchmark": "SPX",
+            "computedAt": null,
+            "populatesOn": "2027-02-02"
+          },
+          {
+            "horizon": "m1",
+            "absReturn": null,
+            "excessReturn": null,
+            "benchmark": "SPX",
+            "computedAt": null,
+            "populatesOn": "2027-02-18"
+          }
+        ]
+      },
+      "sources": {
+        "windowStart": "2027-01-24",
+        "windowEnd": "2027-03-02",
+        "capturedAt": null,
+        "items": [],
+        "engineStatus": []
       }
     }
   ]
