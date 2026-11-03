@@ -467,7 +467,7 @@
             "absReturn": -0.037037052427568544,
             "excessReturn": -0.02530022234298478,
             "benchmark": "SPX",
-            "computedAt": "2026-11-02T02:59:44.722Z",
+            "computedAt": "2026-11-03T04:44:23.690Z",
             "populatesOn": "2025-10-18",
             "status": "matured"
           },
@@ -476,7 +476,7 @@
             "absReturn": -0.04720410679711435,
             "excessReturn": -0.027990597908853353,
             "benchmark": "SPX",
-            "computedAt": "2026-11-02T02:59:44.722Z",
+            "computedAt": "2026-11-03T04:44:23.690Z",
             "populatesOn": "2025-10-20",
             "status": "matured"
           },
@@ -485,7 +485,7 @@
             "absReturn": -0.031227326861368587,
             "excessReturn": -0.02837558663923956,
             "benchmark": "SPX",
-            "computedAt": "2026-11-02T02:59:44.722Z",
+            "computedAt": "2026-11-03T04:44:23.690Z",
             "populatesOn": "2025-10-22",
             "status": "matured"
           },
@@ -494,7 +494,7 @@
             "absReturn": -0.02396520453231453,
             "excessReturn": -0.023636831826442908,
             "benchmark": "SPX",
-            "computedAt": "2026-11-02T02:59:44.722Z",
+            "computedAt": "2026-11-03T04:44:23.690Z",
             "populatesOn": "2025-11-07",
             "status": "matured"
           }
@@ -2409,6 +2409,12 @@
               "actualFamily": "yahoo-timeseries",
               "estimateFamily": "yahoo-chart",
               "clearedAt": "2026-11-02T03:04:43.739Z"
+            },
+            {
+              "value": -43.924185498794365,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-11-03T04:51:19.991Z"
             }
           ]
         },
@@ -2643,7 +2649,7 @@
           "key": "eps_usd",
           "displayLabel": "EPS",
           "isHeadline": false,
-          "surprisePct": -8.080862533692725,
+          "surprisePct": null,
           "estimate": {
             "value": 0.1855,
             "unit": "AUD",
@@ -2662,20 +2668,37 @@
             "numberOfAnalysts": 2
           },
           "actual": {
-            "value": 0.17051,
+            "value": 0.13,
             "unit": "AUD",
             "source": {
-              "url": "https://finance.yahoo.com/quote/CSC.AX/earnings-history",
-              "label": "Yahoo · earningsChart",
+              "url": "https://finance.yahoo.com/quote/CSC.AX/financials",
+              "label": "Yahoo · fundamentals-timeseries",
               "provenance": "wire",
               "locator": null
             },
             "asOf": "2026-09-30",
-            "fetchedAt": "2026-11-02T02:02:07.461Z",
+            "fetchedAt": "2026-11-03T03:48:24.178Z",
             "method": "yahoo",
-            "confidence": 0.8
+            "confidence": 0.85,
+            "_originalUnit": "USD"
           },
-          "prior": null
+          "prior": null,
+          "superseded": [
+            {
+              "value": 0.17051,
+              "unit": "AUD",
+              "source": "Yahoo · earningsChart",
+              "from_provenance": "yahoo-earnings-chart"
+            }
+          ],
+          "_crossBasisSurprise": [
+            {
+              "value": -8.080862533692725,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-trend",
+              "clearedAt": "2026-11-03T04:51:19.991Z"
+            }
+          ]
         },
         {
           "key": "net_income_usd_m",
@@ -2833,30 +2856,30 @@
           },
           {
             "horizon": "d3",
-            "absReturn": -0.0456081042984614,
-            "excessReturn": -0.027432816519593055,
+            "absReturn": -0.033783831676485326,
+            "excessReturn": -0.010599739784067981,
             "benchmark": "SPX",
-            "computedAt": "2026-11-02T02:59:44.722Z",
+            "computedAt": "2026-11-03T04:44:23.690Z",
             "populatesOn": null,
             "status": "clipped",
             "clipped": true
           },
           {
             "horizon": "w1",
-            "absReturn": -0.0456081042984614,
-            "excessReturn": -0.027432816519593055,
+            "absReturn": -0.033783831676485326,
+            "excessReturn": -0.010599739784067981,
             "benchmark": "SPX",
-            "computedAt": "2026-11-02T02:59:44.722Z",
+            "computedAt": "2026-11-03T04:44:23.690Z",
             "populatesOn": null,
             "status": "clipped",
             "clipped": true
           },
           {
             "horizon": "m1",
-            "absReturn": -0.0456081042984614,
-            "excessReturn": -0.027432816519593055,
+            "absReturn": -0.033783831676485326,
+            "excessReturn": -0.010599739784067981,
             "benchmark": "SPX",
-            "computedAt": "2026-11-02T02:59:44.722Z",
+            "computedAt": "2026-11-03T04:44:23.690Z",
             "populatesOn": null,
             "status": "clipped",
             "clipped": true
@@ -2891,7 +2914,58 @@
       "provenance": "estimator-median-gap",
       "provenanceAsOf": "2026-11-02T02:59:42.263Z",
       "cadence": "quarterly",
-      "metrics": [],
+      "metrics": [
+        {
+          "key": "revenue_usd_m",
+          "displayLabel": "Revenue (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": {
+            "value": 784.96935,
+            "unit": "AUD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/CSC.AX/analysis",
+              "label": "Yahoo · earningsTrend (4 analysts)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-12-31",
+            "fetchedAt": "2026-11-03T04:41:43.726Z",
+            "method": "yahoo",
+            "confidence": 0.75,
+            "low_usd_m": 746.58008,
+            "high_usd_m": 824.29732,
+            "numberOfAnalysts": 4
+          },
+          "actual": null,
+          "prior": null
+        },
+        {
+          "key": "eps_usd",
+          "displayLabel": "EPS",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": {
+            "value": 0.2525,
+            "unit": "AUD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/CSC.AX/analysis",
+              "label": "Yahoo · earningsTrend (2 analysts)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-12-31",
+            "fetchedAt": "2026-11-03T04:41:43.726Z",
+            "method": "yahoo",
+            "confidence": 0.75,
+            "low": 0.209,
+            "high": 0.296,
+            "numberOfAnalysts": 2
+          },
+          "actual": null,
+          "prior": null
+        }
+      ],
       "guidance": [],
       "reaction": {
         "benchmark": "SPX",

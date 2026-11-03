@@ -1442,6 +1442,12 @@
               "actualFamily": "yahoo-timeseries",
               "estimateFamily": "yahoo-generic",
               "clearedAt": "2026-11-02T03:04:43.257Z"
+            },
+            {
+              "value": -8.804780876494027,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-generic",
+              "clearedAt": "2026-11-03T04:51:19.597Z"
             }
           ]
         },
@@ -2175,6 +2181,12 @@
               "actualFamily": "yahoo-timeseries",
               "estimateFamily": "yahoo-generic",
               "clearedAt": "2026-11-02T03:04:43.257Z"
+            },
+            {
+              "value": -43.33333333333333,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-generic",
+              "clearedAt": "2026-11-03T04:51:19.597Z"
             }
           ]
         },
@@ -3481,6 +3493,12 @@
               "actualFamily": "yahoo-timeseries",
               "estimateFamily": "yahoo-trend",
               "clearedAt": "2026-11-02T03:04:43.257Z"
+            },
+            {
+              "value": 5.862068965517239,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-trend",
+              "clearedAt": "2026-11-03T04:51:19.597Z"
             }
           ]
         },
@@ -3733,7 +3751,7 @@
           "key": "eps_usd",
           "displayLabel": "EPS",
           "isHeadline": true,
-          "surprisePct": -8.062015503875976,
+          "surprisePct": null,
           "estimate": {
             "value": 6.45,
             "unit": "INR",
@@ -3752,20 +3770,36 @@
             "numberOfAnalysts": 1
           },
           "actual": {
-            "value": 5.93,
+            "value": 5.94,
             "unit": "INR",
             "source": {
-              "url": "https://finance.yahoo.com/quote/BRIGADE.BO/earnings-history",
-              "label": "Yahoo · earningsChart",
+              "url": "https://finance.yahoo.com/quote/BRIGADE.BO/financials",
+              "label": "Yahoo · fundamentals-timeseries",
               "provenance": "wire",
               "locator": null
             },
             "asOf": "2026-09-30",
-            "fetchedAt": "2026-11-02T02:02:07.461Z",
+            "fetchedAt": "2026-11-03T03:48:24.178Z",
             "method": "yahoo",
-            "confidence": 0.8
+            "confidence": 0.85
           },
-          "prior": null
+          "prior": null,
+          "superseded": [
+            {
+              "value": 5.93,
+              "unit": "INR",
+              "source": "Yahoo · earningsChart",
+              "from_provenance": "yahoo-earnings-chart"
+            }
+          ],
+          "_crossBasisSurprise": [
+            {
+              "value": -8.062015503875976,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-trend",
+              "clearedAt": "2026-11-03T04:51:19.597Z"
+            }
+          ]
         },
         {
           "key": "net_income_usd_m",
@@ -3917,30 +3951,30 @@
           },
           {
             "horizon": "d3",
-            "absReturn": -0.00677961503943032,
-            "excessReturn": 0.011395672739438024,
+            "absReturn": -0.012523586467161016,
+            "excessReturn": 0.010660505425256329,
             "benchmark": "SPX",
-            "computedAt": "2026-11-02T02:59:44.722Z",
+            "computedAt": "2026-11-03T04:44:23.690Z",
             "populatesOn": null,
             "status": "clipped",
             "clipped": true
           },
           {
             "horizon": "w1",
-            "absReturn": -0.00677961503943032,
-            "excessReturn": 0.011395672739438024,
+            "absReturn": -0.012523586467161016,
+            "excessReturn": 0.010660505425256329,
             "benchmark": "SPX",
-            "computedAt": "2026-11-02T02:59:44.722Z",
+            "computedAt": "2026-11-03T04:44:23.690Z",
             "populatesOn": null,
             "status": "clipped",
             "clipped": true
           },
           {
             "horizon": "m1",
-            "absReturn": -0.00677961503943032,
-            "excessReturn": 0.011395672739438024,
+            "absReturn": -0.012523586467161016,
+            "excessReturn": 0.010660505425256329,
             "benchmark": "SPX",
-            "computedAt": "2026-11-02T02:59:44.722Z",
+            "computedAt": "2026-11-03T04:44:23.690Z",
             "populatesOn": null,
             "status": "clipped",
             "clipped": true
@@ -3975,7 +4009,58 @@
       "provenance": "estimator-median-gap",
       "provenanceAsOf": "2026-11-02T02:59:42.262Z",
       "cadence": "quarterly",
-      "metrics": [],
+      "metrics": [
+        {
+          "key": "revenue_usd_m",
+          "displayLabel": "Revenue (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": {
+            "value": 16953,
+            "unit": "INR",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/BRIGADE.BO/analysis",
+              "label": "Yahoo · earningsTrend (2 analysts)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-12-31",
+            "fetchedAt": "2026-11-03T04:41:43.726Z",
+            "method": "yahoo",
+            "confidence": 0.75,
+            "low_usd_m": 15792,
+            "high_usd_m": 18114,
+            "numberOfAnalysts": 2
+          },
+          "actual": null,
+          "prior": null
+        },
+        {
+          "key": "eps_usd",
+          "displayLabel": "EPS",
+          "isHeadline": true,
+          "surprisePct": null,
+          "estimate": {
+            "value": 7.7,
+            "unit": "INR",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/BRIGADE.BO/analysis",
+              "label": "Yahoo · earningsTrend (1 analysts)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-12-31",
+            "fetchedAt": "2026-11-03T04:41:43.726Z",
+            "method": "yahoo",
+            "confidence": 0.75,
+            "low": 7.7,
+            "high": 7.7,
+            "numberOfAnalysts": 1
+          },
+          "actual": null,
+          "prior": null
+        }
+      ],
       "guidance": [],
       "reaction": {
         "benchmark": "SPX",

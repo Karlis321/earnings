@@ -1919,6 +1919,12 @@
               "actualFamily": "yahoo-timeseries",
               "estimateFamily": "yahoo-chart",
               "clearedAt": "2026-11-02T03:04:43.809Z"
+            },
+            {
+              "value": -3.7935783943909596,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-11-03T04:51:20.058Z"
             }
           ]
         },
@@ -2712,6 +2718,12 @@
               "actualFamily": "sec",
               "estimateFamily": "yahoo-chart",
               "clearedAt": "2026-11-02T03:04:43.809Z"
+            },
+            {
+              "value": 15.621257794111587,
+              "actualFamily": "sec",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-11-03T04:51:20.058Z"
             }
           ]
         },
@@ -3763,6 +3775,12 @@
               "actualFamily": "sec",
               "estimateFamily": "yahoo-chart",
               "clearedAt": "2026-11-02T03:04:43.809Z"
+            },
+            {
+              "value": 9.88912492045138,
+              "actualFamily": "sec",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-11-03T04:51:20.058Z"
             }
           ]
         },
@@ -4712,39 +4730,42 @@
         "points": [
           {
             "horizon": "d1",
-            "absReturn": null,
-            "excessReturn": null,
+            "absReturn": -0.03290590972915585,
+            "excessReturn": 0.0406630823957587,
             "benchmark": "CL=F",
-            "computedAt": null,
+            "computedAt": "2026-11-03T04:44:23.690Z",
             "populatesOn": null,
-            "status": "pending"
+            "status": "matured"
           },
           {
             "horizon": "d3",
-            "absReturn": null,
-            "excessReturn": null,
+            "absReturn": -0.03290590972915585,
+            "excessReturn": 0.03538068672490508,
             "benchmark": "CL=F",
-            "computedAt": null,
+            "computedAt": "2026-11-03T04:44:23.690Z",
             "populatesOn": null,
-            "status": "pending"
+            "status": "clipped",
+            "clipped": true
           },
           {
             "horizon": "w1",
-            "absReturn": null,
-            "excessReturn": null,
+            "absReturn": -0.03290590972915585,
+            "excessReturn": 0.03538068672490508,
             "benchmark": "CL=F",
-            "computedAt": null,
+            "computedAt": "2026-11-03T04:44:23.690Z",
             "populatesOn": null,
-            "status": "pending"
+            "status": "clipped",
+            "clipped": true
           },
           {
             "horizon": "m1",
-            "absReturn": null,
-            "excessReturn": null,
+            "absReturn": -0.03290590972915585,
+            "excessReturn": 0.03538068672490508,
             "benchmark": "CL=F",
-            "computedAt": null,
+            "computedAt": "2026-11-03T04:44:23.690Z",
             "populatesOn": null,
-            "status": "pending"
+            "status": "clipped",
+            "clipped": true
           }
         ]
       },
@@ -5157,6 +5178,15 @@
             "provenance": "regulatory",
             "time": "2026-10-30T10:16:00.000Z",
             "kind": "edgar"
+          },
+          {
+            "id": "pr-cvx_-004726010532indexhtm",
+            "headline": "144  - Report of proposed sale of securities",
+            "url": "https://www.sec.gov/Archives/edgar/data/93410/000195004726010532/0001950047-26-010532-index.htm",
+            "source": "SEC EDGAR filings",
+            "provenance": "regulatory",
+            "time": "2026-11-02T21:08:17.000Z",
+            "kind": "edgar"
           }
         ],
         "engineStatus": []
@@ -5188,7 +5218,58 @@
       "provenance": "estimator-median-gap",
       "provenanceAsOf": "2026-11-02T02:59:42.263Z",
       "cadence": "quarterly",
-      "metrics": [],
+      "metrics": [
+        {
+          "key": "revenue_usd_m",
+          "displayLabel": "Revenue (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": {
+            "value": 65889.59145,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/CVX/analysis",
+              "label": "Yahoo · earningsTrend (8 analysts)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-12-31",
+            "fetchedAt": "2026-11-03T04:41:43.726Z",
+            "method": "yahoo",
+            "confidence": 0.75,
+            "low_usd_m": 56052.08055,
+            "high_usd_m": 82302,
+            "numberOfAnalysts": 8
+          },
+          "actual": null,
+          "prior": null
+        },
+        {
+          "key": "eps_usd",
+          "displayLabel": "EPS",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": {
+            "value": 5.70495,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/CVX/analysis",
+              "label": "Yahoo · earningsTrend (17 analysts)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-12-31",
+            "fetchedAt": "2026-11-03T04:41:43.726Z",
+            "method": "yahoo",
+            "confidence": 0.75,
+            "low": 4.99,
+            "high": 7,
+            "numberOfAnalysts": 17
+          },
+          "actual": null,
+          "prior": null
+        }
+      ],
       "guidance": [],
       "reaction": {
         "benchmark": "CL=F",

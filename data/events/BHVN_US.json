@@ -354,42 +354,42 @@
       "guidance": [],
       "reaction": {
         "benchmark": "SPX",
-        "baselineDate": "2025-10-31",
-        "baselineClose": 17.200000762939453,
+        "baselineDate": "2025-11-03",
+        "baselineClose": 14.850000381469727,
         "points": [
           {
             "horizon": "d1",
-            "absReturn": -0.1366279230948194,
-            "excessReturn": -0.13834863582181178,
+            "absReturn": -0.06060609758149484,
+            "excessReturn": -0.048869267496911076,
             "benchmark": "SPX",
-            "computedAt": "2026-11-02T02:59:44.722Z",
+            "computedAt": "2026-11-03T04:44:23.690Z",
             "populatesOn": null,
             "status": "matured"
           },
           {
             "horizon": "d3",
-            "absReturn": -0.5151162917063384,
-            "excessReturn": -0.5086968661053025,
+            "absReturn": -0.4255892583265399,
+            "excessReturn": -0.40637574943827887,
             "benchmark": "SPX",
-            "computedAt": "2026-11-02T02:59:44.722Z",
+            "computedAt": "2026-11-03T04:44:23.690Z",
             "populatesOn": null,
             "status": "matured"
           },
           {
             "horizon": "w1",
-            "absReturn": -0.5197674498550304,
-            "excessReturn": -0.5034813197061875,
+            "absReturn": -0.4754208914651866,
+            "excessReturn": -0.4725691512430576,
             "benchmark": "SPX",
-            "computedAt": "2026-11-02T02:59:44.722Z",
+            "computedAt": "2026-11-03T04:44:23.690Z",
             "populatesOn": null,
             "status": "matured"
           },
           {
             "horizon": "m1",
-            "absReturn": -0.48662793418405514,
-            "excessReturn": -0.4850446357694237,
+            "absReturn": -0.38585860934123006,
+            "excessReturn": -0.38553023663535846,
             "benchmark": "SPX",
-            "computedAt": "2026-11-02T02:59:44.722Z",
+            "computedAt": "2026-11-03T04:44:23.690Z",
             "populatesOn": null,
             "status": "matured"
           }
@@ -2591,16 +2591,67 @@
       "ticker": "BHVN US",
       "kind": "earnings",
       "period": "FY2026 Q4",
-      "scheduledDate": "2026-10-29",
+      "scheduledDate": "2026-12-31",
       "eventDate": null,
       "timing": null,
       "expectation": "unset",
       "guidanceMove": null,
       "freshness": "stale",
-      "provenance": "yahoo-calendar",
-      "provenanceAsOf": "2026-11-02T02:59:20.473Z",
+      "provenance": "estimator-median-gap",
+      "provenanceAsOf": "2026-11-03T04:02:35.080Z",
       "cadence": "quarterly",
-      "metrics": [],
+      "metrics": [
+        {
+          "key": "revenue_usd_m",
+          "displayLabel": "Revenue (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": {
+            "value": 109.33333,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/BHVN/analysis",
+              "label": "Yahoo · earningsTrend (15 analysts)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-12-31",
+            "fetchedAt": "2026-11-03T04:41:43.726Z",
+            "method": "yahoo",
+            "confidence": 0.75,
+            "low_usd_m": 0,
+            "high_usd_m": 430,
+            "numberOfAnalysts": 15
+          },
+          "actual": null,
+          "prior": null
+        },
+        {
+          "key": "eps_usd",
+          "displayLabel": "EPS",
+          "isHeadline": true,
+          "surprisePct": null,
+          "estimate": {
+            "value": 0.60338,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/BHVN/analysis",
+              "label": "Yahoo · earningsTrend (4 analysts)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-12-31",
+            "fetchedAt": "2026-11-03T04:41:43.726Z",
+            "method": "yahoo",
+            "confidence": 0.75,
+            "low": -0.64324,
+            "high": 1.86614,
+            "numberOfAnalysts": 4
+          },
+          "actual": null,
+          "prior": null
+        }
+      ],
       "guidance": [],
       "reaction": {
         "benchmark": "SPX",
@@ -3009,7 +3060,7 @@
         ],
         "engineStatus": []
       },
-      "scheduledDateSource": "yahoo-calendarEvents"
+      "scheduledDateSource": "roll-stale-shells/median-gap"
     }
   ]
 }
