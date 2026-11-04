@@ -322,42 +322,42 @@
       "guidance": [],
       "reaction": {
         "benchmark": "SPX",
-        "baselineDate": "2025-11-03",
-        "baselineClose": 285.3500061035156,
+        "baselineDate": "2025-11-04",
+        "baselineClose": 289.4200134277344,
         "points": [
           {
             "horizon": "d1",
-            "absReturn": 0.014263210923998666,
-            "excessReturn": 0.026000041008582428,
+            "absReturn": -0.004353568195585801,
+            "excessReturn": -0.008007123893850615,
             "benchmark": "SPX",
-            "computedAt": "2026-11-03T04:44:23.690Z",
+            "computedAt": "2026-11-04T03:48:33.700Z",
             "populatesOn": null,
             "status": "matured"
           },
           {
             "horizon": "d3",
-            "absReturn": -0.013211913266552938,
-            "excessReturn": 0.0060015956217080585,
+            "absReturn": -0.015824811268579875,
+            "excessReturn": -0.00951163315824434,
             "benchmark": "SPX",
-            "computedAt": "2026-11-03T04:44:23.690Z",
+            "computedAt": "2026-11-04T03:48:33.700Z",
             "populatesOn": null,
             "status": "matured"
           },
           {
             "horizon": "w1",
-            "absReturn": -0.027054498179693614,
-            "excessReturn": -0.024202757957564585,
+            "absReturn": -0.023357091603870426,
+            "excessReturn": -0.03444171192842166,
             "benchmark": "SPX",
-            "computedAt": "2026-11-03T04:44:23.690Z",
+            "computedAt": "2026-11-04T03:48:33.700Z",
             "populatesOn": null,
             "status": "matured"
           },
           {
             "horizon": "m1",
-            "absReturn": 0.038058472469851126,
-            "excessReturn": 0.038386845175722745,
+            "absReturn": 0.0357956771159825,
+            "excessReturn": 0.023158937378682586,
             "benchmark": "SPX",
-            "computedAt": "2026-11-03T04:44:23.690Z",
+            "computedAt": "2026-11-04T03:48:33.700Z",
             "populatesOn": null,
             "status": "matured"
           }
@@ -1453,6 +1453,12 @@
               "actualFamily": "yahoo-timeseries",
               "estimateFamily": "yahoo-chart",
               "clearedAt": "2026-11-03T04:51:20.367Z"
+            },
+            {
+              "value": -14.465408805031444,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-11-04T03:53:45.287Z"
             }
           ]
         },
@@ -2048,6 +2054,12 @@
               "actualFamily": "yahoo-timeseries",
               "estimateFamily": "yahoo-chart",
               "clearedAt": "2026-11-03T04:51:20.367Z"
+            },
+            {
+              "value": 5.555555555555554,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-11-04T03:53:45.287Z"
             }
           ]
         },
@@ -3085,6 +3097,12 @@
               "actualFamily": "yahoo-timeseries",
               "estimateFamily": "yahoo-chart",
               "clearedAt": "2026-11-03T04:51:20.367Z"
+            },
+            {
+              "value": 15.522388059701491,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-11-04T03:53:45.287Z"
             }
           ]
         },
@@ -3983,7 +4001,7 @@
           "key": "eps_usd",
           "displayLabel": "EPS",
           "isHeadline": true,
-          "surprisePct": 4.463343108504389,
+          "surprisePct": null,
           "estimate": {
             "value": 3.41,
             "unit": "USD",
@@ -4002,20 +4020,36 @@
             "numberOfAnalysts": 1
           },
           "actual": {
-            "value": 3.5622,
+            "value": 3.91,
             "unit": "USD",
             "source": {
-              "url": "https://finance.yahoo.com/quote/ERIE/earnings-history",
-              "label": "Yahoo · earningsChart",
+              "url": "https://finance.yahoo.com/quote/ERIE/financials",
+              "label": "Yahoo · fundamentals-timeseries",
               "provenance": "wire",
               "locator": null
             },
             "asOf": "2026-09-30",
-            "fetchedAt": "2026-10-30T02:20:27.392Z",
+            "fetchedAt": "2026-11-04T02:51:45.276Z",
             "method": "yahoo",
-            "confidence": 0.8
+            "confidence": 0.85
           },
-          "prior": null
+          "prior": null,
+          "superseded": [
+            {
+              "value": 3.5622,
+              "unit": "USD",
+              "source": "Yahoo · earningsChart",
+              "from_provenance": "yahoo-earnings-chart"
+            }
+          ],
+          "_crossBasisSurprise": [
+            {
+              "value": 4.463343108504389,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-trend",
+              "clearedAt": "2026-11-04T03:53:45.287Z"
+            }
+          ]
         },
         {
           "key": "operating_income_usd_m",
@@ -4126,6 +4160,28 @@
             "confidence": 0.98
           },
           "prior": null
+        },
+        {
+          "key": "eps_diluted_usd",
+          "displayLabel": "EPS diluted",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 3.48,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/ERIE/financials",
+              "label": "Yahoo · fundamentals-timeseries",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-09-30",
+            "fetchedAt": "2026-11-04T02:51:45.276Z",
+            "method": "yahoo",
+            "confidence": 0.85
+          },
+          "prior": null
         }
       ],
       "guidance": [],
@@ -4145,30 +4201,29 @@
           },
           {
             "horizon": "d3",
-            "absReturn": 0.09226843179204289,
-            "excessReturn": 0.11545252368446024,
+            "absReturn": 0.07528219086501134,
+            "excessReturn": 0.09490169352762244,
             "benchmark": "SPX",
-            "computedAt": "2026-11-03T04:44:23.690Z",
+            "computedAt": "2026-11-04T03:48:33.700Z",
             "populatesOn": null,
-            "status": "clipped",
-            "clipped": true
+            "status": "matured"
           },
           {
             "horizon": "w1",
-            "absReturn": 0.09226843179204289,
-            "excessReturn": 0.11545252368446024,
+            "absReturn": 0.07528219086501134,
+            "excessReturn": 0.09490169352762244,
             "benchmark": "SPX",
-            "computedAt": "2026-11-03T04:44:23.690Z",
+            "computedAt": "2026-11-04T03:48:33.700Z",
             "populatesOn": null,
             "status": "clipped",
             "clipped": true
           },
           {
             "horizon": "m1",
-            "absReturn": 0.09226843179204289,
-            "excessReturn": 0.11545252368446024,
+            "absReturn": 0.07528219086501134,
+            "excessReturn": 0.09490169352762244,
             "benchmark": "SPX",
-            "computedAt": "2026-11-03T04:44:23.690Z",
+            "computedAt": "2026-11-04T03:48:33.700Z",
             "populatesOn": null,
             "status": "clipped",
             "clipped": true
@@ -4180,6 +4235,24 @@
         "windowEnd": "2026-12-03",
         "capturedAt": null,
         "items": [
+          {
+            "id": "gn-erie-tridonnavalgunseries",
+            "headline": "BAE Systems launches new Sea Tridon naval gun series",
+            "url": "https://breakingdefense.com/2026/11/bae-systems-launches-new-sea-tridon-naval-gun-series/",
+            "source": "Breaking Defense",
+            "provenance": "news",
+            "time": "2026-11-03T17:33:28.000Z",
+            "kind": "rss"
+          },
+          {
+            "id": "gn-erie-orativecombataircraft",
+            "headline": "Gambit Series offers a scalable path for collaborative combat aircraft",
+            "url": "https://breakingdefense.com/2026/11/gambit-series-offers-a-scalable-path-for-collaborative-combat-aircraft/",
+            "source": "Breaking Defense",
+            "provenance": "news",
+            "time": "2026-11-03T15:34:52.000Z",
+            "kind": "rss"
+          },
           {
             "id": "pr-erie-828026068826indexhtm",
             "headline": "4  - Statement of changes in beneficial ownership of securities",
@@ -4700,24 +4773,6 @@
             "source": "SEC EDGAR filings",
             "provenance": "regulatory",
             "time": "2026-08-03T15:32:40.000Z",
-            "kind": "edgar"
-          },
-          {
-            "id": "pr-erie-828026051607indexhtm",
-            "headline": "4  - Statement of changes in beneficial ownership of securities",
-            "url": "https://www.sec.gov/Archives/edgar/data/922621/000162828026051607/0001628280-26-051607-index.htm",
-            "source": "SEC EDGAR filings",
-            "provenance": "regulatory",
-            "time": "2026-08-03T15:26:42.000Z",
-            "kind": "edgar"
-          },
-          {
-            "id": "pr-erie-828026051604indexhtm",
-            "headline": "4  - Statement of changes in beneficial ownership of securities",
-            "url": "https://www.sec.gov/Archives/edgar/data/922621/000162828026051604/0001628280-26-051604-index.htm",
-            "source": "SEC EDGAR filings",
-            "provenance": "regulatory",
-            "time": "2026-08-03T15:21:56.000Z",
             "kind": "edgar"
           }
         ],

@@ -1243,6 +1243,12 @@
               "actualFamily": "yahoo-timeseries",
               "estimateFamily": "yahoo-chart",
               "clearedAt": "2026-11-02T03:04:47.393Z"
+            },
+            {
+              "value": -11.52073732718894,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-11-04T03:53:48.628Z"
             }
           ]
         },
@@ -2842,6 +2848,12 @@
               "actualFamily": "yahoo-timeseries",
               "estimateFamily": "yahoo-chart",
               "clearedAt": "2026-11-03T04:51:22.985Z"
+            },
+            {
+              "value": 3.2028469750889506,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-11-04T03:53:48.628Z"
             }
           ]
         },
@@ -4335,39 +4347,42 @@
         "points": [
           {
             "horizon": "d1",
-            "absReturn": null,
-            "excessReturn": null,
+            "absReturn": 0.0498325384328521,
+            "excessReturn": 0.04302851621160369,
             "benchmark": "NDX",
-            "computedAt": null,
+            "computedAt": "2026-11-04T03:48:33.700Z",
             "populatesOn": null,
-            "status": "pending"
+            "status": "matured"
           },
           {
             "horizon": "d3",
-            "absReturn": null,
-            "excessReturn": null,
+            "absReturn": 0.0498325384328521,
+            "excessReturn": 0.04302851621160369,
             "benchmark": "NDX",
-            "computedAt": null,
+            "computedAt": "2026-11-04T03:48:33.700Z",
             "populatesOn": null,
-            "status": "pending"
+            "status": "clipped",
+            "clipped": true
           },
           {
             "horizon": "w1",
-            "absReturn": null,
-            "excessReturn": null,
+            "absReturn": 0.0498325384328521,
+            "excessReturn": 0.04302851621160369,
             "benchmark": "NDX",
-            "computedAt": null,
+            "computedAt": "2026-11-04T03:48:33.700Z",
             "populatesOn": null,
-            "status": "pending"
+            "status": "clipped",
+            "clipped": true
           },
           {
             "horizon": "m1",
-            "absReturn": null,
-            "excessReturn": null,
+            "absReturn": 0.0498325384328521,
+            "excessReturn": 0.04302851621160369,
             "benchmark": "NDX",
-            "computedAt": null,
+            "computedAt": "2026-11-04T03:48:33.700Z",
             "populatesOn": null,
-            "status": "pending"
+            "status": "clipped",
+            "clipped": true
           }
         ]
       },
@@ -4735,6 +4750,15 @@
             "provenance": "regulatory",
             "time": "2026-05-29T11:43:09.000Z",
             "kind": "edgar"
+          },
+          {
+            "id": "pr-tsem-891326004972indexhtm",
+            "headline": "6-K  - Report of foreign issuer [Rules 13a-16 and 15d-16]",
+            "url": "https://www.sec.gov/Archives/edgar/data/928876/000117891326004972/0001178913-26-004972-index.htm",
+            "source": "SEC EDGAR filings",
+            "provenance": "regulatory",
+            "time": "2026-11-03T13:09:57.000Z",
+            "kind": "edgar"
           }
         ],
         "engineStatus": []
@@ -4760,7 +4784,58 @@
       "provenance": "estimator-median-gap",
       "provenanceAsOf": "2026-11-03T04:44:21.355Z",
       "cadence": "quarterly",
-      "metrics": [],
+      "metrics": [
+        {
+          "key": "revenue_usd_m",
+          "displayLabel": "Revenue (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": {
+            "value": 595.01396,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/TSEM/analysis",
+              "label": "Yahoo · earningsTrend (8 analysts)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-12-31",
+            "fetchedAt": "2026-11-04T03:45:37.612Z",
+            "method": "yahoo",
+            "confidence": 0.75,
+            "low_usd_m": 572,
+            "high_usd_m": 613.92465,
+            "numberOfAnalysts": 8
+          },
+          "actual": null,
+          "prior": null
+        },
+        {
+          "key": "eps_usd",
+          "displayLabel": "EPS",
+          "isHeadline": true,
+          "surprisePct": null,
+          "estimate": {
+            "value": 1.40361,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/TSEM/analysis",
+              "label": "Yahoo · earningsTrend (8 analysts)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-12-31",
+            "fetchedAt": "2026-11-04T03:45:37.612Z",
+            "method": "yahoo",
+            "confidence": 0.75,
+            "low": 0.99,
+            "high": 1.12,
+            "numberOfAnalysts": 8
+          },
+          "actual": null,
+          "prior": null
+        }
+      ],
       "guidance": [],
       "reaction": {
         "benchmark": "NDX",
