@@ -1160,42 +1160,42 @@
       "guidance": [],
       "reaction": {
         "benchmark": "SPX",
-        "baselineDate": "2025-11-04",
-        "baselineClose": 29.3700008392334,
+        "baselineDate": "2025-11-05",
+        "baselineClose": 30.06999969482422,
         "points": [
           {
             "horizon": "d1",
-            "absReturn": 0.02383380441228109,
-            "excessReturn": 0.020180248714016278,
+            "absReturn": -0.09677418945611069,
+            "excessReturn": -0.08559600041369167,
             "benchmark": "SPX",
-            "computedAt": "2026-11-04T03:48:33.700Z",
+            "computedAt": "2026-11-05T03:49:44.085Z",
             "populatesOn": null,
             "status": "matured"
           },
           {
             "horizon": "d3",
-            "absReturn": -0.03949614305802723,
-            "excessReturn": -0.0331829649476917,
+            "absReturn": 0.015630236962856495,
+            "excessReturn": 0.010312609770516235,
             "benchmark": "SPX",
-            "computedAt": "2026-11-04T03:48:33.700Z",
+            "computedAt": "2026-11-05T03:49:44.085Z",
             "populatesOn": null,
             "status": "matured"
           },
           {
             "horizon": "w1",
-            "absReturn": 0.053796386740154245,
-            "excessReturn": 0.04271176641560301,
+            "absReturn": 0.07116725677974595,
+            "excessReturn": 0.06312906498709023,
             "benchmark": "SPX",
-            "computedAt": "2026-11-04T03:48:33.700Z",
+            "computedAt": "2026-11-05T03:49:44.085Z",
             "populatesOn": null,
             "status": "matured"
           },
           {
             "horizon": "m1",
-            "absReturn": 0.00783110438080367,
-            "excessReturn": -0.004805635356496243,
+            "absReturn": -0.07615560463650006,
+            "excessReturn": -0.08706006322424346,
             "benchmark": "SPX",
-            "computedAt": "2026-11-04T03:48:33.700Z",
+            "computedAt": "2026-11-05T03:49:44.085Z",
             "populatesOn": null,
             "status": "matured"
           }
@@ -1260,7 +1260,7 @@
           "key": "eps_usd",
           "displayLabel": "EPS",
           "isHeadline": true,
-          "surprisePct": 7.681263460157926,
+          "surprisePct": null,
           "estimate": {
             "value": 0.16716,
             "unit": "USD",
@@ -1279,18 +1279,56 @@
             "numberOfAnalysts": 8
           },
           "actual": {
-            "value": 0.18,
+            "value": 0.19,
             "unit": "USD",
             "source": {
-              "url": "https://finance.yahoo.com/quote/SOFI/earnings-history",
-              "label": "Yahoo · earningsChart",
+              "url": "https://finance.yahoo.com/quote/SOFI/financials",
+              "label": "Yahoo · fundamentals-timeseries",
               "provenance": "wire",
               "locator": null
             },
             "asOf": "2026-09-30",
-            "fetchedAt": "2026-10-28T01:59:21.799Z",
+            "fetchedAt": "2026-11-05T03:00:10.751Z",
             "method": "yahoo",
-            "confidence": 0.8
+            "confidence": 0.85
+          },
+          "prior": null,
+          "superseded": [
+            {
+              "value": 0.18,
+              "unit": "USD",
+              "source": "Yahoo · earningsChart",
+              "from_provenance": "yahoo-earnings-chart"
+            }
+          ],
+          "_crossBasisSurprise": [
+            {
+              "value": 7.681263460157926,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-trend",
+              "clearedAt": "2026-11-05T04:03:38.596Z"
+            }
+          ]
+        },
+        {
+          "key": "eps_diluted_usd",
+          "displayLabel": "EPS diluted",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 0.18,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/SOFI/financials",
+              "label": "Yahoo · fundamentals-timeseries",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-09-30",
+            "fetchedAt": "2026-11-05T03:00:10.751Z",
+            "method": "yahoo",
+            "confidence": 0.85
           },
           "prior": null
         }
@@ -1330,10 +1368,10 @@
           },
           {
             "horizon": "m1",
-            "absReturn": 0.022561027307301668,
-            "excessReturn": 0.04246108348499897,
+            "absReturn": 0.05975607103850367,
+            "excessReturn": 0.06415614096819777,
             "benchmark": "SPX",
-            "computedAt": "2026-11-04T03:48:33.700Z",
+            "computedAt": "2026-11-05T03:49:44.085Z",
             "populatesOn": null,
             "status": "clipped",
             "clipped": true
@@ -2141,7 +2179,58 @@
       "provenance": "estimator-median-gap",
       "provenanceAsOf": "2026-10-28T02:57:35.709Z",
       "cadence": "quarterly",
-      "metrics": [],
+      "metrics": [
+        {
+          "key": "revenue_usd_m",
+          "displayLabel": "Revenue (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": {
+            "value": 1389.75094,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/SOFI/analysis",
+              "label": "Yahoo · earningsTrend (16 analysts)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-12-31",
+            "fetchedAt": "2026-11-05T03:48:33.433Z",
+            "method": "yahoo",
+            "confidence": 0.75,
+            "low_usd_m": 1316,
+            "high_usd_m": 1465,
+            "numberOfAnalysts": 16
+          },
+          "actual": null,
+          "prior": null
+        },
+        {
+          "key": "eps_usd",
+          "displayLabel": "EPS",
+          "isHeadline": true,
+          "surprisePct": null,
+          "estimate": {
+            "value": 0.19673,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/SOFI/analysis",
+              "label": "Yahoo · earningsTrend (8 analysts)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-12-31",
+            "fetchedAt": "2026-11-05T03:48:33.433Z",
+            "method": "yahoo",
+            "confidence": 0.75,
+            "low": 0.19,
+            "high": 0.21,
+            "numberOfAnalysts": 8
+          },
+          "actual": null,
+          "prior": null
+        }
+      ],
       "guidance": [],
       "reaction": {
         "benchmark": "SPX",
