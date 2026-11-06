@@ -5338,7 +5338,7 @@
           "key": "eps_usd",
           "displayLabel": "EPS",
           "isHeadline": true,
-          "surprisePct": 4.287775836785239,
+          "surprisePct": null,
           "estimate": {
             "value": 3.42322,
             "unit": "USD",
@@ -5357,18 +5357,56 @@
             "numberOfAnalysts": 27
           },
           "actual": {
-            "value": 3.57,
+            "value": 3.513078,
             "unit": "USD",
             "source": {
-              "url": "https://finance.yahoo.com/quote/MCD/earnings-history",
-              "label": "Yahoo · earningsChart",
+              "url": "https://finance.yahoo.com/quote/MCD/financials",
+              "label": "Yahoo · fundamentals-timeseries",
               "provenance": "wire",
               "locator": null
             },
             "asOf": "2026-09-30",
-            "fetchedAt": "2026-11-05T03:00:51.840Z",
+            "fetchedAt": "2026-11-06T03:01:59.603Z",
             "method": "yahoo",
-            "confidence": 0.8
+            "confidence": 0.85
+          },
+          "prior": null,
+          "superseded": [
+            {
+              "value": 3.57,
+              "unit": "USD",
+              "source": "Yahoo · earningsChart",
+              "from_provenance": "yahoo-earnings-chart"
+            }
+          ],
+          "_crossBasisSurprise": [
+            {
+              "value": 4.287775836785239,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-trend",
+              "clearedAt": "2026-11-06T03:56:32.429Z"
+            }
+          ]
+        },
+        {
+          "key": "eps_diluted_usd",
+          "displayLabel": "EPS diluted",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 3.51,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/MCD/financials",
+              "label": "Yahoo · fundamentals-timeseries",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-09-30",
+            "fetchedAt": "2026-11-06T03:01:59.603Z",
+            "method": "yahoo",
+            "confidence": 0.85
           },
           "prior": null
         }
@@ -5381,39 +5419,42 @@
         "points": [
           {
             "horizon": "d1",
-            "absReturn": null,
-            "excessReturn": null,
+            "absReturn": -0.007779575570211612,
+            "excessReturn": 0.03577702257281811,
             "benchmark": "SPX",
-            "computedAt": null,
+            "computedAt": "2026-11-06T03:51:24.319Z",
             "populatesOn": null,
-            "status": "pending"
+            "status": "matured"
           },
           {
             "horizon": "d3",
-            "absReturn": null,
-            "excessReturn": null,
+            "absReturn": -0.007779575570211612,
+            "excessReturn": 0.03577702257281811,
             "benchmark": "SPX",
-            "computedAt": null,
+            "computedAt": "2026-11-06T03:51:24.319Z",
             "populatesOn": null,
-            "status": "pending"
+            "status": "clipped",
+            "clipped": true
           },
           {
             "horizon": "w1",
-            "absReturn": null,
-            "excessReturn": null,
+            "absReturn": -0.007779575570211612,
+            "excessReturn": 0.03577702257281811,
             "benchmark": "SPX",
-            "computedAt": null,
+            "computedAt": "2026-11-06T03:51:24.319Z",
             "populatesOn": null,
-            "status": "pending"
+            "status": "clipped",
+            "clipped": true
           },
           {
             "horizon": "m1",
-            "absReturn": null,
-            "excessReturn": null,
+            "absReturn": -0.007779575570211612,
+            "excessReturn": 0.03577702257281811,
             "benchmark": "SPX",
-            "computedAt": null,
+            "computedAt": "2026-11-06T03:51:24.319Z",
             "populatesOn": null,
-            "status": "pending"
+            "status": "clipped",
+            "clipped": true
           }
         ]
       },
@@ -5874,7 +5915,58 @@
       "provenance": "estimator-median-gap",
       "provenanceAsOf": "2026-11-05T03:49:41.197Z",
       "cadence": "quarterly",
-      "metrics": [],
+      "metrics": [
+        {
+          "key": "revenue_usd_m",
+          "displayLabel": "Revenue (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": {
+            "value": 7228.44163,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/MCD/analysis",
+              "label": "Yahoo · earningsTrend (25 analysts)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-12-31",
+            "fetchedAt": "2026-11-06T03:49:16.447Z",
+            "method": "yahoo",
+            "confidence": 0.75,
+            "low_usd_m": 6975,
+            "high_usd_m": 7388.01,
+            "numberOfAnalysts": 25
+          },
+          "actual": null,
+          "prior": null
+        },
+        {
+          "key": "eps_usd",
+          "displayLabel": "EPS",
+          "isHeadline": true,
+          "surprisePct": null,
+          "estimate": {
+            "value": 3.28157,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/MCD/analysis",
+              "label": "Yahoo · earningsTrend (26 analysts)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-12-31",
+            "fetchedAt": "2026-11-06T03:49:16.447Z",
+            "method": "yahoo",
+            "confidence": 0.75,
+            "low": 3.13203,
+            "high": 3.5,
+            "numberOfAnalysts": 26
+          },
+          "actual": null,
+          "prior": null
+        }
+      ],
       "guidance": [],
       "reaction": {
         "benchmark": "SPX",
