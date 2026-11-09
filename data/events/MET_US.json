@@ -378,42 +378,42 @@
       "guidance": [],
       "reaction": {
         "benchmark": "SPX",
-        "baselineDate": "2025-11-06",
-        "baselineClose": 75.97000122070312,
+        "baselineDate": "2025-11-07",
+        "baselineClose": 76.1500015258789,
         "points": [
           {
             "horizon": "d1",
-            "absReturn": 0.0023693603038501478,
-            "excessReturn": 0.0011075185030790344,
+            "absReturn": 0.013525919352041497,
+            "excessReturn": -0.0018750992696683847,
             "benchmark": "SPX",
-            "computedAt": "2026-11-06T03:51:24.319Z",
+            "computedAt": "2026-11-09T03:07:35.332Z",
             "populatesOn": null,
             "status": "matured"
           },
           {
             "horizon": "d3",
-            "absReturn": 0.023956820660524587,
-            "excessReturn": 0.00516455446400001,
+            "absReturn": 0.053315790902696114,
+            "excessReturn": 0.035166920267188845,
             "benchmark": "SPX",
-            "computedAt": "2026-11-06T03:51:24.319Z",
+            "computedAt": "2026-11-09T03:07:35.332Z",
             "populatesOn": null,
             "status": "matured"
           },
           {
             "horizon": "w1",
-            "absReturn": 0.04607081668765579,
-            "excessReturn": 0.04351581772847365,
+            "absReturn": 0.03269859243434588,
+            "excessReturn": 0.031909438536491634,
             "benchmark": "SPX",
-            "computedAt": "2026-11-06T03:51:24.319Z",
+            "computedAt": "2026-11-09T03:07:35.332Z",
             "populatesOn": null,
             "status": "matured"
           },
           {
             "horizon": "m1",
-            "absReturn": 0.027774128951528188,
-            "excessReturn": 0.008996757530679206,
+            "absReturn": 0.021930376040475565,
+            "excessReturn": 0.005328609874140935,
             "benchmark": "SPX",
-            "computedAt": "2026-11-06T03:51:24.319Z",
+            "computedAt": "2026-11-09T03:07:35.332Z",
             "populatesOn": null,
             "status": "matured"
           }
@@ -4728,7 +4728,7 @@
       "guidanceMove": null,
       "freshness": "fresh",
       "provenance": "yahoo-earnings-chart",
-      "provenanceAsOf": "2026-11-06T03:03:26.549Z",
+      "provenanceAsOf": "2026-11-09T02:37:18.835Z",
       "cadence": "quarterly",
       "metrics": [
         {
@@ -4753,14 +4753,27 @@
             "high_usd_m": 20584,
             "numberOfAnalysts": 2
           },
-          "actual": null,
+          "actual": {
+            "value": 20522,
+            "unit": "USD",
+            "source": {
+              "url": "https://www.sec.gov/Archives/edgar/data/1099219/000109921926000062/",
+              "label": "SEC EDGAR · 10-Q · Revenues",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2026-09-30",
+            "fetchedAt": "2026-11-09T02:37:18.835Z",
+            "method": "filing_manual",
+            "confidence": 0.98
+          },
           "prior": null
         },
         {
           "key": "eps_usd",
           "displayLabel": "EPS",
           "isHeadline": true,
-          "surprisePct": 7.697254494810759,
+          "surprisePct": null,
           "estimate": {
             "value": 2.58131,
             "unit": "USD",
@@ -4779,20 +4792,46 @@
             "numberOfAnalysts": 7
           },
           "actual": {
-            "value": 2.78,
-            "unit": "USD",
+            "value": 3.7,
+            "unit": "USD/shares",
             "source": {
-              "url": "https://finance.yahoo.com/quote/MET/earnings-history",
-              "label": "Yahoo · earningsChart",
-              "provenance": "wire",
+              "url": "https://www.sec.gov/Archives/edgar/data/1099219/000109921926000062/",
+              "label": "SEC EDGAR · 10-Q · EarningsPerShareBasic",
+              "provenance": "regulatory",
               "locator": null
             },
             "asOf": "2026-09-30",
-            "fetchedAt": "2026-11-06T03:03:26.549Z",
-            "method": "yahoo",
-            "confidence": 0.8
+            "fetchedAt": "2026-11-09T02:37:18.835Z",
+            "method": "filing_manual",
+            "confidence": 0.98
           },
-          "prior": null
+          "prior": null,
+          "superseded": [
+            {
+              "value": 2.78,
+              "unit": "USD",
+              "source": "Yahoo · earningsChart",
+              "from_provenance": "yahoo-earnings-chart"
+            },
+            {
+              "value": 3.658575,
+              "unit": "USD",
+              "source": "Yahoo · fundamentals-timeseries",
+              "asOf": "2026-09-30",
+              "fetchedAt": "2026-11-09T02:17:49.267Z",
+              "replaced_at": "2026-11-09T02:37:18.835Z",
+              "replaced_by": "rederive-sec-xbrl",
+              "pct_delta": -1.1195945945946018
+            }
+          ],
+          "_crossBasisSurprise": [
+            {
+              "value": 7.697254494810759,
+              "actualFamily": "sec",
+              "estimateFamily": "yahoo-trend",
+              "clearedAt": "2026-11-09T03:29:31.921Z"
+            }
+          ]
         },
         {
           "key": "eps_diluted_usd",
@@ -4801,18 +4840,206 @@
           "surprisePct": null,
           "estimate": null,
           "actual": {
-            "value": 1.09,
-            "unit": "USD",
+            "value": 3.67,
+            "unit": "USD/shares",
             "source": {
-              "url": "https://finance.yahoo.com/quote/MET/financials",
-              "label": "Yahoo · fundamentals-timeseries",
-              "provenance": "wire",
+              "url": "https://www.sec.gov/Archives/edgar/data/1099219/000109921926000062/",
+              "label": "SEC EDGAR · 10-Q · EarningsPerShareDiluted",
+              "provenance": "regulatory",
               "locator": null
             },
             "asOf": "2026-09-30",
-            "fetchedAt": "2026-11-06T03:01:59.603Z",
-            "method": "yahoo",
-            "confidence": 0.85
+            "fetchedAt": "2026-11-09T02:37:18.835Z",
+            "method": "filing_manual",
+            "confidence": 0.98
+          },
+          "prior": null,
+          "superseded": [
+            {
+              "value": 1.09,
+              "unit": "USD",
+              "source": "Yahoo · fundamentals-timeseries",
+              "asOf": "2026-09-30",
+              "fetchedAt": "2026-11-06T03:01:59.603Z",
+              "replaced_at": "2026-11-09T02:37:18.835Z",
+              "replaced_by": "rederive-sec-xbrl",
+              "pct_delta": -70.29972752043598
+            }
+          ]
+        },
+        {
+          "key": "operating_income_usd_m",
+          "displayLabel": "operating income (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 1826,
+            "unit": "USD",
+            "source": {
+              "url": "https://www.sec.gov/Archives/edgar/data/1099219/000109921926000062/",
+              "label": "SEC EDGAR · 10-Q · OperatingIncomeLoss",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2026-09-30",
+            "fetchedAt": "2026-11-09T02:37:18.835Z",
+            "method": "filing_manual",
+            "confidence": 0.98
+          },
+          "prior": null
+        },
+        {
+          "key": "pretax_income_usd_m",
+          "displayLabel": "pretax income (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 3000,
+            "unit": "USD",
+            "source": {
+              "url": "https://www.sec.gov/Archives/edgar/data/1099219/000109921926000062/",
+              "label": "SEC EDGAR · 10-Q · IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2026-09-30",
+            "fetchedAt": "2026-11-09T02:37:18.835Z",
+            "method": "filing_manual",
+            "confidence": 0.98
+          },
+          "prior": null
+        },
+        {
+          "key": "net_income_usd_m",
+          "displayLabel": "net income (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 2397,
+            "unit": "USD",
+            "source": {
+              "url": "https://www.sec.gov/Archives/edgar/data/1099219/000109921926000062/",
+              "label": "SEC EDGAR · 10-Q · NetIncomeLoss",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2026-09-30",
+            "fetchedAt": "2026-11-09T02:37:18.835Z",
+            "method": "filing_manual",
+            "confidence": 0.98
+          },
+          "prior": null
+        },
+        {
+          "key": "total_cash_usd_m",
+          "displayLabel": "total cash (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 19786,
+            "unit": "USD",
+            "source": {
+              "url": "https://www.sec.gov/Archives/edgar/data/1099219/000109921926000062/",
+              "label": "SEC EDGAR · 10-Q · CashAndCashEquivalentsAtCarryingValue",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2026-09-30",
+            "fetchedAt": "2026-11-09T02:37:18.835Z",
+            "method": "filing_manual",
+            "confidence": 0.98
+          },
+          "prior": null
+        },
+        {
+          "key": "short_term_investments_usd_m",
+          "displayLabel": "short term investments (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 7879,
+            "unit": "USD",
+            "source": {
+              "url": "https://www.sec.gov/Archives/edgar/data/1099219/000109921926000062/",
+              "label": "SEC EDGAR · 10-Q · ShortTermInvestments",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2026-09-30",
+            "fetchedAt": "2026-11-09T02:37:18.835Z",
+            "method": "filing_manual",
+            "confidence": 0.98
+          },
+          "prior": null
+        },
+        {
+          "key": "short_term_debt_usd_m",
+          "displayLabel": "short term debt (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 289,
+            "unit": "USD",
+            "source": {
+              "url": "https://www.sec.gov/Archives/edgar/data/1099219/000109921926000062/",
+              "label": "SEC EDGAR · 10-Q · ShortTermBorrowings",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2026-09-30",
+            "fetchedAt": "2026-11-09T02:37:18.835Z",
+            "method": "filing_manual",
+            "confidence": 0.98
+          },
+          "prior": null
+        },
+        {
+          "key": "shareholders_equity_usd_m",
+          "displayLabel": "shareholders equity (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 22226,
+            "unit": "USD",
+            "source": {
+              "url": "https://www.sec.gov/Archives/edgar/data/1099219/000109921926000062/",
+              "label": "SEC EDGAR · 10-Q · StockholdersEquity",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2026-09-30",
+            "fetchedAt": "2026-11-09T02:37:18.835Z",
+            "method": "filing_manual",
+            "confidence": 0.98
+          },
+          "prior": null
+        },
+        {
+          "key": "weighted_diluted_shares_m",
+          "displayLabel": "weighted diluted shares m",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 639.9,
+            "unit": "shares",
+            "source": {
+              "url": "https://www.sec.gov/Archives/edgar/data/1099219/000109921926000062/",
+              "label": "SEC EDGAR · 10-Q · WeightedAverageNumberOfDilutedSharesOutstanding",
+              "provenance": "regulatory",
+              "locator": null
+            },
+            "asOf": "2026-09-30",
+            "fetchedAt": "2026-11-09T02:37:18.835Z",
+            "method": "filing_manual",
+            "confidence": 0.98
           },
           "prior": null
         }
@@ -4834,30 +5061,30 @@
           },
           {
             "horizon": "d3",
-            "absReturn": -0.03051802321192692,
-            "excessReturn": 0.013038574931102803,
+            "absReturn": -0.04490234982980125,
+            "excessReturn": -0.004354078598488027,
             "benchmark": "SPX",
-            "computedAt": "2026-11-06T03:51:24.319Z",
+            "computedAt": "2026-11-09T03:07:35.332Z",
             "populatesOn": null,
             "status": "clipped",
             "clipped": true
           },
           {
             "horizon": "w1",
-            "absReturn": -0.03051802321192692,
-            "excessReturn": 0.013038574931102803,
+            "absReturn": -0.04490234982980125,
+            "excessReturn": -0.004354078598488027,
             "benchmark": "SPX",
-            "computedAt": "2026-11-06T03:51:24.319Z",
+            "computedAt": "2026-11-09T03:07:35.332Z",
             "populatesOn": null,
             "status": "clipped",
             "clipped": true
           },
           {
             "horizon": "m1",
-            "absReturn": -0.03051802321192692,
-            "excessReturn": 0.013038574931102803,
+            "absReturn": -0.04490234982980125,
+            "excessReturn": -0.004354078598488027,
             "benchmark": "SPX",
-            "computedAt": "2026-11-06T03:51:24.319Z",
+            "computedAt": "2026-11-09T03:07:35.332Z",
             "populatesOn": null,
             "status": "clipped",
             "clipped": true
@@ -5246,6 +5473,15 @@
             "provenance": "regulatory",
             "time": "2026-11-06T02:37:59.000Z",
             "kind": "edgar"
+          },
+          {
+            "id": "pr-met_-921926000062indexhtm",
+            "headline": "10-Q  - Quarterly report [Sections 13 or 15(d)]",
+            "url": "https://www.sec.gov/Archives/edgar/data/1099219/000109921926000062/0001099219-26-000062-index.htm",
+            "source": "SEC EDGAR filings",
+            "provenance": "regulatory",
+            "time": "2026-11-06T02:14:37.000Z",
+            "kind": "edgar"
           }
         ],
         "engineStatus": []
@@ -5277,7 +5513,58 @@
       "provenance": "estimator-median-gap",
       "provenanceAsOf": "2026-11-06T03:51:20.776Z",
       "cadence": "quarterly",
-      "metrics": [],
+      "metrics": [
+        {
+          "key": "revenue_usd_m",
+          "displayLabel": "Revenue (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": {
+            "value": 20467.74097,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/MET/analysis",
+              "label": "Yahoo · earningsTrend (6 analysts)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-12-31",
+            "fetchedAt": "2026-11-09T03:04:32.098Z",
+            "method": "yahoo",
+            "confidence": 0.75,
+            "low_usd_m": 19928,
+            "high_usd_m": 21078.44581,
+            "numberOfAnalysts": 6
+          },
+          "actual": null,
+          "prior": null
+        },
+        {
+          "key": "eps_usd",
+          "displayLabel": "EPS",
+          "isHeadline": true,
+          "surprisePct": null,
+          "estimate": {
+            "value": 2.62227,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/MET/analysis",
+              "label": "Yahoo · earningsTrend (13 analysts)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-12-31",
+            "fetchedAt": "2026-11-09T03:04:32.098Z",
+            "method": "yahoo",
+            "confidence": 0.75,
+            "low": 2.412,
+            "high": 2.86,
+            "numberOfAnalysts": 13
+          },
+          "actual": null,
+          "prior": null
+        }
+      ],
       "guidance": [],
       "reaction": {
         "benchmark": "SPX",

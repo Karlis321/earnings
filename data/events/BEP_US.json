@@ -3929,7 +3929,7 @@
           "key": "eps_usd",
           "displayLabel": "EPS",
           "isHeadline": true,
-          "surprisePct": -2.112952635299661,
+          "surprisePct": null,
           "estimate": {
             "value": -0.50924,
             "unit": "USD",
@@ -3951,17 +3951,33 @@
             "value": -0.52,
             "unit": "USD",
             "source": {
-              "url": "https://finance.yahoo.com/quote/BEP/earnings-history",
-              "label": "Yahoo · earningsChart",
+              "url": "https://finance.yahoo.com/quote/BEP/financials",
+              "label": "Yahoo · fundamentals-timeseries",
               "provenance": "wire",
               "locator": null
             },
             "asOf": "2026-09-30",
-            "fetchedAt": "2026-11-06T03:03:26.549Z",
+            "fetchedAt": "2026-11-09T02:17:49.267Z",
             "method": "yahoo",
-            "confidence": 0.8
+            "confidence": 0.85
           },
-          "prior": null
+          "prior": null,
+          "superseded": [
+            {
+              "value": -0.52,
+              "unit": "USD",
+              "source": "Yahoo · earningsChart",
+              "from_provenance": "yahoo-earnings-chart"
+            }
+          ],
+          "_crossBasisSurprise": [
+            {
+              "value": -2.112952635299661,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-trend",
+              "clearedAt": "2026-11-09T03:29:30.660Z"
+            }
+          ]
         },
         {
           "key": "net_income_usd_m",
@@ -4113,30 +4129,30 @@
           },
           {
             "horizon": "d3",
-            "absReturn": -0.008735052057474444,
-            "excessReturn": 0.03482154608555528,
+            "absReturn": 0.007440942846060366,
+            "excessReturn": 0.04798921407737359,
             "benchmark": "SPX",
-            "computedAt": "2026-11-06T03:51:24.319Z",
+            "computedAt": "2026-11-09T03:07:35.332Z",
             "populatesOn": null,
             "status": "clipped",
             "clipped": true
           },
           {
             "horizon": "w1",
-            "absReturn": -0.008735052057474444,
-            "excessReturn": 0.03482154608555528,
+            "absReturn": 0.007440942846060366,
+            "excessReturn": 0.04798921407737359,
             "benchmark": "SPX",
-            "computedAt": "2026-11-06T03:51:24.319Z",
+            "computedAt": "2026-11-09T03:07:35.332Z",
             "populatesOn": null,
             "status": "clipped",
             "clipped": true
           },
           {
             "horizon": "m1",
-            "absReturn": -0.008735052057474444,
-            "excessReturn": 0.03482154608555528,
+            "absReturn": 0.007440942846060366,
+            "excessReturn": 0.04798921407737359,
             "benchmark": "SPX",
-            "computedAt": "2026-11-06T03:51:24.319Z",
+            "computedAt": "2026-11-09T03:07:35.332Z",
             "populatesOn": null,
             "status": "clipped",
             "clipped": true
@@ -4550,7 +4566,58 @@
       "provenance": "estimator-median-gap",
       "provenanceAsOf": "2026-11-06T03:51:20.772Z",
       "cadence": "quarterly",
-      "metrics": [],
+      "metrics": [
+        {
+          "key": "revenue_usd_m",
+          "displayLabel": "Revenue (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": {
+            "value": 1660,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/BEP/analysis",
+              "label": "Yahoo · earningsTrend (1 analysts)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-12-31",
+            "fetchedAt": "2026-11-09T03:04:32.098Z",
+            "method": "yahoo",
+            "confidence": 0.75,
+            "low_usd_m": 1660,
+            "high_usd_m": 1660,
+            "numberOfAnalysts": 1
+          },
+          "actual": null,
+          "prior": null
+        },
+        {
+          "key": "eps_usd",
+          "displayLabel": "EPS",
+          "isHeadline": true,
+          "surprisePct": null,
+          "estimate": {
+            "value": -0.54757,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/BEP/analysis",
+              "label": "Yahoo · earningsTrend (4 analysts)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-12-31",
+            "fetchedAt": "2026-11-09T03:04:32.098Z",
+            "method": "yahoo",
+            "confidence": 0.75,
+            "low": -0.6375,
+            "high": -0.43,
+            "numberOfAnalysts": 4
+          },
+          "actual": null,
+          "prior": null
+        }
+      ],
       "guidance": [],
       "reaction": {
         "benchmark": "SPX",
