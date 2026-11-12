@@ -1637,6 +1637,12 @@
               "actualFamily": "yahoo-timeseries",
               "estimateFamily": "yahoo-generic",
               "clearedAt": "2026-11-10T05:20:58.600Z"
+            },
+            {
+              "value": 342.5585088381537,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-generic",
+              "clearedAt": "2026-11-12T04:26:18.708Z"
             }
           ]
         },
@@ -2379,6 +2385,12 @@
               "actualFamily": "yahoo-timeseries",
               "estimateFamily": "yahoo-generic",
               "clearedAt": "2026-11-10T05:20:58.600Z"
+            },
+            {
+              "value": 338.6246442861116,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-generic",
+              "clearedAt": "2026-11-12T04:26:18.708Z"
             }
           ]
         },
@@ -3791,7 +3803,7 @@
           "key": "eps_usd",
           "displayLabel": "EPS",
           "isHeadline": true,
-          "surprisePct": -18.475825753949252,
+          "surprisePct": null,
           "estimate": {
             "value": 0.52225,
             "unit": "USD",
@@ -3810,20 +3822,36 @@
             "numberOfAnalysts": 2
           },
           "actual": {
-            "value": 0.42576,
-            "unit": "USD",
+            "value": 2.05,
+            "unit": "BRL",
             "source": {
-              "url": "https://finance.yahoo.com/quote/TIMB/earnings-history",
-              "label": "Yahoo · earningsChart",
+              "url": "https://finance.yahoo.com/quote/TIMB/financials",
+              "label": "Yahoo · fundamentals-timeseries",
               "provenance": "wire",
               "locator": null
             },
             "asOf": "2026-09-30",
-            "fetchedAt": "2026-11-11T02:29:34.784Z",
+            "fetchedAt": "2026-11-12T03:31:57.095Z",
             "method": "yahoo",
-            "confidence": 0.8
+            "confidence": 0.85
           },
-          "prior": null
+          "prior": null,
+          "superseded": [
+            {
+              "value": 0.42576,
+              "unit": "USD",
+              "source": "Yahoo · earningsChart",
+              "from_provenance": "yahoo-earnings-chart"
+            }
+          ],
+          "_crossBasisSurprise": [
+            {
+              "value": -18.475825753949252,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-trend",
+              "clearedAt": "2026-11-12T04:26:18.708Z"
+            }
+          ]
         },
         {
           "key": "operating_income_usd_m",
@@ -3975,30 +4003,30 @@
           },
           {
             "horizon": "d3",
-            "absReturn": 0.012472859846805982,
-            "excessReturn": 0.016315243475038745,
+            "absReturn": 0.0591106356301196,
+            "excessReturn": 0.04991321923407392,
             "benchmark": "SPX",
-            "computedAt": "2026-11-11T03:20:08.571Z",
+            "computedAt": "2026-11-12T04:21:52.466Z",
             "populatesOn": null,
             "status": "clipped",
             "clipped": true
           },
           {
             "horizon": "w1",
-            "absReturn": 0.012472859846805982,
-            "excessReturn": 0.016315243475038745,
+            "absReturn": 0.0591106356301196,
+            "excessReturn": 0.04991321923407392,
             "benchmark": "SPX",
-            "computedAt": "2026-11-11T03:20:08.571Z",
+            "computedAt": "2026-11-12T04:21:52.466Z",
             "populatesOn": null,
             "status": "clipped",
             "clipped": true
           },
           {
             "horizon": "m1",
-            "absReturn": 0.012472859846805982,
-            "excessReturn": 0.016315243475038745,
+            "absReturn": 0.0591106356301196,
+            "excessReturn": 0.04991321923407392,
             "benchmark": "SPX",
-            "computedAt": "2026-11-11T03:20:08.571Z",
+            "computedAt": "2026-11-12T04:21:52.466Z",
             "populatesOn": null,
             "status": "clipped",
             "clipped": true
@@ -4448,16 +4476,67 @@
       "ticker": "TIMB US",
       "kind": "earnings",
       "period": "FY2026 Q4",
-      "scheduledDate": "2027-02-08",
+      "scheduledDate": "2027-02-09",
       "eventDate": null,
       "timing": null,
       "expectation": "unset",
       "guidanceMove": null,
       "freshness": "stale",
-      "provenance": "estimator-median-gap",
-      "provenanceAsOf": "2026-11-11T03:20:05.667Z",
+      "provenance": "yahoo-calendar",
+      "provenanceAsOf": "2026-11-12T04:21:35.199Z",
       "cadence": "quarterly",
-      "metrics": [],
+      "metrics": [
+        {
+          "key": "revenue_usd_m",
+          "displayLabel": "Revenue (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": {
+            "value": 7367.42741,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/TIMB/analysis",
+              "label": "Yahoo · earningsTrend (1 analysts)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-12-31",
+            "fetchedAt": "2026-11-12T04:18:26.828Z",
+            "method": "yahoo",
+            "confidence": 0.75,
+            "low_usd_m": 7367.42741,
+            "high_usd_m": 7367.42741,
+            "numberOfAnalysts": 1
+          },
+          "actual": null,
+          "prior": null
+        },
+        {
+          "key": "eps_usd",
+          "displayLabel": "EPS",
+          "isHeadline": true,
+          "surprisePct": null,
+          "estimate": {
+            "value": 0.601,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/TIMB/analysis",
+              "label": "Yahoo · earningsTrend (1 analysts)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-12-31",
+            "fetchedAt": "2026-11-12T04:18:26.828Z",
+            "method": "yahoo",
+            "confidence": 0.75,
+            "low": 0.601,
+            "high": 0.601,
+            "numberOfAnalysts": 1
+          },
+          "actual": null,
+          "prior": null
+        }
+      ],
       "guidance": [],
       "reaction": {
         "benchmark": "SPX",
@@ -4504,7 +4583,8 @@
         "capturedAt": null,
         "items": [],
         "engineStatus": []
-      }
+      },
+      "scheduledDateSource": "yahoo-calendarEvents"
     }
   ]
 }

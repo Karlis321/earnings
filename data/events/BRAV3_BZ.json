@@ -2269,6 +2269,12 @@
               "actualFamily": "yahoo-timeseries",
               "estimateFamily": "yahoo-trend",
               "clearedAt": "2026-11-10T05:20:55.716Z"
+            },
+            {
+              "value": 24.14485327134895,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-trend",
+              "clearedAt": "2026-11-12T04:26:13.855Z"
             }
           ]
         },
@@ -2525,7 +2531,7 @@
           "key": "eps_usd",
           "displayLabel": "EPS",
           "isHeadline": false,
-          "surprisePct": -148.1639344262295,
+          "surprisePct": null,
           "estimate": {
             "value": 0.61,
             "unit": "BRL",
@@ -2544,18 +2550,56 @@
             "numberOfAnalysts": 1
           },
           "actual": {
-            "value": -0.2938,
+            "value": -0.335814,
             "unit": "BRL",
             "source": {
-              "url": "https://finance.yahoo.com/quote/BRAV3.SA/earnings-history",
-              "label": "Yahoo · earningsChart",
+              "url": "https://finance.yahoo.com/quote/BRAV3.SA/financials",
+              "label": "Yahoo · fundamentals-timeseries",
               "provenance": "wire",
               "locator": null
             },
             "asOf": "2026-09-30",
-            "fetchedAt": "2026-11-11T02:29:34.784Z",
+            "fetchedAt": "2026-11-12T03:31:57.095Z",
             "method": "yahoo",
-            "confidence": 0.8
+            "confidence": 0.85
+          },
+          "prior": null,
+          "superseded": [
+            {
+              "value": -0.2938,
+              "unit": "BRL",
+              "source": "Yahoo · earningsChart",
+              "from_provenance": "yahoo-earnings-chart"
+            }
+          ],
+          "_crossBasisSurprise": [
+            {
+              "value": -148.1639344262295,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-trend",
+              "clearedAt": "2026-11-12T04:26:13.855Z"
+            }
+          ]
+        },
+        {
+          "key": "eps_diluted_usd",
+          "displayLabel": "EPS diluted",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": -0.335814,
+            "unit": "BRL",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/BRAV3.SA/financials",
+              "label": "Yahoo · fundamentals-timeseries",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-09-30",
+            "fetchedAt": "2026-11-12T03:31:57.095Z",
+            "method": "yahoo",
+            "confidence": 0.85
           },
           "prior": null
         }
@@ -2577,30 +2621,30 @@
           },
           {
             "horizon": "d3",
-            "absReturn": -0.06354513855420803,
-            "excessReturn": -0.05963038502670009,
+            "absReturn": -0.05953176057658317,
+            "excessReturn": -0.04387257077525226,
             "benchmark": "CL=F",
-            "computedAt": "2026-11-11T03:20:08.571Z",
+            "computedAt": "2026-11-12T04:21:52.466Z",
             "populatesOn": null,
             "status": "clipped",
             "clipped": true
           },
           {
             "horizon": "w1",
-            "absReturn": -0.06354513855420803,
-            "excessReturn": -0.05963038502670009,
+            "absReturn": -0.05953176057658317,
+            "excessReturn": -0.04387257077525226,
             "benchmark": "CL=F",
-            "computedAt": "2026-11-11T03:20:08.571Z",
+            "computedAt": "2026-11-12T04:21:52.466Z",
             "populatesOn": null,
             "status": "clipped",
             "clipped": true
           },
           {
             "horizon": "m1",
-            "absReturn": -0.06354513855420803,
-            "excessReturn": -0.05963038502670009,
+            "absReturn": -0.05953176057658317,
+            "excessReturn": -0.04387257077525226,
             "benchmark": "CL=F",
-            "computedAt": "2026-11-11T03:20:08.571Z",
+            "computedAt": "2026-11-12T04:21:52.466Z",
             "populatesOn": null,
             "status": "clipped",
             "clipped": true
@@ -2654,7 +2698,58 @@
       "provenance": "estimator-median-gap",
       "provenanceAsOf": "2026-11-11T03:20:05.664Z",
       "cadence": "quarterly",
-      "metrics": [],
+      "metrics": [
+        {
+          "key": "revenue_usd_m",
+          "displayLabel": "Revenue (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": {
+            "value": 3986.71294,
+            "unit": "BRL",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/BRAV3.SA/analysis",
+              "label": "Yahoo · earningsTrend (5 analysts)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-12-31",
+            "fetchedAt": "2026-11-12T04:18:26.828Z",
+            "method": "yahoo",
+            "confidence": 0.75,
+            "low_usd_m": 3028,
+            "high_usd_m": 4961.38893,
+            "numberOfAnalysts": 5
+          },
+          "actual": null,
+          "prior": null
+        },
+        {
+          "key": "eps_usd",
+          "displayLabel": "EPS",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": {
+            "value": 0.78,
+            "unit": "BRL",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/BRAV3.SA/analysis",
+              "label": "Yahoo · earningsTrend (1 analysts)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-12-31",
+            "fetchedAt": "2026-11-12T04:18:26.828Z",
+            "method": "yahoo",
+            "confidence": 0.75,
+            "low": 0.78,
+            "high": 0.78,
+            "numberOfAnalysts": 1
+          },
+          "actual": null,
+          "prior": null
+        }
+      ],
       "guidance": [],
       "reaction": {
         "benchmark": "CL=F",
