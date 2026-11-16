@@ -173,42 +173,42 @@
       "guidance": [],
       "reaction": {
         "benchmark": "NDX",
-        "baselineDate": "2025-11-13",
-        "baselineClose": 1325,
+        "baselineDate": "2025-11-17",
+        "baselineClose": 1280,
         "points": [
           {
             "horizon": "d1",
-            "absReturn": -0.01257858564268868,
-            "excessReturn": -0.013169912186537805,
+            "absReturn": -0.010416698455810548,
+            "excessReturn": 0.0015519011781820954,
             "benchmark": "NDX",
-            "computedAt": "2026-11-13T03:56:25.584Z",
+            "computedAt": "2026-11-16T03:18:42.641Z",
             "populatesOn": "2025-10-18",
             "status": "matured"
           },
           {
             "horizon": "d3",
-            "absReturn": -0.04402518794221698,
-            "excessReturn": -0.024405603069548722,
+            "absReturn": -0.00390625,
+            "excessReturn": 0.026155906041172954,
             "benchmark": "NDX",
-            "computedAt": "2026-11-13T03:56:25.584Z",
+            "computedAt": "2026-11-16T03:18:42.641Z",
             "populatesOn": "2025-10-20",
             "status": "matured"
           },
           {
             "horizon": "w1",
-            "absReturn": -0.03773584905660377,
-            "excessReturn": -0.00016281823572968784,
+            "absReturn": -0.010416698455810548,
+            "excessReturn": -0.013397743867767287,
             "benchmark": "NDX",
-            "computedAt": "2026-11-13T03:56:25.584Z",
+            "computedAt": "2026-11-16T03:18:42.641Z",
             "populatesOn": "2025-10-22",
             "status": "matured"
           },
           {
             "horizon": "m1",
-            "absReturn": -0.04905660377358491,
-            "excessReturn": -0.052009719948034286,
+            "absReturn": -0.0026041984558105467,
+            "excessReturn": 0.003537375684541942,
             "benchmark": "NDX",
-            "computedAt": "2026-11-13T03:56:25.584Z",
+            "computedAt": "2026-11-16T03:18:42.641Z",
             "populatesOn": "2025-11-07",
             "status": "matured"
           }
@@ -748,56 +748,86 @@
       "kind": "earnings",
       "period": "FY2026 Q3",
       "scheduledDate": "2026-11-15",
-      "eventDate": null,
+      "eventDate": "2026-11-13",
       "timing": null,
       "expectation": "unset",
       "guidanceMove": null,
-      "freshness": "stale",
-      "provenance": "estimator-median-gap",
-      "provenanceAsOf": "2026-11-12T03:39:15.630Z",
+      "freshness": "fresh",
+      "provenance": "yahoo-earnings-chart",
+      "provenanceAsOf": "2026-11-16T02:32:47.529Z",
       "cadence": "semiannual",
-      "metrics": [],
+      "metrics": [
+        {
+          "key": "eps_usd",
+          "displayLabel": "EPS",
+          "isHeadline": true,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 15.11,
+            "unit": "JPY",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/4811.T/earnings-history",
+              "label": "Yahoo · earningsChart",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-09-30",
+            "fetchedAt": "2026-11-16T02:32:47.529Z",
+            "method": "yahoo",
+            "confidence": 0.8
+          },
+          "prior": null
+        }
+      ],
       "guidance": [],
       "reaction": {
         "benchmark": "NDX",
-        "baselineDate": null,
-        "baselineClose": null,
+        "baselineDate": "2026-11-13",
+        "baselineClose": 885,
         "points": [
           {
             "horizon": "d1",
-            "absReturn": null,
+            "absReturn": -0.006779661016949152,
             "excessReturn": null,
             "benchmark": "NDX",
-            "computedAt": null,
-            "populatesOn": "2026-10-17",
-            "status": "pending"
+            "computedAt": "2026-11-16T03:18:42.641Z",
+            "populatesOn": null,
+            "status": "matured",
+            "gapFlagged": true
           },
           {
             "horizon": "d3",
-            "absReturn": null,
+            "absReturn": -0.006779661016949152,
             "excessReturn": null,
             "benchmark": "NDX",
-            "computedAt": null,
-            "populatesOn": "2026-10-19",
-            "status": "pending"
+            "computedAt": "2026-11-16T03:18:42.641Z",
+            "populatesOn": null,
+            "status": "clipped",
+            "gapFlagged": true,
+            "clipped": true
           },
           {
             "horizon": "w1",
-            "absReturn": null,
+            "absReturn": -0.006779661016949152,
             "excessReturn": null,
             "benchmark": "NDX",
-            "computedAt": null,
-            "populatesOn": "2026-10-21",
-            "status": "pending"
+            "computedAt": "2026-11-16T03:18:42.641Z",
+            "populatesOn": null,
+            "status": "clipped",
+            "gapFlagged": true,
+            "clipped": true
           },
           {
             "horizon": "m1",
-            "absReturn": null,
+            "absReturn": -0.006779661016949152,
             "excessReturn": null,
             "benchmark": "NDX",
-            "computedAt": null,
-            "populatesOn": "2026-11-06",
-            "status": "pending"
+            "computedAt": "2026-11-16T03:18:42.641Z",
+            "populatesOn": null,
+            "status": "clipped",
+            "gapFlagged": true,
+            "clipped": true
           }
         ]
       },
@@ -808,7 +838,12 @@
         "items": [],
         "engineStatus": []
       },
-      "scheduledDateSource": "roll-stale-shells/median-gap"
+      "scheduledDateSource": "roll-stale-shells/median-gap",
+      "eventDateSource": "yahoo-earnings-chart-reportedDate",
+      "sourceLink": {
+        "url": "https://finance.yahoo.com/quote/4811.T/earnings-history",
+        "kind": "fallback"
+      }
     },
     {
       "id": "evt-b5b3ab",
@@ -960,42 +995,42 @@
       "guidance": [],
       "reaction": {
         "benchmark": "NDX",
-        "baselineDate": "2025-11-13",
-        "baselineClose": 1325,
+        "baselineDate": "2025-11-17",
+        "baselineClose": 1280,
         "points": [
           {
             "horizon": "d1",
-            "absReturn": -0.01257858564268868,
-            "excessReturn": -0.013169912186537805,
+            "absReturn": -0.010416698455810548,
+            "excessReturn": 0.0015519011781820954,
             "benchmark": "NDX",
-            "computedAt": "2026-11-13T03:56:25.584Z",
+            "computedAt": "2026-11-16T03:18:42.641Z",
             "populatesOn": null,
             "status": "matured"
           },
           {
             "horizon": "d3",
-            "absReturn": -0.04402518794221698,
-            "excessReturn": -0.024405603069548722,
+            "absReturn": -0.00390625,
+            "excessReturn": 0.026155906041172954,
             "benchmark": "NDX",
-            "computedAt": "2026-11-13T03:56:25.584Z",
+            "computedAt": "2026-11-16T03:18:42.641Z",
             "populatesOn": null,
             "status": "matured"
           },
           {
             "horizon": "w1",
-            "absReturn": -0.03773584905660377,
-            "excessReturn": -0.00016281823572968784,
+            "absReturn": -0.010416698455810548,
+            "excessReturn": -0.013397743867767287,
             "benchmark": "NDX",
-            "computedAt": "2026-11-13T03:56:25.584Z",
+            "computedAt": "2026-11-16T03:18:42.641Z",
             "populatesOn": null,
             "status": "matured"
           },
           {
             "horizon": "m1",
-            "absReturn": -0.04905660377358491,
-            "excessReturn": -0.052009719948034286,
+            "absReturn": -0.0026041984558105467,
+            "excessReturn": 0.003537375684541942,
             "benchmark": "NDX",
-            "computedAt": "2026-11-13T03:56:25.584Z",
+            "computedAt": "2026-11-16T03:18:42.641Z",
             "populatesOn": null,
             "status": "matured"
           }
@@ -1402,6 +1437,69 @@
       "sources": {
         "windowStart": null,
         "windowEnd": null,
+        "capturedAt": null,
+        "items": [],
+        "engineStatus": []
+      }
+    },
+    {
+      "id": "evt-pncaha",
+      "ticker": "4811 JP",
+      "kind": "earnings",
+      "period": "FY2026 Q4",
+      "scheduledDate": "2027-02-12",
+      "eventDate": null,
+      "timing": null,
+      "expectation": "unset",
+      "guidanceMove": null,
+      "freshness": "stale",
+      "provenance": "estimator-median-gap",
+      "provenanceAsOf": "2026-11-16T03:18:39.951Z",
+      "cadence": "quarterly",
+      "metrics": [],
+      "guidance": [],
+      "reaction": {
+        "benchmark": "NDX",
+        "baselineDate": null,
+        "baselineClose": null,
+        "points": [
+          {
+            "horizon": "d1",
+            "absReturn": null,
+            "excessReturn": null,
+            "benchmark": "NDX",
+            "computedAt": null,
+            "populatesOn": "2027-02-15"
+          },
+          {
+            "horizon": "d3",
+            "absReturn": null,
+            "excessReturn": null,
+            "benchmark": "NDX",
+            "computedAt": null,
+            "populatesOn": "2027-02-17"
+          },
+          {
+            "horizon": "w1",
+            "absReturn": null,
+            "excessReturn": null,
+            "benchmark": "NDX",
+            "computedAt": null,
+            "populatesOn": "2027-02-19"
+          },
+          {
+            "horizon": "m1",
+            "absReturn": null,
+            "excessReturn": null,
+            "benchmark": "NDX",
+            "computedAt": null,
+            "populatesOn": "2027-03-07"
+          }
+        ]
+      },
+      "sources": {
+        "windowStart": "2027-02-10",
+        "windowEnd": "2027-03-19",
         "capturedAt": null,
         "items": [],
         "engineStatus": []

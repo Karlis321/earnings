@@ -888,6 +888,12 @@
               "actualFamily": "yahoo-timeseries",
               "estimateFamily": "yahoo-generic",
               "clearedAt": "2026-11-13T04:36:45.898Z"
+            },
+            {
+              "value": 819.3892628468232,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-generic",
+              "clearedAt": "2026-11-16T03:54:44.130Z"
             }
           ]
         },
@@ -2524,6 +2530,12 @@
               "actualFamily": "yahoo-timeseries",
               "estimateFamily": "yahoo-trend",
               "clearedAt": "2026-11-13T04:36:45.898Z"
+            },
+            {
+              "value": 37.95342043333604,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-trend",
+              "clearedAt": "2026-11-16T03:54:44.130Z"
             }
           ]
         },
@@ -3863,13 +3875,13 @@
       "kind": "earnings",
       "period": "FY2026 Q3",
       "scheduledDate": "2026-11-15",
-      "eventDate": null,
+      "eventDate": "2026-11-12",
       "timing": null,
       "expectation": "unset",
       "guidanceMove": null,
-      "freshness": "stale",
-      "provenance": "estimator-median-gap",
-      "provenanceAsOf": "2026-11-12T03:39:18.467Z",
+      "freshness": "fresh",
+      "provenance": "yahoo-earnings-chart",
+      "provenanceAsOf": "2026-11-16T02:32:47.529Z",
       "cadence": "quarterly",
       "metrics": [
         {
@@ -3901,7 +3913,7 @@
           "key": "eps_usd",
           "displayLabel": "EPS",
           "isHeadline": false,
-          "surprisePct": null,
+          "surprisePct": -10.349373764007899,
           "estimate": {
             "value": 0.37925,
             "unit": "USD",
@@ -3919,51 +3931,67 @@
             "high": 0.47,
             "numberOfAnalysts": 8
           },
-          "actual": null,
+          "actual": {
+            "value": 0.34,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/HBM/earnings-history",
+              "label": "Yahoo · earningsChart",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-09-30",
+            "fetchedAt": "2026-11-16T02:32:47.529Z",
+            "method": "yahoo",
+            "confidence": 0.8
+          },
           "prior": null
         }
       ],
       "guidance": [],
       "reaction": {
         "benchmark": "HG=F",
-        "baselineDate": null,
-        "baselineClose": null,
+        "baselineDate": "2026-11-12",
+        "baselineClose": 21.6200008392334,
         "points": [
           {
             "horizon": "d1",
-            "absReturn": null,
-            "excessReturn": null,
+            "absReturn": -0.01110090976644508,
+            "excessReturn": 0.0055589671605902335,
             "benchmark": "HG=F",
-            "computedAt": null,
-            "populatesOn": "2026-10-31",
-            "status": "pending"
+            "computedAt": "2026-11-16T03:18:42.641Z",
+            "populatesOn": null,
+            "status": "matured"
           },
           {
             "horizon": "d3",
-            "absReturn": null,
-            "excessReturn": null,
+            "absReturn": -0.01110090976644508,
+            "excessReturn": 0.016557805474959858,
             "benchmark": "HG=F",
-            "computedAt": null,
-            "populatesOn": "2026-11-02",
-            "status": "pending"
+            "computedAt": "2026-11-16T03:18:42.641Z",
+            "populatesOn": null,
+            "status": "clipped",
+            "clipped": true
           },
           {
             "horizon": "w1",
-            "absReturn": null,
-            "excessReturn": null,
+            "absReturn": -0.01110090976644508,
+            "excessReturn": 0.016557805474959858,
             "benchmark": "HG=F",
-            "computedAt": null,
-            "populatesOn": "2026-11-04",
-            "status": "pending"
+            "computedAt": "2026-11-16T03:18:42.641Z",
+            "populatesOn": null,
+            "status": "clipped",
+            "clipped": true
           },
           {
             "horizon": "m1",
-            "absReturn": null,
-            "excessReturn": null,
+            "absReturn": -0.01110090976644508,
+            "excessReturn": 0.016557805474959858,
             "benchmark": "HG=F",
-            "computedAt": null,
-            "populatesOn": "2026-11-20",
-            "status": "pending"
+            "computedAt": "2026-11-16T03:18:42.641Z",
+            "populatesOn": null,
+            "status": "clipped",
+            "clipped": true
           }
         ]
       },
@@ -4439,11 +4467,88 @@
             "provenance": "ir-page",
             "time": "2026-11-12T11:00:00.000Z",
             "kind": "rss"
+          },
+          {
+            "id": "pr-hbm_-299326005991indexhtm",
+            "headline": "6-K  - Report of foreign issuer [Rules 13a-16 and 15d-16]",
+            "url": "https://www.sec.gov/Archives/edgar/data/1322422/000106299326005991/0001062993-26-005991-index.htm",
+            "source": "SEC EDGAR filings",
+            "provenance": "regulatory",
+            "time": "2026-11-13T17:30:47.000Z",
+            "kind": "edgar"
           }
         ],
         "engineStatus": []
       },
-      "scheduledDateSource": "roll-stale-shells/median-gap"
+      "scheduledDateSource": "roll-stale-shells/median-gap",
+      "eventDateSource": "yahoo-earnings-chart-reportedDate",
+      "sourceLink": {
+        "url": "https://finance.yahoo.com/quote/HBM/earnings-history",
+        "kind": "fallback"
+      }
+    },
+    {
+      "id": "evt-etqom4",
+      "ticker": "HBM US",
+      "kind": "earnings",
+      "period": "FY2026 Q4",
+      "scheduledDate": "2027-02-11",
+      "eventDate": null,
+      "timing": null,
+      "expectation": "unset",
+      "guidanceMove": null,
+      "freshness": "stale",
+      "provenance": "estimator-median-gap",
+      "provenanceAsOf": "2026-11-16T03:18:39.953Z",
+      "cadence": "quarterly",
+      "metrics": [],
+      "guidance": [],
+      "reaction": {
+        "benchmark": "HG=F",
+        "baselineDate": null,
+        "baselineClose": null,
+        "points": [
+          {
+            "horizon": "d1",
+            "absReturn": null,
+            "excessReturn": null,
+            "benchmark": "HG=F",
+            "computedAt": null,
+            "populatesOn": "2027-02-14"
+          },
+          {
+            "horizon": "d3",
+            "absReturn": null,
+            "excessReturn": null,
+            "benchmark": "HG=F",
+            "computedAt": null,
+            "populatesOn": "2027-02-16"
+          },
+          {
+            "horizon": "w1",
+            "absReturn": null,
+            "excessReturn": null,
+            "benchmark": "HG=F",
+            "computedAt": null,
+            "populatesOn": "2027-02-18"
+          },
+          {
+            "horizon": "m1",
+            "absReturn": null,
+            "excessReturn": null,
+            "benchmark": "HG=F",
+            "computedAt": null,
+            "populatesOn": "2027-03-06"
+          }
+        ]
+      },
+      "sources": {
+        "windowStart": "2027-02-09",
+        "windowEnd": "2027-03-18",
+        "capturedAt": null,
+        "items": [],
+        "engineStatus": []
+      }
     }
   ]
 }
