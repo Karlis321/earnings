@@ -1000,6 +1000,12 @@
               "actualFamily": "yahoo-timeseries",
               "estimateFamily": "yahoo-generic",
               "clearedAt": "2026-11-16T03:54:42.693Z"
+            },
+            {
+              "value": 469.12306965017325,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-generic",
+              "clearedAt": "2026-11-17T05:47:59.343Z"
             }
           ]
         },
@@ -1692,6 +1698,12 @@
               "actualFamily": "yahoo-timeseries",
               "estimateFamily": "yahoo-generic",
               "clearedAt": "2026-11-16T03:54:42.693Z"
+            },
+            {
+              "value": 304.46408508725943,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-generic",
+              "clearedAt": "2026-11-17T05:47:59.343Z"
             }
           ]
         },
@@ -3001,6 +3013,12 @@
               "actualFamily": "yahoo-timeseries",
               "estimateFamily": "yahoo-trend",
               "clearedAt": "2026-11-16T03:54:42.693Z"
+            },
+            {
+              "value": 466.8594167408726,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-trend",
+              "clearedAt": "2026-11-17T05:47:59.343Z"
             }
           ]
         },
@@ -3253,7 +3271,7 @@
           "key": "eps_usd",
           "displayLabel": "EPS",
           "isHeadline": true,
-          "surprisePct": -12.756889304063513,
+          "surprisePct": null,
           "estimate": {
             "value": 0.17128,
             "unit": "USD",
@@ -3272,20 +3290,36 @@
             "numberOfAnalysts": 1
           },
           "actual": {
-            "value": 0.14943,
-            "unit": "USD",
+            "value": 0.977841,
+            "unit": "BRL",
             "source": {
-              "url": "https://finance.yahoo.com/quote/BOLSY/earnings-history",
-              "label": "Yahoo · earningsChart",
+              "url": "https://finance.yahoo.com/quote/BOLSY/financials",
+              "label": "Yahoo · fundamentals-timeseries",
               "provenance": "wire",
               "locator": null
             },
             "asOf": "2026-09-30",
-            "fetchedAt": "2026-11-16T02:32:47.529Z",
+            "fetchedAt": "2026-11-17T04:55:55.768Z",
             "method": "yahoo",
-            "confidence": 0.8
+            "confidence": 0.85
           },
-          "prior": null
+          "prior": null,
+          "superseded": [
+            {
+              "value": 0.14943,
+              "unit": "USD",
+              "source": "Yahoo · earningsChart",
+              "from_provenance": "yahoo-earnings-chart"
+            }
+          ],
+          "_crossBasisSurprise": [
+            {
+              "value": -12.756889304063513,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-trend",
+              "clearedAt": "2026-11-17T05:47:59.343Z"
+            }
+          ]
         },
         {
           "key": "operating_income_usd_m",
@@ -3437,30 +3471,30 @@
           },
           {
             "horizon": "d3",
-            "absReturn": 0.0025445267922115386,
-            "excessReturn": -0.004074510820732357,
+            "absReturn": -0.027989855380631007,
+            "excessReturn": -0.01614679778216261,
             "benchmark": "IBOV",
-            "computedAt": "2026-11-16T03:18:42.641Z",
+            "computedAt": "2026-11-17T05:42:25.446Z",
             "populatesOn": null,
             "status": "clipped",
             "clipped": true
           },
           {
             "horizon": "w1",
-            "absReturn": 0.0025445267922115386,
-            "excessReturn": -0.004074510820732357,
+            "absReturn": -0.027989855380631007,
+            "excessReturn": -0.01614679778216261,
             "benchmark": "IBOV",
-            "computedAt": "2026-11-16T03:18:42.641Z",
+            "computedAt": "2026-11-17T05:42:25.446Z",
             "populatesOn": null,
             "status": "clipped",
             "clipped": true
           },
           {
             "horizon": "m1",
-            "absReturn": 0.0025445267922115386,
-            "excessReturn": -0.004074510820732357,
+            "absReturn": -0.027989855380631007,
+            "excessReturn": -0.01614679778216261,
             "benchmark": "IBOV",
-            "computedAt": "2026-11-16T03:18:42.641Z",
+            "computedAt": "2026-11-17T05:42:25.446Z",
             "populatesOn": null,
             "status": "clipped",
             "clipped": true
@@ -3495,7 +3529,58 @@
       "provenance": "estimator-median-gap",
       "provenanceAsOf": "2026-11-16T03:18:39.952Z",
       "cadence": "quarterly",
-      "metrics": [],
+      "metrics": [
+        {
+          "key": "revenue_usd_m",
+          "displayLabel": "Revenue (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": {
+            "value": 2977.42834,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/BOLSY/analysis",
+              "label": "Yahoo · earningsTrend (5 analysts)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-12-31",
+            "fetchedAt": "2026-11-17T05:41:09.178Z",
+            "method": "yahoo",
+            "confidence": 0.75,
+            "low_usd_m": 2690.70433,
+            "high_usd_m": 3230,
+            "numberOfAnalysts": 5
+          },
+          "actual": null,
+          "prior": null
+        },
+        {
+          "key": "eps_usd",
+          "displayLabel": "EPS",
+          "isHeadline": true,
+          "surprisePct": null,
+          "estimate": {
+            "value": 0.2202,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/BOLSY/analysis",
+              "label": "Yahoo · earningsTrend (1 analysts)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-12-31",
+            "fetchedAt": "2026-11-17T05:41:09.178Z",
+            "method": "yahoo",
+            "confidence": 0.75,
+            "low": 0.2202,
+            "high": 0.2202,
+            "numberOfAnalysts": 1
+          },
+          "actual": null,
+          "prior": null
+        }
+      ],
       "guidance": [],
       "reaction": {
         "benchmark": "IBOV",
