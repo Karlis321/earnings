@@ -2514,7 +2514,7 @@
               "locator": null
             },
             "asOf": "2024-12-31",
-            "fetchedAt": "2026-11-17T05:00:29.244Z",
+            "fetchedAt": "2026-11-18T04:03:54.456Z",
             "method": "filing_manual",
             "confidence": 0.98,
             "_originalUnit": "USD"
@@ -3100,6 +3100,16 @@
               "replaced_at": "2026-11-17T05:00:29.244Z",
               "replaced_by": "rederive-sec-xbrl",
               "pct_delta": 0
+            },
+            {
+              "value": 16651.69,
+              "unit": "KRW",
+              "source": "SEC EDGAR · 20-F · CashAndCashEquivalents",
+              "asOf": "2024-12-31",
+              "fetchedAt": "2026-11-17T05:00:29.244Z",
+              "replaced_at": "2026-11-18T04:03:54.456Z",
+              "replaced_by": "rederive-sec-xbrl",
+              "pct_delta": 0
             }
           ]
         },
@@ -3119,7 +3129,7 @@
               "locator": null
             },
             "asOf": "2024-12-31",
-            "fetchedAt": "2026-11-17T05:00:29.244Z",
+            "fetchedAt": "2026-11-18T04:03:54.456Z",
             "method": "filing_manual",
             "confidence": 0.98,
             "_originalUnit": "USD"
@@ -3705,6 +3715,16 @@
               "replaced_at": "2026-11-17T05:00:29.244Z",
               "replaced_by": "rederive-sec-xbrl",
               "pct_delta": 0
+            },
+            {
+              "value": 39170.796,
+              "unit": "KRW",
+              "source": "SEC EDGAR · 20-F · EquityAttributableToOwnersOfParent",
+              "asOf": "2024-12-31",
+              "fetchedAt": "2026-11-17T05:00:29.244Z",
+              "replaced_at": "2026-11-18T04:03:54.456Z",
+              "replaced_by": "rederive-sec-xbrl",
+              "pct_delta": 0
             }
           ]
         }
@@ -3765,7 +3785,7 @@
         "engineStatus": []
       },
       "provenance": "yahoo-timeseries",
-      "provenanceAsOf": "2026-11-17T05:00:29.244Z",
+      "provenanceAsOf": "2026-11-18T04:03:54.456Z",
       "sourceLink": {
         "kind": "filing",
         "url": "https://www.sec.gov/Archives/edgar/data/1445930/000119312525063083/d917059d6k.htm",
@@ -4000,14 +4020,27 @@
             "high_usd_m": 5009000,
             "numberOfAnalysts": 7
           },
-          "actual": null,
+          "actual": {
+            "value": 5278463,
+            "unit": "KRW",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/105560.KS/financials",
+              "label": "Yahoo · fundamentals-timeseries",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-09-30",
+            "fetchedAt": "2026-11-18T03:59:44.306Z",
+            "method": "yahoo",
+            "confidence": 0.85
+          },
           "prior": null
         },
         {
           "key": "eps_usd",
           "displayLabel": "EPS",
           "isHeadline": true,
-          "surprisePct": 0.4748447971841249,
+          "surprisePct": null,
           "estimate": {
             "value": 5288.886,
             "unit": "KRW",
@@ -4026,18 +4059,78 @@
             "numberOfAnalysts": 3
           },
           "actual": {
-            "value": 5314,
+            "value": 4888,
             "unit": "KRW",
             "source": {
-              "url": "https://finance.yahoo.com/quote/105560.KS/earnings-history",
-              "label": "Yahoo · earningsChart",
+              "url": "https://finance.yahoo.com/quote/105560.KS/financials",
+              "label": "Yahoo · fundamentals-timeseries",
               "provenance": "wire",
               "locator": null
             },
             "asOf": "2026-09-30",
-            "fetchedAt": "2026-10-30T02:20:27.392Z",
+            "fetchedAt": "2026-11-18T03:59:44.306Z",
             "method": "yahoo",
-            "confidence": 0.8
+            "confidence": 0.85
+          },
+          "prior": null,
+          "superseded": [
+            {
+              "value": 5314,
+              "unit": "KRW",
+              "source": "Yahoo · earningsChart",
+              "from_provenance": "yahoo-earnings-chart"
+            }
+          ],
+          "_crossBasisSurprise": [
+            {
+              "value": 0.4748447971841249,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-trend",
+              "clearedAt": "2026-11-18T05:19:30.880Z"
+            }
+          ]
+        },
+        {
+          "key": "net_income_usd_m",
+          "displayLabel": "Net income (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 1758877,
+            "unit": "KRW",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/105560.KS/financials",
+              "label": "Yahoo · fundamentals-timeseries",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-09-30",
+            "fetchedAt": "2026-11-18T03:59:44.306Z",
+            "method": "yahoo",
+            "confidence": 0.85
+          },
+          "prior": null
+        },
+        {
+          "key": "eps_diluted_usd",
+          "displayLabel": "EPS diluted",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 4851,
+            "unit": "KRW",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/105560.KS/financials",
+              "label": "Yahoo · fundamentals-timeseries",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-09-30",
+            "fetchedAt": "2026-11-18T03:59:44.306Z",
+            "method": "yahoo",
+            "confidence": 0.85
           },
           "prior": null
         }
@@ -4078,10 +4171,10 @@
           },
           {
             "horizon": "m1",
-            "absReturn": 0.003826530612244898,
-            "excessReturn": 0.04317691156305374,
+            "absReturn": -0.006377551020408163,
+            "excessReturn": 0.04282467125536206,
             "benchmark": "SPX",
-            "computedAt": "2026-11-17T05:42:25.446Z",
+            "computedAt": "2026-11-18T04:45:41.931Z",
             "populatesOn": null,
             "status": "clipped",
             "clipped": true

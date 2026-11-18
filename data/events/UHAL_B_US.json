@@ -435,42 +435,42 @@
       "guidance": [],
       "reaction": {
         "benchmark": "SPX",
-        "baselineDate": "2025-11-17",
-        "baselineClose": 45.02000045776367,
+        "baselineDate": "2025-11-18",
+        "baselineClose": 44.779998779296875,
         "points": [
           {
             "horizon": "d1",
-            "absReturn": -0.0053310012444793015,
-            "excessReturn": 0.0029254354464886938,
+            "absReturn": 0.01272889036092932,
+            "excessReturn": 0.00897505456470004,
             "benchmark": "SPX",
-            "computedAt": "2026-11-17T05:42:25.446Z",
+            "computedAt": "2026-11-18T04:45:41.931Z",
             "populatesOn": null,
             "status": "matured"
           },
           {
             "horizon": "d3",
-            "absReturn": 0.001110600545361046,
-            "excessReturn": 0.02114090256446139,
+            "absReturn": 0.036400203495959724,
+            "excessReturn": 0.038565670818742744,
             "benchmark": "SPX",
-            "computedAt": "2026-11-17T05:42:25.446Z",
+            "computedAt": "2026-11-18T04:45:41.931Z",
             "populatesOn": null,
             "status": "matured"
           },
           {
             "horizon": "w1",
-            "absReturn": 0.018436206306485927,
-            "excessReturn": 0.01353393558698275,
+            "absReturn": 0.053818667108278796,
+            "excessReturn": 0.03136848145304802,
             "benchmark": "SPX",
-            "computedAt": "2026-11-17T05:42:25.446Z",
+            "computedAt": "2026-11-18T04:45:41.931Z",
             "populatesOn": null,
             "status": "matured"
           },
           {
             "horizon": "m1",
-            "absReturn": 0.07330073752790164,
-            "excessReturn": 0.06595406392970665,
+            "absReturn": 0.0799464477142824,
+            "excessReturn": 0.0561543467446368,
             "benchmark": "SPX",
-            "computedAt": "2026-11-17T05:42:25.446Z",
+            "computedAt": "2026-11-18T04:45:41.931Z",
             "populatesOn": null,
             "status": "matured"
           }
@@ -2011,7 +2011,7 @@
           "key": "eps_usd",
           "displayLabel": "EPS",
           "isHeadline": true,
-          "surprisePct": -2.739726027397263,
+          "surprisePct": null,
           "estimate": {
             "value": 0.73,
             "unit": "USD",
@@ -2030,20 +2030,36 @@
             "numberOfAnalysts": 1
           },
           "actual": {
-            "value": 0.71,
+            "value": 0.58,
             "unit": "USD",
             "source": {
-              "url": "https://finance.yahoo.com/quote/UHAL-B/earnings-history",
-              "label": "Yahoo · earningsChart",
+              "url": "https://finance.yahoo.com/quote/UHAL-B/financials",
+              "label": "Yahoo · fundamentals-timeseries",
               "provenance": "wire",
               "locator": null
             },
-            "asOf": "2026-09-30",
-            "fetchedAt": "2026-11-10T04:30:40.629Z",
+            "asOf": "2026-06-30",
+            "fetchedAt": "2026-11-18T03:59:44.306Z",
             "method": "yahoo",
-            "confidence": 0.8
+            "confidence": 0.85
           },
-          "prior": null
+          "prior": null,
+          "superseded": [
+            {
+              "value": 0.71,
+              "unit": "USD",
+              "source": "Yahoo · earningsChart",
+              "from_provenance": "yahoo-earnings-chart"
+            }
+          ],
+          "_crossBasisSurprise": [
+            {
+              "value": -2.739726027397263,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-trend",
+              "clearedAt": "2026-11-18T05:19:35.536Z"
+            }
+          ]
         },
         {
           "key": "ebitda_usd_m",
@@ -2357,10 +2373,10 @@
           },
           {
             "horizon": "m1",
-            "absReturn": -0.09798811673485225,
-            "excessReturn": -0.06260722012514841,
+            "absReturn": -0.11251863395748544,
+            "excessReturn": -0.06724518739285251,
             "benchmark": "SPX",
-            "computedAt": "2026-11-17T05:42:25.446Z",
+            "computedAt": "2026-11-18T04:45:41.931Z",
             "populatesOn": null,
             "status": "clipped",
             "clipped": true
@@ -2746,69 +2762,6 @@
         "provenance": "edgar",
         "method": "attach-sec-filings",
         "asOf": "2026-11-10T05:22:36.076Z"
-      }
-    },
-    {
-      "id": "evt-o0mxo",
-      "ticker": "UHAL/B US",
-      "kind": "earnings",
-      "period": "FY2026 Q3",
-      "scheduledDate": "2027-02-03",
-      "eventDate": null,
-      "timing": null,
-      "expectation": "unset",
-      "guidanceMove": null,
-      "freshness": "stale",
-      "provenance": "estimator-median-gap",
-      "provenanceAsOf": "2026-11-17T05:42:22.895Z",
-      "cadence": "quarterly",
-      "metrics": [],
-      "guidance": [],
-      "reaction": {
-        "benchmark": "SPX",
-        "baselineDate": null,
-        "baselineClose": null,
-        "points": [
-          {
-            "horizon": "d1",
-            "absReturn": null,
-            "excessReturn": null,
-            "benchmark": "SPX",
-            "computedAt": null,
-            "populatesOn": "2027-02-06"
-          },
-          {
-            "horizon": "d3",
-            "absReturn": null,
-            "excessReturn": null,
-            "benchmark": "SPX",
-            "computedAt": null,
-            "populatesOn": "2027-02-08"
-          },
-          {
-            "horizon": "w1",
-            "absReturn": null,
-            "excessReturn": null,
-            "benchmark": "SPX",
-            "computedAt": null,
-            "populatesOn": "2027-02-10"
-          },
-          {
-            "horizon": "m1",
-            "absReturn": null,
-            "excessReturn": null,
-            "benchmark": "SPX",
-            "computedAt": null,
-            "populatesOn": "2027-02-26"
-          }
-        ]
-      },
-      "sources": {
-        "windowStart": "2027-02-01",
-        "windowEnd": "2027-03-10",
-        "capturedAt": null,
-        "items": [],
-        "engineStatus": []
       }
     }
   ]

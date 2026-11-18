@@ -420,42 +420,42 @@
       "guidance": [],
       "reaction": {
         "benchmark": "SPX",
-        "baselineDate": "2025-11-17",
-        "baselineClose": 36.31999969482422,
+        "baselineDate": "2025-11-18",
+        "baselineClose": 36.209999084472656,
         "points": [
           {
             "horizon": "d1",
-            "absReturn": -0.0030286511915152393,
-            "excessReturn": 0.005227785499452756,
+            "absReturn": -0.0057994777625583185,
+            "excessReturn": -0.0095533135587876,
             "benchmark": "SPX",
-            "computedAt": "2026-11-17T05:42:25.446Z",
+            "computedAt": "2026-11-18T04:45:41.931Z",
             "populatesOn": null,
             "status": "matured"
           },
           {
             "horizon": "d3",
-            "absReturn": -0.015969108514064072,
-            "excessReturn": 0.004061193505036271,
+            "absReturn": -0.01546527403348885,
+            "excessReturn": -0.013299806710705827,
             "benchmark": "SPX",
-            "computedAt": "2026-11-17T05:42:25.446Z",
+            "computedAt": "2026-11-18T04:45:41.931Z",
             "populatesOn": null,
             "status": "matured"
           },
           {
             "horizon": "w1",
-            "absReturn": -0.0013766309879036705,
-            "excessReturn": -0.006278901707406848,
+            "absReturn": -0.001380812988807482,
+            "excessReturn": -0.023830998644038256,
             "benchmark": "SPX",
-            "computedAt": "2026-11-17T05:42:25.446Z",
+            "computedAt": "2026-11-18T04:45:41.931Z",
             "populatesOn": null,
             "status": "matured"
           },
           {
             "horizon": "m1",
-            "absReturn": -0.10269822614475053,
-            "excessReturn": -0.11004489974294553,
+            "absReturn": -0.10466724693049076,
+            "excessReturn": -0.12845934790013636,
             "benchmark": "SPX",
-            "computedAt": "2026-11-17T05:42:25.446Z",
+            "computedAt": "2026-11-18T04:45:41.931Z",
             "populatesOn": null,
             "status": "matured"
           }
@@ -3307,7 +3307,7 @@
           "key": "eps_usd",
           "displayLabel": "EPS",
           "isHeadline": true,
-          "surprisePct": -73.87383177570094,
+          "surprisePct": null,
           "estimate": {
             "value": 2.14,
             "unit": "USD",
@@ -3323,20 +3323,36 @@
             "confidence": 0.75
           },
           "actual": {
-            "value": 0.5591,
+            "value": 0.42,
             "unit": "USD",
             "source": {
-              "url": "https://finance.yahoo.com/quote/CWEN/earnings-history",
-              "label": "Yahoo · earningsChart",
+              "url": "https://finance.yahoo.com/quote/CWEN/financials",
+              "label": "Yahoo · fundamentals-timeseries",
               "provenance": "wire",
               "locator": null
             },
             "asOf": "2026-09-30",
-            "fetchedAt": "2026-11-11T02:29:34.784Z",
+            "fetchedAt": "2026-11-18T03:59:44.306Z",
             "method": "yahoo",
-            "confidence": 0.8
+            "confidence": 0.85
           },
-          "prior": null
+          "prior": null,
+          "superseded": [
+            {
+              "value": 0.5591,
+              "unit": "USD",
+              "source": "Yahoo · earningsChart",
+              "from_provenance": "yahoo-earnings-chart"
+            }
+          ],
+          "_crossBasisSurprise": [
+            {
+              "value": -73.87383177570094,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-11-18T05:19:32.728Z"
+            }
+          ]
         },
         {
           "key": "revenue_usd_m",
@@ -3535,6 +3551,94 @@
             "confidence": 0.98
           },
           "prior": null
+        },
+        {
+          "key": "ebitda_usd_m",
+          "displayLabel": "EBITDA (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 423,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/CWEN/financials",
+              "label": "Yahoo · fundamentals-timeseries",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-09-30",
+            "fetchedAt": "2026-11-18T03:59:44.306Z",
+            "method": "yahoo",
+            "confidence": 0.85
+          },
+          "prior": null
+        },
+        {
+          "key": "gross_profit_usd_m",
+          "displayLabel": "Gross profit (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 355,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/CWEN/financials",
+              "label": "Yahoo · fundamentals-timeseries",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-09-30",
+            "fetchedAt": "2026-11-18T03:59:44.306Z",
+            "method": "yahoo",
+            "confidence": 0.85
+          },
+          "prior": null
+        },
+        {
+          "key": "eps_diluted_usd",
+          "displayLabel": "EPS diluted",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 0.42,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/CWEN/financials",
+              "label": "Yahoo · fundamentals-timeseries",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-09-30",
+            "fetchedAt": "2026-11-18T03:59:44.306Z",
+            "method": "yahoo",
+            "confidence": 0.85
+          },
+          "prior": null
+        },
+        {
+          "key": "ebit_usd_m",
+          "displayLabel": "EBIT (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 176,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/CWEN/financials",
+              "label": "Yahoo · fundamentals-timeseries",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-09-30",
+            "fetchedAt": "2026-11-18T03:59:44.306Z",
+            "method": "yahoo",
+            "confidence": 0.85
+          },
+          "prior": null
         }
       ],
       "guidance": [],
@@ -3572,10 +3676,10 @@
           },
           {
             "horizon": "m1",
-            "absReturn": -0.05763688634082263,
-            "excessReturn": -0.03997448125003296,
+            "absReturn": -0.09769455972513073,
+            "excessReturn": -0.06995789454962004,
             "benchmark": "SPX",
-            "computedAt": "2026-11-17T05:42:25.446Z",
+            "computedAt": "2026-11-18T04:45:41.931Z",
             "populatesOn": null,
             "status": "clipped",
             "clipped": true
