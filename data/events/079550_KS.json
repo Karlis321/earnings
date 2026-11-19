@@ -3340,7 +3340,7 @@
           "key": "eps_usd",
           "displayLabel": "EPS",
           "isHeadline": true,
-          "surprisePct": -104.6738384853077,
+          "surprisePct": null,
           "estimate": {
             "value": 4557.282,
             "unit": "KRW",
@@ -3359,20 +3359,36 @@
             "numberOfAnalysts": 3
           },
           "actual": {
-            "value": -213,
+            "value": -212.74927,
             "unit": "KRW",
             "source": {
-              "url": "https://finance.yahoo.com/quote/079550.KS/earnings-history",
-              "label": "Yahoo · earningsChart",
+              "url": "https://finance.yahoo.com/quote/079550.KS/financials",
+              "label": "Yahoo · fundamentals-timeseries",
               "provenance": "wire",
               "locator": null
             },
             "asOf": "2026-09-30",
-            "fetchedAt": "2026-11-18T04:00:29.695Z",
+            "fetchedAt": "2026-11-19T03:56:34.989Z",
             "method": "yahoo",
-            "confidence": 0.8
+            "confidence": 0.85
           },
-          "prior": null
+          "prior": null,
+          "superseded": [
+            {
+              "value": -213,
+              "unit": "KRW",
+              "source": "Yahoo · earningsChart",
+              "from_provenance": "yahoo-earnings-chart"
+            }
+          ],
+          "_crossBasisSurprise": [
+            {
+              "value": -104.6738384853077,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-trend",
+              "clearedAt": "2026-11-19T05:15:47.042Z"
+            }
+          ]
         },
         {
           "key": "operating_income_usd_m",
@@ -3524,30 +3540,29 @@
           },
           {
             "horizon": "d3",
-            "absReturn": -0.008426966292134831,
-            "excessReturn": 0.00182842873390213,
+            "absReturn": 0.0014044943820224719,
+            "excessReturn": 0.013938551529032948,
             "benchmark": "SPX",
-            "computedAt": "2026-11-18T04:45:41.931Z",
+            "computedAt": "2026-11-19T04:42:17.372Z",
             "populatesOn": null,
-            "status": "clipped",
-            "clipped": true
+            "status": "matured"
           },
           {
             "horizon": "w1",
-            "absReturn": -0.008426966292134831,
-            "excessReturn": 0.00182842873390213,
+            "absReturn": 0.0014044943820224719,
+            "excessReturn": 0.013938551529032948,
             "benchmark": "SPX",
-            "computedAt": "2026-11-18T04:45:41.931Z",
+            "computedAt": "2026-11-19T04:42:17.372Z",
             "populatesOn": null,
             "status": "clipped",
             "clipped": true
           },
           {
             "horizon": "m1",
-            "absReturn": -0.008426966292134831,
-            "excessReturn": 0.00182842873390213,
+            "absReturn": 0.0014044943820224719,
+            "excessReturn": 0.013938551529032948,
             "benchmark": "SPX",
-            "computedAt": "2026-11-18T04:45:41.931Z",
+            "computedAt": "2026-11-19T04:42:17.372Z",
             "populatesOn": null,
             "status": "clipped",
             "clipped": true
@@ -3582,7 +3597,58 @@
       "provenance": "estimator-median-gap",
       "provenanceAsOf": "2026-11-18T04:45:39.532Z",
       "cadence": "quarterly",
-      "metrics": [],
+      "metrics": [
+        {
+          "key": "revenue_usd_m",
+          "displayLabel": "Revenue (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": {
+            "value": 1535930.77,
+            "unit": "KRW",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/079550.KS/analysis",
+              "label": "Yahoo · earningsTrend (13 analysts)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-12-31",
+            "fetchedAt": "2026-11-19T04:40:58.250Z",
+            "method": "yahoo",
+            "confidence": 0.75,
+            "low_usd_m": 1287300,
+            "high_usd_m": 1744000,
+            "numberOfAnalysts": 13
+          },
+          "actual": null,
+          "prior": null
+        },
+        {
+          "key": "eps_usd",
+          "displayLabel": "EPS",
+          "isHeadline": true,
+          "surprisePct": null,
+          "estimate": {
+            "value": 1529.5853,
+            "unit": "KRW",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/079550.KS/analysis",
+              "label": "Yahoo · earningsTrend (3 analysts)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-12-31",
+            "fetchedAt": "2026-11-19T04:40:58.250Z",
+            "method": "yahoo",
+            "confidence": 0.75,
+            "low": 789,
+            "high": 2266.096,
+            "numberOfAnalysts": 3
+          },
+          "actual": null,
+          "prior": null
+        }
+      ],
       "guidance": [],
       "reaction": {
         "benchmark": "SPX",
