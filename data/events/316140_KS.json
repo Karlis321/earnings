@@ -1272,6 +1272,12 @@
               "actualFamily": "yahoo-timeseries",
               "estimateFamily": "yahoo-generic",
               "clearedAt": "2026-11-17T05:47:58.004Z"
+            },
+            {
+              "value": -33.17966382637072,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-generic",
+              "clearedAt": "2026-11-20T05:18:22.146Z"
             }
           ]
         },
@@ -1729,6 +1735,12 @@
               "actualFamily": "yahoo-timeseries",
               "estimateFamily": "yahoo-generic",
               "clearedAt": "2026-11-17T05:47:58.004Z"
+            },
+            {
+              "value": 8.393874979971589,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-generic",
+              "clearedAt": "2026-11-20T05:18:22.146Z"
             }
           ]
         },
@@ -2486,7 +2498,7 @@
               "locator": null
             },
             "asOf": "2024-12-31",
-            "fetchedAt": "2026-11-19T04:00:47.075Z",
+            "fetchedAt": "2026-11-20T03:56:12.270Z",
             "method": "filing_manual",
             "confidence": 0.98,
             "_originalUnit": "USD"
@@ -3092,6 +3104,16 @@
               "replaced_at": "2026-11-19T04:00:47.075Z",
               "replaced_by": "rederive-sec-xbrl",
               "pct_delta": 0
+            },
+            {
+              "value": 18458.135,
+              "unit": "KRW",
+              "source": "SEC EDGAR · 20-F · CashAndCashEquivalents",
+              "asOf": "2024-12-31",
+              "fetchedAt": "2026-11-19T04:00:47.075Z",
+              "replaced_at": "2026-11-20T03:56:12.270Z",
+              "replaced_by": "rederive-sec-xbrl",
+              "pct_delta": 0
             }
           ]
         },
@@ -3111,7 +3133,7 @@
               "locator": null
             },
             "asOf": "2024-12-31",
-            "fetchedAt": "2026-11-19T04:00:47.075Z",
+            "fetchedAt": "2026-11-20T03:56:12.270Z",
             "method": "filing_manual",
             "confidence": 0.98,
             "_originalUnit": "USD"
@@ -3717,6 +3739,16 @@
               "replaced_at": "2026-11-19T04:00:47.075Z",
               "replaced_by": "rederive-sec-xbrl",
               "pct_delta": 0
+            },
+            {
+              "value": 23069.579,
+              "unit": "KRW",
+              "source": "SEC EDGAR · 20-F · EquityAttributableToOwnersOfParent",
+              "asOf": "2024-12-31",
+              "fetchedAt": "2026-11-19T04:00:47.075Z",
+              "replaced_at": "2026-11-20T03:56:12.270Z",
+              "replaced_by": "rederive-sec-xbrl",
+              "pct_delta": 0
             }
           ]
         }
@@ -3774,7 +3806,7 @@
         "engineStatus": []
       },
       "provenance": "yahoo-timeseries",
-      "provenanceAsOf": "2026-11-19T04:00:47.075Z",
+      "provenanceAsOf": "2026-11-20T03:56:12.270Z",
       "sourceLink": {
         "kind": "filing",
         "url": "https://www.sec.gov/Archives/edgar/data/1264136/000119312525063234/d884946d6k.htm",
@@ -4058,7 +4090,15 @@
             "method": "yahoo",
             "confidence": 0.85
           },
-          "prior": null
+          "prior": null,
+          "_crossBasisSurprise": [
+            {
+              "value": 0.8565765749019518,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-trend",
+              "clearedAt": "2026-11-20T05:18:22.146Z"
+            }
+          ]
         },
         {
           "key": "net_income_usd_m",
@@ -4588,7 +4628,58 @@
       "provenance": "estimator-median-gap",
       "provenanceAsOf": "2026-11-19T04:42:14.578Z",
       "cadence": "quarterly",
-      "metrics": [],
+      "metrics": [
+        {
+          "key": "revenue_usd_m",
+          "displayLabel": "Revenue (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": {
+            "value": 2935856.07,
+            "unit": "KRW",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/316140.KS/analysis",
+              "label": "Yahoo · earningsTrend (9 analysts)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-12-31",
+            "fetchedAt": "2026-11-20T04:36:12.193Z",
+            "method": "yahoo",
+            "confidence": 0.75,
+            "low_usd_m": 2827700,
+            "high_usd_m": 3141839.28,
+            "numberOfAnalysts": 9
+          },
+          "actual": null,
+          "prior": null
+        },
+        {
+          "key": "eps_usd",
+          "displayLabel": "EPS",
+          "isHeadline": true,
+          "surprisePct": null,
+          "estimate": {
+            "value": 812.9966,
+            "unit": "KRW",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/316140.KS/analysis",
+              "label": "Yahoo · earningsTrend (3 analysts)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-12-31",
+            "fetchedAt": "2026-11-20T04:36:12.193Z",
+            "method": "yahoo",
+            "confidence": 0.75,
+            "low": 779.3188,
+            "high": 879.99,
+            "numberOfAnalysts": 3
+          },
+          "actual": null,
+          "prior": null
+        }
+      ],
       "guidance": [],
       "reaction": {
         "benchmark": "SPX",

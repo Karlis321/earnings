@@ -1958,6 +1958,12 @@
               "actualFamily": "sec",
               "estimateFamily": "yahoo-chart",
               "clearedAt": "2026-11-17T05:48:02.955Z"
+            },
+            {
+              "value": 17.99814770349536,
+              "actualFamily": "sec",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-11-20T05:18:28.608Z"
             }
           ],
           "superseded": [
@@ -3267,6 +3273,12 @@
               "actualFamily": "sec",
               "estimateFamily": "yahoo-chart",
               "clearedAt": "2026-11-17T05:48:02.955Z"
+            },
+            {
+              "value": 76.68978322345482,
+              "actualFamily": "sec",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-11-20T05:18:28.608Z"
             }
           ]
         },
@@ -3999,7 +4011,7 @@
           "key": "eps_usd",
           "displayLabel": "EPS",
           "isHeadline": true,
-          "surprisePct": 27.231349804591854,
+          "surprisePct": null,
           "estimate": {
             "value": 2.08282,
             "unit": "USD",
@@ -4015,20 +4027,36 @@
             "confidence": 0.75
           },
           "actual": {
-            "value": 2.65,
+            "value": 4.13,
             "unit": "USD",
             "source": {
-              "url": "https://finance.yahoo.com/quote/TGT/earnings-history",
-              "label": "Yahoo · earningsChart",
+              "url": "https://finance.yahoo.com/quote/TGT/financials",
+              "label": "Yahoo · fundamentals-timeseries",
               "provenance": "wire",
               "locator": null
             },
-            "asOf": "2026-10-31",
-            "fetchedAt": "2026-11-19T03:57:17.423Z",
+            "asOf": "2026-07-31",
+            "fetchedAt": "2026-11-20T03:49:54.223Z",
             "method": "yahoo",
-            "confidence": 0.8
+            "confidence": 0.85
           },
-          "prior": null
+          "prior": null,
+          "superseded": [
+            {
+              "value": 2.65,
+              "unit": "USD",
+              "source": "Yahoo · earningsChart",
+              "from_provenance": "yahoo-earnings-chart"
+            }
+          ],
+          "_crossBasisSurprise": [
+            {
+              "value": 27.231349804591854,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-11-20T05:18:28.608Z"
+            }
+          ]
         }
       ],
       "guidance": [
@@ -4116,39 +4144,42 @@
         "points": [
           {
             "horizon": "d1",
-            "absReturn": null,
-            "excessReturn": null,
+            "absReturn": 0.009220840749842658,
+            "excessReturn": 0.029402063320137308,
             "benchmark": "SPX",
-            "computedAt": null,
+            "computedAt": "2026-11-20T04:38:41.760Z",
             "populatesOn": null,
-            "status": "pending"
+            "status": "matured"
           },
           {
             "horizon": "d3",
-            "absReturn": null,
-            "excessReturn": null,
+            "absReturn": 0.009220840749842658,
+            "excessReturn": 0.029402063320137308,
             "benchmark": "SPX",
-            "computedAt": null,
+            "computedAt": "2026-11-20T04:38:41.760Z",
             "populatesOn": null,
-            "status": "pending"
+            "status": "clipped",
+            "clipped": true
           },
           {
             "horizon": "w1",
-            "absReturn": null,
-            "excessReturn": null,
+            "absReturn": 0.009220840749842658,
+            "excessReturn": 0.029402063320137308,
             "benchmark": "SPX",
-            "computedAt": null,
+            "computedAt": "2026-11-20T04:38:41.760Z",
             "populatesOn": null,
-            "status": "pending"
+            "status": "clipped",
+            "clipped": true
           },
           {
             "horizon": "m1",
-            "absReturn": null,
-            "excessReturn": null,
+            "absReturn": 0.009220840749842658,
+            "excessReturn": 0.029402063320137308,
             "benchmark": "SPX",
-            "computedAt": null,
+            "computedAt": "2026-11-20T04:38:41.760Z",
             "populatesOn": null,
-            "status": "pending"
+            "status": "clipped",
+            "clipped": true
           }
         ]
       },
@@ -4272,7 +4303,52 @@
       "provenance": "estimator-median-gap",
       "provenanceAsOf": "2026-11-19T04:42:14.582Z",
       "cadence": "quarterly",
-      "metrics": [],
+      "metrics": [
+        {
+          "key": "eps_diluted_usd",
+          "displayLabel": "EPS diluted",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 2.65,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/TGT/financials",
+              "label": "Yahoo · fundamentals-timeseries",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-10-31",
+            "fetchedAt": "2026-11-20T03:49:54.223Z",
+            "method": "yahoo",
+            "confidence": 0.85
+          },
+          "prior": null
+        },
+        {
+          "key": "eps_usd",
+          "displayLabel": "EPS",
+          "isHeadline": true,
+          "surprisePct": null,
+          "estimate": null,
+          "actual": {
+            "value": 2.67,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/TGT/financials",
+              "label": "Yahoo · fundamentals-timeseries",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-10-31",
+            "fetchedAt": "2026-11-20T03:49:54.223Z",
+            "method": "yahoo",
+            "confidence": 0.85
+          },
+          "prior": null
+        }
+      ],
       "guidance": [],
       "reaction": {
         "benchmark": "SPX",
