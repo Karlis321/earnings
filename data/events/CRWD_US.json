@@ -3023,6 +3023,12 @@
               "actualFamily": "sec",
               "estimateFamily": "yahoo-generic",
               "clearedAt": "2026-11-23T04:49:42.160Z"
+            },
+            {
+              "value": -58.77988458367683,
+              "actualFamily": "sec",
+              "estimateFamily": "yahoo-generic",
+              "clearedAt": "2026-11-25T06:35:25.604Z"
             }
           ]
         },
@@ -4127,6 +4133,12 @@
               "actualFamily": "sec",
               "estimateFamily": "yahoo-chart",
               "clearedAt": "2026-11-23T04:49:42.160Z"
+            },
+            {
+              "value": -58.77988458367683,
+              "actualFamily": "sec",
+              "estimateFamily": "yahoo-chart",
+              "clearedAt": "2026-11-25T06:35:25.604Z"
             }
           ],
           "superseded": [
@@ -5574,6 +5586,12 @@
               "actualFamily": "sec",
               "estimateFamily": "yahoo-trend",
               "clearedAt": "2026-11-23T04:49:42.160Z"
+            },
+            {
+              "value": -62.32231546497688,
+              "actualFamily": "sec",
+              "estimateFamily": "yahoo-trend",
+              "clearedAt": "2026-11-25T06:35:25.604Z"
             }
           ]
         },
@@ -6465,7 +6483,15 @@
             "method": "filing_manual",
             "confidence": 0.98
           },
-          "prior": null
+          "prior": null,
+          "_crossBasisSurprise": [
+            {
+              "value": -96.7862193083944,
+              "actualFamily": "sec",
+              "estimateFamily": "yahoo-trend",
+              "clearedAt": "2026-11-25T06:35:25.604Z"
+            }
+          ]
         },
         {
           "key": "cost_of_revenue_usd_m",
@@ -6726,12 +6752,11 @@
           },
           {
             "horizon": "m1",
-            "absReturn": -0.13580909254975307,
-            "excessReturn": null,
+            "absReturn": -0.12799304106829823,
+            "excessReturn": -0.0645538917347096,
             "benchmark": "NDX",
-            "computedAt": "2026-11-24T07:20:41.539Z",
+            "computedAt": "2026-11-25T05:58:09.670Z",
             "populatesOn": "2026-11-22",
-            "gapFlagged": true,
             "clipped": true,
             "status": "clipped"
           }
@@ -7101,6 +7126,15 @@
             "provenance": "regulatory",
             "time": "2026-10-20T00:00:09.000Z",
             "kind": "edgar"
+          },
+          {
+            "id": "pr-crwd-465926131630indexhtm",
+            "headline": "425  - Prospectuses and communications, business combinations",
+            "url": "https://www.sec.gov/Archives/edgar/data/1535527/000110465926131630/0001104659-26-131630-index.htm",
+            "source": "SEC EDGAR filings",
+            "provenance": "regulatory",
+            "time": "2026-11-24T21:29:05.000Z",
+            "kind": "edgar"
           }
         ],
         "engineStatus": []
@@ -7125,7 +7159,58 @@
       "provenance": "estimator-median-gap",
       "provenanceAsOf": "2026-11-24T07:20:39.210Z",
       "cadence": "quarterly",
-      "metrics": [],
+      "metrics": [
+        {
+          "key": "revenue_usd_m",
+          "displayLabel": "Revenue (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": {
+            "value": 1642.95608,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/CRWD/analysis",
+              "label": "Yahoo · earningsTrend (38 analysts)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2027-01-31",
+            "fetchedAt": "2026-11-25T05:57:02.725Z",
+            "method": "yahoo",
+            "confidence": 0.75,
+            "low_usd_m": 1625.25663,
+            "high_usd_m": 1700.387,
+            "numberOfAnalysts": 38
+          },
+          "actual": null,
+          "prior": null
+        },
+        {
+          "key": "eps_usd",
+          "displayLabel": "EPS",
+          "isHeadline": true,
+          "surprisePct": null,
+          "estimate": {
+            "value": 0.36084,
+            "unit": "USD",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/CRWD/analysis",
+              "label": "Yahoo · earningsTrend (40 analysts)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2027-01-31",
+            "fetchedAt": "2026-11-25T05:57:02.725Z",
+            "method": "yahoo",
+            "confidence": 0.75,
+            "low": 0.35911,
+            "high": 0.38,
+            "numberOfAnalysts": 40
+          },
+          "actual": null,
+          "prior": null
+        }
+      ],
       "guidance": [],
       "reaction": {
         "benchmark": "NDX",

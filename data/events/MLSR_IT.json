@@ -70,42 +70,38 @@
           {
             "horizon": "d1",
             "absReturn": -0.007965242577842143,
-            "excessReturn": null,
+            "excessReturn": -0.014871954088854791,
             "benchmark": "SPX",
-            "computedAt": "2026-11-24T07:20:41.539Z",
+            "computedAt": "2026-11-25T05:58:09.670Z",
             "populatesOn": "2022-10-18",
-            "status": "matured",
-            "gapFlagged": true
+            "status": "matured"
           },
           {
             "horizon": "d3",
             "absReturn": -0.021482017861453054,
-            "excessReturn": null,
+            "excessReturn": -0.02839168826792302,
             "benchmark": "SPX",
-            "computedAt": "2026-11-24T07:20:41.539Z",
+            "computedAt": "2026-11-25T05:58:09.670Z",
             "populatesOn": "2022-10-20",
-            "status": "matured",
-            "gapFlagged": true
+            "status": "matured"
           },
           {
             "horizon": "w1",
             "absReturn": -0.024137098720733767,
-            "excessReturn": null,
+            "excessReturn": -0.03652873639142776,
             "benchmark": "SPX",
-            "computedAt": "2026-11-24T07:20:41.539Z",
+            "computedAt": "2026-11-25T05:58:09.670Z",
             "populatesOn": "2022-10-22",
-            "status": "matured",
-            "gapFlagged": true
+            "status": "matured"
           },
           {
             "horizon": "m1",
             "absReturn": -0.005551532705768767,
-            "excessReturn": null,
+            "excessReturn": -0.029799680978473853,
             "benchmark": "SPX",
-            "computedAt": "2026-11-24T07:20:41.539Z",
+            "computedAt": "2026-11-25T05:58:09.670Z",
             "populatesOn": "2022-11-07",
-            "status": "matured",
-            "gapFlagged": true
+            "status": "matured"
           }
         ]
       },
@@ -2134,7 +2130,15 @@
             "method": "yahoo",
             "confidence": 0.85
           },
-          "prior": null
+          "prior": null,
+          "_crossBasisSurprise": [
+            {
+              "value": -22.186495176848876,
+              "actualFamily": "yahoo-timeseries",
+              "estimateFamily": "yahoo-trend",
+              "clearedAt": "2026-11-25T06:35:27.839Z"
+            }
+          ]
         },
         {
           "key": "eps_diluted_usd",
@@ -2231,7 +2235,58 @@
       "provenance": "estimator-median-gap",
       "provenanceAsOf": "2026-11-24T07:20:39.211Z",
       "cadence": "quarterly",
-      "metrics": [],
+      "metrics": [
+        {
+          "key": "revenue_usd_m",
+          "displayLabel": "Revenue (M)",
+          "isHeadline": false,
+          "surprisePct": null,
+          "estimate": {
+            "value": 581,
+            "unit": "ILA",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/MLSR.TA/analysis",
+              "label": "Yahoo · earningsTrend (1 analysts)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-12-31",
+            "fetchedAt": "2026-11-25T05:57:02.725Z",
+            "method": "yahoo",
+            "confidence": 0.75,
+            "low_usd_m": 581,
+            "high_usd_m": 581,
+            "numberOfAnalysts": 1
+          },
+          "actual": null,
+          "prior": null
+        },
+        {
+          "key": "eps_usd",
+          "displayLabel": "EPS",
+          "isHeadline": true,
+          "surprisePct": null,
+          "estimate": {
+            "value": -23.98,
+            "unit": "ILA",
+            "source": {
+              "url": "https://finance.yahoo.com/quote/MLSR.TA/analysis",
+              "label": "Yahoo · earningsTrend (1 analysts)",
+              "provenance": "wire",
+              "locator": null
+            },
+            "asOf": "2026-12-31",
+            "fetchedAt": "2026-11-25T05:57:02.725Z",
+            "method": "yahoo",
+            "confidence": 0.75,
+            "low": -23.98,
+            "high": -23.98,
+            "numberOfAnalysts": 1
+          },
+          "actual": null,
+          "prior": null
+        }
+      ],
       "guidance": [],
       "reaction": {
         "benchmark": "SPX",
